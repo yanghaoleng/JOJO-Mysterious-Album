@@ -3,7 +3,8 @@
     "build:bubble": "esbuild src/calligraph-bubble.jsx --bundle --format=esm --minify --outfile=vendor/calligraph-bubble.js"
   },
   "dependencies": {
-    "calligraph": "^1.4.1"
+    "calligraph": "^1.4.1",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "esbuild": "^0.25.9"

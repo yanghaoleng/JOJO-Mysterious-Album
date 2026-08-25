@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9e3d3">
+  <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
+  <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
+  <link rel="stylesheet" href="./src/story-v2.css">
+</head>
+<body data-phase="cover" data-place="harbor">
+  <canvas id="paper-grain" aria-hidden="true"></canvas>
+
+  <header class="story-header">
+    <a href="./" class="brand-link" aria-label="返回萌萌星的奇妙图鉴">
+      <span aria-hidden="true">萌</span>
+      <b>萌萌星的奇妙图鉴</b>
+    </a>
+    <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
+      <span data-chapter-dot="1">借来第一句话</span>
+      <span data-chapter-dot="2">把回声送回去</span>
+      <span data-chapter-dot="3">谁在害怕安静</span>
+    </div>
+    <button class="quiet-button" id="restart-button" type="button">重新开始</button>
+  </header>
+
+  <main id="story-world">
+    <section class="world-stage" aria-label="水墨故事舞台">
+      <div class="sky-wash" aria-hidden="true"></div>
+      <div class="far-shape far-shape-a" aria-hidden="true"></div>
+      <div class="far-shape far-shape-b" aria-hidden="true"></div>
+      <div class="ground-wash" aria-hidden="true"></div>
+      <div class="place-object" aria-hidden="true"><span></span></div>
+
+      <div class="npc-wrap" id="npc-wrap" hidden>
+        <div class="npc-portal" aria-hidden="true"></div>
+        <div class="npc-character" id="npc-character" aria-hidden="true">
+          <span id="npc-mark">折</span>
+        </div>
+        <b id="npc-name">折角婆婆</b>
+      </div>
+
+      <div class="pet-stage" id="pet-stage" hidden>
+        <canvas id="pet-canvas" aria-label="根据回答生成的小宠物"></canvas>
+        <div class="pet-thought" id="pet-thought" role="status" hidden></div>
+      </div>
+    </section>
+
+    <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
+      <div class="cover-mark" aria-hidden="true">声</div>
+      <div>
+        <p class="section-label">新版故事体验草稿</p>
+        <h1 id="cover-title">不见了的回声</h1>
+        <p class="cover-copy">先遇见一位随机图鉴员。它会认真听你说，再把一只只属于你的小宠物签给你。</p>
+        <ul class="cover-promises">
+          <li>自由说话，也可以打字或点选</li>
+          <li>回答会改变宠物的模样和陪伴方式</li>
+          <li>三章冒险，六个场景，一个会记住选择的背包</li>
+        </ul>
+        <button class="primary-action" id="begin-button" type="button">让图鉴员来找我</button>
+        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存；也可全程打字或点选。不会询问姓名、学校、住址或精确生日。</p>
+      </div>
+    </section>
+
+    <section class="paper-panel conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question">
+      <div class="guide-row">
+        <div class="guide-avatar" id="guide-avatar" aria-hidden="true">芽</div>
+        <div>
+          <b id="guide-name">小芽</b>
+          <span id="guide-manner">温柔地把问题一小块一小块递过来</span>
+        </div>
+        <span class="question-count" id="question-count">1 / 4</span>
+      </div>
+      <p class="guide-reaction" id="guide-reaction" role="status"></p>
+      <h2 id="interview-question">如果今天能钻进一页图鉴，你最想在里面看见什么？</h2>
+      <p class="question-hint" id="question-hint"></p>
+      <div class="quick-answers" id="quick-answers"></div>
+      <form class="speech-form" id="answer-form">
+        <label for="answer-input">也可以自己说</label>
+        <div class="speech-row">
+          <button class="mic-button" id="mic-button" type="button" aria-pressed="false">
+            <span aria-hidden="true"></span>
+            <b>按一下开始说</b>
+          </button>
+          <input id="answer-input" maxlength="180" autocomplete="off" placeholder="也可以在这里打字">
+          <button class="send-button" id="send-answer" type="submit">告诉它</button>
+        </div>
+        <p class="speech-status" id="speech-status" role="status">还没有开始听</p>
+      </form>
+      <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
+    </section>
+
+    <section class="paper-panel assignment-panel" id="assignment-panel" hidden aria-labelledby="assignment-title">
+      <p class="section-label">图鉴员的签领页</p>
+      <h2 id="assignment-title">它愿意跟你走。</h2>
+      <p id="assignment-copy"></p>
+      <div class="pet-reasons" id="pet-reasons"></div>
+      <p class="silent-note">它现在还不会说话，只会用耳朵、眼睛和动作回答你。</p>
+      <button class="primary-action" id="accept-pet" type="button">把它轻轻接过来</button>
+    </section>
+
+    <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
+      <p class="section-label">开口仪式</p>
+      <h2 id="ritual-title">给它一个名字和第一句问候</h2>
+      <p>名字让它知道有人在叫自己，第一句问候让它知道这段声音是安全的。</p>
+      <div class="ritual-fields">
+        <label for="pet-name-input">给它取名</label>
+        <input id="pet-name-input" maxlength="8" autocomplete="off" placeholder="比如：团团">
+        <label for="first-hello-input">你想先对它说什么</label>
+        <div class="ritual-speech-row">
+          <input id="first-hello-input" maxlength="80" autocomplete="off" placeholder="比如：你好，我们一起走吧">
+          <button class="mic-button compact" id="ritual-mic" type="button"><span aria-hidden="true"></span><b>说给它听</b></button>
+        </div>
+      </div>
+      <div class="voice-seals" aria-label="开口仪式的三枚声印">
+        <span data-seal="name">名</span>
+        <span data-seal="listen">听</span>
+        <span data-seal="voice">声</span>
+      </div>
+      <p class="speech-status" id="ritual-status" role="status">两项都准备好以后，三枚声印会依次亮起。</p>
+      <button class="primary-action" id="wake-pet" type="button" disabled>让它开口</button>
+    </section>
+
+    <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
+      <div class="scene-heading">
+        <div>
+          <p class="section-label" id="chapter-label">第一章 借来第一句话</p>
+          <h2 id="scene-title">纸船码头</h2>
+        </div>
+        <p id="scene-objective">问问码头为什么听不见靠岸的船。</p>
+      </div>
+      <p class="entrance-line" id="entrance-line"></p>
+      <div class="npc-dialogue">
+        <b id="dialogue-speaker">折角婆婆</b>
+        <p id="scene-dialogue"></p>
+      </div>
+      <div class="scene-choices" id="scene-choices"></div>
+      <div class="choice-result" id="choice-result" hidden>
+        <p id="result-copy"></p>
+        <div class="reward-row" id="reward-row" hidden>
+          <img id="reward-image" alt="">
+          <div><b id="reward-name"></b><span id="reward-short"></span></div>
+        </div>
+        <button class="primary-action" id="continue-scene" type="button">继续往前走</button>
+      </div>
+    </section>
+
+    <section class="paper-panel ending-panel" id="ending-panel" hidden aria-labelledby="ending-title">
+      <p class="section-label">三张图鉴已经连在一起</p>
+      <h2 id="ending-title">灯塔重新听见了世界</h2>
+      <p class="ending-copy" id="ending-copy"></p>
+      <blockquote id="pet-ending-line"></blockquote>
+      <div class="ending-memory" id="ending-memory"></div>
+      <div class="ending-actions">
+        <button class="primary-action" id="save-ending" type="button">收进这台设备的图鉴</button>
+        <button class="secondary-action" id="play-again" type="button">换一位图鉴员再玩</button>
+      </div>
+    </section>
+  </main>
+
+  <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog">
+    <span class="backpack-mark" aria-hidden="true">包</span>
+    <b>背包</b>
+    <i id="backpack-count">0</i>
+  </button>
+
+  <dialog class="backpack-dialog" id="backpack-dialog" aria-labelledby="backpack-title">
+    <div class="dialog-heading">
+      <div>
+        <p class="section-label">一路带着的东西</p>
+        <h2 id="backpack-title">小小背包</h2>
+      </div>
+      <button class="dialog-close" id="close-backpack" type="button" aria-label="关闭背包">关</button>
+    </div>
+    <div class="inventory-list" id="inventory-list"></div>
+    <p class="empty-inventory" id="empty-inventory">背包还是空的。第一件东西会从纸船码头出现。</p>
+  </dialog>
+
+  <div class="ink-transition" id="ink-transition" aria-hidden="true"><span></span></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+  <script type="module" src="./src/story-v2.js"></script>
+</body>
+</html>

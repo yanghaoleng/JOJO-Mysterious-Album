@@ -63,3 +63,19 @@
 | 统计数据库 | SQLite WAL 持久化 | `/var/lib/kindergrimm/analytics.db`、`ANALYTICS_DB_PATH` | 位于发布目录外，版本切换不覆盖 |
 | 新腾讯服务器、锐驰服务器 | KinderGrimm 生产主机 | `lhins-qgi1l9jg`、`124.221.104.244`、`ssh mikeywa-rive` | 与 Rive 服务隔离端口、目录、systemd 和 Nginx 站点 |
 | 统计服务、站点后端 | Python 零依赖服务 | `kindergrimm.service`、`127.0.0.1:8137`、`serve.py` | 火山、Fish、匿名统计与后台鉴权，只经 Nginx `/api/` 暴露 |
+| 新故事、不见了的回声 | 新版连续故事原型 | `/story-v2`、`story-v2.html`、`src/story-v2.js` | 独立验证，不替换当前正式第一关 |
+| 随机提问的人、图鉴员 | 新版开场引导角色 | `GUIDES`、`state.guide`、`#guide-avatar` | 小芽、阿页、钟果随机出现，问题相同但节奏和音色不同 |
+| 四轮聊天、先认识孩子 | 新版低敏感度偏好访谈 | `INTERVIEW_QUESTIONS`、`/api/story-turn` | 主题、探索、陪伴、节奏；不询问身份信息 |
+| 签给我的宠物、页灵 | 由回答生成的同行宠物 | `state.pet`、`PetRenderer`、`recipe` | 回答映射 species、palette、feature 和可复现 seed |
+| 三个印章、开口仪式 | 宠物声音激活步骤 | `.voice-seals`、`wakePet()` | 名字、听见、声音依次亮起，之后宠物才使用独立音色 |
+| 右边冒出来的人 | 当前场景 NPC | `#npc-wrap`、`scene.npc.entrance` | 支持 door、grass、box、reflection、curtain、lantern 六种出场 |
+| 角落小包、道具包 | 连续故事背包 | `#backpack-button`、`state.inventory` | 数字只统计未使用物品，已送出物品仍可查看说明 |
+| 贝壳、听声音的贝 | 听风贝 | `ITEMS.listeningShell`、`listening-shell.png` | 放大小声音，不替别人说话 |
+| 红线团、星星毛线 | 星线团 | `ITEMS.starThread`、`star-thread.png` | 连接没有说完的话 |
+| 叶子信、没寄出的信 | 没寄出的问候 | `ITEMS.unsentGreeting`、`unsent-greeting.png` | 第二章暂存并送给慢钟先生 |
+| 发光种子、灯种 | 灯塔种子 | `ITEMS.lighthouseSeed`、`lighthouse-seed.png` | 第三章种在灯塔顶部并消耗 |
+| 豆包在理解、故事 AI | 儿童安全偏好理解 | `/api/story-turn`、`story_turn_result()` | 只返回回应、偏好和受限宠物提示，失败走确定性映射 |
+| 火山语音识别、豆包听写 | 句末豆包 ASR 校准 | `/api/asr`、`volc_asr.py`、`doubaoTranscript()` | 浏览器先显示中间文本，PCM 经同源服务端送豆包，最终结果回填；Access Token 不下发 |
+| 故事语音应用、流式语音应用 | 火山豆包语音专用应用 | `kindergrimm_story_voice`、AppID `6570862201` | ASR/TTS 2.0 与大模型兼容能力使用试用包；真实 Token 仅在服务端环境 |
+| 豆包宠物声音、火山 TTS | 可切换动态语音代理 | `/api/tts`、`volc_tts()`、`PET_TTS_PROVIDER` | 当前本机为 `volc`，四个角色音色名映射不同语速；`fish` 保留回退配置 |
+| 语音是否真的接通 | 语音健康状态 | `speechRecognition`、`doubaoTts`、`petTtsProvider` | 只返回布尔状态和供应方，不返回 AppID、Token 或音色凭证 |

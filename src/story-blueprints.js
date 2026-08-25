@@ -1,0 +1,220 @@
+export const STORY_ID = 'lost-echo';
+
+export const GUIDES = [
+  {
+    id: 'sprout',
+    name: '小芽',
+    mark: '芽',
+    voice: 'sprout',
+    manner: '温柔地把问题一小块一小块递过来',
+    hello: '你好呀。我是小芽，负责把还没有写完的故事，送到合适的小朋友手里。',
+  },
+  {
+    id: 'page',
+    name: '阿页',
+    mark: '页',
+    voice: 'bubble',
+    manner: '好奇得很快，但会认真等孩子说完',
+    hello: '等一下，这一页刚刚动了。你好，我是阿页，我想先听听你脑袋里的世界。',
+  },
+  {
+    id: 'bell',
+    name: '钟果',
+    mark: '钟',
+    voice: 'moss',
+    manner: '说得慢，擅长听见停顿里的意思',
+    hello: '叮。不是催你的钟声，是请你慢慢说的钟声。我叫钟果。',
+  },
+];
+
+export const INTERVIEW_QUESTIONS = [
+  {
+    id: 'theme',
+    question: '如果今天能钻进一页图鉴，你最想在里面看见什么？',
+    hint: '动物、太空、下雨的森林，或者任何你刚想到的东西。',
+    quick: ['会说话的动物', '星星和飞船', '长满植物的秘密地方'],
+  },
+  {
+    id: 'approach',
+    question: '路上出现一扇从没见过的门，你会先做什么？',
+    hint: '这里没有正确答案，我只是想知道你喜欢怎样开始冒险。',
+    quick: ['先仔细看看', '马上推开试试', '叫伙伴一起来'],
+  },
+  {
+    id: 'companion',
+    question: '如果有个朋友一路不说话，你想怎样陪着它？',
+    hint: '你也可以说一个完全不同的办法。',
+    quick: ['安静坐在旁边', '带它去玩', '问问它需要什么'],
+  },
+  {
+    id: 'comfort',
+    question: '什么时候，你会想让故事慢一点？',
+    hint: '比如声音太大、一下子要做很多事，或者你还想多看一会儿。',
+    quick: ['声音太大的时候', '还没看明白的时候', '我想自己慢慢选'],
+  },
+];
+
+export const ITEMS = {
+  listeningShell: {
+    id: 'listeningShell',
+    name: '听风贝',
+    image: './assets/story/items/listening-shell.png',
+    short: '把很小的声音放到耳边。',
+    description: '折角婆婆在纸船码头捡到的贝壳。它不会替别人说话，只会让你更容易听见。',
+    use: '在吵闹或沉默的地方，先听清真正需要帮助的人。',
+  },
+  starThread: {
+    id: 'starThread',
+    name: '星线团',
+    image: './assets/story/items/star-thread.png',
+    short: '把分开的声音轻轻连起来。',
+    description: '草籽邮差从夜空边缘绕下来的线。每认真听完一句话，就会亮起一个小结。',
+    use: '连接两段没有说完的话，也能修补快要散开的道路。',
+  },
+  unsentGreeting: {
+    id: 'unsentGreeting',
+    name: '没寄出的问候',
+    image: './assets/story/items/unsent-greeting.png',
+    short: '一封还没找到收件人的小信。',
+    description: '箱箱在倒着开的集市里守了很久。信里没有答案，只有一句“我还在这里”。',
+    use: '送给不确定该怎样开口的人。',
+  },
+  lighthouseSeed: {
+    id: 'lighthouseSeed',
+    name: '灯塔种子',
+    image: './assets/story/items/lighthouse-seed.png',
+    short: '被照亮以后，也会照亮别人的种子。',
+    description: '慢钟先生把一小段等候装进种壳。只有同行的人都愿意停一下，它才会发光。',
+    use: '种在沉默灯塔的最上层，让散落的回声找到回家的方向。',
+  },
+};
+
+export const CHAPTERS = [
+  {
+    id: 'borrow-first-word',
+    number: 1,
+    title: '借来第一句话',
+    promise: '先学会听，再帮助小宠物找到自己的声音。',
+  },
+  {
+    id: 'return-echo',
+    number: 2,
+    title: '把回声送回去',
+    promise: '不是所有东西都该留在背包里，有些东西被送到才会完整。',
+  },
+  {
+    id: 'quiet-lighthouse',
+    number: 3,
+    title: '谁在害怕安静',
+    promise: '用一路收集的东西修好灯塔，也决定怎样面对最后的沉默。',
+  },
+];
+
+export const SCENES = [
+  {
+    id: 'paper-harbor',
+    chapter: 1,
+    name: '纸船码头',
+    place: 'harbor',
+    objective: '问问码头为什么听不见靠岸的船。',
+    npc: { name: '折角婆婆', mark: '折', entrance: 'door' },
+    entranceLine: '一扇折纸小门吱呀打开，折角婆婆抱着一只大贝壳走了出来。',
+    dialogue: '码头不是没有声音。它只是把最小的声音漏掉了。你愿意先听哪一边？',
+    choices: [
+      { id: 'water', label: '先听水下面', result: '贝壳里传来一艘小船轻轻敲码头的声音。', trait: 'listen' },
+      { id: 'pet', label: '先听伙伴的脚步', result: '小宠物的脚步停了一下。它正努力告诉你，水下面有人。', trait: 'together' },
+      { id: 'call', label: '大声问“谁在那里”', result: '回声跑了一圈，最后指向码头下面。你的声音也帮忙找到了方向。', trait: 'bold' },
+    ],
+    reward: 'listeningShell',
+    petLine: '这个贝壳听见的，比我现在能说出的多。我们带着它吧。',
+  },
+  {
+    id: 'whisper-slope',
+    chapter: 1,
+    name: '低语草坡',
+    place: 'meadow',
+    objective: '找到躲在草里的草籽邮差。',
+    npc: { name: '草籽邮差', mark: '籽', entrance: 'grass' },
+    entranceLine: '草堆先打了个喷嚏，一顶种子帽从里面慢慢升起来。',
+    dialogue: '我有许多话想寄出去，可它们一离开草坡就散开。你觉得该怎样把它们带远？',
+    choices: [
+      { id: 'tie', label: '把话打成小结', result: '每听完一句，你就在星线上打一个松松的小结。', trait: 'make' },
+      { id: 'repeat', label: '和它一起慢慢重复', result: '两个人说过的话不再容易被风吹散。', trait: 'together' },
+      { id: 'draw', label: '把听见的画下来', result: '草籽邮差第一次知道，声音也可以长成图画。', trait: 'imagine' },
+    ],
+    reward: 'starThread',
+    petLine: '刚才我说得很小，你还是听见了。我的第一句话，原来不是借来的。',
+  },
+  {
+    id: 'backward-market',
+    chapter: 2,
+    name: '倒着开的集市',
+    place: 'market',
+    objective: '帮箱箱找到那封小信真正要去的地方。',
+    npc: { name: '箱箱', mark: '箱', entrance: 'box' },
+    entranceLine: '路边木箱的锁扣啪地弹开，箱箱先伸出一双鞋，才想起把脑袋也探出来。',
+    dialogue: '这封问候没有写名字。是继续留在箱子里，还是带它去找一个正在等待的人？',
+    choices: [
+      { id: 'carry', label: '带着它去问路', result: '你没有替信决定收件人，只答应带它继续走。', trait: 'care' },
+      { id: 'open', label: '先问箱箱能不能打开', result: '箱箱点点头。你们只读到一句“我还在这里”，就重新封好。', trait: 'ask' },
+      { id: 'leave', label: '在这里等收件人回来', result: '等了一会儿，你听见远处的钟声。也许那就是线索。', trait: 'patient' },
+    ],
+    reward: 'unsentGreeting',
+    petLine: '我们可以带着它，但不把它变成自己的。背包也要会照顾东西。',
+  },
+  {
+    id: 'moon-post',
+    chapter: 2,
+    name: '月亮邮局',
+    place: 'post',
+    objective: '把没寄出的问候交给慢钟先生。',
+    npc: { name: '慢钟先生', mark: '慢', entrance: 'reflection' },
+    entranceLine: '水盆里的月亮晃了晃，慢钟先生从倒影里跨出来，鞋尖还挂着一点银光。',
+    dialogue: '我等的不是一封写着答案的信。我只想知道，沉默的时候还有没有朋友在路上。',
+    choices: [
+      { id: 'hand', label: '把问候交给他', result: '信封一碰到他的手，整座邮局都响起很轻的滴答声。', trait: 'deliver' },
+      { id: 'pet-deliver', label: '请小宠物来递信', result: '小宠物认真说出收件人的名字。它的声音比刚醒来时更稳了。', trait: 'together' },
+      { id: 'say', label: '再加一句“我们来了”', result: '那句新问候没有盖住旧的，而是安静地落在旁边。', trait: 'bold' },
+    ],
+    consume: 'unsentGreeting',
+    reward: 'lighthouseSeed',
+    petLine: '原来送到以后，背包会空一点，心里却会多一点。',
+  },
+  {
+    id: 'silent-lighthouse',
+    chapter: 3,
+    name: '沉默灯塔',
+    place: 'lighthouse',
+    objective: '找到灯塔不愿发声的原因。',
+    npc: { name: '无声影', mark: '影', entrance: 'curtain' },
+    entranceLine: '灯塔的旧帘子鼓了三次，一团没有嘴巴的影子从后面滑出来。',
+    dialogue: '我不是偷走声音的人。我只是怕一开口，就没有人愿意听完。你们还要点亮这里吗？',
+    choices: [
+      { id: 'listen', label: '先用听风贝听它说完', result: '听风贝没有催促。无声影慢慢说完了藏了很久的担心。', trait: 'listen' },
+      { id: 'connect', label: '用星线团连起大家', result: '星线没有捆住谁，只在每个人之间留出刚好的距离。', trait: 'make' },
+      { id: 'invite', label: '请它和我们一起点灯', result: '你没有赶走无声影，而是给它留了一个能帮忙的位置。', trait: 'care' },
+    ],
+    reward: null,
+    petLine: '我以前也没有声音。谢谢你没有替我说完。',
+  },
+  {
+    id: 'page-sea',
+    chapter: 3,
+    name: '书页之海',
+    place: 'sea',
+    objective: '种下灯塔种子，让散落的回声回家。',
+    npc: { name: '回声群', mark: '声', entrance: 'lantern' },
+    entranceLine: '灯塔种子裂开一道暖光，许多小小的回声从灯罩里游了出来。',
+    dialogue: '最后一束光该照向哪里？你的选择会写进这本图鉴。',
+    choices: [
+      { id: 'home', label: '照向正在回家的声音', result: '每一段回声都找到了原来那句话，没有谁被落下。', trait: 'care' },
+      { id: 'new', label: '照向还没说出口的话', result: '海面多出许多安静的小路，等新的声音准备好再出发。', trait: 'patient' },
+      { id: 'both', label: '让灯塔慢慢转一圈', result: '旧回声和新声音轮流被照亮，灯塔不替任何一边着急。', trait: 'together' },
+    ],
+    consume: 'lighthouseSeed',
+    reward: null,
+    petLine: '我的声音不是别人发给我的礼物。是我们一路听、一路选，慢慢长出来的。',
+    final: true,
+  },
+];
+

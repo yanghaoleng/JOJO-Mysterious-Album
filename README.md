@@ -89,7 +89,11 @@ npm run build:bubble
 
 ### `POST /api/tts`
 
-角色实验室把不超过 120 个字符的动态台词和音色 ID 发送到服务端，由服务端调用 Fish Audio，密钥不会进入浏览器。默认音色为 `star`，也支持 `sprout`、`bubble` 和 `moss`。接口返回 `audio/mpeg`。已知固定台词默认直接播放随项目打包的星仔 Fish Audio 缓存；动态 Fish Audio 不可用时保留文字气泡和口型，不会切换到设备机械 TTS。故事模式的 10 段教学引导同样全部使用预制 Fish Audio，整个产品不调用浏览器系统 TTS。
+把不超过 120 个字符的动态台词和音色 ID 发送到服务端。`PET_TTS_PROVIDER=volc` 时使用豆包语音，`fish` 时保留原 Fish Audio 链路；密钥都不会进入浏览器。接口返回 `audio/mpeg`，并用 `X-TTS-Provider` 标记实际供应方。`star`、`sprout`、`bubble`、`moss` 在豆包链路中使用同一儿童友好音色的不同语速，保证宠物与图鉴员的听感有区分。远端不可用时只保留文字、口型和动作，不切换设备机械 TTS。
+
+### `POST /api/asr`
+
+新版故事页将一次发言的 16kHz 单声道 PCM 发送到同源服务端，由服务端通过豆包大模型语音识别 WebSocket 返回最终文本。浏览器看不到 AppID 对应的 Access Token。Safari 支持时先用浏览器中间结果即时显示，发言结束后再用豆包结果校准；失败时保留浏览器文本、打字和点选入口。单次音频上限 30 秒，服务端不写入音频文件或统计库。
 
 ### 匿名访问统计与 `/Data`
 
@@ -127,8 +131,9 @@ python3 scripts/generate_star_offline.py
 - `src/adventure.js`：Three.js 场景、引导状态机、角色能力、关卡和成长记录。
 - `src/rig.js`、`src/anim.js`、`src/parts/`：继承 Kindergrimm 的程序化水彩角色、骨骼和动画系统。
 - `api/director.js`：Vercel Serverless 版本的世界导演接口。
-- `api/tts.js`：Fish Audio 服务端代理，限制台词长度并使用允许的四种音色。
-- `serve.py`：零依赖静态服务、世界导演、Fish Audio 代理、SQLite 统计聚合与后台会话。
+- `api/tts.js`、`api/asr.js`：Vercel 版豆包/Fish TTS 代理与豆包 ASR 代理。
+- `volc_asr.py`：不依赖第三方 Python 包的豆包 WebSocket 鉴权、协议封装和最终文本解析。
+- `serve.py`：零依赖静态服务、世界导演、豆包语音、Fish Audio 回退、SQLite 统计聚合与后台会话。
 - `assets/voice/`：游戏运行时使用的内置引导语音。
 - `scripts/star_script_lines.py`：动作与 5 套连续脚本的星仔固定台词清单，由离线语音生成器统一打包。
 
@@ -138,9 +143,9 @@ python3 scripts/generate_star_offline.py
 
 - `.env.local` 已被 Git 忽略，禁止把真实密钥提交到仓库。
 - 孩子的名字、选择、图鉴、实验室角色配方和兴趣小档案仅保存在当前设备的 `localStorage`；画像不询问姓名、学校、住址或精确生日。
-- 预设能力全程离线运行；只有自由输入的能力描述会发送给火山方舟。
-- 角色实验室不调用大语言模型；需要朗读的问答、反馈和模拟台词会发送文字与音色 ID 到 Fish Audio，不上传麦克风声音，也不由项目服务端保存。
-- 当前版本不录音、不上传声音、不建立儿童账号、不接入第三方统计。自托管统计只保存随机匿名访客号、页面、有效停留、深度和预设事件名，不保存孩子输入或原始 IP。
+- 预设能力全程离线运行；正式第一关只把自由能力描述发送给火山方舟，新版 `/story-v2` 还会把 4 轮自由回答文本发送给 `/api/story-turn` 做低敏感度偏好理解。
+- 角色实验室不调用大语言模型；需要朗读的动态台词只发送文字与音色 ID 到所选 TTS 服务，不上传麦克风声音，也不由项目服务端保存。
+- 正式第一关和角色实验室不录音。新版 `/story-v2` 获得麦克风许可后，会把单次发言送到同源 `/api/asr`，服务端再转给豆包识别；当前实现不落盘、不进入统计，但正式上线前仍需单独说明、家长授权和数据保留策略。打字和点选始终可用。产品不建立儿童账号，匿名统计不保存孩子输入、声音或原始 IP。
 
 ## 部署变量
 
@@ -151,11 +156,39 @@ python3 scripts/generate_star_offline.py
 - `ARK_IMAGE_SIZE`：预留图片规格，默认 `4K`；正式图片功能上线前不开放公网生成接口。
 - `FISH_AUDIO_API_KEY`：角色实验室在线语音和开发阶段静态语音生成。
 - `FISH_AUDIO_REFERENCE_ID`：儿童感中文音色 ID。
+- `VOLC_SPEECH_APP_ID`、`VOLC_SPEECH_ACCESS_TOKEN`、`VOLC_SPEECH_RESOURCE_ID`：豆包大模型语音识别服务端鉴权；小时版 Resource ID 为 `volc.bigasr.sauc.duration`。
+- `VOLC_TTS_SPEAKER_ID`、`VOLC_TTS_RESOURCE_ID`：豆包 TTS 音色与资源；当前音色为 `zh_female_cancan_mars_bigtts`，资源为 `volc.service_type.10029`。
+- `PET_TTS_PROVIDER`：动态语音供应方，`volc` 或 `fish`；当前本机已切到 `volc`。
 - `DATA_ADMIN_PASSWORD`：六位统计后台口令，只放服务器环境变量。
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
 - `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
 
 正式站部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为回滚点。
+
+## 新版故事模式原型
+
+独立入口 `http://localhost:8137/story-v2` 实现《不见了的回声》完整结构原型，暂不替换正式第一关：
+
+- 随机出现小芽、阿页或钟果，通过 4 轮自由语音、打字或点选认识主题、探索方式、陪伴方式和节奏偏好。
+- `POST /api/story-turn` 使用豆包把回答整理为即时回应、低敏感度偏好和宠物特征提示；无网络时使用确定性映射继续。
+- 回答生成可复现的 Kindergrimm 宠物 recipe。宠物先用动作交流，完成“名字、听见、声音”三枚声印后使用不同音色开口。
+- 《不见了的回声》共 3 章、6 个场景，NPC 分别从门、草堆、箱子、倒影、帘子和灯罩出场。
+- 听风贝、星线团、没寄出的问候和灯塔种子进入角落背包，显示来历、用途与已送出状态。
+- 四套故事发散、世界观、三章脚本与技术分工见 `STORY-BIBLE.md`。
+
+豆包文本理解、豆包 TTS 与豆包 ASR 均已实测可用。Safari 端采用“浏览器中间文本 + 豆包句末校准”的混合体验；Python 本地服务与 Vercel API 版本都完成了真实 TTS→ASR 回环测试。打字和点选始终保留。
+
+火山旧版豆包语音控制台已创建专用应用 `kindergrimm_story_voice`（AppID `6570862201`），开通豆包流式语音识别模型 2.0、豆包语音合成模型 2.0、流式语音识别大模型和语音合成大模型。Access Token 已读取并只写入被 Git 忽略的 `.env.local`，文档、前端与健康检查均不返回密钥。当前只使用试用包，未触发正式开通或付费切换。
+
+新增关键文件：
+
+- `story-v2.html`、`src/story-v2.css`、`src/story-v2.js`：新版连续故事原型。
+- `src/story-blueprints.js`：章节、场景、NPC、选项、道具和图鉴员数据。
+- `api/story-turn.js`：儿童安全偏好理解接口。
+- `api/asr.js`、`volc_asr.py`：Vercel 与 Python 两套安全豆包识别中继。
+- `assets/story/items/`：4 个透明水墨道具图标。
+
+`GET /api/health` 额外返回 `storyAi`、`speechRecognition`、`doubaoTts` 和 `petTtsProvider`，只显示能力是否配置，不返回任何密钥。
 
 ## 项目来源与许可
 
