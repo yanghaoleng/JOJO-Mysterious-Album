@@ -541,6 +541,7 @@ if __name__ == "__main__":
     init_analytics()
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8137
     root = sys.argv[2] if len(sys.argv) > 2 else "."
+    host = "127.0.0.1" if os.environ.get("APP_ENV") == "production" else ""
     handler = partial(NoCacheHandler, directory=root)
-    print(f"drawai on http://localhost:{port}")
-    ThreadingHTTPServer(("", port), handler).serve_forever()
+    print(f"drawai on http://{host or 'localhost'}:{port}")
+    ThreadingHTTPServer((host, port), handler).serve_forever()
