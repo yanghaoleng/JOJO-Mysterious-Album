@@ -691,4 +691,3 @@ h2 { font-size: clamp(27px, 4vw, 40px); line-height: 1.22; }
 @supports not (backdrop-filter: blur(8px)) {
   .paper-panel, .backpack-dialog { background: var(--paper-light); }
 }
-

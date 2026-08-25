@@ -118,4 +118,3 @@ export default async function handler(request, response) {
     return response.status(502).json({ error: 'story_ai_unavailable' });
   }
 }
-
