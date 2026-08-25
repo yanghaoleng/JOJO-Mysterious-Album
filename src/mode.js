@@ -1,19 +1,22 @@
-const MODE_KEY = 'mengmeng-entry-mode-v1';
 const gate = document.getElementById('mode-gate');
 const switcher = document.getElementById('mode-switch');
 const lab = document.getElementById('debug-lab');
 const modeNote = gate.querySelector('.mode-note');
 const originalModeNote = modeNote.textContent;
 let labModule = null;
+let storyModule = null;
 let storyPromise = null;
 let labPromise = null;
 
 function ensureStory() {
-  storyPromise ||= import('./adventure.js').catch(error => {
-    storyPromise = null;
-    document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
-    throw error;
-  });
+  storyPromise ||= import('./adventure.js').then(module => {
+    storyModule = module;
+    return module;
+  }).catch(error => {
+      storyPromise = null;
+      document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
+      throw error;
+    });
   return storyPromise;
 }
 
@@ -32,23 +35,18 @@ function ensureLab() {
   return labPromise;
 }
 
-function storedMode() {
-  try {
-    const value = localStorage.getItem(MODE_KEY);
-    return value === 'story' || value === 'debug' ? value : null;
-  } catch {
-    return null;
-  }
+function updateModeUrl(mode, method = 'push') {
+  const url = new URL(location.href);
+  if (mode) url.searchParams.set('mode', mode);
+  else url.search = '';
+  url.hash = '';
+  history[method === 'replace' ? 'replaceState' : 'pushState']({ mode: mode || 'choose' }, '', url);
 }
 
-function remember(mode) {
-  try { localStorage.setItem(MODE_KEY, mode); } catch { /* local mode still works */ }
-}
-
-async function applyMode(mode, { persist = true } = {}) {
+async function applyMode(mode, { updateUrl = true } = {}) {
   const next = mode === 'debug' ? 'debug' : 'story';
   gate.setAttribute('aria-busy', 'true');
-  gate.querySelectorAll('[data-mode-choice]').forEach(button => { button.disabled = true; });
+  gate.querySelectorAll('button[data-mode-choice]').forEach(button => { button.disabled = true; });
   modeNote.textContent = next === 'debug' ? '正在打开角色实验室' : '正在铺开第一张图鉴';
   try {
     if (next === 'debug') await ensureLab();
@@ -61,49 +59,58 @@ async function applyMode(mode, { persist = true } = {}) {
     return;
   } finally {
     gate.removeAttribute('aria-busy');
-    gate.querySelectorAll('[data-mode-choice]').forEach(button => { button.disabled = false; });
+    gate.querySelectorAll('button[data-mode-choice]').forEach(button => { button.disabled = false; });
   }
 
   document.body.dataset.mode = next;
   gate.hidden = true;
   switcher.hidden = false;
   lab.hidden = next !== 'debug';
-  switcher.textContent = next === 'debug' ? '返回故事模式' : '进入角色实验室';
-  switcher.setAttribute('aria-label', switcher.textContent);
-  if (persist) remember(next);
+  switcher.textContent = '返回主页';
+  switcher.setAttribute('aria-label', '返回主页并选择其他模式');
+  if (updateUrl) updateModeUrl(next);
 
   modeNote.textContent = originalModeNote;
-  if (next === 'debug') await labModule.activateLab();
-  else labModule?.deactivateLab();
+  if (next === 'debug') {
+    storyModule?.deactivateStory?.();
+    await labModule.activateLab();
+  } else {
+    labModule?.deactivateLab();
+  }
 
   window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: next } }));
 }
 
-for (const button of gate.querySelectorAll('[data-mode-choice]')) {
+function showHome({ updateUrl = true } = {}) {
+  storyModule?.deactivateStory?.();
+  labModule?.deactivateLab();
+  document.body.dataset.mode = 'choosing';
+  lab.hidden = true;
+  gate.hidden = false;
+  switcher.hidden = true;
+  modeNote.textContent = originalModeNote;
+  if (updateUrl) updateModeUrl(null);
+  window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: 'choose' } }));
+  requestAnimationFrame(() => gate.querySelector('[data-mode-choice="echo"]')?.focus());
+}
+
+for (const button of gate.querySelectorAll('button[data-mode-choice]')) {
   button.addEventListener('click', () => applyMode(button.dataset.modeChoice));
 }
 
-switcher.addEventListener('click', () => {
-  applyMode(document.body.dataset.mode === 'debug' ? 'story' : 'debug');
-});
+switcher.addEventListener('click', () => showHome());
 
 const query = new URLSearchParams(location.search).get('mode');
-if (query === 'choose') {
-  document.body.dataset.mode = 'choosing';
-  gate.hidden = false;
-  switcher.hidden = true;
-  requestAnimationFrame(() => gate.querySelector('[data-mode-choice="story"]')?.focus());
-} else if (query === 'story' || query === 'debug') {
-  applyMode(query, { persist: false });
-} else {
-  const saved = storedMode();
-  if (saved) applyMode(saved, { persist: false });
-  else {
-    document.body.dataset.mode = 'choosing';
-    gate.hidden = false;
-    switcher.hidden = true;
-    requestAnimationFrame(() => gate.querySelector('[data-mode-choice="story"]')?.focus());
-  }
+if (query === 'story' || query === 'debug') applyMode(query, { updateUrl: false });
+else {
+  showHome({ updateUrl: false });
+  if (query === 'choose') updateModeUrl(null, 'replace');
 }
 
-export { applyMode };
+window.addEventListener('popstate', () => {
+  const mode = new URLSearchParams(location.search).get('mode');
+  if (mode === 'story' || mode === 'debug') applyMode(mode, { updateUrl: false });
+  else showHome({ updateUrl: false });
+});
+
+export { applyMode, showHome };

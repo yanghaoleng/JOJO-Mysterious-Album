@@ -766,3 +766,5 @@ $('start-adventure').disabled=false;
 $('start-adventure').textContent='轻轻叫醒它';
 document.documentElement.dataset.sceneReady='true';
 window.__adventure={profile,game,seeds,creature,gate,lantern,childProfile,gameInspiration,collectSeed,setMoveTarget,finishAdventure};
+
+export function deactivateStory(){voice.stop();}

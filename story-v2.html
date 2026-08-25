@@ -8,7 +8,7 @@
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
   <link rel="stylesheet" href="./src/story-v2.css">
 </head>
-<body data-phase="cover" data-place="harbor">
+<body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
 
   <header class="story-header">
@@ -21,7 +21,10 @@
       <span data-chapter-dot="2">把回声送回去</span>
       <span data-chapter-dot="3">谁在害怕安静</span>
     </div>
-    <button class="quiet-button" id="restart-button" type="button">重新开始</button>
+    <div class="story-header-actions">
+      <a class="home-button" href="./">返回主页</a>
+      <button class="quiet-button" id="restart-button" type="button">重新开始</button>
+    </div>
   </header>
 
   <main id="story-world">

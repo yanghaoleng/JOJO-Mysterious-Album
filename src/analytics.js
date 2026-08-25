@@ -33,7 +33,7 @@ const state = {
   visitorId: persistentVisitor(),
   sessionId: randomId('s'),
   viewId: randomId('p'),
-  page: 'choose',
+  page: safeName(document.body.dataset.analyticsPage) || 'choose',
   startedAt: Date.now(),
   activeMs: 0,
   activeSince: 0,
@@ -140,6 +140,11 @@ const clickIdEvents = {
 };
 
 document.addEventListener('click', event => {
+  const modeChoice = event.target.closest('[data-mode-choice]');
+  if (modeChoice?.dataset.modeChoice) {
+    trackAnalytics(`choose_mode_${modeChoice.dataset.modeChoice}`, { depth: 1 });
+    return;
+  }
   const button = event.target.closest('button');
   if (!button) return;
   if (clickIdEvents[button.id]) {
@@ -148,7 +153,6 @@ document.addEventListener('click', event => {
     return;
   }
   const keyed = [
-    ['modeChoice', 'choose_mode', 1],
     ['labTab', 'lab_tab', 1],
     ['voice', 'lab_voice', 2],
     ['action', 'lab_action', 2],

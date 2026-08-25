@@ -3,6 +3,7 @@ import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_ID } from './story-blueprints.js';
+import { trackAnalytics } from './analytics.js';
 
 setRender({ u: 176, frames: 2 });
 THREE.ColorManagement.enabled = false;
@@ -446,6 +447,7 @@ function renderHeardNotes() {
 }
 
 async function beginInterview() {
+  trackAnalytics('echo_start', { depth: 1 });
   renderGuide();
   showPanel('interview-panel', 'interview');
   renderQuestion();
@@ -461,6 +463,7 @@ async function submitInterviewAnswer(raw) {
     return;
   }
   stopRecognition();
+  trackAnalytics('echo_interview_answer', { depth: 2 + state.questionIndex });
   setBusy(true);
   $('speech-status').textContent = '豆包正在理解你刚才说的内容';
   const question = INTERVIEW_QUESTIONS[state.questionIndex];
@@ -530,6 +533,7 @@ async function wakePet() {
   const hello = $('first-hello-input').value.trim().replace(/[<>]/g, '').slice(0, 80);
   if (!name || !hello) return;
   state.busy = true;
+  trackAnalytics('echo_pet_wake', { depth: 7 });
   state.petName = name;
   state.petVoice = pickPetVoice();
   $('wake-pet').disabled = true;
@@ -662,6 +666,7 @@ function updateBackpack() {
 async function chooseSceneOption(scene, choice) {
   if (state.busy) return;
   state.busy = true;
+  trackAnalytics('echo_scene_choice', { depth: 8 + state.sceneIndex });
   state.choices.push({ scene: scene.id, choice: choice.id, trait: choice.trait });
   for (const button of $('scene-choices').querySelectorAll('button')) button.disabled = true;
   $('result-copy').textContent = choice.result;
@@ -701,6 +706,7 @@ function dominantTrait() {
 }
 
 function finishStory() {
+  trackAnalytics('echo_complete', { depth: 20 });
   stopAudio();
   $('npc-wrap').hidden = true;
   updateChapterProgress(4);

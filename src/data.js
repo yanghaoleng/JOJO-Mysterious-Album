@@ -1,8 +1,14 @@
 const $ = id => document.getElementById(id);
-const PAGE_LABELS = { choose: '入口选择', story: '故事模式', debug: '角色实验室' };
+const PAGE_LABELS = { choose: '三入口主页', story: '雾灯花园', echo: '不见了的回声', debug: '角色模拟器' };
 const EVENT_LABELS = {
-  choose_mode_story: '选择故事模式',
-  choose_mode_debug: '选择角色实验室',
+  choose_mode_story: '选择雾灯花园',
+  choose_mode_echo: '选择不见了的回声',
+  choose_mode_debug: '选择角色模拟器',
+  echo_start: '开始不见了的回声',
+  echo_interview_answer: '回答图鉴员问题',
+  echo_pet_wake: '让专属小伙伴开口',
+  echo_scene_choice: '推进回声故事场景',
+  echo_complete: '完成不见了的回声',
   story_start: '开始第一张图鉴',
   story_world_enter: '进入雾灯花园',
   story_seed_1: '找到第 1 颗萤火种',
