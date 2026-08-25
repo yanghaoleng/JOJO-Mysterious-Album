@@ -39,6 +39,7 @@ export function createAnimator(getFace, opts) {
   let talkT = 0, talkOpen = false, talkS = 1;
   let gazeDir = null, gazeUntil = 0, nextGaze = 1 + Math.random() * 4;
   let gazeQueue = [];
+  let gazeTarget = null, lastUpdateT = 0;
   // head-follow runs on a loose spring so it OVERSHOOTS and settles —
   // a cartoon head whips after the eyes, it doesn't ease into place
   let gx = 0, gy = 0, gvx = 0, gvy = 0;
@@ -116,15 +117,33 @@ export function createAnimator(getFace, opts) {
     else if (!def.face && faceSrc === 'pose' && !def.oneShot) setFace('idle', 'init');
   }
 
+  function setGaze(x = 0, y = 0) {
+    gazeTarget = {
+      x: Math.max(-1, Math.min(1, Number(x) || 0)),
+      y: Math.max(-1, Math.min(1, Number(y) || 0)),
+    };
+    gazeQueue = [];
+  }
+
+  function clearGaze() {
+    gazeTarget = null;
+    gazeDir = null;
+    gazeQueue = [];
+    nextGaze = lastUpdateT + 1.4 + Math.random() * 1.8;
+  }
+
   return {
     setPose,
     setFace: id => setFace(id, 'user'),
+    setGaze,
+    clearGaze,
     pose: () => layers[layers.length - 1].def.id,
     face: () => pending?.id ?? faceCur,
 
     update(t, dt) {
       const face = getFace();
       if (!face) return;
+      lastUpdateT = t;
       const amp = opts.amp ?? 1;
       const tt = t + (opts.phase ?? 0);
 
@@ -187,7 +206,14 @@ export function createAnimator(getFace, opts) {
 
       // ---- gaze: something catches the eye, gets looked at, let go --
       if (opts.gaze !== false && auto('gaze') > .2) {
-        if (!gazeDir && t > nextGaze) {
+        if (gazeTarget) {
+          const ax = Math.abs(gazeTarget.x), ay = Math.abs(gazeTarget.y);
+          gazeDir = Math.max(ax, ay) < .16
+            ? null
+            : ax >= ay * .82
+              ? (gazeTarget.x < 0 ? 'left' : 'right')
+              : (gazeTarget.y > 0 ? 'up' : 'down');
+        } else if (!gazeDir && t > nextGaze) {
           const d = DIRS[(Math.random() * DIRS.length) | 0];
           gazeQueue = Math.random() < .3 ? [d, OPPOSITE[d]] : [d];
           gazeDir = gazeQueue.shift();
@@ -200,8 +226,8 @@ export function createAnimator(getFace, opts) {
       } else gazeDir = null;
 
       // the head whips after the eyes, overshoots, settles
-      const txG = gazeDir === 'left' ? -1 : gazeDir === 'right' ? 1 : 0;
-      const tyG = gazeDir === 'up' ? 1 : gazeDir === 'down' ? -1 : 0;
+      const txG = gazeTarget ? gazeTarget.x : gazeDir === 'left' ? -1 : gazeDir === 'right' ? 1 : 0;
+      const tyG = gazeTarget ? gazeTarget.y : gazeDir === 'up' ? 1 : gazeDir === 'down' ? -1 : 0;
       const k = 105, damp = Math.pow(.0016, dt);   // frame-rate independent
       gvx = (gvx + (txG - gx) * k * dt) * damp;
       gvy = (gvy + (tyG - gy) * k * dt) * damp;

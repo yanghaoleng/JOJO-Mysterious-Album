@@ -1,340 +1,883 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>kindergrimm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#eee6d2">
+<meta name="description" content="萌萌星的奇妙图鉴：让孩子创造一只奇妙生物，再进入它的第一个箱庭世界。">
+<title>萌萌星的奇妙图鉴</title>
 <style>
-  :root { --ink: #1f1d1a; --paper: #f6f1e5; --paper2: #ece6d6; --line: #c4bba6; }
+  :root {
+    --paper: #eee6d2;
+    --paper-deep: #e2d7bd;
+    --paper-light: #f7f1e2;
+    --ink: #2f2b27;
+    --ink-soft: #6f675b;
+    --moss: #496f62;
+    --moss-deep: #2f5349;
+    --moss-pale: #d7e2d8;
+    --line: rgba(47, 43, 39, .23);
+    --shadow: rgba(72, 58, 39, .16);
+    --safe-top: max(14px, env(safe-area-inset-top));
+    --safe-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
   * { box-sizing: border-box; margin: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
   body {
-    /* dvh, or the phone's collapsing address bar makes the page jump */
-    min-height: 100vh; min-height: 100dvh;
-    background: var(--paper); color: var(--ink);
-    font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
-    display: flex; align-items: center; justify-content: center;
-    padding: 32px 20px 44px;
-  }
-  main { width: 100%; max-width: 1100px; }
-
-  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 22px; font-weight: normal; letter-spacing: .28em; }
-  .sub { opacity: .5; margin-top: 5px; letter-spacing: .05em; }
-
-  /* the github link — a real button, not a buried footer mention */
-  a.gh {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 8px 13px; text-decoration: none; color: inherit;
-    border: 1px solid var(--ink); border-radius: 4px;
-    font-size: 11px; letter-spacing: .04em; white-space: nowrap;
-  }
-  a.gh:hover { background: var(--ink); color: var(--paper); }
-  a.gh svg { width: 14px; height: 14px; fill: currentColor; }
-
-  /* the hand-drawn rule: a border nobody ruled straight */
-  .rule {
-    height: 2px; margin: 16px 0 22px;
-    background: var(--ink); opacity: .8;
-    clip-path: polygon(0 30%, 12% 0, 34% 55%, 61% 8%, 83% 62%, 100% 22%,
-                       100% 78%, 78% 100%, 52% 44%, 26% 96%, 8% 40%, 0 82%);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: ui-rounded, "Hiragino Sans GB", "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  section.cat { margin-bottom: 26px; }
-  section.cat:last-of-type { margin-bottom: 0; }
-  .cat-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-  .cat-head b {
-    font-weight: normal; font-size: 12px; letter-spacing: .18em;
-    text-transform: uppercase;
-  }
-  .cat-head span { font-size: 11px; opacity: .5; }
-  .cat-head::after {
-    content: ''; flex: 1; height: 1px; background: var(--line);
+  button, input, textarea { font: inherit; }
+  button { color: inherit; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 3px solid rgba(73, 111, 98, .4);
+    outline-offset: 3px;
   }
 
-  .games { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
-  .scenes { display: grid; gap: 10px; grid-template-columns: repeat(4, 1fr); }
-
-  a.scene {
-    position: relative; display: flex; flex-direction: column;
-    text-decoration: none; color: inherit; overflow: hidden;
-    border: 1px solid rgba(31,29,26,.22); border-radius: 4px;
-    background: var(--paper2);
-  }
-  a.scene:hover { border-color: var(--ink); }
-  a.scene .thumb {
-    height: 92px; width: 100%; object-fit: cover; display: block;
-    border-bottom: 1px solid rgba(31,29,26,.22);
-    filter: sepia(8%) saturate(92%);
-  }
-  .games a.scene .thumb { height: 150px; }
-  a.scene:hover .thumb { filter: none; }
-  a.scene .body { position: relative; padding: 8px 10px 9px; display: flex; flex-direction: column; gap: 2px; }
-  a.scene:hover .body { background: #e4dcc7; }
-  a.scene b { font-weight: normal; font-size: 12.5px; letter-spacing: .06em; }
-  a.scene span {
-    font-size: 10px; opacity: .6; line-height: 1.4;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .games a.scene span { font-size: 12px; -webkit-line-clamp: 3; }
-  /* EXPERIMENTS get no thumbnail. A small sketch does not earn the
-     picture, and a broken/absent <img> in a grid of them looks like a
-     mistake — so the shelf is text-only on purpose and says so. */
-  .experiments .scenes { grid-template-columns: repeat(3, 1fr); }
-  .experiments a.scene .body { padding: 11px 12px 12px; gap: 3px; }
-  .experiments a.scene span { -webkit-line-clamp: 3; }
-
-  a.scene i {
-    position: absolute; right: 7px; top: -24px;
-    font-style: normal; font-size: 9px; opacity: .55;
-    background: var(--paper); padding: 1px 5px; border-radius: 3px;
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #paper-grain {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    width: 100%; height: 100%; opacity: .16; mix-blend-mode: multiply;
   }
 
-  /* a game is not one of three tools — it is what the tools are for.
-     The two games get the SAME card: same size, same ink, same weight,
-     so the menu never says one of them is the real one. */
-  a.game { background: #22242c; color: #e8e0cd; border-color: #22242c; }
-  a.game:hover { background: #22242c; border-color: #2c3040; }
-  a.game .thumb { border-bottom-color: rgba(232,224,205,.18); }
-  a.game:hover .body { background: #2c3040; }
-  a.game .body { padding: 11px 13px 12px; gap: 4px; }
-  a.game b { font-size: 17px; letter-spacing: .16em; }
-  a.game span { opacity: .62; }
-  a.game i { opacity: .85; background: #22242c; }
+  #topbar {
+    position: fixed; z-index: 8; top: var(--safe-top); left: 18px; right: 18px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; pointer-events: none;
+  }
+  .brand { max-width: min(48vw, 460px); }
+  .brand strong {
+    display: block; font-size: clamp(15px, 2vw, 20px); font-weight: 750;
+    letter-spacing: .06em; line-height: 1.15;
+  }
+  .brand span {
+    display: block; margin-top: 5px; color: var(--ink-soft);
+    font-size: 11px; letter-spacing: .08em;
+  }
+  #sound-toggle {
+    pointer-events: auto; min-height: 44px; min-width: 86px;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: rgba(247, 241, 226, .9); padding: 0 14px;
+    box-shadow: 0 8px 24px var(--shadow);
+    font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    cursor: pointer; backdrop-filter: blur(8px);
+    transition: transform .18s ease, background .18s ease;
+  }
+  #sound-toggle:hover { background: var(--paper-light); }
+  #sound-toggle:active { transform: translateY(1px) scale(.98); }
 
-  footer { margin-top: 22px; font-size: 11px; opacity: .38; letter-spacing: .04em; }
-  footer a { color: inherit; }
+  #chapter-mark {
+    position: fixed; z-index: 6; left: 18px; top: 92px;
+    display: none; color: var(--ink-soft); font-size: 12px;
+    letter-spacing: .05em; pointer-events: none;
+  }
+  #chapter-mark.show { display: block; }
+  #chapter-mark b { color: var(--ink); }
+
+  #choice-layer {
+    position: fixed; inset: 0; z-index: 7; display: grid; place-items: center;
+    padding: calc(var(--safe-top) + 62px) 20px calc(var(--safe-bottom) + 24px);
+    background: rgba(238, 230, 210, .2);
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #choice-layer.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  #choice-layer.reveal { background: transparent; pointer-events: none; }
+  #choice-layer.reveal .story-panel { opacity: 0; transform: translateY(10px) scale(.97); }
+
+  .story-panel {
+    width: min(780px, 100%); max-height: 100%; overflow: auto;
+    padding: clamp(22px, 4vw, 38px);
+    background: rgba(247, 241, 226, .94);
+    border: 1px solid rgba(47, 43, 39, .2);
+    border-radius: 28px 24px 30px 22px;
+    box-shadow: 0 24px 70px rgba(74, 58, 36, .2), inset 0 1px rgba(255, 255, 255, .56);
+    scrollbar-width: thin;
+    transition: opacity .32s ease, transform .38s cubic-bezier(.16, 1, .3, 1);
+  }
+  .story-panel[hidden] { display: none; }
+  .story-panel.compact { width: min(600px, 100%); }
+
+  .story-kicker {
+    display: inline-flex; align-items: center; min-height: 30px;
+    color: var(--moss-deep); font-size: 12px; font-weight: 750;
+    letter-spacing: .08em;
+  }
+  .story-kicker::before {
+    content: ''; width: 18px; height: 2px; margin-right: 9px;
+    background: var(--moss); border-radius: 50%; transform: rotate(-3deg);
+  }
+  .story-panel h1, .story-panel h2 {
+    max-width: 16em; margin-top: 8px; font-weight: 850;
+    letter-spacing: -.035em; line-height: 1.14;
+  }
+  .story-panel h1 { font-size: clamp(34px, 7vw, 62px); }
+  .story-panel h2 { font-size: clamp(25px, 4.4vw, 38px); }
+  .story-copy {
+    max-width: 40em; margin-top: 15px; color: var(--ink-soft);
+    font-size: clamp(15px, 2vw, 18px); line-height: 1.7;
+  }
+  .story-copy strong { color: var(--ink); font-weight: 800; }
+
+  .primary-action, .secondary-action {
+    min-height: 56px; border-radius: 17px; padding: 0 24px;
+    font-weight: 800; letter-spacing: .03em; cursor: pointer;
+    transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+  .primary-action {
+    margin-top: 25px; border: 1px solid var(--moss-deep);
+    background: var(--moss); color: #f8f2e4;
+    box-shadow: 0 12px 28px rgba(47, 83, 73, .2);
+  }
+  .primary-action:hover { background: var(--moss-deep); }
+  .primary-action:active, .secondary-action:active { transform: translateY(1px) scale(.985); }
+  .primary-action:disabled { opacity: .48; cursor: wait; }
+  .secondary-action {
+    margin-top: 12px; border: 1px solid var(--line);
+    background: transparent; color: var(--ink-soft);
+  }
+  .secondary-action:hover { background: rgba(226, 215, 189, .48); color: var(--ink); }
+
+  .choice-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px; margin-top: 24px;
+  }
+  .choice-card {
+    min-height: 148px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    gap: 7px; padding: 20px 17px 16px; text-align: left;
+    border: 1px solid var(--line); border-radius: 22px 18px 24px 17px;
+    background: rgba(238, 230, 210, .64); cursor: pointer;
+    box-shadow: inset 0 1px rgba(255,255,255,.58);
+    transition: transform .2s cubic-bezier(.16, 1, .3, 1), border-color .2s ease, background .2s ease;
+  }
+  .choice-card:nth-child(2) { transform: rotate(.7deg); }
+  .choice-card:nth-child(3) { transform: rotate(-.5deg); }
+  .choice-card:hover {
+    transform: translateY(-4px) rotate(0deg); border-color: var(--moss);
+    background: var(--moss-pale);
+  }
+  .choice-card:active { transform: translateY(0) scale(.98); }
+  .choice-card .mark {
+    position: absolute; top: 15px; left: 16px; width: 42px; height: 42px;
+    display: grid; place-items: center; border: 2px solid var(--ink);
+    border-radius: 46% 54% 51% 49%; color: var(--ink); font-weight: 900;
+    transform: rotate(-4deg);
+  }
+  .choice-card:nth-child(2) .mark { transform: rotate(5deg); border-radius: 55% 45% 48% 52%; }
+  .choice-card:nth-child(3) .mark { transform: rotate(-1deg); border-radius: 50% 43% 57% 50%; }
+  .choice-card b { font-size: 18px; line-height: 1.2; }
+  .choice-card span { color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+  .choice-card.wide { grid-column: 1 / -1; min-height: 86px; padding-left: 76px; }
+
+  .custom-idea {
+    display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 14px;
+  }
+  .custom-idea[hidden] { display: none; }
+  .custom-idea input, .name-field input {
+    min-width: 0; min-height: 56px; padding: 0 17px;
+    border: 1px solid var(--line); border-radius: 16px;
+    background: rgba(255, 253, 246, .74); color: var(--ink);
+    user-select: text; -webkit-user-select: text;
+  }
+  .custom-idea input::placeholder, .name-field input::placeholder { color: #8d8374; opacity: 1; }
+  .custom-idea button { margin: 0; min-width: 112px; }
+  .privacy-hint { margin-top: 8px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+  #idea-error { min-height: 20px; margin-top: 8px; color: #8b493f; font-size: 12px; }
+
+  .name-field { margin-top: 22px; }
+  .name-field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 800; }
+  .name-field input { width: 100%; font-size: 20px; font-weight: 750; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .suggestions button {
+    min-height: 40px; padding: 0 14px; border: 1px solid var(--line);
+    border-radius: 13px; background: transparent; cursor: pointer;
+  }
+  .suggestions button:hover { border-color: var(--moss); background: var(--moss-pale); }
+
+  .forming-list { display: grid; gap: 13px; margin-top: 25px; }
+  .forming-row {
+    display: grid; grid-template-columns: 28px 1fr; gap: 11px; align-items: center;
+    min-height: 38px; color: var(--ink-soft); opacity: .36;
+    transition: opacity .35s ease, color .35s ease, transform .35s ease;
+  }
+  .forming-row::before {
+    content: ''; width: 18px; height: 18px; border: 2px solid var(--line);
+    border-radius: 48% 52% 44% 56%; transform: rotate(12deg);
+  }
+  .forming-row.active { opacity: 1; color: var(--ink); transform: translateX(3px); }
+  .forming-row.done::before { background: var(--moss); border-color: var(--moss); box-shadow: inset 0 0 0 4px var(--paper-light); }
+
+  #guide {
+    position: fixed; z-index: 9; left: 50%; bottom: calc(var(--safe-bottom) + 16px);
+    width: min(680px, calc(100% - 28px)); min-height: 78px;
+    display: none; grid-template-columns: 50px 1fr auto; align-items: center; gap: 13px;
+    transform: translateX(-50%); padding: 11px 12px;
+    background: rgba(247, 241, 226, .95); border: 1px solid var(--line);
+    border-radius: 24px 20px 26px 18px;
+    box-shadow: 0 18px 50px rgba(72, 58, 39, .22);
+    backdrop-filter: blur(9px);
+  }
+  #guide.show { display: grid; animation: guide-in .4s cubic-bezier(.16, 1, .3, 1) both; }
+  .guide-face {
+    width: 48px; height: 48px; display: grid; place-items: center;
+    border: 2px solid var(--ink); border-radius: 48% 52% 46% 54%;
+    background: var(--moss-pale); font-weight: 900; transform: rotate(-3deg);
+  }
+  .guide-text { min-width: 0; }
+  .guide-text b { display: block; font-size: 11px; color: var(--moss-deep); letter-spacing: .08em; }
+  #guide-copy { margin-top: 3px; font-size: clamp(14px, 2vw, 17px); line-height: 1.45; }
+  #guide-action {
+    min-width: 98px; min-height: 48px; padding: 0 16px;
+    border: 1px solid var(--moss-deep); border-radius: 15px;
+    background: var(--moss); color: #f8f2e4; font-weight: 800;
+    cursor: pointer;
+  }
+  #guide-action[hidden] { display: none; }
+  #guide-action:active { transform: translateY(1px) scale(.98); }
+
+  #game-hud {
+    position: fixed; z-index: 7; top: calc(var(--safe-top) + 72px); right: 18px;
+    display: none; width: 172px; padding: 13px 14px 14px;
+    background: rgba(247, 241, 226, .88); border: 1px solid var(--line);
+    border-radius: 18px 15px 20px 14px; box-shadow: 0 12px 30px var(--shadow);
+    pointer-events: none; backdrop-filter: blur(8px);
+  }
+  #game-hud.show { display: block; }
+  #game-hud b { display: block; font-size: 13px; }
+  #game-hud p { margin-top: 4px; color: var(--ink-soft); font-size: 11px; line-height: 1.4; }
+  .seed-progress { display: flex; gap: 7px; margin-top: 10px; }
+  .seed-dot {
+    width: 30px; height: 30px; display: grid; place-items: center;
+    border: 2px solid var(--line); border-radius: 50% 46% 54% 50%;
+    font-size: 12px; font-weight: 850; transition: background .28s ease, transform .28s ease;
+  }
+  .seed-dot.got { background: var(--moss); border-color: var(--moss); color: #fff8ea; transform: rotate(-7deg) scale(1.06); }
+
+  #tap-hint {
+    position: fixed; z-index: 5; left: 50%; bottom: calc(var(--safe-bottom) + 112px);
+    display: none; transform: translateX(-50%); color: var(--ink-soft);
+    font-size: 12px; letter-spacing: .04em; pointer-events: none;
+    text-shadow: 0 1px var(--paper-light);
+  }
+  #tap-hint.show { display: block; animation: soft-pulse 2.2s ease-in-out infinite; }
+
+  #ending {
+    position: fixed; inset: 0; z-index: 12; display: none; place-items: center;
+    padding: calc(var(--safe-top) + 20px) 18px calc(var(--safe-bottom) + 20px);
+    background: rgba(47, 43, 39, .34); backdrop-filter: blur(8px);
+  }
+  #ending.show { display: grid; }
+  .ending-sheet {
+    width: min(700px, 100%); max-height: 100%; overflow: auto;
+    padding: clamp(23px, 4vw, 38px); background: var(--paper-light);
+    border: 1px solid rgba(47,43,39,.28); border-radius: 23px 29px 22px 30px;
+    box-shadow: 0 28px 90px rgba(47, 43, 39, .3);
+  }
+  .ending-sheet h2 { margin-top: 7px; font-size: clamp(28px, 5vw, 44px); line-height: 1.15; letter-spacing: -.03em; }
+  .ending-lede { margin-top: 10px; color: var(--ink-soft); line-height: 1.65; }
+  .report {
+    display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px;
+    margin-top: 22px;
+  }
+  .report-main, .report-side {
+    padding: 17px; border: 1px solid var(--line); border-radius: 18px 15px 20px 14px;
+    background: rgba(238, 230, 210, .52);
+  }
+  .report h3 { font-size: 13px; }
+  .report ul { list-style: none; margin-top: 10px; display: grid; gap: 8px; }
+  .report li { color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+  .report li strong { color: var(--ink); }
+  .hero-word {
+    display: grid; place-items: center; min-height: 118px;
+    font-family: "STKaiti", "KaiTi", serif; font-size: 76px; font-weight: 700;
+    color: var(--moss-deep);
+  }
+  .ending-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .ending-actions button { flex: 1; margin-top: 0; }
+
+  #toast {
+    position: fixed; z-index: 20; left: 50%; top: calc(var(--safe-top) + 64px);
+    transform: translate(-50%, -12px); opacity: 0; pointer-events: none;
+    max-width: calc(100% - 32px); padding: 10px 15px;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--paper-light); box-shadow: 0 12px 30px var(--shadow);
+    font-size: 13px; transition: opacity .2s ease, transform .2s ease;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @keyframes guide-in {
+    from { opacity: 0; transform: translate(-50%, 14px) scale(.98); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  }
+  @keyframes soft-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 
   @media (max-width: 760px) {
-    .scenes { grid-template-columns: repeat(2, 1fr); }
+    #topbar { left: 13px; right: 13px; }
+    .brand span { display: none; }
+    #choice-layer { padding-left: 13px; padding-right: 13px; }
+    .story-panel { border-radius: 22px 18px 24px 17px; }
+    .choice-grid { grid-template-columns: 1fr; gap: 9px; }
+    .choice-card {
+      min-height: 84px; padding: 13px 14px 12px 72px; justify-content: center;
+    }
+    .choice-card .mark { top: 50%; transform: translateY(-50%) rotate(-4deg); }
+    .choice-card:nth-child(2), .choice-card:nth-child(3) { transform: none; }
+    .choice-card:nth-child(2) .mark { transform: translateY(-50%) rotate(5deg); }
+    .choice-card:nth-child(3) .mark { transform: translateY(-50%) rotate(-1deg); }
+    .choice-card.wide { padding-left: 72px; }
+    .custom-idea { grid-template-columns: 1fr; }
+    .custom-idea button { width: 100%; }
+    #game-hud { top: calc(var(--safe-top) + 58px); right: 12px; width: 145px; }
+    #guide { grid-template-columns: 42px 1fr; padding: 10px; }
+    .guide-face { width: 40px; height: 40px; }
+    #guide-action { grid-column: 1 / -1; width: 100%; min-height: 46px; }
+    #tap-hint { bottom: calc(var(--safe-bottom) + 150px); }
+    .report { grid-template-columns: 1fr; }
+    .hero-word { min-height: 88px; font-size: 60px; }
+    .ending-actions { flex-direction: column; }
   }
-  @media (max-width: 620px) {
-    body { padding: 24px 16px 36px; align-items: flex-start; }
-    .games { grid-template-columns: 1fr; }
-    .games a.scene .thumb { height: 120px; }
-    h1 { font-size: 19px; letter-spacing: .22em; }
+
+  @media (max-height: 540px) and (orientation: landscape) {
+    #topbar { top: 8px; }
+    .brand span { display: none; }
+    #choice-layer { padding: 56px 14px 10px; place-items: stretch center; }
+    .story-panel { padding: 18px 22px; width: min(860px, 100%); }
+    .story-panel h1 { font-size: 36px; }
+    .story-panel h2 { font-size: 27px; }
+    .story-copy { margin-top: 8px; font-size: 14px; line-height: 1.5; }
+    .choice-grid { grid-template-columns: repeat(3, 1fr); margin-top: 14px; }
+    .choice-card { min-height: 98px; padding: 48px 12px 10px; }
+    .choice-card .mark { width: 32px; height: 32px; top: 10px; left: 12px; transform: rotate(-4deg); }
+    .choice-card:nth-child(2) .mark { transform: rotate(5deg); }
+    .choice-card:nth-child(3) .mark { transform: rotate(-1deg); }
+    .choice-card.wide { grid-column: auto; padding-left: 12px; }
+    .choice-card span { display: none; }
+    .primary-action { margin-top: 14px; min-height: 48px; }
+    .name-field { margin-top: 12px; }
+    .name-field input { min-height: 48px; }
+    #guide { left: 14px; bottom: 10px; transform: none; width: min(520px, calc(100% - 186px)); }
+    #guide.show { animation-name: guide-in-landscape; }
+    #game-hud { top: 58px; }
+    #tap-hint { display: none !important; }
+    .report { grid-template-columns: 1fr 180px; margin-top: 12px; }
+    .ending-sheet { padding: 19px 24px; }
+    .ending-sheet h2 { font-size: 30px; }
+    .ending-lede { line-height: 1.45; }
+    .hero-word { min-height: 78px; font-size: 58px; }
+  }
+  @keyframes guide-in-landscape {
+    from { opacity: 0; transform: translateY(12px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  }
+
+  @supports not (backdrop-filter: blur(8px)) {
+    #sound-toggle, #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
+<link rel="stylesheet" href="./src/lab.css">
 </head>
-<body>
-  <main>
-    <div class="top">
-      <div>
-        <h1>kindergrimm</h1>
-        <div class="sub">characters drawn by hand, by a machine · and the games they live in</div>
+<body data-mode="choosing">
+  <div id="stage" aria-hidden="true"></div>
+  <canvas id="paper-grain" aria-hidden="true"></canvas>
+
+  <section id="mode-gate" role="dialog" aria-modal="true" aria-labelledby="mode-title">
+    <div class="mode-sheet">
+      <div class="mode-heading">
+        <span class="mode-stamp" aria-hidden="true">萌</span>
+        <div>
+          <p>萌萌星的奇妙图鉴</p>
+          <h1 id="mode-title">今天想从哪里开始？</h1>
+          <span>可以进入故事，也可以先到角色实验室里认识它。</span>
+        </div>
       </div>
-      <a class="gh" href="https://github.com/albertobeiz/kindergrimm">
-        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
-          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01
-          1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-          0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27
-          2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
-          1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01
-          2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        github
-      </a>
+      <div class="mode-choices">
+        <button class="mode-choice story" type="button" data-mode-choice="story">
+          <span class="mode-mark" aria-hidden="true">篇</span>
+          <b>故事模式</b>
+          <span>创造一只奇妙生物，走进雾灯花园。</span>
+          <i>开始第一张图鉴</i>
+        </button>
+        <button class="mode-choice debug" type="button" data-mode-choice="debug">
+          <span class="mode-mark" aria-hidden="true">造</span>
+          <b>角色实验室</b>
+          <span>捏脸、选声音、模拟对话，用问答让它慢慢长出来。</span>
+          <i>进入调试模式</i>
+        </button>
+      </div>
+      <p class="mode-note">选择会记在这台设备上，之后可以随时从角落切换。</p>
     </div>
-    <div class="rule"></div>
+  </section>
 
-    <section class="cat">
-      <div class="cat-head"><b>play</b><span>three games, same weight — the menu doesn't say which is real</span></div>
-      <div class="games">
-        <a class="scene game" href="orla.html" data-k="1">
-          <img class="thumb" src="assets/thumbs/orla.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>class photo</b>
-            <span>the class photo, scored like a poker hand. pick five children
-                  of ten; the objects on the wall do the rest.</span>
-            <i>1</i>
-          </div>
-        </a>
+  <button id="mode-switch" type="button" hidden>进入角色实验室</button>
 
-        <a class="scene game" href="game.html" data-k="2">
-          <img class="thumb" src="assets/thumbs/game.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>the dark floor</b>
-            <span>a baby school after dark. tap where the class walks — a child
-                  only fights what it can see, and light is the only sight.</span>
-            <i>2</i>
-          </div>
-        </a>
+  <header id="topbar">
+    <div class="brand">
+      <strong>萌萌星的奇妙图鉴</strong>
+      <span>孩子说出的想象，会成为世界的一部分</span>
+    </div>
+    <button id="sound-toggle" type="button" aria-pressed="true">声音：开</button>
+  </header>
 
-        <a class="scene game" href="marbles.html" data-k="3">
-          <img class="thumb" src="assets/thumbs/marbles.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>marbles</b>
-            <span>a long sheet of ice and a tide walking down it. pull a
-                  marble back and let go — where it stops, it fights on
-                  its own.</span>
-            <i>3</i>
+  <section id="debug-lab" aria-labelledby="lab-title" hidden>
+    <header class="lab-header">
+      <div>
+        <p>萌萌星角色实验室</p>
+        <h1 id="lab-title">它会从你的回答里，慢慢长出来。</h1>
+      </div>
+      <div class="lab-header-note">所有兴趣档案只保存在当前设备</div>
+    </header>
+
+    <main class="lab-layout">
+      <aside class="lab-workbench" aria-label="角色实验工具">
+        <nav class="lab-tabs" role="tablist" aria-label="实验室功能">
+          <button type="button" role="tab" aria-selected="true" data-lab-tab="interview">成长问答</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="templates">角色模板</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="face">捏脸</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="body">身体</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="actions">动作</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="scene">场景</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="voice">声音</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="dialogue">对话</button>
+        </nav>
+
+        <section class="lab-panel active" data-lab-panel="interview" role="tabpanel">
+          <div class="question-meta">
+            <span id="question-progress">正在认识你</span>
+            <button id="restart-interview" type="button">重新开始</button>
           </div>
-        </a>
+          <div class="interview-journey" aria-label="认识进度">
+            <div><span id="question-stage">基本认识</span><b id="question-memory-count">已记住 0 / 17</b></div>
+            <div class="interview-progress" id="interview-progress" role="progressbar" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0">
+              <span></span>
+            </div>
+          </div>
+          <h2 id="question-title">你更容易用眼睛记住，还是用耳朵记住？</h2>
+          <p id="question-help">每一个回答都会马上改变它的样子。</p>
+          <div id="question-answers" class="answer-grid"></div>
+          <p id="question-feedback" class="question-feedback" role="status" hidden></p>
+          <form id="interest-form" class="interest-form" hidden>
+            <label for="interest-input">最近最喜欢做的一件事</label>
+            <div>
+              <input id="interest-input" maxlength="36" autocomplete="off" placeholder="比如：画恐龙、搭积木、听故事">
+              <button type="submit">告诉它</button>
+            </div>
+            <p id="interest-error" role="alert"></p>
+          </form>
+          <div id="interview-finish" class="interview-finish" hidden>
+            <b>它已经记住你啦</b>
+            <p>现在可以继续捏脸、换声音，或者让它和你模拟一段对话。</p>
+            <button type="button" data-open-tab="dialogue">和它说句话</button>
+          </div>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="templates" role="tabpanel" hidden>
+          <h2>从一只完整角色开始</h2>
+          <p class="panel-help">先挑一只喜欢的模板，再去捏脸和身体里继续修改。</p>
+          <div id="template-groups" class="template-groups" aria-label="角色模板分类"></div>
+          <div id="template-grid" class="template-grid" aria-label="预制角色模板"></div>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="face" role="tabpanel" hidden>
+          <h2>先从脸开始</h2>
+          <p class="panel-help">点击选项会重新画一次，手绘线条每次都会轻轻呼吸。</p>
+          <fieldset class="control-group">
+            <legend>眼睛</legend>
+            <div class="option-row" data-part="eyes" data-key="type">
+              <button type="button" data-value="sparkle">亮晶晶</button>
+              <button type="button" data-value="dot">豆豆眼</button>
+              <button type="button" data-value="saucer">圆眼睛</button>
+              <button type="button" data-value="sleepy">困困眼</button>
+              <button type="button" data-value="wide">大眼睛</button>
+            </div>
+            <label class="range-row" for="eye-size">眼睛大小 <output id="eye-size-value">1.40</output></label>
+            <input id="eye-size" type="range" min="0.65" max="2.35" step="0.05" value="1.4" data-range-part="eyes" data-range-key="scale">
+            <label class="range-row" for="eye-space">眼睛距离 <output id="eye-space-value">0.50</output></label>
+            <input id="eye-space" type="range" min="0.30" max="0.70" step="0.02" value="0.5" data-range-part="eyes" data-range-key="sx">
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>耳朵和头顶</legend>
+            <div class="option-row" data-part="crest" data-key="style">
+              <button type="button" data-value="none">没有</button>
+              <button type="button" data-value="floppy">大耳朵</button>
+              <button type="button" data-value="cat">猫耳朵</button>
+              <button type="button" data-value="bear">圆耳朵</button>
+              <button type="button" data-value="sprout">小芽</button>
+              <button type="button" data-value="flower">小花</button>
+            </div>
+            <label class="range-row" for="ear-size">耳朵大小 <output id="ear-size-value">1.20</output></label>
+            <input id="ear-size" type="range" min="0.55" max="2.40" step="0.05" value="1.2" data-range-part="crest" data-range-key="len">
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>嘴巴与脸形</legend>
+            <div class="option-row" data-part="mouth" data-key="style">
+              <button type="button" data-value="tiny">小嘴巴</button>
+              <button type="button" data-value="cat">弯弯嘴</button>
+              <button type="button" data-value="smirk">歪歪笑</button>
+              <button type="button" data-value="buckteeth">小门牙</button>
+              <button type="button" data-value="wobble">软软嘴</button>
+            </div>
+            <div class="option-row" data-part="skull" data-key="shape">
+              <button type="button" data-value="round">圆脸</button>
+              <button type="button" data-value="wide">宽脸</button>
+              <button type="button" data-value="pear">梨形脸</button>
+              <button type="button" data-value="square">方脸</button>
+              <button type="button" data-value="wonky">歪歪脸</button>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="body" role="tabpanel" hidden>
+          <h2>再看看身体</h2>
+          <p class="panel-help">站姿会改变整个骨架，身体和四肢则可以继续单独调整。</p>
+          <fieldset class="control-group">
+            <legend>站姿</legend>
+            <div class="option-row" id="base-options">
+              <button type="button" data-base="biped">两脚站立</button>
+              <button type="button" data-base="sit">坐在地上</button>
+              <button type="button" data-base="quad">四脚小兽</button>
+            </div>
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>身体形状</legend>
+            <div class="option-row" data-part="torso" data-key="shape">
+              <button type="button" data-value="bean">豆子</button>
+              <button type="button" data-value="round">圆滚滚</button>
+              <button type="button" data-value="tiny">小小只</button>
+              <button type="button" data-value="pear">梨形</button>
+              <button type="button" data-value="barrel">胖桶</button>
+            </div>
+            <label class="range-row" for="body-width">身体宽度 <output id="body-width-value">0.52</output></label>
+            <input id="body-width" type="range" min="0.30" max="0.95" step="0.05" value="0.52" data-range-part="torso" data-range-key="wF">
+            <label class="range-row" for="body-height">身体高度 <output id="body-height-value">0.58</output></label>
+            <input id="body-height" type="range" min="0.30" max="1.20" step="0.05" value="0.58" data-range-part="torso" data-range-key="hF">
+          </fieldset>
+          <fieldset class="control-group">
+            <legend>手脚和尾巴</legend>
+            <div class="option-row" data-part="arms" data-key="style">
+              <button type="button" data-value="stub">短短手</button>
+              <button type="button" data-value="noodle">长长手</button>
+              <button type="button" data-value="clasped">抱在一起</button>
+              <button type="button" data-value="hips">叉着腰</button>
+            </div>
+            <div class="option-row" data-part="tail" data-key="style">
+              <button type="button" data-value="none">没有尾巴</button>
+              <button type="button" data-value="wag">摇摇尾巴</button>
+              <button type="button" data-value="curl">卷尾巴</button>
+              <button type="button" data-value="puff">绒球尾巴</button>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="actions" role="tabpanel" hidden>
+          <h2>让它动起来</h2>
+          <p class="panel-help">先试试单个动作，也可以进入一段连续互动。每次选择都会保留，并得到一句回应。</p>
+
+          <section class="action-block" aria-labelledby="action-preview-title">
+            <h3 id="action-preview-title">动作预览</h3>
+            <div id="action-options" class="action-grid">
+              <button type="button" data-action="play" data-line="你好呀！我在这里。" data-audio="action-wave">
+                <span aria-hidden="true">招</span><b>挥挥手</b><small>轻快地打个招呼</small>
+              </button>
+              <button type="button" data-action="walk" data-line="我慢慢走两步，边走边看看。" data-audio="action-walk">
+                <span aria-hidden="true">走</span><b>走一走</b><small>慢慢观察周围</small>
+              </button>
+              <button type="button" data-action="run" data-line="我要跑起来啦，风会从耳边经过。" data-audio="action-run">
+                <span aria-hidden="true">跑</span><b>跑起来</b><small>快快跑上一小段</small>
+              </button>
+              <button type="button" data-action="sit" data-line="我先坐下来，听听你接下来想说什么。" data-audio="action-sit">
+                <span aria-hidden="true">坐</span><b>坐下来</b><small>安静等一会儿</small>
+              </button>
+              <button type="button" data-action="sleep" data-line="我闭一会儿眼睛，做一个很短的梦。" data-audio="action-sleep">
+                <span aria-hidden="true">梦</span><b>打个盹</b><small>慢慢呼吸休息</small>
+              </button>
+              <button type="button" data-action="attack" data-line="我鼓起勇气，向前迈出一步。" data-audio="action-brave">
+                <span aria-hidden="true">勇</span><b>勇气动作</b><small>蓄力后向前一步</small>
+              </button>
+            </div>
+          </section>
+
+          <fieldset class="action-block expression-options">
+            <legend>表情模拟</legend>
+            <div class="option-row" id="expression-options">
+              <button type="button" data-expression="idle" data-line="我在认真看你。" data-audio="action-expression-0">认真</button>
+              <button type="button" data-expression="scared" data-line="这里有一点点陌生。" data-audio="action-expression-1">有点害怕</button>
+              <button type="button" data-expression="angry" data-line="我会保护自己的想法。" data-audio="action-expression-2">有点生气</button>
+              <button type="button" data-expression="sleeping" data-line="先闭上眼睛休息一会儿。" data-audio="action-expression-3">困困的</button>
+              <button type="button" data-expression="crying" data-line="我现在有一点难过，陪我待一会儿就好。" data-audio="action-expression-4">有点难过</button>
+            </div>
+          </fieldset>
+
+          <section class="script-library" aria-labelledby="script-library-title">
+            <h3 id="script-library-title">连续互动脚本</h3>
+            <p>五段短故事，用来观察兴趣、选择方式和面对小状况时的偏好。</p>
+            <div id="script-picker" class="script-picker" aria-label="预制互动脚本"></div>
+
+            <div id="script-session" class="script-session" hidden>
+              <header class="script-session-head">
+                <div><span id="script-progress"></span><h3 id="script-title"></h3></div>
+                <button id="script-exit" type="button">换一套</button>
+              </header>
+              <p id="script-question" class="script-question"></p>
+              <div id="script-answers" class="script-answers"></div>
+              <p id="script-feedback" class="script-feedback" role="status" hidden></p>
+              <ol id="script-history" class="script-history" aria-label="已经做出的选择"></ol>
+              <div id="script-complete" class="script-complete" hidden>
+                <b>这段互动完成了</b>
+                <p id="script-summary"></p>
+                <button id="script-replay" type="button">再玩一次</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="scene" role="tabpanel" hidden>
+          <h2>把它放进一个世界</h2>
+          <p class="panel-help">场景会改变落脚位置和动作。宇宙、云朵与海底会让它慢慢漂浮。</p>
+          <div id="scene-groups" class="scene-groups" aria-label="场景分类"></div>
+          <div id="scene-grid" class="scene-grid" aria-label="角色场景"></div>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="voice" role="tabpanel" hidden>
+          <h2>它应该怎样说话？</h2>
+          <p class="panel-help">星仔是默认音色。四种试听都随项目一起打包，后续反馈优先使用 Fish Audio。</p>
+          <div class="voice-grid" id="voice-options">
+            <button type="button" data-voice="sprout"><b>小芽</b><span>轻轻的，像讲睡前故事</span><i>试听</i></button>
+            <button type="button" data-voice="bubble"><b>泡泡</b><span>明亮的，想到什么就说什么</span><i>试听</i></button>
+            <button type="button" data-voice="moss"><b>阿绒</b><span>慢一点，让每句话都能听清</span><i>试听</i></button>
+            <button type="button" data-voice="star"><b>星仔</b><span>好奇的，问题一个接一个</span><i>默认试听</i></button>
+          </div>
+          <p class="voice-note">固定台词都有星仔离线音频。自由输入会发送文字到 Fish Audio 生成语音，不会上传孩子的声音；服务不可用时仍会显示气泡和口型。</p>
+        </section>
+
+        <section class="lab-panel" data-lab-panel="dialogue" role="tabpanel" hidden>
+          <h2>模拟一段对话</h2>
+          <p class="panel-help">输入它要说的话，检查口型、气泡、语速和角色感觉。</p>
+          <form id="dialogue-form" class="dialogue-form">
+            <label for="dialogue-input">让它说</label>
+            <textarea id="dialogue-input" maxlength="100" rows="4">我记住啦。你喜欢发现小动物，也喜欢先安静看一会儿。</textarea>
+            <p>台词会发送到本项目服务端，再由 Fish Audio 生成所选音色；不会保存，也不会上传麦克风声音。</p>
+            <button type="submit">开始说话</button>
+          </form>
+          <div class="quick-lines" aria-label="快速对话">
+            <button type="button" data-audio="dialogue-question" data-line="你愿意带我去看看你最喜欢的地方吗？">提出问题</button>
+            <button type="button" data-audio="dialogue-choice" data-line="这次换你来决定，我会认真听。">交出选择</button>
+            <button type="button" data-audio="dialogue-encourage" data-line="没关系，我们可以慢一点，再试一次。">温柔鼓励</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="lab-preview" aria-label="角色实时预览">
+        <div id="lab-bubble" role="status" aria-live="polite" aria-atomic="true" data-text="先告诉我，你更容易用眼睛记住，还是用耳朵记住？">
+          <span class="lab-bubble-fold" aria-hidden="true"></span>
+          <span id="lab-bubble-text" aria-hidden="true">先告诉我，你更容易用眼睛记住，还是用耳朵记住？</span>
+          <span id="lab-bubble-a11y" class="sr-only">先告诉我，你更容易用眼睛记住，还是用耳朵记住？</span>
+          <span class="lab-bubble-tail" aria-hidden="true"></span>
+        </div>
+        <div id="lab-stage" aria-hidden="true"></div>
+        <button id="lab-random" class="lab-random-icon" type="button" aria-label="随机换一只角色" title="随机换一只">
+          <span aria-hidden="true">换</span>
+        </button>
+      </section>
+
+      <aside class="lab-notebook" aria-labelledby="notebook-title">
+        <div class="notebook-heading">
+          <span aria-hidden="true">记</span>
+          <div><p>孩子的兴趣小档案</p><h2 id="notebook-title">我已经记住 <small id="profile-count">0 / 17</small></h2></div>
+        </div>
+        <dl id="profile-list">
+          <div><dt>基本认识</dt><dd data-profile-group="basics">还在认识</dd></div>
+          <div><dt>探索方式</dt><dd data-profile-group="exploration">还在认识</dd></div>
+          <div><dt>表达相处</dt><dd data-profile-group="expression">还在认识</dd></div>
+          <div><dt>兴趣地图</dt><dd data-profile-group="interests">还在认识</dd></div>
+          <div><dt>陪伴方式</dt><dd data-profile-group="support">还在认识</dd></div>
+          <div><dt>最近着迷</dt><dd data-profile-group="current">还在认识</dd></div>
+          <div><dt>互动观察</dt><dd data-profile="scriptSummary">还没有互动记录</dd></div>
+        </dl>
+        <div class="recipe-summary">
+          <b>角色变化</b>
+          <p id="recipe-summary">回答问题后，这里会记录它为什么长成现在的样子。</p>
+        </div>
+        <button id="copy-recipe" type="button">复制角色配方</button>
+        <p id="lab-status" role="status"></p>
+      </aside>
+    </main>
+  </section>
+
+  <div id="chapter-mark"><b>雾灯花园</b><br>第一张图鉴</div>
+
+  <main id="choice-layer">
+    <section class="story-panel compact" id="panel-welcome">
+      <div class="story-kicker">一本会长大的图鉴</div>
+      <h1>有一团小墨点，在等你发现。</h1>
+      <p class="story-copy">它还没有名字，也不知道自己有什么本领。<strong>你说的话，会让它慢慢变成真的。</strong></p>
+      <button class="primary-action" id="start-adventure" type="button" disabled>小墨点正在靠近</button>
+    </section>
+
+    <section class="story-panel" id="panel-trait" hidden>
+      <div class="story-kicker">先发现一个秘密</div>
+      <h2>它一害怕，身体就会发生奇怪的变化。你猜是什么？</h2>
+      <div class="choice-grid" id="trait-choices">
+        <button class="choice-card" type="button" data-trait="transparent">
+          <span class="mark">隐</span><b>变得透明</b><span>像一小团快要消失的雾。</span>
+        </button>
+        <button class="choice-card" type="button" data-trait="bounce">
+          <span class="mark">弹</span><b>鼓成小球</b><span>害怕也会扑通一下弹起来。</span>
+        </button>
+        <button class="choice-card" type="button" data-trait="glow">
+          <span class="mark">亮</span><b>发出暖光</b><span>越紧张，身上的光越明亮。</span>
+        </button>
+        <button class="choice-card wide" type="button" id="custom-idea-toggle">
+          <span class="mark">想</span><b>我有自己的想法</b><span>用一句话告诉小芽。</span>
+        </button>
+      </div>
+      <form class="custom-idea" id="custom-idea-form" hidden>
+        <input id="custom-idea-input" maxlength="60" autocomplete="off" aria-label="它害怕时会发生什么" placeholder="比如：会把耳朵变成小雨伞">
+        <button class="primary-action" id="custom-idea-submit" type="submit">让它出现</button>
+      </form>
+      <p class="privacy-hint" id="idea-privacy" hidden>只会把这句话交给世界导演理解，不发送姓名，也不会保存在服务器。</p>
+      <p id="idea-error" role="alert"></p>
+    </section>
+
+    <section class="story-panel" id="panel-heart" hidden>
+      <div class="story-kicker">再听听它的心</div>
+      <h2>树洞里传来哭声。它会怎么安慰那个没见过的朋友？</h2>
+      <div class="choice-grid" id="heart-choices">
+        <button class="choice-card" type="button" data-heart="flower">
+          <span class="mark">花</span><b>送一朵小花</b><span>不说太多，让花先陪着朋友。</span>
+        </button>
+        <button class="choice-card" type="button" data-heart="stay">
+          <span class="mark">陪</span><b>安静坐旁边</b><span>难过的时候，有人陪着就很好。</span>
+        </button>
+        <button class="choice-card" type="button" data-heart="joke">
+          <span class="mark">笑</span><b>讲个怪笑话</b><span>也许笑声能把眼泪轻轻推走。</span>
+        </button>
       </div>
     </section>
 
-    <section class="cat">
-      <div class="cat-head"><b>drawn · 2d</b><span>graphite on cream paper — the original generator</span></div>
-      <div class="scenes">
-        <a class="scene" href="editor.html" data-k="4">
-          <img class="thumb" src="assets/thumbs/editor.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>editor</b>
-            <span>one face and every parameter it has, with the recipe in JSON.</span>
-            <i>4</i>
-          </div>
-        </a>
-
-        <a class="scene" href="crowd.html" data-k="5">
-          <img class="thumb" src="assets/thumbs/crowd.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>crowd</b>
-            <span>35 live characters at once — the variety at a glance.</span>
-            <i>5</i>
-          </div>
-        </a>
-
-        <a class="scene" href="styles.html">
-          <img class="thumb" src="assets/thumbs/styles.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>styles</b>
-            <span>nine ways of painting the same five people — gothic to
-                  surrealism, in era order, both hands.</span>
-          </div>
-        </a>
-
-        <a class="scene" href="timeline.html">
-          <img class="thumb" src="assets/thumbs/timeline.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>timeline</b>
-            <span>the same nine on a dated line, 1310 to 1929. the axis is
-                  honest, so you can watch modernism detonate.</span>
-          </div>
-        </a>
-
-        <a class="scene" href="items.html" data-k="6">
-          <img class="thumb" src="assets/thumbs/items.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>toy shop</b>
-            <span>every object family × every rank: the contact sheet.</span>
-            <i>6</i>
-          </div>
-        </a>
-
-        <a class="scene" href="how.html" data-k="7">
-          <img class="thumb" src="assets/thumbs/how.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>how it works</b>
-            <span>eleven live steps from one pencil stroke to a creature
-                  that blinks.</span>
-            <i>7</i>
-          </div>
-        </a>
+    <section class="story-panel compact" id="panel-name" hidden>
+      <div class="story-kicker">这是你的奇妙生物</div>
+      <h2>最后一件事：你想怎么叫它？</h2>
+      <div class="name-field">
+        <label for="creature-name">把名字写在第一张图鉴上</label>
+        <input id="creature-name" maxlength="8" autocomplete="off" placeholder="给它一个名字">
       </div>
+      <div class="suggestions" aria-label="名字建议">
+        <button type="button" data-name="团团">团团</button>
+        <button type="button" data-name="小雾">小雾</button>
+        <button type="button" data-name="啵啵">啵啵</button>
+        <button type="button" data-name="灯芽">灯芽</button>
+      </div>
+      <button class="primary-action" id="confirm-name" type="button">把名字写下来</button>
+      <p id="name-error" role="alert"></p>
     </section>
 
-    <section class="cat">
-      <div class="cat-head"><b>voxel · 3d</b><span>the same recipe, built out of cubes</span></div>
-      <div class="scenes">
-        <a class="scene" href="voxel.html" data-k="8">
-          <img class="thumb" src="assets/thumbs/voxel.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>voxel lab</b>
-            <span>the same recipe, built out of cubes. drag to walk around it.</span>
-            <i>8</i>
-          </div>
-        </a>
-
-        <a class="scene" href="voxelcrowd.html" data-k="9">
-          <img class="thumb" src="assets/thumbs/voxelcrowd.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>voxel crowd</b>
-            <span>twenty solids assembling on a midnight platform, under
-                  lanterns that go round.</span>
-            <i>9</i>
-          </div>
-        </a>
+    <section class="story-panel compact" id="panel-forming" hidden>
+      <div class="story-kicker">世界正在回应你</div>
+      <h2><span id="forming-name">它</span>的第一个小世界，正在长出来。</h2>
+      <div class="forming-list" aria-live="polite">
+        <div class="forming-row" data-forming="0">把软软的草铺在纸上</div>
+        <div class="forming-row" data-forming="1">叫醒三颗贪睡的萤火种</div>
+        <div class="forming-row" data-forming="2">让雾藏住一条秘密小路</div>
+        <div class="forming-row" data-forming="3">把“勇”字刻在石门上</div>
       </div>
+      <button class="primary-action" id="enter-world" type="button" disabled>走进雾灯花园</button>
     </section>
-
-    <section class="cat">
-      <div class="cat-head"><b>gloss · 3d</b><span>glossy chibi characters — solid geometry, not graphite</span></div>
-      <div class="scenes">
-        <a class="scene" href="gloss.html" data-k="0">
-          <img class="thumb" src="assets/thumbs/gloss.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>gloss lab</b>
-            <span>one chibi character and every knob it has — face, colour,
-                  finish.</span>
-            <i>0</i>
-          </div>
-        </a>
-
-        <a class="scene" href="glosscrowd.html">
-          <img class="thumb" src="assets/thumbs/glosscrowd.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>gloss sheet</b>
-            <span>thirty-five faces on a wall, looking around the room and
-                  reacting to it.</span>
-            
-          </div>
-        </a>
-
-        <a class="scene" href="photo.html">
-          <img class="thumb" src="assets/thumbs/photo.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>the photo</b>
-            <span>one seed, one class portrait — a giant, its class, the
-                  weather and the garden, lit like a toy shelf.</span>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat">
-      <div class="cat-head"><b>object · 3d</b><span>plastic plants off the nursery shelf — one recipe, four species</span></div>
-      <div class="scenes">
-        <a class="scene" href="objects.html">
-          <img class="thumb" src="assets/thumbs/objects.jpg" alt="" loading="lazy">
-          <div class="body">
-            <b>objects lab</b>
-            <span>grass, plant, tree, flower — four soli-house plants from
-                  one recipe, with the knobs to read it.</span>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat experiments">
-      <div class="cat-head"><b>experiments</b><span>small sketches — no thumbnail, no promises</span></div>
-      <div class="scenes">
-        <a class="scene" href="crowdbrush.html">
-          <div class="body">
-            <b>crowd · p5.brush</b>
-            <span>the same 35 characters, drawn by a second hand —
-                  p5.brush's tips and hatching instead of the graphite
-                  engine. <i>?seed=7</i> on both crowds to compare.</span>
-          </div>
-        </a>
-
-        <a class="scene" href="pipes.html">
-          <div class="body">
-            <b>pipes</b>
-            <span>a living schematic three layers deep. it draws itself,
-                  tours its own eight angles, and twice a turn the grids
-                  fall exactly into line.</span>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <footer>graphite on cream paper · <a href="https://github.com/albertobeiz/kindergrimm">github.com/albertobeiz/kindergrimm</a></footer>
   </main>
 
+  <aside id="game-hud" aria-label="任务进度">
+    <b>点亮雾灯</b>
+    <p>找到 3 颗萤火种，让藏起来的小路重新出现。</p>
+    <div class="seed-progress" aria-label="已找到的萤火种">
+      <span class="seed-dot">1</span><span class="seed-dot">2</span><span class="seed-dot">3</span>
+    </div>
+  </aside>
+
+  <div id="tap-hint">点一下草地，带它走过去</div>
+
+  <section id="guide" role="status" aria-live="polite">
+    <div class="guide-face" aria-hidden="true">芽</div>
+    <div class="guide-text">
+      <b>小芽在说</b>
+      <div id="guide-copy"></div>
+    </div>
+    <button id="guide-action" type="button" hidden>一起试试</button>
+  </section>
+
+  <section id="ending" aria-labelledby="ending-title">
+    <div class="ending-sheet">
+      <div class="story-kicker">第一张图鉴完成</div>
+      <h2 id="ending-title"><span id="ending-name">团团</span>，雾灯花园的开路者</h2>
+      <p class="ending-lede" id="ending-story">它用自己独一无二的本领穿过雾门，还把三颗萤火种送回了灯里。</p>
+      <div class="report">
+        <div class="report-main">
+          <h3>这次冒险里，孩子做到了</h3>
+          <ul>
+            <li><strong>主动创造：</strong>决定了生物的本领与性格</li>
+            <li><strong>数量关系：</strong>理解 1 + 2 正好组成 3</li>
+            <li><strong>条件推理：</strong>收集足够的光，雾路才会出现</li>
+            <li><strong>情绪理解：</strong>害怕时仍然愿意向前尝试</li>
+          </ul>
+        </div>
+        <div class="report-side">
+          <h3>今天认识的字</h3>
+          <div class="hero-word">勇</div>
+        </div>
+      </div>
+      <div class="ending-actions">
+        <button class="primary-action" id="save-card" type="button">收进我的图鉴</button>
+        <button class="secondary-action" id="replay" type="button">再创造一只</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" role="status"></div>
+
   <script>
-    // the same number keys the draft uses, for the same reason
-    addEventListener('keydown', e => {
-      const a = document.querySelector(`a[data-k="${e.key}"]`);
-      if (a) location.href = a.getAttribute('href');
+    (() => {
+      const canvas = document.getElementById('paper-grain');
+      const ctx = canvas.getContext('2d');
+      function paint() {
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        canvas.width = Math.round(innerWidth * dpr);
+        canvas.height = Math.round(innerHeight * dpr);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const n = Math.round((innerWidth * innerHeight) / 720);
+        for (let i = 0; i < n; i++) {
+          ctx.fillStyle = `rgba(${92 + Math.random() * 35 | 0},${82 + Math.random() * 30 | 0},${65 + Math.random() * 22 | 0},${.08 + Math.random() * .11})`;
+          const s = (.45 + Math.random() * .8) * dpr;
+          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, s, s);
+        }
+      }
+      paint();
+      addEventListener('resize', paint, { passive: true });
+    })();
+  </script>
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+  <script type="module">
+    import('./src/adventure.js').catch(error => {
+      document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
+      console.error('Adventure scene failed to start', error);
     });
   </script>
+  <script type="module">
+    import('./vendor/calligraph-bubble.js').catch(error => {
+      document.documentElement.dataset.calligraphError = error?.message || 'Calligraph failed to start';
+      console.error('Calligraph bubble failed to start', error);
+    });
+  </script>
+  <script type="module" src="./src/mode.js"></script>
 </body>
 </html>

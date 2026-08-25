@@ -52,7 +52,9 @@ export function makePart({ name, wU, hU, pivot = [.5, .5], states = ['idle'], dr
       draw(s, st);
       s.done?.();
       const tex = new THREE.CanvasTexture(s.canvas);
-      tex.anisotropy = 4;
+      tex.magFilter = THREE.LinearFilter;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.anisotropy = 8;
       frames[st].push(tex);
       canvases[st].push(s.canvas);
     }

@@ -1,0 +1,55 @@
+# 元素映射
+
+| 俗称 | 正式名称 | 页面/变量 | 修改提示 |
+| --- | --- | --- | --- |
+| 小墨点、小怪物、奇妙生物 | 玩家角色 | `creature`、`profile` | 外观来自程序化 recipe，名字和能力在 `profile` |
+| 小芽、引导员、旁白 | 教学引导 | `#guide`、`say()`、`VoiceGuide` | 屏幕文字和预制 Fish Audio 要保持语义一致，不使用系统 TTS |
+| 三颗星、萤火种、发光种子 | 关卡收集物 | `seeds`、`.seed-dot` | 一共 3 颗，驱动灯的三个亮度阶段 |
+| 中间小灯、雾灯、花园灯 | 任务中心灯 | `lantern` | 收集进度通过灯芯亮度和光晕表现 |
+| 白雾、雾墙 | 环境阻挡 | `fogs` | 集齐萤火种后变淡，能力使用后散开 |
+| 勇字门、石门、终点门 | 能力验证门 | `gate`、`#guide-action` | 必须使用最初选择或生成的能力通过 |
+| 第一页、叫醒页 | 欢迎引导 | `#panel-welcome` | JS 场景就绪前按钮显示加载状态 |
+| 能力页、害怕变化页 | 特质选择 | `#panel-trait`、`TRAITS` | 三个预设和一个自由输入入口 |
+| 树洞题、性格题 | 内心选择 | `#panel-heart`、`HEARTS` | 只描述行为倾向，不做道德打分 |
+| 取名页 | 命名步骤 | `#panel-name`、`profile.name` | 最多保存 8 个字符 |
+| 世界生长页、生成页 | 等待游戏化步骤 | `#panel-forming`、`.forming-row` | 用四步生长代替空白加载 |
+| 游戏提示、底部气泡 | 关卡目标提示 | `#guide`、`#guide-copy` | 不能遮挡移动和能力按钮 |
+| 能力按钮 | 关卡关键动作 | `#guide-action` | 文案随 `profile.traitLabel` 变化 |
+| 成长报告、图鉴页、结算页 | 冒险结果 | `#ending` | 总结创作、数感、推理和情绪概念 |
+| 收进图鉴 | 本机保存 | `#save-card`、`mengmeng-atlas` | 只写入当前浏览器 `localStorage` |
+| 自由想法、AI 输入 | 世界导演入口 | `#custom-idea-form`、`/api/director` | 只有此处把能力描述发给服务端配置的世界导演模型 |
+| 声音按钮 | 语音总开关 | `#sound-toggle`、`VoiceGuide` | 默认开，可随时关闭，保留文字替代 |
+| 草地点击圈、落脚圈 | 移动目标反馈 | `targetRipple` | 点击或轻触场景后立即出现 |
+| 首次选择、模式扉页 | 模式选择器 | `#mode-gate`、`.mode-choice` | 首次进入显示，可选故事或角色实验室 |
+| 角落切换、返回故事 | 模式切换按钮 | `#mode-switch`、`applyMode()` | 桌面在右下角，实验室手机端在标题右上角 |
+| 调试模式、角色实验室 | 角色实验环境 | `#debug-lab`、`activateLab()` | 与故事模式共用角色生成体系，但状态独立 |
+| 头顶问题、说话泡泡 | Calligraph 实时对话气泡 | `#lab-bubble`、`#lab-bubble-text`、`setBubble()` | 每次换句重新入场并逐字显示；通过角色头顶锚点定位，不固定在场景顶部 |
+| 气泡尖角、纸尾巴 | 气泡中心指示尾 | `.lab-bubble-tail`、`positionBubble()` | `left: 50%` 水平居中，并随头顶投影一起移动 |
+| 气泡里的字、打字效果 | Calligraph 文字过渡组件 | `src/calligraph-bubble.jsx`、`mengmeng:bubble-text` | 34ms 追加一个字形，减弱动态时立即显示全文 |
+| 左边工具、实验台 | 角色工具区 | `.lab-workbench`、`.lab-tabs` | 包含成长问答、角色模板、捏脸、身体、动作、场景、声音和对话 |
+| 整体捏脸、预制角色 | 完整角色模板样本册 | `[data-lab-tab="templates"]`、`#template-grid`、`CHARACTER_TEMPLATES` | 12 个小动物、3 个特色人物，套用后仍可继续调整 |
+| 小动物模板 | 动物角色模板组 | `group: "小动物"`、`makeTemplateRecipe()` | 使用真实 recipe、站姿和器官组合，不是静态贴图 |
+| 人物模板 | 特色人物模板组 | `group: "人物"` | 星路探险家、安静小画家、云顶发明家 |
+| 右边记录、兴趣档案 | 分组儿童画像笔记 | `.lab-notebook`、`[data-profile-group]`、`summarizeProfileGroups()` | 6 组摘要只保存在当前设备；手机端隐藏以留出操作空间 |
+| 17 个问题、深入认识 | 第三版儿童画像访谈 | `QUESTIONS`、`PROFILE_FIELDS`、`mengmeng-child-profile-v3` | 6 个阶段可断点续答；旧 v1/v2 档案自动迁移并补答新增字段 |
+| 已记住几项、绿色进度条 | 画像完成度 | `#question-memory-count`、`#interview-progress`、`profileCompletion()` | 每次选择立即从 0/17 递增，不必等整套完成 |
+| 大眼睛、豆豆眼、大耳朵 | 信息偏好核心特征 | `QUESTIONS[1]`、学习偏好选项的 `apply()` | 后续兴趣只叠加特征，不能覆盖它们 |
+| 孩子画像怎样影响关卡 | 游戏启发上下文 | `buildGameInspiration()`、`gameInspiration` | 开场、收集、雾门鼓励和结局读取本机画像；图鉴只保存最小主题摘要 |
+| 放大糊、像贴图 | Canvas 部件纹理清晰度 | `setRender({ u: 176 })`、`displayPixelRatio`、`makePart()` | 角色不是 SVG；提高部件绘制密度、画布超采样和纹理过滤，不移除手绘颗粒 |
+| 四种音色、声音卡 | 内置音色试听 | `.voice-grid`、`VOICE_PRESETS` | 小芽、泡泡、阿绒、星仔；播放静态 MP3 |
+| 默认声音、星仔声音 | 玩家默认音色 | `DEFAULT_VOICE`、`VOICE_PRESETS.star` | 首次进入、旧档案迁移和重新开始都默认选中星仔 |
+| 模拟说话、对话测试 | 自由对话面板 | `#dialogue-form`、`LabSpeaker` | 动态台词调用 `/api/tts`；失败时保留气泡和口型，不使用设备系统 TTS |
+| 离线反馈、预制星仔语音 | 固定 Fish Audio 资源 | `assets/voice/star/`、`offlineAudioPath()` | 包含 17 问画像、模板、选择、动作、对话、场景和连续脚本，共 155 段 |
+| Fish 语音接口 | 角色实验室 TTS 代理 | `/api/tts`、`fishWithCache()` | 固定星仔台词优先缓存，动态台词在线生成；不降级到系统 TTS |
+| 眼神跟着鼠标、看按钮 | 连续目光目标 | `animator.setGaze()`、`pointGazeAt()` | 鼠标和触摸都可驱动；靠近底部按钮时向下看 |
+| 点人物、戳角色 | 角色射线点击反馈 | `hitsCharacter()`、`respondToCharacterTap()` | 命中角色后轮换 4 条文字、动作和缓存星仔语音 |
+| 动作页、动作模拟 | 角色动作工作台 | `[data-lab-tab="actions"]`、`#action-options`、`performAction()` | 提供 6 种连续动作和 5 种表情，结束后回到待机 |
+| 连续问题、小故事 | 预制互动脚本 | `INTERACTION_SCRIPTS`、`#script-session` | 5 套脚本，每套 3 问；选项保留，反馈结束后才出现下一题 |
+| 已选答案、选择记录 | 脚本选择历史 | `#script-history`、`.script-answers .is-selected` | 当前选择保持高亮，历史答案持续显示到脚本结束 |
+| 随机换一只、换角色 | 角落随机印章 | `#lab-random`、`.lab-random-icon` | 仅显示“换”图标，低强调度固定在角色预览右下角 |
+| 场景页、背景页 | 角色场景册 | `[data-lab-tab="scene"]`、`#scene-grid` | 22 个缩略舞台，按日常、自然、奇遇筛选 |
+| 默认地面、纸地面 | 基础角色场景 | `paper-ground`、`DEFAULT_SCENE` | 第一次进入默认选中，保留铅笔地面线 |
+| 宇宙、失重 | 星星宇宙场景 | `space`、`motion: "zero-g"` | 取消地面，角色持续轻微上下和左右漂浮 |
+| 云朵、海底漂流 | 轻漂浮场景 | `clouds`、`underwater`、`motion: "float"` | 比宇宙幅度更小，减弱动态时停止 |
+| 教室桌面、书桌 | 缩小落脚场景 | `classroom-desk` | 调整角色比例和桌面落脚高度 |
+| 复制配方 | 角色与档案导出 | `#copy-recipe` | 复制 recipe 和兴趣小档案，不上传数据 |

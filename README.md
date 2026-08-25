@@ -1,62 +1,148 @@
-# drawai
+# 萌萌星的奇妙图鉴
 
-Procedural doodle characters, drawn as if by hand on cream paper,
-rigged one part per bone so they can be animated and used later in
-games.
+面向 5 至 8 岁孩子的 AI 原生创意箱庭。孩子先说出一个角色特质，再亲手为角色选择性格、取名并进入世界。这个特质会在后续冒险中真正解决问题，让孩子直观看见“我的想象改变了世界”。
 
-**Adding a part type? Read [ARCHITECTURE.md](ARCHITECTURE.md).**
+当前交付包含两种入口：完整的新手引入与箱庭关卡“雾灯花园”，以及可独立测试角色、声音和儿童访谈脚本的“角色实验室”。首次进入时选择模式，之后可用角落按钮随时切换。
+
+## 角色实验室
+
+- “成长问答”用 6 个阶段、17 个儿童友好问题认识年龄段、感官与专注节奏、探索和受挫习惯、表达与社交、角色与玩法兴趣、情绪支持和希望避开的体验；不采集姓名、学校、住址或精确生日。
+- 回答会直接改变角色：擅长看会长出更醒目的眼睛，擅长听会保留豆豆眼并长出两只大软耳朵；后续兴趣只叠加雀斑、胡须等次级特征，不覆盖核心特征。
+- “角色模板”提供 12 种小动物和 3 种特色人物，每张缩略图都由真实 recipe 和 Three.js 角色生成器绘制；套用后仍可继续修改脸、身体和场景。
+- “捏脸”和“身体”可独立调整眼睛、脸形、耳朵、嘴巴、体形、四肢、尾巴等选项。
+- “动作”集中提供挥手、行走、奔跑、坐下、休息、勇气动作和 5 种表情模拟；原先悬浮在预览底部的测试按钮已经收回面板。
+- “动作”内置 5 套三问连续互动脚本。每次选择会留在记录中，角色先用动作和语音反馈，再出现下一问；完成后把简短的兴趣与性格观察写入本机档案。
+- “声音”内置小芽、泡泡、阿绒和星仔四种试听音色；“对话”可输入或选择台词，角色会显示头顶气泡并同步口型。气泡使用 Calligraph 驱动逐字过渡，每次换句都会重新入场。
+- 气泡通过 Three.js 角色包围盒计算头顶锚点，尖角始终水平居中并随角色、场景比例和漂浮动画移动，不再固定在场景顶部。
+- “场景”内置 22 个程序化水彩舞台，覆盖纸上地面、草地、城堡窗台、云朵、宇宙、教室书桌、图书馆、海底等环境；宇宙、云朵与海底会改变角色的漂浮动作。
+- 角色会平滑注视鼠标、触摸位置和底部操作按钮；直接点击角色会触发轮换的文字、动作和星仔语音反馈。
+- 星仔是玩家的默认音色。后续问答、场景和模拟对话优先由 Fish Audio 生成，固定台词均有星仔离线资源。
+- 角色配方和兴趣小档案只保存在当前设备，也可一键复制用于产品调试。
+- 儿童画像会被第一关读取：主题和玩法会进入开场提示，受挫与鼓励偏好会进入雾门挑战，角色称号和故事感觉会进入结局；它不是只展示在右侧笔记里。
+- 角色不是 SVG，而是由程序化 recipe 把每个器官绘制到 Canvas，再挂到 Three.js 骨骼平面上。实验室和第一关现以 176px/世界单位绘制部件，并在 1× 屏上至少 1.5× 超采样，放大后仍保留清楚的石墨边缘。
+
+## 第一关体验闭环
+
+1. 发现一团没有名字的小墨点。
+2. 决定它害怕时会发生什么，也可以输入自己的想法。
+3. 通过情境选择它会怎样帮助朋友，并给它取名。
+4. 等待世界生长，进入雾灯花园。
+5. 点击草地移动，收集 3 颗萤火种，点亮雾灯。
+6. 用最初创造的能力穿过雾门，理解“勇敢不是一点都不怕，是害怕时仍然愿意试一试”。
+7. 获得成长记录并把角色保存在本机图鉴中。
+
+关卡同时自然覆盖 `1 + 2 = 3`、条件推理、主动表达和情绪认知，不插入脱离剧情的考试题。
+
+## 本地运行
+
+项目不需要安装依赖，使用支持 ES Modules 的现代浏览器即可。
 
 ```bash
-python3 serve.py
+cp .env.example .env.local
+# 按需填写服务密钥
+python3 serve.py 8137
 ```
 
-- `index.html` — the menu, and the only place the scenes are linked
-  from: no scene links to another. The three games get the same card
-  on it.
-- `orla.html` — **the class photo**: pick five children of ten and the
-  photo is scored like a poker hand.
-- `game.html` — **Kindergrimm**: a baby school in the dark.
-- `marbles.html` — **Marbles**: a long sheet of ice with a tide walking
-  down it. Pull one of your three living marbles back and let go — it
-  crushes what it rolls over, hooks the way that marble hooks, and
-  wherever it stops it fights on its own until it melts. Hit your own
-  marbles on the way and they go off, and go flying.
-- `editor.html` — one face, click a part to tune it, reroll or lock
-  parts, seed and medium selectors, animation toggles.
-- `crowd.html` — a 7×5 page of living faces, no editing. Click a face
-  and it is someone else; `R` draws a new page.
-- `items.html` — the toy shop: every object family × every rank, the
-  contact sheet the art gets reviewed on.
+打开 `http://localhost:8137/`。
 
-## How it fits together
+如需修改气泡文字组件，先安装开发依赖并重新打包：
 
-A face is a **recipe**: `{seed, media, color, parts:{...}}`. It is the
-only state — the same JSON always redraws the same face, so a face can
-be saved, shared and rebuilt inside a game at runtime.
+```bash
+npm install
+npm run build:bubble
+```
 
-- `src/sketch.js` — the hand. Strokes are filled ribbons with wobble,
-  dry granulation and overshoots; fills are techniques (hatch,
-  scribble, stipple, graphite, wash, oil daubs, chalk, marker).
-- `src/media.js` — what the character is made of. A medium answers
-  `tone` / `skin` / `edge`, so parts describe shapes and never pick a
-  technique.
-- `src/species.js` — what animal it is. A species is a table of loaded
-  dice (dog → floppy ears, snout, spots, no hair), not new drawings,
-  so adding one is data only.
-- `src/layout.js` — every measurement two parts have to agree on: the
-  head outline, the eye anchors, the body block.
-- `src/parts/*.js` — one file per feature family (skull, eyes, mouth,
-  hair, horns/ears, body, extras). `parts/index.js` is the registry:
-  the ordered list of what is switched on.
-- `src/rig.js` — recipe → bones → meshes. Generic: it knows nothing
-  about eyes or arms, so adding a part never touches it.
-- `src/anim.js` — boil, blink, gaze saccades, talk, sway and breath.
-  Eyes pre-draw six states, so a glance is a texture swap.
-- `src/crowd.js` — the crowd, plus the life director that makes one
-  character glance, mutter or throw an emote every so often.
+运行时直接加载已经生成的 `vendor/calligraph-bubble.js`，不依赖外部 CDN。
 
-## License
+操作方式：
 
-Public domain, under [the Unlicense](LICENSE) — use it anywhere, for
-anything, no strings. Attribution is not required, but a link back is
-always appreciated.
+- 电脑：点击草地移动，也支持方向键或 WASD。
+- 手机和平板：轻触草地移动。
+- 声音：页面右上角可随时关闭，所有教学信息同时有文字版本。
+
+## API
+
+### `GET /api/health`
+
+返回服务状态、AI 是否配置、内置语音文件数量。不会返回密钥。
+
+### `POST /api/director`
+
+只在孩子选择“我有自己的想法”时调用火山方舟的 Doubao Seed 2.0 Mini。输入：
+
+```json
+{ "idea": "会把耳朵变成小雨伞" }
+```
+
+返回可执行能力、儿童友好的能力名称、叙述句和过门方式：
+
+```json
+{
+  "mechanic": "transparent",
+  "abilityLabel": "耳朵雨伞",
+  "narratorLine": "它害怕时，耳朵轻轻张开，像两把小伞遮住雨滴。",
+  "gateLine": "雨伞耳朵挡住迷雾，让它安全穿过雾门。"
+}
+```
+
+服务端限制输入长度并提供确定性降级。即使 AI 暂时不可用，孩子的原始想法也会被保留并映射到本地能力，不会中断游戏。
+
+### `POST /api/tts`
+
+角色实验室把不超过 120 个字符的动态台词和音色 ID 发送到服务端，由服务端调用 Fish Audio，密钥不会进入浏览器。默认音色为 `star`，也支持 `sprout`、`bubble` 和 `moss`。接口返回 `audio/mpeg`。已知固定台词默认直接播放随项目打包的星仔 Fish Audio 缓存；动态 Fish Audio 不可用时保留文字气泡和口型，不会切换到设备机械 TTS。故事模式的 10 段教学引导同样全部使用预制 Fish Audio，整个产品不调用浏览器系统 TTS。
+
+## 语音
+
+项目内置 169 段 MP3：10 段故事教学、4 段音色试听，以及 155 段星仔问答、模板、反馈、动作、场景和连续脚本提示。默认星仔的固定台词直接使用本地 Fish Audio 缓存；切换其他音色或输入自由台词时调用在线 Fish Audio。无论语音是否成功，气泡和口型都会正常工作，角色实验室不会调用系统 TTS。
+
+如需重新生成：
+
+```bash
+python3 scripts/generate_voice.py
+python3 scripts/generate_lab_voices.py
+python3 scripts/generate_star_offline.py
+```
+
+生成器支持 `--keys` 只更新指定台词、`--force` 覆盖旧文件，以及 `--jobs 1-4` 受控并发和自动重试。
+
+## 关键架构
+
+- `index.html`：产品结构、响应式 UI、设计变量和无障碍信息。
+- `src/mode.js`：首次模式选择、本机记忆和故事/实验室切换。
+- `src/lab.js`、`src/lab.css`：角色实验室、15 个完整角色模板、6 种动作、5 套连续脚本、17 问画像塑形、音色和三端布局。
+- `src/child-profile.js`：第三版本机儿童画像、旧档案迁移、17 维完成度、分组摘要和关卡启发映射。
+- `src/calligraph-bubble.jsx`、`vendor/calligraph-bubble.js`：Calligraph 逐字气泡组件及其本地浏览器包。
+- `src/lab-scenes.js`：22 个程序化水彩场景、缩略图、角色落脚位置和环境动作参数。
+- `src/adventure.js`：Three.js 场景、引导状态机、角色能力、关卡和成长记录。
+- `src/rig.js`、`src/anim.js`、`src/parts/`：继承 Kindergrimm 的程序化水彩角色、骨骼和动画系统。
+- `api/director.js`：Vercel Serverless 版本的世界导演接口。
+- `api/tts.js`：Fish Audio 服务端代理，限制台词长度并使用允许的四种音色。
+- `serve.py`：零依赖本地静态服务和本地世界导演接口。
+- `assets/voice/`：游戏运行时使用的内置引导语音。
+- `scripts/star_script_lines.py`：动作与 5 套连续脚本的星仔固定台词清单，由离线语音生成器统一打包。
+
+角色仍然由可复现的 recipe 生成，同一份 `{seed, media, color, parts}` 可以重建同一个角色。世界场景采用低面数几何体、手绘纹理、纸张颗粒和正交镜头，保持原 Kindergrimm 的绘本感。
+
+## 隐私与密钥
+
+- `.env.local` 已被 Git 忽略，禁止把真实密钥提交到仓库。
+- 孩子的名字、选择、图鉴、实验室角色配方和兴趣小档案仅保存在当前设备的 `localStorage`；画像不询问姓名、学校、住址或精确生日。
+- 预设能力全程离线运行；只有自由输入的能力描述会发送给火山方舟。
+- 角色实验室不调用大语言模型；需要朗读的问答、反馈和模拟台词会发送文字与音色 ID 到 Fish Audio，不上传麦克风声音，也不由项目服务端保存。
+- 当前版本不录音、不上传声音、不建立儿童账号、不包含第三方统计。
+
+## 部署变量
+
+- `ARK_API_KEY`：火山方舟服务端密钥，用于世界导演。
+- `ARK_BASE_URL`：默认 `https://ark.cn-beijing.volces.com/api/v3`。
+- `ARK_LLM_MODEL`：默认 `doubao-seed-2-0-mini-260428`，使用最小推理强度以缩短儿童等待时间。
+- `ARK_IMAGE_MODEL`：预留图片模型，默认 `doubao-seedream-5-0-lite-260128`。
+- `ARK_IMAGE_SIZE`：预留图片规格，默认 `4K`；正式图片功能上线前不开放公网生成接口。
+- `FISH_AUDIO_API_KEY`：角色实验室在线语音和开发阶段静态语音生成。
+- `FISH_AUDIO_REFERENCE_ID`：儿童感中文音色 ID。
+
+当前 Vercel 项目为 `jma`。正式入口为 `https://jma.mikeywa.site`，备用入口为 `https://jma-zeta.vercel.app`；自定义域名 DNS 与 HTTPS 已生效。
+
+## 项目来源与许可
+
+本项目以 [albertobeiz/kindergrimm](https://github.com/albertobeiz/kindergrimm) 的程序化绘本角色系统为基础继续设计。原项目及当前代码采用 [Unlicense](LICENSE)，属于公共领域。
