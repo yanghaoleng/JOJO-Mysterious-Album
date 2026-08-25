@@ -13,6 +13,7 @@ import {
   saveChildProfile,
   summarizeProfileGroups,
 } from './child-profile.js';
+import { trackAnalytics } from './analytics.js';
 
 setRender({ u: 176, frames: 2 });
 
@@ -1250,6 +1251,7 @@ function respondToCharacterTap(event) {
   const now = performance.now();
   if (now - characterTapAt < 850) return;
   characterTapAt = now;
+  trackAnalytics('lab_character_tap', { depth: 2 });
   const feedback = [
     '你碰到我啦，我正在看着你。',
     '我在这里。你想先帮我改哪里？',
@@ -1375,6 +1377,7 @@ function scheduleAfterSpeech(speech, callback, delay = 520) {
 function startScript(script) {
   clearTimeout(scriptAdvanceTimer);
   activeScript = script;
+  trackAnalytics(`lab_script_start_${script.id}`, { depth: 3 });
   scriptStepIndex = 0;
   scriptAnswers = [];
   scriptBusy = true;
@@ -1441,6 +1444,7 @@ function renderScriptStep() {
 function answerScriptStep(step, option, selectedButton) {
   if (!activeScript || scriptBusy) return;
   scriptBusy = true;
+  trackAnalytics('lab_script_answer', { depth: 4 + scriptStepIndex });
   $('script-answers').querySelectorAll('button').forEach(button => {
     button.disabled = true;
     const selected = button === selectedButton;
@@ -1474,6 +1478,7 @@ function finishScript() {
   if (!activeScript) return;
   const script = activeScript;
   const summary = script.summary(scriptAnswers);
+  trackAnalytics(`lab_script_complete_${script.id}`, { depth: 8 });
   scriptBusy = false;
   $('script-progress').textContent = '互动完成';
   $('script-question').textContent = script.complete;
@@ -1592,6 +1597,7 @@ function renderQuestion({ speak = true } = {}) {
 function answerQuestion(question, option, selectedButton) {
   $('question-answers').querySelectorAll('button').forEach(button => { button.disabled = true; });
   selectedButton?.classList.add('is-selected');
+  trackAnalytics(`profile_answer_${question.field}`, { depth: 2 + questionIndex });
   profile[question.field] = option.value;
   profile.answers = { ...profile.answers, [question.field]: { label: option.label, value: option.value } };
   if (option.reason) profile.reasons = [...profile.reasons.filter(item => item !== option.reason), option.reason].slice(-12);
@@ -1626,6 +1632,7 @@ function finishInterest(value) {
   }
   $('interest-error').textContent = '';
   profile.interest = clean;
+  trackAnalytics('profile_complete', { depth: 2 + QUESTIONS.length });
   profile.answers = { ...profile.answers, interest: { label: clean, value: clean } };
   profile.reasons = [...profile.reasons, `你最近喜欢${clean}，它会把这件事留在自己的第一张小档案里。`].slice(-8);
   saveProfile();

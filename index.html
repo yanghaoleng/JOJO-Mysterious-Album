@@ -63,18 +63,6 @@
     display: block; margin-top: 5px; color: var(--ink-soft);
     font-size: 11px; letter-spacing: .08em;
   }
-  #sound-toggle {
-    pointer-events: auto; min-height: 44px; min-width: 86px;
-    border: 1px solid var(--line); border-radius: 14px;
-    background: rgba(247, 241, 226, .9); padding: 0 14px;
-    box-shadow: 0 8px 24px var(--shadow);
-    font-size: 12px; font-weight: 700; letter-spacing: .04em;
-    cursor: pointer; backdrop-filter: blur(8px);
-    transition: transform .18s ease, background .18s ease;
-  }
-  #sound-toggle:hover { background: var(--paper-light); }
-  #sound-toggle:active { transform: translateY(1px) scale(.98); }
-
   #chapter-mark {
     position: fixed; z-index: 6; left: 18px; top: 92px;
     display: none; color: var(--ink-soft); font-size: 12px;
@@ -384,7 +372,7 @@
   }
 
   @supports not (backdrop-filter: blur(8px)) {
-    #sound-toggle, #guide, #game-hud { background: var(--paper-light); }
+    #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
 <link rel="stylesheet" href="./src/lab.css">
@@ -428,7 +416,6 @@
       <strong>萌萌星的奇妙图鉴</strong>
       <span>孩子说出的想象，会成为世界的一部分</span>
     </div>
-    <button id="sound-toggle" type="button" aria-pressed="true">声音：开</button>
   </header>
 
   <section id="debug-lab" aria-labelledby="lab-title" hidden>
@@ -866,18 +853,7 @@
     })();
   </script>
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module">
-    import('./src/adventure.js').catch(error => {
-      document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
-      console.error('Adventure scene failed to start', error);
-    });
-  </script>
-  <script type="module">
-    import('./vendor/calligraph-bubble.js').catch(error => {
-      document.documentElement.dataset.calligraphError = error?.message || 'Calligraph failed to start';
-      console.error('Calligraph bubble failed to start', error);
-    });
-  </script>
+  <script type="module" src="./src/analytics.js"></script>
   <script type="module" src="./src/mode.js"></script>
 </body>
 </html>

@@ -1,9 +1,36 @@
-import { activateLab, deactivateLab } from './lab.js';
-
 const MODE_KEY = 'mengmeng-entry-mode-v1';
 const gate = document.getElementById('mode-gate');
 const switcher = document.getElementById('mode-switch');
 const lab = document.getElementById('debug-lab');
+const modeNote = gate.querySelector('.mode-note');
+const originalModeNote = modeNote.textContent;
+let labModule = null;
+let storyPromise = null;
+let labPromise = null;
+
+function ensureStory() {
+  storyPromise ||= import('./adventure.js').catch(error => {
+    storyPromise = null;
+    document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
+    throw error;
+  });
+  return storyPromise;
+}
+
+function ensureLab() {
+  labPromise ||= Promise.all([
+    import('./lab.js'),
+    import('../vendor/calligraph-bubble.js'),
+  ]).then(([module]) => {
+    labModule = module;
+    return module;
+  }).catch(error => {
+    labPromise = null;
+    document.documentElement.dataset.labError = error?.message || 'lab failed to start';
+    throw error;
+  });
+  return labPromise;
+}
 
 function storedMode() {
   try {
@@ -20,6 +47,23 @@ function remember(mode) {
 
 async function applyMode(mode, { persist = true } = {}) {
   const next = mode === 'debug' ? 'debug' : 'story';
+  gate.setAttribute('aria-busy', 'true');
+  gate.querySelectorAll('[data-mode-choice]').forEach(button => { button.disabled = true; });
+  modeNote.textContent = next === 'debug' ? '正在打开角色实验室' : '正在铺开第一张图鉴';
+  try {
+    if (next === 'debug') await ensureLab();
+    else await ensureStory();
+  } catch (error) {
+    console.error('Mode failed to load', error);
+    gate.hidden = false;
+    switcher.hidden = true;
+    modeNote.textContent = '这一页暂时没有打开，请检查网络后再试一次。';
+    return;
+  } finally {
+    gate.removeAttribute('aria-busy');
+    gate.querySelectorAll('[data-mode-choice]').forEach(button => { button.disabled = false; });
+  }
+
   document.body.dataset.mode = next;
   gate.hidden = true;
   switcher.hidden = false;
@@ -28,8 +72,9 @@ async function applyMode(mode, { persist = true } = {}) {
   switcher.setAttribute('aria-label', switcher.textContent);
   if (persist) remember(next);
 
-  if (next === 'debug') await activateLab();
-  else deactivateLab();
+  modeNote.textContent = originalModeNote;
+  if (next === 'debug') await labModule.activateLab();
+  else labModule?.deactivateLab();
 
   window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: next } }));
 }

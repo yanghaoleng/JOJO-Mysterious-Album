@@ -18,7 +18,7 @@
 | 成长报告、图鉴页、结算页 | 冒险结果 | `#ending` | 总结创作、数感、推理和情绪概念 |
 | 收进图鉴 | 本机保存 | `#save-card`、`mengmeng-atlas` | 只写入当前浏览器 `localStorage` |
 | 自由想法、AI 输入 | 世界导演入口 | `#custom-idea-form`、`/api/director` | 只有此处把能力描述发给服务端配置的世界导演模型 |
-| 声音按钮 | 语音总开关 | `#sound-toggle`、`VoiceGuide` | 默认开，可随时关闭，保留文字替代 |
+| 声音按钮、语音开关（已移除） | 不再提供全局声音开关 | `VoiceGuide` 固定启用，`#sound-toggle` 已删除 | 教学与反馈默认播放 Fish Audio，所有内容保留文字替代 |
 | 草地点击圈、落脚圈 | 移动目标反馈 | `targetRipple` | 点击或轻触场景后立即出现 |
 | 首次选择、模式扉页 | 模式选择器 | `#mode-gate`、`.mode-choice` | 首次进入显示，可选故事或角色实验室 |
 | 角落切换、返回故事 | 模式切换按钮 | `#mode-switch`、`applyMode()` | 桌面在右下角，实验室手机端在标题右上角 |
@@ -53,3 +53,13 @@
 | 云朵、海底漂流 | 轻漂浮场景 | `clouds`、`underwater`、`motion: "float"` | 比宇宙幅度更小，减弱动态时停止 |
 | 教室桌面、书桌 | 缩小落脚场景 | `classroom-desk` | 调整角色比例和桌面落脚高度 |
 | 复制配方 | 角色与档案导出 | `#copy-recipe` | 复制 recipe 和兴趣小档案，不上传数据 |
+| 数据后台、访问统计 | 自托管匿名运营后台 | `/Data`、`data.html`、`src/data.js` | 六位口令进入，查看 UV、PV、停留、事件、深度和每日趋势 |
+| 罗师傅密码盘、数字键盘 | 六位后台口令门 | `#code-form`、`.code-display`、`.keypad` | 顺序为 1 至 9、清除、0、退格；六位自动提交，错误抖动清空 |
+| 去重用户、访问人数 | 匿名浏览器 UV | `mengmeng-visitor-v1`、`visitor_id`、`COUNT(DISTINCT visitor_id)` | 同一浏览器稳定随机号；不使用账号、姓名或原始 IP |
+| 页面访问、页面人数 | 页面 PV / UV | `page_views`、`view_id`、`page` | 页面分为入口选择、故事模式、角色实验室 |
+| 停留时长 | 前台有效停留 | `activeMs`、`active_ms` | 只累计页面可见且窗口聚焦的时间，15 秒心跳与离页补报 |
+| 交互事件 | 预设匿名事件 | `interaction_events`、`trackAnalytics()` | 只发固定事件名和深度，不发送按钮文字或孩子输入 |
+| 交互深度 | 单次页面最高进度 | `depth`、`max_depth` | 故事按开始、收集、雾门、通关递增；实验室按画像与脚本进度递增 |
+| 统计数据库 | SQLite WAL 持久化 | `/var/lib/kindergrimm/analytics.db`、`ANALYTICS_DB_PATH` | 位于发布目录外，版本切换不覆盖 |
+| 新腾讯服务器、锐驰服务器 | KinderGrimm 生产主机 | `lhins-qgi1l9jg`、`124.221.104.244`、`ssh mikeywa-rive` | 与 Rive 服务隔离端口、目录、systemd 和 Nginx 站点 |
+| 统计服务、站点后端 | Python 零依赖服务 | `kindergrimm.service`、`127.0.0.1:8137`、`serve.py` | 火山、Fish、匿名统计与后台鉴权，只经 Nginx `/api/` 暴露 |

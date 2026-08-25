@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eee6d2">
+  <meta name="robots" content="noindex, nofollow">
+  <title>访问数据 · 萌萌星的奇妙图鉴</title>
+  <link rel="stylesheet" href="./src/data.css">
+</head>
+<body>
+  <canvas id="data-grain" aria-hidden="true"></canvas>
+
+  <main id="data-gate" class="data-gate" aria-labelledby="gate-title">
+    <section class="gate-sheet">
+      <div class="gate-stamp" aria-hidden="true">数</div>
+      <p class="eyebrow">萌萌星 · 访问数据</p>
+      <h1 id="gate-title">请输入六位管理口令</h1>
+      <p class="gate-copy">仅供项目管理查看。页面不会显示孩子填写的文字、姓名或声音。</p>
+      <form id="code-form" autocomplete="off">
+        <label class="sr-only" for="code-input">六位管理口令</label>
+        <input id="code-input" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
+        <div id="code-display" class="code-display" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p id="code-error" class="code-error" role="alert"></p>
+        <div class="keypad" aria-label="数字键盘">
+          <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+          <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+          <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+          <button type="button" data-action="clear"><span>清除</span></button><button type="button" data-key="0">0</button><button type="button" data-action="backspace" aria-label="退格">⌫</button>
+        </div>
+        <button class="sr-only" type="submit">进入数据页</button>
+      </form>
+      <a class="back-link" href="/">返回奇妙图鉴</a>
+    </section>
+  </main>
+
+  <main id="dashboard" class="dashboard" hidden>
+    <header class="dashboard-header">
+      <div>
+        <p class="eyebrow">萌萌星 · 匿名访问概览</p>
+        <h1>孩子走到了哪里？</h1>
+        <p id="generated-at" class="updated-at">正在读取最新数据</p>
+      </div>
+      <div class="header-actions">
+        <a href="/">打开网站</a>
+        <button id="logout" type="button">退出</button>
+      </div>
+    </header>
+
+    <nav class="range-picker" aria-label="统计时间范围">
+      <button type="button" data-range="today">今日</button>
+      <button type="button" data-range="7d" aria-pressed="true">近 7 天</button>
+      <button type="button" data-range="30d">近 30 天</button>
+      <button type="button" data-range="all">全部</button>
+    </nav>
+
+    <section id="dashboard-error" class="dashboard-error" role="alert" hidden>
+      <b>数据暂时没有读出来</b>
+      <p>请检查网络后再试一次。</p>
+      <button id="retry" type="button">重新读取</button>
+    </section>
+
+    <section id="dashboard-content" aria-live="polite">
+      <section class="metric-grid" aria-label="核心数据">
+        <article class="metric-card primary"><span>去重访客</span><strong id="metric-uv">0</strong><small>同一浏览器只算一位</small></article>
+        <article class="metric-card"><span>页面浏览</span><strong id="metric-pv">0</strong><small id="metric-pv-note">所有主要页面合计</small></article>
+        <article class="metric-card"><span>平均有效停留</span><strong id="metric-dwell">0秒</strong><small>只统计页面可见且在前台的时间</small></article>
+        <article class="metric-card"><span>平均交互深度</span><strong id="metric-depth">0</strong><small id="metric-interactions">0 次有效交互</small></article>
+      </section>
+
+      <section class="data-grid">
+        <article class="data-panel page-panel">
+          <header><div><p class="panel-kicker">页面表现</p><h2>各页面访问与停留</h2></div><span>UV 去重访客 · PV 浏览次数</span></header>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>页面</th><th>UV</th><th>PV</th><th>平均停留</th><th>平均深度</th></tr></thead>
+              <tbody id="page-rows"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="data-panel funnel-panel">
+          <header><div><p class="panel-kicker">互动深度</p><h2>到达层级</h2></div><span>以每次页面访问的最高进度计算</span></header>
+          <div id="depth-funnel" class="depth-funnel"></div>
+        </article>
+
+        <article class="data-panel event-panel">
+          <header><div><p class="panel-kicker">主要动作</p><h2>交互事件</h2></div><span>不含输入内容</span></header>
+          <div id="event-list" class="event-list"></div>
+        </article>
+
+        <article class="data-panel trend-panel">
+          <header><div><p class="panel-kicker">每日趋势</p><h2>访问变化</h2></div><span>北京时间</span></header>
+          <div id="daily-chart" class="daily-chart"></div>
+        </article>
+      </section>
+
+      <p id="privacy-note" class="privacy-note"></p>
+    </section>
+  </main>
+
+  <script type="module" src="./src/data.js"></script>
+</body>
+</html>

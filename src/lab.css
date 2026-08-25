@@ -125,6 +125,7 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   background: var(--moss-pale);
 }
 .mode-choice:active { transform: translateY(0) scale(.985); }
+.mode-choice:disabled { opacity: .58; cursor: wait; }
 .mode-mark {
   grid-row: 1 / 4;
   width: 54px;

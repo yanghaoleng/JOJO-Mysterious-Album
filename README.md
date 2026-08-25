@@ -58,7 +58,7 @@ npm run build:bubble
 
 - 电脑：点击草地移动，也支持方向键或 WASD。
 - 手机和平板：轻触草地移动。
-- 声音：页面右上角可随时关闭，所有教学信息同时有文字版本。
+- 声音：教学和反馈按剧情自动播放 Fish Audio，页面不提供全局声音开关；所有信息同时有文字版本。
 
 ## API
 
@@ -91,6 +91,15 @@ npm run build:bubble
 
 角色实验室把不超过 120 个字符的动态台词和音色 ID 发送到服务端，由服务端调用 Fish Audio，密钥不会进入浏览器。默认音色为 `star`，也支持 `sprout`、`bubble` 和 `moss`。接口返回 `audio/mpeg`。已知固定台词默认直接播放随项目打包的星仔 Fish Audio 缓存；动态 Fish Audio 不可用时保留文字气泡和口型，不会切换到设备机械 TTS。故事模式的 10 段教学引导同样全部使用预制 Fish Audio，整个产品不调用浏览器系统 TTS。
 
+### 匿名访问统计与 `/Data`
+
+- `POST /api/analytics/collect`：接收匿名浏览器访客号、页面访问、有效前台停留、最高交互深度和预设事件名。不会接收孩子填写的文字、角色名、声音或原始 IP。
+- `POST /api/data/login`：校验六位服务端管理口令，成功后写入 12 小时有效的 `HttpOnly + SameSite=Strict + Secure` 会话。
+- `GET /api/data/summary`：按今日、近 7 天、近 30 天或全部聚合 UV、PV、平均有效停留、页面数据、交互事件和深度。
+- `POST /api/data/logout`：退出统计后台。
+
+统计后台入口为正式域名加 `/Data`。口令键盘复用罗师傅档期页的六格圆点、`1 至 9 / 清除 / 0 / 退格` 顺序、六位自动提交和错误抖动体验。数据库使用服务器本机 SQLite WAL，位于发布目录之外，切换版本不会丢失。
+
 ## 语音
 
 项目内置 169 段 MP3：10 段故事教学、4 段音色试听，以及 155 段星仔问答、模板、反馈、动作、场景和连续脚本提示。默认星仔的固定台词直接使用本地 Fish Audio 缓存；切换其他音色或输入自由台词时调用在线 Fish Audio。无论语音是否成功，气泡和口型都会正常工作，角色实验室不会调用系统 TTS。
@@ -108,7 +117,9 @@ python3 scripts/generate_star_offline.py
 ## 关键架构
 
 - `index.html`：产品结构、响应式 UI、设计变量和无障碍信息。
-- `src/mode.js`：首次模式选择、本机记忆和故事/实验室切换。
+- `src/mode.js`：首次模式选择、本机记忆、故事/实验室切换和按模式加载，入口不提前下载两个完整场景。
+- `src/analytics.js`：匿名访客号、有效停留、模式页面、交互事件和深度采集。
+- `data.html`、`src/data.js`、`src/data.css`：六位口令门与自托管访问数据后台。
 - `src/lab.js`、`src/lab.css`：角色实验室、15 个完整角色模板、6 种动作、5 套连续脚本、17 问画像塑形、音色和三端布局。
 - `src/child-profile.js`：第三版本机儿童画像、旧档案迁移、17 维完成度、分组摘要和关卡启发映射。
 - `src/calligraph-bubble.jsx`、`vendor/calligraph-bubble.js`：Calligraph 逐字气泡组件及其本地浏览器包。
@@ -117,7 +128,7 @@ python3 scripts/generate_star_offline.py
 - `src/rig.js`、`src/anim.js`、`src/parts/`：继承 Kindergrimm 的程序化水彩角色、骨骼和动画系统。
 - `api/director.js`：Vercel Serverless 版本的世界导演接口。
 - `api/tts.js`：Fish Audio 服务端代理，限制台词长度并使用允许的四种音色。
-- `serve.py`：零依赖本地静态服务和本地世界导演接口。
+- `serve.py`：零依赖静态服务、世界导演、Fish Audio 代理、SQLite 统计聚合与后台会话。
 - `assets/voice/`：游戏运行时使用的内置引导语音。
 - `scripts/star_script_lines.py`：动作与 5 套连续脚本的星仔固定台词清单，由离线语音生成器统一打包。
 
@@ -129,7 +140,7 @@ python3 scripts/generate_star_offline.py
 - 孩子的名字、选择、图鉴、实验室角色配方和兴趣小档案仅保存在当前设备的 `localStorage`；画像不询问姓名、学校、住址或精确生日。
 - 预设能力全程离线运行；只有自由输入的能力描述会发送给火山方舟。
 - 角色实验室不调用大语言模型；需要朗读的问答、反馈和模拟台词会发送文字与音色 ID 到 Fish Audio，不上传麦克风声音，也不由项目服务端保存。
-- 当前版本不录音、不上传声音、不建立儿童账号、不包含第三方统计。
+- 当前版本不录音、不上传声音、不建立儿童账号、不接入第三方统计。自托管统计只保存随机匿名访客号、页面、有效停留、深度和预设事件名，不保存孩子输入或原始 IP。
 
 ## 部署变量
 
@@ -140,8 +151,11 @@ python3 scripts/generate_star_offline.py
 - `ARK_IMAGE_SIZE`：预留图片规格，默认 `4K`；正式图片功能上线前不开放公网生成接口。
 - `FISH_AUDIO_API_KEY`：角色实验室在线语音和开发阶段静态语音生成。
 - `FISH_AUDIO_REFERENCE_ID`：儿童感中文音色 ID。
+- `DATA_ADMIN_PASSWORD`：六位统计后台口令，只放服务器环境变量。
+- `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
+- `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
 
-当前 Vercel 项目为 `jma`。正式入口为 `https://jma.mikeywa.site`，备用入口为 `https://jma-zeta.vercel.app`；自定义域名 DNS 与 HTTPS 已生效。
+正式站部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为回滚点。
 
 ## 项目来源与许可
 

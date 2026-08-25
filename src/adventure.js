@@ -3,6 +3,7 @@ import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { buildGameInspiration, loadChildProfile } from './child-profile.js';
+import { trackAnalytics } from './analytics.js';
 
 setRender({ u: 176, frames: 2 });
 THREE.ColorManagement.enabled = false;
@@ -116,11 +117,6 @@ class VoiceGuide {
     audio.play().catch(keepVisualOnly);
   }
 
-  toggle() {
-    this.enabled = !this.enabled;
-    if (!this.enabled) this.stop();
-    return this.enabled;
-  }
 }
 
 class GameSound {
@@ -530,6 +526,7 @@ addEventListener('keydown',e=>{
 function collectSeed(seed) {
   if(seed.userData.collected||game.phase!=='play')return;
   seed.userData.collected=true;game.collected++;
+  trackAnalytics(`story_seed_${game.collected}`, { depth: 5 + game.collected });
   seedDots[game.collected-1]?.classList.add('got');
   sfx.collect(game.collected);
   seed.userData.collectAt=clock.elapsedTime;
@@ -555,6 +552,7 @@ async function startGateSequence() {
 }
 
 function showGateChallenge() {
+  trackAnalytics('story_gate_reached', { depth: 9 });
   game.phase='gate';game.moving=false;creature.animator.setPose('idle');creature.animator.setFace('scared');
   const action=`用“${profile.traitLabel}”试试`;
   const gateUse=profile.gateLine||TRAITS[profile.trait]?.gate||profile.traitLine;
@@ -564,6 +562,7 @@ function showGateChallenge() {
 }
 
 async function runGateAbility() {
+  trackAnalytics('story_gate_ability', { depth: 10 });
   guideAction.disabled=true;creature.animator.setFace('idle');sfx.reveal();
   applyTraitPreview(profile.trait,true);
   await delay(1050);
@@ -580,6 +579,7 @@ async function runGateAbility() {
 async function finishAdventure() {
   if(game.ending)return;
   game.ending=true;game.phase='complete';gameHud.classList.remove('show');tapHint.classList.remove('show');
+  trackAnalytics('story_complete', { depth: 11 });
   resetTraitVisual();
   for(let i=0;i<18;i++)makeCelebrationParticle(i);
   voice.speak('complete','第一张图鉴完成了。你创造的本领，真的帮助它走过了自己的世界。');
@@ -670,11 +670,6 @@ tick();
 // ------------------------------------------------------------------
 // Onboarding
 // ------------------------------------------------------------------
-$('sound-toggle').addEventListener('click',()=>{
-  const on=voice.toggle();$('sound-toggle').textContent=`声音：${on?'开':'关'}`;$('sound-toggle').setAttribute('aria-pressed',String(on));sfx.tap();
-  if(on)voice.speak('welcome','小芽在这里。声音已经打开啦。');
-});
-
 $('start-adventure').addEventListener('click',async()=>{
   sfx.ready();sfx.choose();game.phase='trait';showPanel('panel-trait');
   applyTraitPreview('transparent');await delay(420);resetTraitVisual();
