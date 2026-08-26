@@ -29,6 +29,14 @@ const APPEARANCE_OPTIONS = {
   tail: ['none', 'wag', 'curl', 'puff'],
   voice: ['sprout', 'bubble', 'moss', 'star'],
 };
+const APPEARANCE_LABELS = {
+  human: '人物', cat: '猫科', dog: '犬科', biped: '两脚站立', sit: '坐姿', quad: '四脚小兽',
+  sparkle: '亮晶晶眼睛', dot: '豆豆眼', saucer: '圆眼睛', sleepy: '困困眼', wide: '大眼睛', happy: '笑眼', void: '墨色眼',
+  none: '无', floppy: '软耳朵', bear: '圆耳朵', bunny: '兔耳朵', sprout: '小芽', flower: '小花', antlers: '小鹿角', spikes: '短刺',
+  tiny: '小巧', smirk: '歪歪笑', buckteeth: '小门牙', wobble: '软软嘴', round: '圆润', pear: '梨形', square: '方形', wonky: '歪歪形',
+  bean: '豆子形', barrel: '胖桶形', stub: '短短手', noodle: '长长手', clasped: '抱手', hips: '叉腰', wing: '小翅膀',
+  wag: '摇摇尾巴', curl: '卷尾巴', puff: '绒球尾巴', bubble: '泡泡声音', moss: '阿绒声音', star: '星仔声音',
+};
 const SCENES = {
   'paper-ground': '纸上地面', 'classroom-desk': '教室书桌', library: '安静图书馆', attic: '玩具阁楼',
   'breakfast-table': '早餐餐桌', 'rainy-window': '雨天窗台', meadow: '萤火草地',
@@ -88,6 +96,13 @@ function sanitizeAppearance(raw) {
 function sanitizeScene(value) {
   const sceneId = cleanText(value, 32);
   return Object.hasOwn(SCENES, sceneId) ? sceneId : '';
+}
+
+function cleanSummary(value, fallback) {
+  let summary = cleanText(value, 120) || fallback;
+  const labels = { ...APPEARANCE_LABELS, ...SCENES };
+  for (const token of Object.keys(labels).sort((a, b) => b.length - a.length)) summary = summary.replaceAll(token, labels[token]);
+  return cleanText(summary, 80);
 }
 
 function sanitizeHistory(raw) {
@@ -257,7 +272,7 @@ async function editCharacterWithAI({ apiKey, characterName, card, appearance, sc
 外观字段可选值：${JSON.stringify(APPEARANCE_OPTIONS)}。
 场景ID与名称：${JSON.stringify(SCENES)}。
 appearancePatch只写创作者明确要求改变的外观字段；sceneId只在明确要求换场景时填写，否则为空字符串。不得编造可选值。
-输出JSON：{"card":完整角色卡对象,"appearancePatch":{},"sceneId":"","summary":"一句不超过40字的修改摘要"}。
+输出JSON：{"card":完整角色卡对象,"appearancePatch":{},"sceneId":"","summary":"一句不超过40字的纯中文修改摘要"}。summary必须使用面向用户的中文名称，不能出现wide、seaside等内部ID。
 角色名是${characterName}。${HARD_SAFETY}`,
         },
         { role: 'user', content: `修改前角色卡：${JSON.stringify(card)}\n修改前外观：${JSON.stringify(appearance)}\n修改前场景：${sceneId}\n创作者要求：${message}\n角色刚才的理解：${reply}` },
@@ -274,11 +289,12 @@ appearancePatch只写创作者明确要求改变的外观字段；sceneId只在�
   const parsed = parseJsonObject(data.choices?.[0]?.message?.content);
   const deterministic = fallbackEdit(card, message);
   const deterministicCardPatch = Object.fromEntries(Object.entries(deterministic.card).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(card[key])));
+  const summarySource = deterministic.summary.startsWith('已更新') ? deterministic.summary : parsed.summary;
   return {
     card: sanitizeCard({ ...card, ...(parsed.card && typeof parsed.card === 'object' ? parsed.card : {}), ...deterministicCardPatch }),
     appearancePatch: sanitizeAppearance({ ...deterministic.appearancePatch, ...sanitizeAppearance(parsed.appearancePatch) }),
     sceneId: sanitizeScene(parsed.sceneId) || deterministic.sceneId,
-    summary: cleanText(parsed.summary, 80) || deterministic.summary,
+    summary: cleanSummary(summarySource, deterministic.summary),
   };
 }
 

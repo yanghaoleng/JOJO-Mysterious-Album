@@ -88,6 +88,14 @@ CHARACTER_APPEARANCE_OPTIONS = {
     "tail": {"none", "wag", "curl", "puff"},
     "voice": {"sprout", "bubble", "moss", "star"},
 }
+CHARACTER_APPEARANCE_LABELS = {
+    "human": "人物", "cat": "猫科", "dog": "犬科", "biped": "两脚站立", "sit": "坐姿", "quad": "四脚小兽",
+    "sparkle": "亮晶晶眼睛", "dot": "豆豆眼", "saucer": "圆眼睛", "sleepy": "困困眼", "wide": "大眼睛", "happy": "笑眼", "void": "墨色眼",
+    "none": "无", "floppy": "软耳朵", "bear": "圆耳朵", "bunny": "兔耳朵", "sprout": "小芽", "flower": "小花", "antlers": "小鹿角", "spikes": "短刺",
+    "tiny": "小巧", "smirk": "歪歪笑", "buckteeth": "小门牙", "wobble": "软软嘴", "round": "圆润", "pear": "梨形", "square": "方形", "wonky": "歪歪形",
+    "bean": "豆子形", "barrel": "胖桶形", "stub": "短短手", "noodle": "长长手", "clasped": "抱手", "hips": "叉腰", "wing": "小翅膀",
+    "wag": "摇摇尾巴", "curl": "卷尾巴", "puff": "绒球尾巴", "bubble": "泡泡声音", "moss": "阿绒声音", "star": "星仔声音",
+}
 CHARACTER_SCENES = {
     "paper-ground": "纸上地面", "classroom-desk": "教室书桌", "library": "安静图书馆",
     "attic": "玩具阁楼", "breakfast-table": "早餐餐桌", "rainy-window": "雨天窗台",
@@ -602,6 +610,14 @@ def sanitize_character_scene(value):
     return scene_id if scene_id in CHARACTER_SCENES else ""
 
 
+def clean_character_summary(value, fallback):
+    summary = clean_character_text(value, 120) or fallback
+    labels = {**CHARACTER_APPEARANCE_LABELS, **CHARACTER_SCENES}
+    for token in sorted(labels, key=len, reverse=True):
+        summary = summary.replace(token, labels[token])
+    return clean_character_text(summary, 80)
+
+
 def sanitize_character_history(raw):
     if not isinstance(raw, list):
         return []
@@ -699,7 +715,7 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
     else:
         mode_rule = "当前是自由对话。保持角色口吻，从角色卡的兴趣、世界、使命或开场白自然发起和延续话题；每次最多两句，只问一个温和的小问题。"
     output_rule = (
-        '只输出JSON：{"reply":"角色口吻的两句以内回应","card":完整角色卡对象,"appearancePatch":只含明确要求修改的外观字段,"sceneId":"明确要求的新场景ID，否则为空字符串","summary":"40字以内修改摘要"}。'
+        '只输出JSON：{"reply":"角色口吻的两句以内回应","card":完整角色卡对象,"appearancePatch":只含明确要求修改的外观字段,"sceneId":"明确要求的新场景ID，否则为空字符串","summary":"40字以内纯中文修改摘要"}。summary必须使用面向用户的中文名称，不能出现wide、seaside等内部ID。'
         if topic == "character"
         else '只输出JSON：{"reply":"角色口吻的两句以内回应"}。'
     )
@@ -741,7 +757,8 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
         result["card"] = sanitize_character_card({**card, **incoming, **deterministic_card_patch})
         result["appearancePatch"] = sanitize_character_appearance({**deterministic["appearancePatch"], **sanitize_character_appearance(parsed.get("appearancePatch"))})
         result["sceneId"] = sanitize_character_scene(parsed.get("sceneId")) or deterministic["sceneId"]
-        result["summary"] = clean_character_text(parsed.get("summary"), 80) or deterministic["summary"]
+        summary_source = deterministic["summary"] if deterministic["summary"].startswith("已更新") else parsed.get("summary")
+        result["summary"] = clean_character_summary(summary_source, deterministic["summary"])
     return result
 
 
