@@ -375,7 +375,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260826-template-editor">
+<link rel="stylesheet" href="./src/lab.css?v=20260826-voice-call">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -401,7 +401,7 @@
         <button class="mode-choice debug" type="button" data-mode-choice="debug">
           <span class="mode-mark" aria-hidden="true">造</span>
           <b>角色模拟器</b>
-          <span>捏脸、选声音和场景，用问答观察它怎样长出来。</span>
+          <span>选择或创建角色，编辑外观、声音、场景和完整角色卡。</span>
           <i>自由创造</i>
         </button>
       </div>
@@ -429,43 +429,12 @@
       <aside class="lab-workbench" aria-label="角色实验工具">
         <nav class="lab-tabs" role="tablist" aria-label="实验室功能">
           <button class="template-root-tab" type="button" role="tab" aria-selected="true" data-lab-tab="templates">角色模板</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="interview" disabled>成长问答</button>
           <button type="button" role="tab" aria-selected="false" data-lab-tab="face" disabled>捏脸</button>
           <button type="button" role="tab" aria-selected="false" data-lab-tab="body" disabled>身体</button>
           <button type="button" role="tab" aria-selected="false" data-lab-tab="actions" disabled>动作</button>
           <button type="button" role="tab" aria-selected="false" data-lab-tab="scene" disabled>场景</button>
           <button type="button" role="tab" aria-selected="false" data-lab-tab="voice" disabled>声音</button>
         </nav>
-
-        <section class="lab-panel" data-lab-panel="interview" role="tabpanel" hidden>
-          <div class="question-meta">
-            <span id="question-progress">正在认识你</span>
-            <button id="restart-interview" type="button">重新开始</button>
-          </div>
-          <div class="interview-journey" aria-label="认识进度">
-            <div><span id="question-stage">基本认识</span><b id="question-memory-count">已记住 0 / 17</b></div>
-            <div class="interview-progress" id="interview-progress" role="progressbar" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0">
-              <span></span>
-            </div>
-          </div>
-          <h2 id="question-title">你更容易用眼睛记住，还是用耳朵记住？</h2>
-          <p id="question-help">每一个回答都会马上改变它的样子。</p>
-          <div id="question-answers" class="answer-grid"></div>
-          <p id="question-feedback" class="question-feedback" role="status" hidden></p>
-          <form id="interest-form" class="interest-form" hidden>
-            <label for="interest-input">最近最喜欢做的一件事</label>
-            <div>
-              <input id="interest-input" maxlength="36" autocomplete="off" placeholder="比如：画恐龙、搭积木、听故事">
-              <button type="submit">告诉它</button>
-            </div>
-            <p id="interest-error" role="alert"></p>
-          </form>
-          <div id="interview-finish" class="interview-finish" hidden>
-            <b>它已经记住你啦</b>
-            <p>现在可以继续编辑它的外观、声音和场景。</p>
-            <button type="button" data-open-tab="face">继续编辑外观</button>
-          </div>
-        </section>
 
         <section class="lab-panel active" data-lab-panel="templates" role="tabpanel">
           <div class="template-panel-heading">
@@ -682,23 +651,31 @@
 
           <aside id="character-call-debug" class="character-call-debug" aria-label="当前角色设定" hidden>
             <header>
-              <div><span>创作者调试</span><b>边聊边改角色</b></div>
+              <div><span>创作者调试</span><b>边聊边看角色</b></div>
               <button id="character-card-reset" type="button">恢复原设定</button>
             </header>
-            <p id="character-card-change">直接告诉角色想改哪里，例如“说话再活泼一点”。修改只保存在当前设备。</p>
+            <div class="character-call-topics" role="group" aria-label="聊天主题">
+              <span>聊的主题</span>
+              <div>
+                <button type="button" data-call-topic="growth" aria-pressed="false">成长问答</button>
+                <button type="button" data-call-topic="free" aria-pressed="true">自由对话</button>
+                <button type="button" data-call-topic="character" aria-pressed="false">人物设定</button>
+              </div>
+            </div>
+            <p id="character-card-change">自由对话会从角色卡里的兴趣、世界和使命自然展开。</p>
             <dl id="character-call-card"></dl>
           </aside>
 
-          <form id="character-call-form" class="character-call-form">
-            <label class="sr-only" for="character-call-input">对角色说话</label>
-            <textarea id="character-call-input" rows="1" maxlength="180" placeholder="对角色说一句话"></textarea>
+          <div id="character-call-voice" class="character-call-voice">
+            <p id="character-call-live" class="character-call-live" aria-live="polite"></p>
             <button id="character-call-mic" class="character-call-mic" type="button" aria-label="开始语音输入" data-state="idle">
               <span aria-hidden="true"></span>
             </button>
-            <button id="character-call-send" class="character-call-send" type="submit">发送</button>
-          </form>
+          </div>
         </section>
       </section>
+
+      <div id="editor-resize-handle" class="editor-resize-handle" role="separator" aria-orientation="vertical" aria-label="调整右侧角色编辑器宽度" aria-valuemin="220" aria-valuemax="480" aria-valuenow="285" tabindex="0"></div>
 
       <aside class="lab-notebook character-editor-pane" aria-labelledby="character-editor-title">
         <div class="notebook-heading">
@@ -728,18 +705,20 @@
             <legend>角色卡</legend>
             <div id="character-card-fields" class="character-card-fields"></div>
           </fieldset>
+          <div class="recipe-summary">
+            <b>编辑状态</b>
+            <p id="recipe-summary">选择角色后即可编辑并保存。</p>
+          </div>
+          <div class="character-editor-secondary">
+            <button id="character-editor-reset" type="button">恢复模板</button>
+            <button id="copy-recipe" type="button" disabled>复制当前角色</button>
+          </div>
+          <p id="lab-status" role="status"></p>
           <div class="character-editor-actions">
             <button id="character-editor-save" type="submit">保存角色</button>
             <button id="character-editor-call" type="button">呼叫它</button>
-            <button id="character-editor-reset" type="button">恢复模板</button>
           </div>
         </form>
-        <div class="recipe-summary">
-          <b>编辑状态</b>
-          <p id="recipe-summary">选择角色后即可编辑并保存。</p>
-        </div>
-        <button id="copy-recipe" type="button" disabled>复制当前角色</button>
-        <p id="lab-status" role="status"></p>
       </aside>
     </main>
   </section>
@@ -764,9 +743,9 @@
       addEventListener('resize', paint, { passive: true });
     })();
   </script>
-  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-voice-call">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260826-template-editor"></script>
+  <script type="module" src="./src/mode.js?v=20260826-voice-call"></script>
 </body>
 </html>

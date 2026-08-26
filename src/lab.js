@@ -28,6 +28,7 @@ const RECIPE_KEY = 'mengmeng-lab-recipe-v1';
 const SCENE_KEY = 'mengmeng-lab-scene-v1';
 const CHARACTER_CARD_KEY = 'mengmeng-character-cards-v1';
 const CHARACTER_LIBRARY_KEY = 'mengmeng-character-library-v1';
+const EDITOR_WIDTH_KEY = 'mengmeng-character-editor-width-v1';
 const FACE_DEFAULT_SEED = 20260825;
 const DEFAULT_VOICE = 'star';
 const DEFAULT_SCENE = 'paper-ground';
@@ -373,12 +374,18 @@ let characterNames = characterLibrary.names && typeof characterLibrary.names ===
 const callState = {
   active: false,
   mode: 'normal',
+  topic: 'free',
   template: null,
   card: null,
   messages: [],
   busy: false,
+  micEnabled: false,
+  micPaused: false,
+  mediaStream: null,
   controller: null,
   recognition: null,
+  recognitionRestartTimer: 0,
+  growthIndex: 0,
   returnFocus: null,
 };
 const pointerRaycaster = new THREE.Raycaster();
@@ -1384,7 +1391,14 @@ function skipLabSpeech() {
   anim.talk = false;
   animator?.setFace('idle');
   animator?.setPose('idle');
-  if (callState.active && !callState.busy) setCharacterCallStatus('connected', callState.mode === 'debug' ? '设定可继续调整' : '已接通');
+  if (callState.active && !callState.busy) {
+    if (callState.micEnabled && !callState.micPaused) {
+      setCharacterCallStatus('listening', `${callState.template.name}正在听`);
+      scheduleCharacterCallRecognition(120);
+    } else {
+      setCharacterCallStatus(callState.micPaused ? 'paused' : 'permission', callState.micPaused ? '持续聆听已暂停' : '点麦克风开启持续聆听');
+    }
+  }
   void playUISFX('skip-next', { volume: 0.12 });
 }
 
@@ -1653,6 +1667,64 @@ function resetCharacterEditor() {
   void playUISFX('back');
 }
 
+function editorWidthLimits() {
+  const min = window.innerWidth <= 1080 ? 220 : 245;
+  const max = Math.max(min, Math.min(480, window.innerWidth - (window.innerWidth <= 1080 ? 590 : 730)));
+  return { min, max };
+}
+
+function setEditorWidth(value, { persist = false } = {}) {
+  const layout = document.querySelector('.lab-layout');
+  const handle = $('editor-resize-handle');
+  if (!layout || !handle) return 0;
+  const { min, max } = editorWidthLimits();
+  const width = Math.round(Math.max(min, Math.min(max, Number(value) || 285)));
+  layout.style.setProperty('--editor-width', `${width}px`);
+  handle.setAttribute('aria-valuemin', String(min));
+  handle.setAttribute('aria-valuemax', String(max));
+  handle.setAttribute('aria-valuenow', String(width));
+  if (persist) {
+    try { localStorage.setItem(EDITOR_WIDTH_KEY, String(width)); } catch { /* keep the current width in memory */ }
+  }
+  return width;
+}
+
+function initEditorResize() {
+  const handle = $('editor-resize-handle');
+  if (!handle) return;
+  let saved = 285;
+  try { saved = Number(localStorage.getItem(EDITOR_WIDTH_KEY)) || saved; } catch { /* use the default width */ }
+  setEditorWidth(saved);
+
+  handle.addEventListener('pointerdown', event => {
+    if (matchMedia('(max-width: 860px)').matches) return;
+    const startX = event.clientX;
+    const startWidth = Number(handle.getAttribute('aria-valuenow')) || 285;
+    handle.classList.add('is-dragging');
+    handle.setPointerCapture?.(event.pointerId);
+    const move = moveEvent => setEditorWidth(startWidth + startX - moveEvent.clientX);
+    const finish = finishEvent => {
+      handle.classList.remove('is-dragging');
+      handle.releasePointerCapture?.(finishEvent.pointerId);
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', finish);
+      handle.removeEventListener('pointercancel', finish);
+      setEditorWidth(Number(handle.getAttribute('aria-valuenow')), { persist: true });
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', finish);
+    handle.addEventListener('pointercancel', finish);
+    event.preventDefault();
+  });
+  handle.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    const width = Number(handle.getAttribute('aria-valuenow')) || 285;
+    setEditorWidth(width + (event.key === 'ArrowLeft' ? 20 : -20), { persist: true });
+    event.preventDefault();
+  });
+  window.addEventListener('resize', () => setEditorWidth(Number(handle.getAttribute('aria-valuenow')) || saved), { passive: true });
+}
+
 function initCharacterEditor() {
   const sceneSelect = $('character-editor-scene');
   for (const config of LAB_SCENES) {
@@ -1731,15 +1803,91 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   return { message, node };
 }
 
-function stopCharacterCallRecognition() {
-  if (!callState.recognition) return;
-  try { callState.recognition.abort(); } catch { /* already stopped */ }
-  callState.recognition = null;
+function setCharacterCallMic(state, label) {
   const button = $('character-call-mic');
-  if (button) {
-    button.dataset.state = 'idle';
-    button.setAttribute('aria-label', '开始语音输入');
+  if (!button) return;
+  button.dataset.state = state;
+  button.setAttribute('aria-label', label);
+}
+
+function setCharacterCallLive(text = '') {
+  const live = $('character-call-live');
+  if (live) live.textContent = String(text || '').trim().slice(0, 180);
+}
+
+function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
+  clearTimeout(callState.recognitionRestartTimer);
+  callState.recognitionRestartTimer = 0;
+  const recognition = callState.recognition;
+  callState.recognition = null;
+  if (recognition) {
+    try { recognition.abort(); } catch { /* already stopped */ }
   }
+  if (releaseMedia) {
+    callState.mediaStream?.getTracks?.().forEach(track => track.stop());
+    callState.mediaStream = null;
+    callState.micEnabled = false;
+    callState.micPaused = false;
+    setCharacterCallMic('idle', '开启麦克风并持续聆听');
+  }
+}
+
+function scheduleCharacterCallRecognition(delay = 260) {
+  clearTimeout(callState.recognitionRestartTimer);
+  if (!callState.active || !callState.micEnabled || callState.micPaused || callState.busy || callState.recognition) return;
+  callState.recognitionRestartTimer = window.setTimeout(() => {
+    callState.recognitionRestartTimer = 0;
+    startCharacterCallRecognition();
+  }, delay);
+}
+
+function growthTopicContext() {
+  const currentIndex = Math.max(0, Math.min(callState.growthIndex, QUESTIONS.length - 1));
+  const current = QUESTIONS[currentIndex];
+  const next = QUESTIONS[Math.min(currentIndex + 1, QUESTIONS.length - 1)];
+  return {
+    index: currentIndex,
+    total: QUESTIONS.length,
+    currentQuestion: current?.text || '',
+    currentHelp: current?.help || '',
+    nextQuestion: currentIndex + 1 < QUESTIONS.length ? next?.text || '' : '',
+  };
+}
+
+function setCharacterCallTopic(topic, { announce = true } = {}) {
+  const allowed = ['growth', 'free', 'character'];
+  callState.topic = allowed.includes(topic) ? topic : 'free';
+  $('character-call')?.querySelectorAll('[data-call-topic]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.callTopic === callState.topic));
+  });
+  const descriptions = {
+    growth: '成长问答会沿用原来的问题，但现在全程用语音自然聊。',
+    free: '自由对话会从角色卡里的兴趣、世界和使命自然展开。',
+    character: '人物设定会把你说的修改同步到当前角色卡。',
+  };
+  $('character-card-change').textContent = descriptions[callState.topic];
+  if (!announce || !callState.active) return;
+  speaker?.cancel();
+  stopCharacterCallRecognition();
+  setCharacterCallLive('');
+  if (callState.topic === 'growth') {
+    const question = growthTopicContext().currentQuestion;
+    appendCharacterCallMessage('assistant', question);
+    setCharacterCallStatus('speaking', `${callState.template.name}正在提问`);
+    setCharacterCallMic('speaking', '角色正在提问');
+    Promise.resolve(speaker.speak(question)).finally(() => {
+      if (!callState.active) return;
+      if (callState.micEnabled && !callState.micPaused) scheduleCharacterCallRecognition(320);
+      else {
+        setCharacterCallStatus('permission', '点麦克风开启持续聆听');
+        setCharacterCallMic('idle', '开启麦克风并持续聆听');
+      }
+    });
+  } else {
+    setCharacterCallStatus(callState.micEnabled && !callState.micPaused ? 'connected' : 'permission', callState.micEnabled && !callState.micPaused ? '会继续听你说' : '点麦克风开启持续聆听');
+    if (callState.micEnabled && !callState.micPaused) scheduleCharacterCallRecognition(120);
+  }
+  trackAnalytics(`lab_character_call_topic_${callState.topic}`, { depth: 4 });
 }
 
 function setCharacterCallMode(mode) {
@@ -1750,12 +1898,11 @@ function setCharacterCallMode(mode) {
     button.setAttribute('aria-pressed', String(button.dataset.callMode === callState.mode));
   });
   $('character-call-debug').hidden = callState.mode !== 'debug';
-  $('character-call-input').placeholder = callState.mode === 'debug'
-    ? '例如：让它少说一点，多问孩子问题'
-    : `对${callState.template?.name || '角色'}说一句话`;
   $('character-call-kicker').textContent = callState.mode === 'debug' ? '调试通话' : '视频通话';
+  setCharacterCallTopic('free', { announce: false });
   renderCharacterCallCard();
-  setCharacterCallStatus('connected', callState.mode === 'debug' ? '可以用对话修改设定' : '已接通');
+  const listening = callState.micEnabled && !callState.micPaused;
+  setCharacterCallStatus(listening ? 'listening' : 'permission', listening ? `${callState.template?.name || '角色'}正在听` : '点麦克风开启持续聆听');
   trackAnalytics('lab_character_call_mode', { depth: callState.mode === 'debug' ? 3 : 2 });
 }
 
@@ -1763,32 +1910,38 @@ function startCharacterCall(config) {
   if (!config) return;
   callState.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   speaker?.cancel();
-  stopCharacterCallRecognition();
+  stopCharacterCallRecognition({ releaseMedia: true });
   callState.controller?.abort();
   callState.active = true;
   callState.busy = false;
   callState.template = config;
   callState.card = characterCardFor(config.id);
   callState.messages = [];
+  const firstGrowthQuestion = firstUnansweredProfileIndex(profile);
+  callState.growthIndex = firstGrowthQuestion >= QUESTIONS.length ? 0 : firstGrowthQuestion;
   applyTemplate(config, { speak: false });
 
   const preview = document.querySelector('.lab-preview');
   const overlay = $('character-call');
   document.body.classList.add('character-call-active');
   preview.classList.add('is-calling');
-  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook')) element.inert = true;
+  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = true;
   overlay.hidden = false;
   $('character-call-name').textContent = config.name;
   $('character-call-transcript').innerHTML = '';
-  $('character-card-change').textContent = '直接告诉角色想改哪里，例如“说话再活泼一点”。修改只保存在当前设备。';
-  $('character-call-input').value = '';
+  setCharacterCallLive('');
+  setCharacterCallMic('idle', '开启麦克风并持续聆听');
   setCharacterCallMode('normal');
   appendCharacterCallMessage('assistant', callState.card.greeting);
   animator?.setPose('play');
   const greetingSpeech = speaker.speak(callState.card.greeting);
   setCharacterCallStatus('speaking', `${config.name}正在打招呼`);
+  setCharacterCallMic('speaking', '角色正在打招呼');
   Promise.resolve(greetingSpeech).finally(() => {
-    if (callState.active && !callState.busy) setCharacterCallStatus('connected', '已接通');
+    if (callState.active && !callState.busy) {
+      setCharacterCallStatus('permission', '点麦克风开启持续聆听');
+      setCharacterCallMic('idle', '开启麦克风并持续聆听');
+    }
   });
   window.setTimeout(() => animator?.setPose('idle'), 1050);
   trackAnalytics('lab_character_call_start', { depth: 3 });
@@ -1800,15 +1953,16 @@ function endCharacterCall() {
   if (!callState.active) return;
   callState.controller?.abort();
   callState.controller = null;
-  stopCharacterCallRecognition();
+  stopCharacterCallRecognition({ releaseMedia: true });
   speaker?.cancel();
   callState.active = false;
   callState.busy = false;
   document.body.classList.remove('character-call-active');
   document.querySelector('.lab-preview')?.classList.remove('is-calling');
-  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook')) element.inert = false;
+  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = false;
   $('character-call').hidden = true;
   $('character-call-transcript').innerHTML = '';
+  setCharacterCallLive('');
   setBubble(`${callState.template?.name || '角色'}已经挂断通话，角色卡还保存在这里。`);
   trackAnalytics('lab_character_call_end', { depth: 3 });
   void playUISFX('back', { volume: 0.12 });
@@ -1870,12 +2024,13 @@ async function readCharacterCallStream(response, target) {
 async function sendCharacterCall(messageText) {
   const message = String(messageText || '').trim().slice(0, 180);
   if (!callState.active || callState.busy || !message) return;
+  const turnTopic = callState.mode === 'debug' ? callState.topic : 'free';
+  const topicContext = turnTopic === 'growth' ? growthTopicContext() : {};
   speaker?.cancel();
   stopCharacterCallRecognition();
   callState.busy = true;
-  $('character-call-input').value = '';
-  $('character-call-send').disabled = true;
-  $('character-call-mic').disabled = true;
+  setCharacterCallLive('');
+  setCharacterCallMic('thinking', '角色正在思考');
   appendCharacterCallMessage('user', message);
   const history = callState.messages.slice(0, -1);
   const target = appendCharacterCallMessage('assistant', '', { pending: true });
@@ -1891,6 +2046,8 @@ async function sendCharacterCall(messageText) {
         templateId: callState.template.id,
         characterName: callState.template.name,
         mode: callState.mode,
+        topic: turnTopic,
+        topicContext,
         message,
         history,
         card: callState.card,
@@ -1902,12 +2059,10 @@ async function sendCharacterCall(messageText) {
     target.node.classList.remove('pending');
     anim.talk = false;
     animator?.setPose('idle');
-    callState.busy = false;
     setCharacterCallStatus('speaking', `${callState.template.name}正在说话`);
-    const speech = speaker.speak(target.message.content);
-    Promise.resolve(speech).finally(() => {
-      if (callState.active && !callState.busy) setCharacterCallStatus('connected', callState.mode === 'debug' ? '设定可继续调整' : '已接通');
-    });
+    setCharacterCallMic('speaking', '角色正在说话');
+    if (turnTopic === 'growth') callState.growthIndex = Math.min(callState.growthIndex + 1, QUESTIONS.length - 1);
+    try { await speaker.speak(target.message.content); } catch { /* speech may be skipped while the call continues */ }
     trackAnalytics('lab_character_call_turn', { depth: 4 });
   } catch (error) {
     if (error?.name === 'AbortError') return;
@@ -1918,68 +2073,131 @@ async function sendCharacterCall(messageText) {
     anim.talk = false;
     animator?.setPose('idle');
     setCharacterCallStatus('error', '连接刚才停了一下');
+    setCharacterCallMic('error', '连接中断，仍会继续聆听');
     void playUISFX('error', { volume: 0.12 });
   } finally {
     callState.controller = null;
     callState.busy = false;
-    $('character-call-send').disabled = false;
-    $('character-call-mic').disabled = false;
+    if (callState.active && callState.micEnabled && !callState.micPaused) {
+      setCharacterCallStatus('listening', `${callState.template.name}正在听`);
+      setCharacterCallMic('listening', '暂停持续聆听');
+      scheduleCharacterCallRecognition(280);
+    } else if (callState.active) {
+      setCharacterCallStatus(callState.micPaused ? 'paused' : 'permission', callState.micPaused ? '持续聆听已暂停' : '点麦克风开启持续聆听');
+      setCharacterCallMic(callState.micPaused ? 'paused' : 'idle', callState.micPaused ? '继续持续聆听' : '开启麦克风并持续聆听');
+    }
   }
 }
 
-function beginCharacterCallRecognition() {
-  if (!callState.active || callState.busy) return;
-  if (callState.recognition) {
-    stopCharacterCallRecognition();
-    setCharacterCallStatus('connected', '语音输入已停止');
-    return;
-  }
+function startCharacterCallRecognition() {
+  if (!callState.active || callState.busy || !callState.micEnabled || callState.micPaused || callState.recognition) return;
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Recognition) {
-    setCharacterCallStatus('error', '当前浏览器未开放语音输入，可以先打字');
+    setCharacterCallStatus('error', '当前浏览器不支持持续语音输入');
+    setCharacterCallMic('error', '当前浏览器不支持语音输入');
     void playUISFX('error', { volume: 0.1 });
     return;
   }
-  speaker?.cancel();
   const recognition = new Recognition();
   callState.recognition = recognition;
   recognition.lang = 'zh-CN';
   recognition.interimResults = true;
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.onstart = () => {
-    $('character-call-mic').dataset.state = 'listening';
-    $('character-call-mic').setAttribute('aria-label', '停止语音输入');
+    if (callState.recognition !== recognition) return;
+    setCharacterCallMic('listening', '暂停持续聆听');
     setCharacterCallStatus('listening', `${callState.template.name}正在听`);
     animator?.setPose('sit');
   };
   recognition.onresult = event => {
-    let transcript = '';
-    let final = false;
+    let interim = '';
+    let complete = '';
     for (let index = event.resultIndex; index < event.results.length; index += 1) {
-      transcript += event.results[index][0]?.transcript || '';
-      final ||= event.results[index].isFinal;
+      const text = event.results[index][0]?.transcript || '';
+      if (event.results[index].isFinal) complete += text;
+      else interim += text;
     }
-    $('character-call-input').value = transcript.trim().slice(0, 180);
-    if (final && transcript.trim()) {
-      const complete = transcript.trim();
+    setCharacterCallLive((complete || interim).trim());
+    if (complete.trim()) {
+      const message = complete.trim();
       stopCharacterCallRecognition();
-      void sendCharacterCall(complete);
+      setCharacterCallLive('');
+      void sendCharacterCall(message);
     }
   };
   recognition.onerror = event => {
-    stopCharacterCallRecognition();
-    setCharacterCallStatus('error', event.error === 'not-allowed' ? '请先允许麦克风权限' : '没有听清，可以再试一次');
+    if (callState.recognition !== recognition) return;
+    callState.recognition = null;
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      stopCharacterCallRecognition({ releaseMedia: true });
+      setCharacterCallStatus('error', '请允许麦克风权限后再试');
+      setCharacterCallMic('error', '重新请求麦克风权限');
+      return;
+    }
+    if (!['aborted', 'no-speech'].includes(event.error)) {
+      setCharacterCallStatus('error', '没有听清，我会继续听');
+    }
+    scheduleCharacterCallRecognition(420);
   };
   recognition.onend = () => {
-    if (callState.recognition === recognition) stopCharacterCallRecognition();
-    if (callState.active && !callState.busy) {
-      animator?.setPose('idle');
-      setCharacterCallStatus('connected', '已接通');
-    }
+    if (callState.recognition !== recognition) return;
+    callState.recognition = null;
+    setCharacterCallLive('');
+    scheduleCharacterCallRecognition(260);
   };
   try { recognition.start(); } catch {
-    stopCharacterCallRecognition();
-    setCharacterCallStatus('error', '麦克风还没准备好，请再试一次');
+    if (callState.recognition === recognition) callState.recognition = null;
+    scheduleCharacterCallRecognition(520);
+  }
+}
+
+async function beginCharacterCallRecognition() {
+  if (!callState.active || callState.busy) return;
+  if (callState.micEnabled) {
+    if (callState.micPaused) {
+      callState.micPaused = false;
+      setCharacterCallStatus('listening', `${callState.template.name}正在听`);
+      setCharacterCallMic('listening', '暂停持续聆听');
+      scheduleCharacterCallRecognition(80);
+    } else {
+      callState.micPaused = true;
+      stopCharacterCallRecognition();
+      setCharacterCallLive('');
+      animator?.setPose('idle');
+      setCharacterCallStatus('paused', '持续聆听已暂停');
+      setCharacterCallMic('paused', '继续持续聆听');
+    }
+    return;
+  }
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
+    setCharacterCallStatus('error', '当前浏览器不支持持续语音输入');
+    setCharacterCallMic('error', '当前浏览器不支持语音输入');
+    void playUISFX('error', { volume: 0.1 });
+    return;
+  }
+  setCharacterCallStatus('permission', '正在请求麦克风权限');
+  setCharacterCallMic('thinking', '正在请求麦克风权限');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!callState.active) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+    speaker?.cancel();
+    callState.mediaStream = stream;
+    callState.micEnabled = true;
+    callState.micPaused = false;
+    setCharacterCallStatus('listening', `${callState.template.name}正在听`);
+    setCharacterCallMic('listening', '暂停持续聆听');
+    startCharacterCallRecognition();
+    trackAnalytics('lab_character_call_mic_allowed', { depth: 4 });
+  } catch (error) {
+    console.warn('Microphone permission unavailable', error);
+    stopCharacterCallRecognition({ releaseMedia: true });
+    setCharacterCallStatus('error', '请在浏览器设置里允许麦克风');
+    setCharacterCallMic('error', '重新请求麦克风权限');
+    void playUISFX('error', { volume: 0.1 });
   }
 }
 
@@ -1989,7 +2207,7 @@ function resetActiveCharacterCard() {
   renderCharacterCallCard();
   renderTemplateDetail(callState.template);
   $('character-card-change').textContent = '已经恢复这只角色最初的设定。';
-  setCharacterCallStatus('connected', '角色设定已恢复');
+  setCharacterCallStatus(callState.micEnabled && !callState.micPaused ? 'listening' : 'connected', '角色设定已恢复');
   void playUISFX('back', { volume: 0.11 });
 }
 
@@ -1998,15 +2216,8 @@ function initCharacterCalling() {
   $('character-call').querySelectorAll('[data-call-mode]').forEach(button => {
     button.addEventListener('click', () => setCharacterCallMode(button.dataset.callMode));
   });
-  $('character-call-form').addEventListener('submit', event => {
-    event.preventDefault();
-    void sendCharacterCall($('character-call-input').value);
-  });
-  $('character-call-input').addEventListener('keydown', event => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      void sendCharacterCall(event.currentTarget.value);
-    }
+  $('character-call').querySelectorAll('[data-call-topic]').forEach(button => {
+    button.addEventListener('click', () => setCharacterCallTopic(button.dataset.callTopic));
   });
   $('character-call-mic').addEventListener('click', beginCharacterCallRecognition);
   $('character-card-reset').addEventListener('click', resetActiveCharacterCard);
@@ -2359,6 +2570,7 @@ function initUI() {
   initActionStudio();
   initCharacterInteraction();
   initCharacterCalling();
+  initEditorResize();
 
   document.querySelectorAll('[data-lab-tab]').forEach(button => {
     button.addEventListener('click', () => selectTab(button.dataset.labTab));
@@ -2411,12 +2623,6 @@ function initUI() {
     showStatus(`已经切换到${preset.label}的声音。`);
   });
 
-  $('interest-form').addEventListener('submit', event => {
-    event.preventDefault();
-    finishInterest($('interest-input').value);
-  });
-  $('restart-interview').addEventListener('click', resetInterview);
-
   $('copy-recipe').addEventListener('click', async () => {
     const payload = JSON.stringify({
       name: $('character-editor-name').value,
@@ -2435,7 +2641,6 @@ function initUI() {
   });
 
   refreshControls();
-  renderQuestion({ speak: false });
   refreshEditorGate();
   if (activeTemplateId) {
     const selected = characterTemplateById(activeTemplateId);

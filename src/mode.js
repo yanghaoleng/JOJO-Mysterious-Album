@@ -12,8 +12,8 @@ let labPromise = null;
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260826-template-editor'),
-    import('../vendor/calligraph-bubble.js?v=20260826-template-editor'),
+    import('./lab.js?v=20260826-voice-call'),
+    import('../vendor/calligraph-bubble.js?v=20260826-voice-call'),
   ]).then(([module]) => {
     labModule = module;
     return module;

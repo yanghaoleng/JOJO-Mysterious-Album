@@ -96,10 +96,14 @@ function fallbackEdit(card, message) {
   return { card: sanitizeCard(next), summary };
 }
 
-function normalSystem(characterName, card, mode) {
-  const modeRule = mode === 'debug'
-    ? '当前是创作者调试通话。创作者可能要求修改角色。先用角色口吻简短确认你理解的变化，最多两句，不要声称已经修改成功，因为系统会在随后校验和保存。'
-    : '当前是和孩子的普通视频通话。始终保持角色口吻，每次最多两句、总共不超过90个中文字符。先具体回应刚才的话，必要时只问一个温和的小问题。';
+function normalSystem(characterName, card, topic, topicContext) {
+  let modeRule = '当前是自由对话。始终保持角色口吻，从角色卡的兴趣、世界、使命或开场白自然发起和延续话题；每次最多两句、总共不超过90个中文字符，只问一个温和的小问题。';
+  if (topic === 'growth') {
+    const nextQuestion = cleanText(topicContext?.nextQuestion, 100);
+    modeRule = `当前是成长问答语音对话。孩子正在回答：${cleanText(topicContext?.currentQuestion, 100) || '当前成长问题'}。先自然承接回答，${nextQuestion ? `再只问下一个问题：${nextQuestion}` : '这是最后一个问题，请温柔总结，不再提问'}。不要给选项，不要像填表。`;
+  } else if (topic === 'character') {
+    modeRule = '当前是人物设定调试。创作者可能要求修改角色。先用角色口吻简短确认你理解的变化，最多两句，不要声称已经修改成功，因为系统会在随后校验和保存。';
+  }
   return `你正在扮演儿童角色“${characterName}”。
 ${modeRule}
 角色卡数据如下：
@@ -107,7 +111,7 @@ ${JSON.stringify(card)}
 ${HARD_SAFETY}`;
 }
 
-async function streamCompletion({ apiKey, characterName, card, mode, message, history, onToken }) {
+async function streamCompletion({ apiKey, characterName, card, topic, topicContext, message, history, onToken }) {
   const baseUrl = (process.env.ARK_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, '');
   const upstream = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -118,7 +122,7 @@ async function streamCompletion({ apiKey, characterName, card, mode, message, hi
     body: JSON.stringify({
       model: process.env.ARK_LLM_MODEL || 'doubao-seed-2-0-mini-260428',
       messages: [
-        { role: 'system', content: normalSystem(characterName, card, mode) },
+        { role: 'system', content: normalSystem(characterName, card, topic, topicContext) },
         ...history,
         { role: 'user', content: message },
       ],
@@ -208,10 +212,13 @@ export default async function handler(request, response) {
   const templateId = cleanText(request.body?.templateId, 32);
   const characterName = cleanText(request.body?.characterName, 28);
   const mode = request.body?.mode === 'debug' ? 'debug' : 'normal';
+  const requestedTopic = cleanText(request.body?.topic, 16);
+  const topic = mode === 'debug' && ['growth', 'free', 'character'].includes(requestedTopic) ? requestedTopic : 'free';
+  const topicContext = request.body?.topicContext && typeof request.body.topicContext === 'object' ? request.body.topicContext : {};
   const message = cleanText(request.body?.message, 180);
   const card = sanitizeCard(request.body?.card);
   const history = sanitizeHistory(request.body?.history);
-  if (!TEMPLATE_IDS.has(templateId) || !characterName || !message) return response.status(400).json({ error: 'invalid_character_call' });
+  if ((!TEMPLATE_IDS.has(templateId) && !templateId.startsWith('custom-')) || !characterName || !message) return response.status(400).json({ error: 'invalid_character_call' });
 
   response.status(200);
   response.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -232,7 +239,7 @@ export default async function handler(request, response) {
     if (apiKey) {
       try {
         reply = await streamCompletion({
-          apiKey, characterName, card, mode, message, history,
+          apiKey, characterName, card, topic, topicContext, message, history,
           onToken: token => sendEvent(response, 'token', { text: token }),
         });
       } catch (error) {
@@ -240,13 +247,16 @@ export default async function handler(request, response) {
       }
     }
     if (!reply) {
-      const fallback = mode === 'debug'
+      const cardTopic = card.likes?.[0] || cleanText(card.mission, 36) || '今天的小发现';
+      const fallback = topic === 'character'
         ? `我明白了，你想让我${message.replace(/[。！？!?]+$/g, '')}。我会把这个变化说得更清楚。`
-        : `我听见你说“${message.slice(0, 24)}”了。我们可以沿着这个想法，一起发现下一件有趣的事。`;
+        : topic === 'growth'
+          ? `我听见你说“${message.slice(0, 24)}”了。${cleanText(topicContext.nextQuestion, 100) || '谢谢你，我已经更了解你喜欢怎样一起探索了。'}`
+          : `我听见你说“${message.slice(0, 24)}”了。我的角色卡很喜欢${cardTopic}，你想从这里聊起吗？`;
       reply = await sendTextSlowly(response, fallback);
     }
 
-    if (mode === 'debug') {
+    if (topic === 'character') {
       let update;
       try {
         update = apiKey

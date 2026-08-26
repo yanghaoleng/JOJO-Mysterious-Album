@@ -586,29 +586,36 @@ def fallback_character_edit(card, message):
     return {"card": sanitize_character_card(next_card), "summary": summary}
 
 
-def character_call_result(character_name, mode, message, history, card):
+def character_call_result(character_name, mode, topic, topic_context, message, history, card):
     if likely_private_info(message):
         return {"reply": "这些个人信息不用告诉我。我们只聊现在想一起做什么就好。"}
+    topic = topic if mode == "debug" and topic in {"growth", "character"} else "free"
+    current_question = clean_character_text(topic_context.get("currentQuestion"), 100) if isinstance(topic_context, dict) else ""
+    next_question = clean_character_text(topic_context.get("nextQuestion"), 100) if isinstance(topic_context, dict) else ""
+    card_topic = (card.get("likes") or [clean_character_text(card.get("mission"), 36) or "今天的小发现"])[0]
     key = os.environ.get("ARK_API_KEY", "")
     if not key:
-        fallback = (
-            f"我明白了，你想让我{message.rstrip('。！？!?')}。我会把这个变化说得更清楚。"
-            if mode == "debug"
-            else f"我听见你说“{message[:24]}”了。我们可以沿着这个想法，一起发现下一件有趣的事。"
-        )
+        if topic == "character":
+            fallback = f"我明白了，你想让我{message.rstrip('。！？!?')}。我会把这个变化说得更清楚。"
+        elif topic == "growth":
+            follow_up = next_question or "谢谢你，我已经更了解你喜欢怎样一起探索了。"
+            fallback = f"我听见你说“{message[:24]}”了。{follow_up}"
+        else:
+            fallback = f"我听见你说“{message[:24]}”了。我的角色卡很喜欢{card_topic}，你想从这里聊起吗？"
         result = {"reply": fallback}
-        if mode == "debug":
+        if topic == "character":
             result.update(fallback_character_edit(card, message))
         return result
 
-    mode_rule = (
-        "当前是创作者调试通话。根据创作者的话更新角色卡，只修改确实提到的字段。"
-        if mode == "debug"
-        else "当前是和孩子的普通视频通话。保持角色口吻，每次最多两句，只问一个温和的小问题。"
-    )
+    if topic == "character":
+        mode_rule = "当前是人物设定调试。根据创作者的话更新角色卡，只修改确实提到的字段；先用角色口吻简短确认理解。"
+    elif topic == "growth":
+        mode_rule = f"当前是成长问答语音对话。孩子正在回答：{current_question or '当前成长问题'}。先自然承接回答，{f'再只问下一个问题：{next_question}' if next_question else '这是最后一个问题，请温柔总结，不再提问'}。不要给选项，不要像填表。"
+    else:
+        mode_rule = "当前是自由对话。保持角色口吻，从角色卡的兴趣、世界、使命或开场白自然发起和延续话题；每次最多两句，只问一个温和的小问题。"
     output_rule = (
         '只输出JSON，reply是角色口吻的两句以内回应，card是完整角色卡对象，summary是40字以内修改摘要。'
-        if mode == "debug"
+        if topic == "character"
         else '只输出JSON：{"reply":"角色口吻的两句以内回应"}。'
     )
     body = json.dumps(
@@ -624,7 +631,7 @@ def character_call_result(character_name, mode, message, history, card):
             ],
             "reasoning_effort": "minimal",
             "response_format": {"type": "json_object"},
-            "max_tokens": 650 if mode == "debug" else 220,
+            "max_tokens": 650 if topic == "character" else 220,
         },
         ensure_ascii=False,
     ).encode("utf-8")
@@ -642,7 +649,7 @@ def character_call_result(character_name, mode, message, history, card):
     if not reply:
         raise RuntimeError("character_call_upstream_error")
     result = {"reply": reply}
-    if mode == "debug":
+    if topic == "character":
         incoming = parsed.get("card") if isinstance(parsed.get("card"), dict) else {}
         result["card"] = sanitize_character_card({**card, **incoming})
         result["summary"] = clean_character_text(parsed.get("summary"), 80) or "角色设定已经根据这轮对话更新。"
@@ -744,16 +751,19 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         template_id = clean_character_text(payload.get("templateId"), 32)
         character_name = clean_character_text(payload.get("characterName"), 28)
         mode = "debug" if payload.get("mode") == "debug" else "normal"
+        topic = clean_character_text(payload.get("topic"), 16)
+        topic = topic if mode == "debug" and topic in {"growth", "free", "character"} else "free"
+        topic_context = payload.get("topicContext") if isinstance(payload.get("topicContext"), dict) else {}
         message = clean_character_text(payload.get("message"), 180)
-        if template_id not in CHARACTER_TEMPLATE_IDS or not character_name or not message:
+        if (template_id not in CHARACTER_TEMPLATE_IDS and not template_id.startswith("custom-")) or not character_name or not message:
             self.respond_json(400, {"error": "invalid_character_call"})
             return
         card = sanitize_character_card(payload.get("card"))
         history = sanitize_character_history(payload.get("history"))
         try:
-            result = character_call_result(character_name, mode, message, history, card)
+            result = character_call_result(character_name, mode, topic, topic_context, message, history, card)
         except Exception:
-            fallback = character_call_result(character_name, mode, message, history, card) if not os.environ.get("ARK_API_KEY") else {
+            fallback = character_call_result(character_name, mode, topic, topic_context, message, history, card) if not os.environ.get("ARK_API_KEY") else {
                 "reply": "刚才的声音绕远了一点。我还在这里，你可以再说一次。"
             }
             result = fallback
@@ -768,7 +778,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         for chunk in chunks:
             self.write_sse("token", {"text": chunk})
             time.sleep(0.026)
-        if mode == "debug" and result.get("card"):
+        if topic == "character" and result.get("card"):
             self.write_sse("card", {"card": result["card"], "summary": result.get("summary", "角色设定已经更新。")})
         self.write_sse("done", {"ok": True})
         self.close_connection = True
