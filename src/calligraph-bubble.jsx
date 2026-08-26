@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Calligraph } from 'calligraph';
 
 const EVENT_NAME = 'mengmeng:bubble-text';
+const SKIP_EVENT_NAME = 'mengmeng:bubble-skip';
 const splitText = value => {
   if (typeof Intl?.Segmenter === 'function') {
     const segmenter = new Intl.Segmenter('zh-CN', { granularity: 'grapheme' });
@@ -26,17 +27,27 @@ function useReducedMotion() {
 function BubbleLetters({ initialText }) {
   const [fullText, setFullText] = useState(initialText);
   const [visibleText, setVisibleText] = useState('');
+  const [instantText, setInstantText] = useState('');
   const reduced = useReducedMotion();
   const characters = useMemo(() => splitText(fullText), [fullText]);
 
   useEffect(() => {
-    const receive = event => setFullText(String(event.detail?.text || '我在认真听。'));
+    const receive = event => {
+      setInstantText('');
+      setFullText(String(event.detail?.text || '我在认真听。'));
+    };
     window.addEventListener(EVENT_NAME, receive);
     return () => window.removeEventListener(EVENT_NAME, receive);
   }, []);
 
   useEffect(() => {
-    if (reduced) {
+    const skip = () => setInstantText(fullText);
+    window.addEventListener(SKIP_EVENT_NAME, skip);
+    return () => window.removeEventListener(SKIP_EVENT_NAME, skip);
+  }, [fullText]);
+
+  useEffect(() => {
+    if (reduced || instantText === fullText) {
       setVisibleText(fullText);
       return undefined;
     }
@@ -50,7 +61,7 @@ function BubbleLetters({ initialText }) {
     };
     timer = window.setTimeout(tick, 105);
     return () => window.clearTimeout(timer);
-  }, [characters, fullText, reduced]);
+  }, [characters, fullText, instantText, reduced]);
 
   return (
     <Calligraph

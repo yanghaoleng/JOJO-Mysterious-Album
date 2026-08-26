@@ -12,8 +12,8 @@ let labPromise = null;
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js'),
-    import('../vendor/calligraph-bubble.js'),
+    import('./lab.js?v=20260826-template-editor'),
+    import('../vendor/calligraph-bubble.js?v=20260826-template-editor'),
   ]).then(([module]) => {
     labModule = module;
     return module;
@@ -56,7 +56,6 @@ async function applyMode(mode, { updateUrl = true } = {}) {
   gate.hidden = true;
   switcher.hidden = false;
   lab.hidden = next !== 'debug';
-  switcher.textContent = '返回主页';
   switcher.setAttribute('aria-label', '返回主页并选择其他模式');
   if (updateUrl) {
     updateModeUrl(next);

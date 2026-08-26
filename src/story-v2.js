@@ -37,7 +37,11 @@ const state = {
 };
 
 let activeAudio = null;
+let activeAudioFinish = null;
 let activeTtsRequest = 0;
+let activeTtsController = null;
+let speechSkipId = 0;
+let activeBubbleKind = '';
 let activeRecognition = null;
 let activePcmCapture = null;
 let toastTimer = 0;
@@ -60,13 +64,9 @@ const bubblePages = {
   pet: { pages: [], index: 0, label: '' },
 };
 
-const readingGates = {
-  guide: { readyAt: 0, onComplete: null },
-  npc: { readyAt: 0, onComplete: null },
-  pet: { readyAt: 0, onComplete: null },
-};
-
 let dialogueSequence = null;
+let dialogueSequenceId = 0;
+let petWalkId = 0;
 
 const petTapLines = [
   '我在这里。',
@@ -112,13 +112,20 @@ function splitBubblePages(text, limit = 15) {
   return pages;
 }
 
-function readingTime(text) {
-  return Math.min(2600, Math.max(900, 620 + Array.from(String(text || '')).length * 92));
+function estimatedSpeechTime(text) {
+  return Math.min(7200, Math.max(1200, 620 + Array.from(String(text || '')).length * 168));
 }
 
-function animateBubbleText(element, text) {
+function bubbleElement(kind) {
+  if (kind === 'guide') return $('interview-question');
+  if (kind === 'pet') return $('pet-thought');
+  return $('npc-bubble-text');
+}
+
+function animateBubbleText(element, text, { waiting = false, durationMs = 0, complete = false } = {}) {
   const value = String(text || '');
   element.setAttribute('aria-label', value);
+  element.classList.remove('voice-waiting', 'voice-revealing', 'voice-complete');
   const fragment = document.createDocumentFragment();
   Array.from(value).forEach((character, index) => {
     const span = document.createElement('span');
@@ -129,90 +136,126 @@ function animateBubbleText(element, text) {
     fragment.append(span);
   });
   element.replaceChildren(fragment);
+  if (complete || !value) {
+    element.classList.add('voice-complete');
+    return;
+  }
+  if (waiting) element.classList.add('voice-waiting');
+  if (durationMs > 0) {
+    const stagger = Math.max(38, (durationMs - 180) / Math.max(1, Array.from(value).length - 1));
+    element.style.setProperty('--voice-char-stagger', `${stagger.toFixed(1)}ms`);
+    requestAnimationFrame(() => element.classList.add('voice-revealing'));
+  }
 }
 
-function renderBubblePage(kind) {
+function renderBubblePage(kind, options = {}) {
   const model = bubblePages[kind];
-  const more = model.index < model.pages.length - 1;
+  const text = model.pages[model.index] || '';
   if (kind === 'guide') {
-    $('guide-bubble-state').textContent = model.label;
-    animateBubbleText($('interview-question'), model.pages[model.index] || '');
-    $('guide-bubble-more').classList.toggle('show', more || Boolean(readingGates.guide.onComplete));
+    animateBubbleText($('interview-question'), text, options);
     $('guide-speech').classList.remove('bubble-refresh');
     void $('guide-speech').offsetWidth;
     $('guide-speech').classList.add('bubble-refresh');
-    readingGates.guide.readyAt = Date.now() + readingTime(model.pages[model.index]);
     return;
   }
   if (kind === 'pet') {
     $('pet-thought').hidden = false;
-    animateBubbleText($('pet-thought'), model.pages[model.index] || '');
-    $('pet-thought').classList.toggle('has-more', more || Boolean(readingGates.pet.onComplete));
-    readingGates.pet.readyAt = Date.now() + readingTime(model.pages[model.index]);
+    animateBubbleText($('pet-thought'), text, options);
     return;
   }
   $('npc-speech').hidden = false;
-  $('npc-bubble-state').textContent = model.label;
-  animateBubbleText($('npc-bubble-text'), model.pages[model.index] || '');
-  $('npc-bubble-more').classList.toggle('show', more || Boolean(readingGates.npc.onComplete));
-  readingGates.npc.readyAt = Date.now() + readingTime(model.pages[model.index]);
+  animateBubbleText($('npc-bubble-text'), text, options);
 }
 
-function setBubble(kind, text, label, { onComplete = null } = {}) {
-  readingGates[kind].onComplete = onComplete;
-  bubblePages[kind] = { pages: splitBubblePages(text), index: 0, label };
-  renderBubblePage(kind);
-  readingGates[kind].readyAt = Date.now() + readingTime(bubblePages[kind].pages[0]);
+function setBubble(kind, text, label = '', { waiting = false, durationMs = 0, complete = true } = {}) {
+  bubblePages[kind] = { pages: [String(text || '')], index: 0, label };
+  renderBubblePage(kind, { waiting, durationMs, complete });
 }
 
-function advanceBubble(kind) {
-  const model = bubblePages[kind];
-  if (kind === 'pet' && $('pet-thought').hidden) return false;
-  if (kind === 'npc' && ($('npc-wrap').hidden || $('npc-speech').hidden)) return false;
-  if (Date.now() < readingGates[kind].readyAt) {
-    toast('再读一小会儿，文字读完后再点。');
-    return true;
+function startBubbleTimeline(kind, text, durationMs) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    completeBubble(kind);
+    return;
   }
-  if (!model) return false;
-  if (model.index < model.pages.length - 1) {
-    model.index += 1;
-    renderBubblePage(kind);
-    void playUISFX('forward', { volume: 0.12 });
-    return true;
+  animateBubbleText(bubbleElement(kind), text, { durationMs });
+}
+
+function completeBubble(kind) {
+  const element = bubbleElement(kind);
+  element.classList.remove('voice-waiting', 'voice-revealing');
+  element.classList.add('voice-complete');
+}
+
+function advanceBubble() {
+  return false;
+}
+
+async function speakBubblePage(kind, text, voice) {
+  const skipId = speechSkipId;
+  activeBubbleKind = kind;
+  const fallbackDuration = estimatedSpeechTime(text);
+  let timelineStartedAt = 0;
+  let timelineDuration = fallbackDuration;
+  setBubble(kind, text, '', { waiting: true, complete: false });
+  const played = await playTts(text, voice, {
+    pet: kind === 'pet',
+    npc: kind === 'npc',
+    onTimeline: durationMs => {
+      timelineDuration = durationMs;
+      timelineStartedAt = performance.now();
+      startBubbleTimeline(kind, text, durationMs);
+    },
+  });
+  if (speechSkipId !== skipId) {
+    completeBubble(kind);
+    if (activeBubbleKind === kind) activeBubbleKind = '';
+    return false;
   }
-  const complete = readingGates[kind].onComplete;
-  if (!complete) return false;
-  readingGates[kind].onComplete = null;
+  if (!timelineStartedAt) {
+    timelineStartedAt = performance.now();
+    startBubbleTimeline(kind, text, fallbackDuration);
+  }
+  if (!played) {
+    const remaining = Math.max(0, timelineDuration - (performance.now() - timelineStartedAt));
+    if (remaining) await delay(remaining);
+  }
+  completeBubble(kind);
+  if (activeBubbleKind === kind) activeBubbleKind = '';
+  return played;
+}
+
+function skipCurrentSpeech(kind = '') {
+  const currentKind = activeBubbleKind || kind;
+  if (!currentKind && !activeAudio && !activeTtsController) return false;
+  speechSkipId += 1;
+  if (currentKind) completeBubble(currentKind);
+  activeBubbleKind = '';
   stopAudio();
-  void playUISFX('forward', { volume: 0.12 });
-  complete();
+  void playUISFX('skip-next', { volume: 0.12 });
   return true;
 }
 
 function presentDialogueSequence(steps, onComplete) {
-  dialogueSequence = { steps: steps.filter(step => step?.text), index: 0, onComplete };
-  const showNext = () => {
-    const current = dialogueSequence;
-    if (!current) return;
-    if (current.index >= current.steps.length) {
-      dialogueSequence = null;
-      current.onComplete?.();
-      return;
+  const id = ++dialogueSequenceId;
+  const filteredSteps = steps.filter(step => step?.text);
+  dialogueSequence = { id, steps: filteredSteps, onComplete };
+  void (async () => {
+    for (const step of filteredSteps) {
+      if (dialogueSequenceId !== id) return;
+      step.onShow?.();
+      for (const page of splitBubblePages(step.text)) {
+        if (dialogueSequenceId !== id) return;
+        guideVoiceSession.speaking = true;
+        setGuideVoiceUi('speaking', '字幕正在跟着语音出现');
+        await speakBubblePage(step.kind, page, step.voice);
+        if (dialogueSequenceId !== id) return;
+        await delay(matchMedia('(prefers-reduced-motion: reduce)').matches ? 20 : 220);
+      }
     }
-    const step = current.steps[current.index];
-    step.onShow?.();
-    setBubble(step.kind, step.text, step.label || '点一下继续', {
-      onComplete: () => {
-        if (!dialogueSequence) return;
-        dialogueSequence.index += 1;
-        showNext();
-      },
-    });
-    guideVoiceSession.speaking = true;
-    setGuideVoiceUi('speaking', '读完这一句后，点气泡或屏幕继续');
-    void playTts(step.text, step.voice, { pet: step.kind === 'pet', npc: step.kind === 'npc' });
-  };
-  showNext();
+    if (dialogueSequenceId !== id) return;
+    dialogueSequence = null;
+    onComplete?.();
+  })();
 }
 
 function showPanel(id, phase) {
@@ -258,7 +301,19 @@ function paintStoryScene(id = activeStorySceneId) {
   const dpr = Math.min(1.5, devicePixelRatio || 1);
   canvas.width = Math.max(320, Math.round(rect.width * dpr));
   canvas.height = Math.max(240, Math.round(rect.height * dpr));
-  paintSceneThumbnail(canvas, activeStorySceneId);
+  const context = canvas.getContext('2d');
+  const sceneWidth = Math.min(canvas.width * .6, canvas.height * .72);
+  const sceneHeight = sceneWidth * .75;
+  const sceneCanvas = document.createElement('canvas');
+  sceneCanvas.width = Math.max(260, Math.round(sceneWidth));
+  sceneCanvas.height = Math.max(160, Math.round(sceneHeight));
+  paintSceneThumbnail(sceneCanvas, activeStorySceneId);
+  const x = (canvas.width - sceneWidth) * .5;
+  const y = Math.max(canvas.height * .1, canvas.height - sceneHeight - canvas.height * .14);
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.globalAlpha = .86;
+  context.drawImage(sceneCanvas, x, y, sceneWidth, sceneHeight);
+  context.globalAlpha = 1;
 }
 
 class PetRenderer {
@@ -411,6 +466,16 @@ guideRenderer.buildRecipe(makeStoryGuideRecipe(STORY_GUIDE_TEMPLATE), { scaleMul
 
 function stopAudio() {
   activeTtsRequest += 1;
+  if (activeTtsController) {
+    activeTtsController.abort();
+    activeTtsController = null;
+  }
+  if (activeAudioFinish) {
+    const finish = activeAudioFinish;
+    activeAudioFinish = null;
+    finish(false);
+    return;
+  }
   if (!activeAudio) return;
   activeAudio.pause();
   activeAudio.src = '';
@@ -421,29 +486,61 @@ function stopAudio() {
   $('npc-wrap').dataset.state = '';
 }
 
-async function playTts(text, voice, { pet = false, npc = false } = {}) {
+async function playTts(text, voice, { pet = false, npc = false, onTimeline = null } = {}) {
   stopAudio();
   const requestId = activeTtsRequest;
+  const controller = new AbortController();
+  activeTtsController = controller;
   try {
     const response = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: String(text).slice(0, 120), voice }),
+      signal: controller.signal,
     });
+    if (activeTtsController === controller) activeTtsController = null;
     if (!response.ok) throw new Error('voice unavailable');
     document.documentElement.dataset.ttsSource = response.headers.get('X-TTS-Provider') || 'server';
     const blob = await response.blob();
     if (requestId !== activeTtsRequest) return false;
-    const audio = new Audio(URL.createObjectURL(blob));
+    const objectUrl = URL.createObjectURL(blob);
+    const audio = new Audio(objectUrl);
     activeAudio = audio;
+    await new Promise(resolve => {
+      if (audio.readyState >= 1) {
+        resolve();
+        return;
+      }
+      let settled = false;
+      const finishMetadata = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      audio.addEventListener('loadedmetadata', finishMetadata, { once: true });
+      setTimeout(finishMetadata, 320);
+    });
+    if (requestId !== activeTtsRequest) {
+      URL.revokeObjectURL(objectUrl);
+      return false;
+    }
+    const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
+      ? Math.round(audio.duration * 1000)
+      : estimatedSpeechTime(text);
+    onTimeline?.(durationMs);
     if (pet) petRenderer.setTalking(true);
     else if (npc) {
       $('npc-wrap').dataset.state = 'speaking';
       npcRenderer.setTalking(true);
     }
     else guideRenderer.setTalking(true);
-    await new Promise(resolve => {
-      const finish = () => {
+    const played = await new Promise(resolve => {
+      let finished = false;
+      const finish = success => {
+        if (finished) return;
+        finished = true;
+        if (!success) audio.pause();
+        if (activeAudioFinish === finish) activeAudioFinish = null;
         if (activeAudio === audio) activeAudio = null;
         if (pet) petRenderer.setTalking(false);
         else if (npc) {
@@ -451,15 +548,18 @@ async function playTts(text, voice, { pet = false, npc = false } = {}) {
           npcRenderer.setTalking(false);
         }
         else guideRenderer.setTalking(false);
-        URL.revokeObjectURL(audio.src);
-        resolve();
+        URL.revokeObjectURL(objectUrl);
+        resolve(success);
       };
-      audio.addEventListener('ended', finish, { once: true });
-      audio.addEventListener('error', finish, { once: true });
-      audio.play().catch(finish);
+      activeAudioFinish = finish;
+      audio.addEventListener('ended', () => finish(true), { once: true });
+      audio.addEventListener('error', () => finish(false), { once: true });
+      audio.play().catch(() => finish(false));
     });
-    return true;
-  } catch {
+    return played;
+  } catch (error) {
+    if (activeTtsController === controller) activeTtsController = null;
+    if (error?.name === 'AbortError') return false;
     if (pet) petRenderer.setTalking(false);
     else if (npc) {
       $('npc-wrap').dataset.state = '';
@@ -649,16 +749,6 @@ function setGuideVoiceUi(mode, message) {
     error: '再试一次打开麦克风',
     complete: '故事已经讲完',
   };
-  const bubbleStates = {
-    setup: '等待麦克风',
-    requesting: '正在准备耳朵',
-    listening: '正在听',
-    thinking: '正在想',
-    speaking: '正在说',
-    paused: '安静等你',
-    error: '需要麦克风',
-    complete: '故事完成',
-  };
   panel.dataset.voiceState = mode;
   document.body.dataset.voiceState = mode;
   button.setAttribute('aria-pressed', String(mode === 'listening'));
@@ -667,7 +757,6 @@ function setGuideVoiceUi(mode, message) {
   button.disabled = ['requesting', 'thinking', 'speaking', 'complete'].includes(mode);
   const phase = document.body.dataset.phase;
   $('guide-figure').dataset.state = phase === 'interview' && ['listening', 'thinking'].includes(mode) ? mode : '';
-  if (phase === 'interview') $('guide-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
   if (phase === 'quest') {
     $('npc-wrap').dataset.state = ['listening', 'thinking', 'speaking'].includes(mode) ? mode : '';
     if (mode === 'listening' && !state.busy && !guideVoiceSession.processing) {
@@ -675,19 +764,15 @@ function setGuideVoiceUi(mode, message) {
     } else if (mode === 'thinking') {
       setBubble('npc', '正在想你的办法…', '');
     }
-    if (!bubblePages.npc.label || ['listening', 'thinking'].includes(mode)) {
-      $('npc-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
-    }
   }
   if (mode === 'speaking') showLiveAnswer();
   if (message) writeSpeechStatus($('speech-status'), message);
 }
 
-function showLiveAnswer(text = '', label = '我听到') {
+function showLiveAnswer(text = '') {
   const bubble = $('live-answer-bubble');
   const value = String(text).trim().slice(0, 80);
   bubble.hidden = !value;
-  $('live-answer-state').textContent = label;
   $('live-answer-text').textContent = value;
 }
 
@@ -707,7 +792,7 @@ function pauseGuideListening({ manual = false, mode = 'paused', message = '' } =
   clearTimeout(guideVoiceSession.restartTimer);
   guideVoiceSession.capture?.pause();
   detachGuideRecognition();
-  if (mode) setGuideVoiceUi(mode, message || (manual ? '已经暂停，点一下就会继续听' : '先读完这一句，再点一下继续'));
+  if (mode) setGuideVoiceUi(mode, message || (manual ? '已经暂停，点一下麦克风会继续听' : '角色说完后会继续听你说'));
 }
 
 function startGuideRecognition() {
@@ -921,13 +1006,12 @@ function renderGuide() {
 
 function renderQuestion() {
   const question = INTERVIEW_QUESTIONS[state.questionIndex];
-  $('question-count').textContent = `${state.questionIndex + 1} / ${INTERVIEW_QUESTIONS.length}`;
   $('guide-speech').dataset.mode = 'question';
   setBubble('guide', question.question, '想听你说');
   guideVoiceSession.pendingAnswer = '';
   showLiveAnswer('');
   if (!guideVoiceSession.active) setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
-  else if (guideVoiceSession.manualPause) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
+  else if (guideVoiceSession.manualPause) setGuideVoiceUi('paused', '已经暂停，点一下麦克风会继续听');
 }
 
 function renderHeardNotes() {
@@ -1008,7 +1092,7 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
     }
     setBusy(false);
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
-    else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
+    else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下麦克风会继续听');
     else setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
   });
 }
@@ -1051,7 +1135,7 @@ async function finishInterview() {
   guideVoiceSession.speaking = true;
   presentDialogueSequence([
     { kind: 'pet', text: `我是${template.name}。我已经照着你的描述长出来啦。`, label: '新伙伴', voice: state.petVoice },
-    { kind: 'pet', text: '我准备好了。点一下，我们一起去找不见了的回声。', label: '准备出发', voice: state.petVoice },
+    { kind: 'pet', text: '我准备好了。我们一起去找不见了的回声。', label: '准备出发', voice: state.petVoice },
   ], () => {
     setBusy(false);
     guideVoiceSession.processing = false;
@@ -1072,20 +1156,33 @@ function showPetThought(text, duration = 5200) {
   showPetThought.timer = setTimeout(() => { thought.hidden = true; }, duration);
 }
 
-function movePetTo(clientX, clientY) {
+async function movePetTo(clientX, clientY) {
+  const walkId = ++petWalkId;
   const stage = $('world-stage').getBoundingClientRect();
   const pet = $('pet-stage').getBoundingClientRect();
   const deltaX = clientX - (pet.left + pet.width * .5);
   const deltaY = clientY - (pet.top + pet.height * .7);
-  state.petOffset.x = Math.max(-stage.width * .34, Math.min(stage.width * .48, state.petOffset.x + deltaX));
-  state.petOffset.y = Math.max(-stage.height * .24, Math.min(stage.height * .2, state.petOffset.y + deltaY));
-  $('pet-stage').style.setProperty('--pet-shift-x', `${Math.round(state.petOffset.x)}px`);
-  $('pet-stage').style.setProperty('--pet-shift-y', `${Math.round(state.petOffset.y)}px`);
-  $('pet-stage').classList.add('is-walking');
-  petRenderer.react('walk');
+  const start = { ...state.petOffset };
+  const target = {
+    x: Math.max(-stage.width * .34, Math.min(stage.width * .48, state.petOffset.x + deltaX)),
+    y: Math.max(-stage.height * .24, Math.min(stage.height * .2, state.petOffset.y + deltaY)),
+  };
+  const distance = Math.hypot(target.x - start.x, target.y - start.y);
+  const steps = Math.min(12, Math.max(2, Math.ceil(distance / 28)));
+  const petStage = $('pet-stage');
+  petStage.classList.add('is-walking');
   void playUISFX('forward', { volume: 0.1 });
-  clearTimeout(movePetTo.timer);
-  movePetTo.timer = setTimeout(() => $('pet-stage').classList.remove('is-walking'), 820);
+  for (let step = 1; step <= steps; step++) {
+    if (walkId !== petWalkId) return;
+    const progress = step / steps;
+    state.petOffset.x = start.x + (target.x - start.x) * progress;
+    state.petOffset.y = start.y + (target.y - start.y) * progress;
+    petStage.style.setProperty('--pet-shift-x', `${Math.round(state.petOffset.x)}px`);
+    petStage.style.setProperty('--pet-shift-y', `${Math.round(state.petOffset.y)}px`);
+    petRenderer.react('walk');
+    await delay(matchMedia('(prefers-reduced-motion: reduce)').matches ? 20 : 270);
+  }
+  if (walkId === petWalkId) petStage.classList.remove('is-walking');
 }
 
 function updateChapterProgress(chapter) {
@@ -1195,6 +1292,7 @@ async function renderScene(scene) {
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
   guideVoiceSession.speaking = true;
   presentDialogueSequence([
+    { kind: 'npc', text: `这里是${scene.name}。${scene.objective}`, voice: scene.npc.voice || 'moss' },
     { kind: 'npc', text: scene.entranceLine, label: scene.npc.name, voice: scene.npc.voice || 'moss' },
     { kind: 'npc', text: scene.dialogue, label: '请直接说出你的办法', voice: scene.npc.voice || 'moss' },
   ], () => {
@@ -1228,7 +1326,22 @@ function useItem(id) {
 }
 
 function updateBackpack() {
-  $('backpack-count').textContent = String(state.inventory.filter(entry => !entry.used).length);
+  const quickItems = $('backpack-quick-items');
+  const quickNodes = state.inventory.slice(-3).map(entry => {
+    const item = ITEMS[entry.id];
+    const image = document.createElement('img');
+    image.src = item.image;
+    image.alt = '';
+    image.title = `${item.name}${entry.used ? '（已使用）' : ''}`;
+    image.classList.toggle('used', entry.used);
+    return image;
+  });
+  while (quickNodes.length < 3) {
+    const empty = document.createElement('span');
+    empty.className = 'backpack-empty-slot';
+    quickNodes.push(empty);
+  }
+  quickItems.replaceChildren(...quickNodes);
   const list = $('inventory-list');
   list.replaceChildren(...state.inventory.map(entry => {
     const item = ITEMS[entry.id];
@@ -1381,21 +1494,26 @@ function saveEnding() {
 }
 
 $('mic-button').addEventListener('click', toggleGuideVoice);
-$('guide-speech').addEventListener('click', () => advanceBubble('guide'));
-$('guide-speech').addEventListener('keydown', event => {
-  if (event.key === 'Enter' || event.key === ' ') {
+for (const [id, kind] of [['guide-speech', 'guide'], ['npc-speech', 'npc'], ['pet-thought', 'pet']]) {
+  const bubble = $(id);
+  bubble.addEventListener('click', event => {
+    event.stopPropagation();
+    skipCurrentSpeech(kind);
+  });
+  bubble.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    advanceBubble('guide');
-  }
-});
+    event.stopPropagation();
+    skipCurrentSpeech(kind);
+  });
+}
 $('guide-figure').addEventListener('click', () => {
   guideRenderer.react('happy');
   void playUISFX('select', { volume: 0.12 });
 });
 $('npc-wrap').addEventListener('click', event => {
   event.stopPropagation();
-  const advanced = advanceBubble('npc') || advanceBubble('pet');
-  if (!advanced && !state.busy) setBubble('npc', '我在听，你慢慢说。', '听见你了');
+  if (!state.busy) setBubble('npc', '我在听，你慢慢说。');
   $('npc-wrap').classList.remove('is-tapped');
   void $('npc-wrap').offsetWidth;
   $('npc-wrap').classList.add('is-tapped');
@@ -1409,7 +1527,6 @@ $('npc-wrap').addEventListener('keydown', event => {
 });
 $('pet-stage').addEventListener('click', event => {
   event.stopPropagation();
-  if (advanceBubble('pet') || advanceBubble('npc')) return;
   if (state.busy) return;
   showPetThought(petTapLines[Math.floor(Math.random() * petTapLines.length)]);
   petRenderer.react('happy');
@@ -1421,9 +1538,8 @@ $('npc-companions').addEventListener('click', event => {
   event.stopPropagation();
   pauseGuideListening({ mode: 'speaking', message: `${button.dataset.name}正在回应你` });
   button.classList.add('is-talking');
-  setBubble('npc', button.dataset.line, button.dataset.name);
   void playUISFX('select', { volume: 0.12 });
-  void playTts(button.dataset.line, button.dataset.voice, { npc: true }).then(() => {
+  void speakBubblePage('npc', button.dataset.line, button.dataset.voice).then(() => {
     button.classList.remove('is-talking');
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true });
   });
@@ -1436,7 +1552,6 @@ $('pet-stage').addEventListener('keydown', event => {
 });
 $('place-object').addEventListener('click', event => {
   event.stopPropagation();
-  if (advanceBubble('npc') || advanceBubble('pet') || advanceBubble('guide')) return;
   const object = $('place-object');
   object.classList.remove('is-tapped');
   void object.offsetWidth;
@@ -1451,11 +1566,7 @@ $('place-object').addEventListener('keydown', event => {
   }
 });
 $('world-stage').addEventListener('click', event => {
-  if (document.body.dataset.phase === 'interview' && advanceBubble('guide')) return;
-  if (document.body.dataset.phase === 'quest' && advanceBubble('npc')) return;
-  if (advanceBubble('pet')) return;
-  if (document.body.dataset.phase === 'assignment' && advanceBubble('guide')) return;
-  if (!$('pet-stage').hidden) movePetTo(event.clientX, event.clientY);
+  if (!$('pet-stage').hidden && !state.busy) void movePetTo(event.clientX, event.clientY);
 });
 $('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
 $('close-backpack').addEventListener('click', () => $('backpack-dialog').close());
@@ -1485,5 +1596,5 @@ document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
   state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
   beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
-  setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, movePetTo,
+  setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
 };

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { PAPER } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setRender, U } from './part.js';
-import { newRecipe, ensureParams, buildCharacter, regenUnlocked } from './rig.js';
+import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { LAB_SCENES, SCENE_GROUPS, sceneById, createSceneBackdrop, paintSceneThumbnail } from './lab-scenes.js';
 import {
@@ -27,6 +27,7 @@ const $ = id => document.getElementById(id);
 const RECIPE_KEY = 'mengmeng-lab-recipe-v1';
 const SCENE_KEY = 'mengmeng-lab-scene-v1';
 const CHARACTER_CARD_KEY = 'mengmeng-character-cards-v1';
+const CHARACTER_LIBRARY_KEY = 'mengmeng-character-library-v1';
 const FACE_DEFAULT_SEED = 20260825;
 const DEFAULT_VOICE = 'star';
 const DEFAULT_SCENE = 'paper-ground';
@@ -314,6 +315,22 @@ function cardValue(card, field) {
   return field.list && Array.isArray(value) ? value.join('、') : String(value || '');
 }
 
+function cloneRecipe(source) {
+  if (!source || typeof source !== 'object') return null;
+  const copy = JSON.parse(JSON.stringify(source));
+  ensureParams(copy);
+  return copy;
+}
+
+function readCharacterLibrary() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CHARACTER_LIBRARY_KEY) || '{}');
+    return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
 let profile = loadChildProfile();
 let questionIndex = firstUnansweredProfileIndex(profile);
 let initialized = false;
@@ -335,6 +352,9 @@ let sceneFilter = '全部';
 let templateFilter = '全部';
 let activeTemplateId = '';
 let templateCardsReady = false;
+let editorCreating = false;
+let editorTemplate = null;
+let editorCardDraft = null;
 let templateThumbnailRenderer;
 let gazeReleaseTimer = 0;
 let characterTapIndex = 0;
@@ -346,6 +366,10 @@ let scriptStepIndex = 0;
 let scriptAnswers = [];
 let scriptBusy = false;
 let characterCardOverrides = readCharacterCardOverrides();
+let characterLibrary = readCharacterLibrary();
+let customCharacterTemplates = Array.isArray(characterLibrary.custom) ? characterLibrary.custom : [];
+let savedCharacterRecipes = characterLibrary.recipes && typeof characterLibrary.recipes === 'object' ? characterLibrary.recipes : {};
+let characterNames = characterLibrary.names && typeof characterLibrary.names === 'object' ? characterLibrary.names : {};
 const callState = {
   active: false,
   mode: 'normal',
@@ -426,6 +450,12 @@ function makeInitialRecipe(seed = FACE_DEFAULT_SEED) {
 }
 
 function makeTemplateRecipe(config) {
+  const stored = savedCharacterRecipes[config.id] || config.recipe;
+  if (stored) {
+    const saved = cloneRecipe(stored);
+    saved.templateId = config.id;
+    return saved;
+  }
   const next = newRecipe(config.seed);
   next.species = config.species;
   next.base = config.base;
@@ -449,11 +479,20 @@ function makeTemplateRecipe(config) {
   return next;
 }
 
-function clearTemplateSelection() {
-  if (!activeTemplateId && !recipe?.templateId) return;
-  activeTemplateId = '';
-  if (recipe) delete recipe.templateId;
-  refreshTemplateControls();
+function allCharacterTemplates() {
+  return [...CHARACTER_TEMPLATES, ...customCharacterTemplates].map(config => ({
+    ...config,
+    name: characterNames[config.id] || config.name,
+  }));
+}
+
+function characterTemplateById(id) {
+  return allCharacterTemplates().find(item => item.id === id) || null;
+}
+
+function saveCharacterLibrary() {
+  characterLibrary = { custom: customCharacterTemplates, recipes: savedCharacterRecipes, names: characterNames };
+  try { localStorage.setItem(CHARACTER_LIBRARY_KEY, JSON.stringify(characterLibrary)); } catch { /* library remains in memory */ }
 }
 
 class LabSpeaker {
@@ -464,6 +503,7 @@ class LabSpeaker {
     this.controller = null;
     this.objectUrl = '';
     this.sequence = 0;
+    this.finishCurrent = null;
   }
 
   choose(id) {
@@ -482,8 +522,10 @@ class LabSpeaker {
     if (this.audio) {
       this.audio.pause();
       this.audio.currentTime = 0;
-      this.audio = null;
     }
+    this.finishCurrent?.();
+    this.finishCurrent = null;
+    this.audio = null;
     if (this.objectUrl) {
       URL.revokeObjectURL(this.objectUrl);
       this.objectUrl = '';
@@ -496,6 +538,7 @@ class LabSpeaker {
     const audio = new Audio(url);
     this.audio = audio;
     return new Promise((resolve, reject) => {
+      let settled = false;
       const clean = () => {
         if (this.audio === audio) this.audio = null;
         if (revoke && this.objectUrl === url) {
@@ -503,11 +546,20 @@ class LabSpeaker {
           this.objectUrl = '';
         }
       };
-      audio.onended = () => {
-        clean(); clearTimeout(this.timer); anim.talk = false; resolve();
+      const finish = error => {
+        if (settled) return;
+        settled = true;
+        clean();
+        if (this.finishCurrent === finish) this.finishCurrent = null;
+        clearTimeout(this.timer);
+        anim.talk = false;
+        if (error) reject(error);
+        else resolve();
       };
-      audio.onerror = () => { clean(); reject(new Error('audio_failed')); };
-      audio.play().catch(error => { clean(); reject(error); });
+      this.finishCurrent = finish;
+      audio.onended = () => finish();
+      audio.onerror = () => finish(new Error('audio_failed'));
+      audio.play().catch(error => finish(error));
     });
   }
 
@@ -925,7 +977,7 @@ function initScene() {
   scene.add(environment);
 
   recipe = readRecipe() || makeInitialRecipe();
-  activeTemplateId = CHARACTER_TEMPLATES.some(item => item.id === recipe.templateId) ? recipe.templateId : '';
+  activeTemplateId = allCharacterTemplates().some(item => item.id === recipe.templateId) ? recipe.templateId : '';
   animator = createAnimator(() => face, anim);
   buildNow();
 
@@ -1043,6 +1095,7 @@ function setEnvironment(id, { speak = true } = {}) {
     applyCharacterPlacement(0);
   }
   refreshSceneControls();
+  refreshCharacterEditorAppearance();
   if (speak && speaker) speaker.speak(config.line, { offlineKey: `scene-${config.id}` });
 }
 
@@ -1118,10 +1171,6 @@ function refreshProfile() {
   if (scriptSummary) scriptSummary.textContent = profile.scriptSummary || '还没有互动记录';
   const completion = profileCompletion(profile);
   if ($('profile-count')) $('profile-count').textContent = `${completion.answered} / ${completion.total}`;
-  const summary = $('recipe-summary');
-  if (summary) summary.textContent = profile.reasons.length
-    ? profile.reasons.slice(-3).join(' ')
-    : '回答问题后，这里会记录它为什么长成现在的样子。';
 }
 
 function refreshControls() {
@@ -1162,6 +1211,7 @@ function refreshSceneControls() {
     button.classList.toggle('selected', selected);
     button.setAttribute('aria-pressed', String(selected));
   });
+  refreshCharacterEditorAppearance();
 }
 
 function renderSceneCards() {
@@ -1250,14 +1300,19 @@ function refreshTemplateControls() {
 function applyTemplate(config, { speak = true } = {}) {
   recipe = makeTemplateRecipe(config);
   activeTemplateId = config.id;
+  editorCreating = false;
+  editorTemplate = characterTemplateById(config.id) || config;
+  speaker.choose(VOICE_PRESETS[recipe.voiceId] ? recipe.voiceId : DEFAULT_VOICE);
+  if (recipe.sceneId) setEnvironment(recipe.sceneId, { speak: false });
   rebuild();
   refreshTemplateControls();
-  renderTemplateDetail(config);
-  $('recipe-summary').textContent = `已套用“${config.name}”完整模板。兴趣档案仍然保留，可以继续修改任何细节。`;
-  if (speak) speaker.speak(`你好，我现在是${config.name}。你还想帮我改一改哪里？`, { offlineKey: `template-${config.id}` });
+  renderCharacterEditor(editorTemplate);
+  refreshEditorGate();
+  $('recipe-summary').textContent = `正在编辑“${editorTemplate.name}”。修改后请保存。`;
+  if (speak) speaker.speak(characterCardFor(config.id).greeting, { offlineKey: `template-${config.id}` });
   animator?.setPose('play');
   window.setTimeout(() => animator?.setPose('idle'), 1050);
-  showStatus(`已经套用${config.name}模板。`);
+  showStatus(`已经选中${editorTemplate.name}。`);
   void playUISFX('complete', { volume: 0.14 });
 }
 
@@ -1323,6 +1378,16 @@ function respondToCharacterTap(event) {
   window.setTimeout(() => animator?.setPose('idle'), 1150);
 }
 
+function skipLabSpeech() {
+  speaker?.cancel();
+  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip'));
+  anim.talk = false;
+  animator?.setFace('idle');
+  animator?.setPose('idle');
+  if (callState.active && !callState.busy) setCharacterCallStatus('connected', callState.mode === 'debug' ? '设定可继续调整' : '已接通');
+  void playUISFX('skip-next', { volume: 0.12 });
+}
+
 function initCharacterInteraction() {
   const preview = document.querySelector('.lab-preview');
   const canvas = renderer.domElement;
@@ -1337,15 +1402,26 @@ function initCharacterInteraction() {
   canvas.addEventListener('click', event => {
     if (hitsCharacter(event)) respondToCharacterTap(event);
   });
+  const bubble = $('lab-bubble');
+  bubble.addEventListener('click', event => {
+    event.stopPropagation();
+    skipLabSpeech();
+  });
+  bubble.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    skipLabSpeech();
+  });
 }
 
 function renderTemplateCards() {
   const grid = $('template-grid');
   if (!grid) return;
   grid.innerHTML = '';
+  const templates = allCharacterTemplates();
   const items = templateFilter === '全部'
-    ? CHARACTER_TEMPLATES
-    : CHARACTER_TEMPLATES.filter(item => item.group === templateFilter);
+    ? templates
+    : templates.filter(item => item.group === templateFilter);
   for (const config of items) {
     const article = document.createElement('article');
     article.className = 'template-card';
@@ -1372,7 +1448,7 @@ function renderTemplateCards() {
     callButton.setAttribute('aria-label', `呼叫${config.name}开始视频通话`);
     button.addEventListener('click', () => {
       applyTemplate(config);
-      requestAnimationFrame(() => $('template-card-detail')?.scrollIntoView?.({ block: 'nearest' }));
+      scrollEditorForMobile();
     });
     callButton.addEventListener('click', () => startCharacterCall(config));
     article.append(button, callButton);
@@ -1381,8 +1457,18 @@ function renderTemplateCards() {
   }
   templateCardsReady = true;
   refreshTemplateControls();
-  const detailTemplate = CHARACTER_TEMPLATES.find(item => item.id === activeTemplateId) || items[0];
-  if (detailTemplate) renderTemplateDetail(detailTemplate);
+  const selectedTemplate = characterTemplateById(activeTemplateId);
+  if (selectedTemplate) renderCharacterEditor(selectedTemplate);
+}
+
+function scrollEditorForMobile() {
+  if (!matchMedia('(max-width: 860px)').matches) return;
+  requestAnimationFrame(() => {
+    const layout = document.querySelector('.lab-layout');
+    const preview = document.querySelector('.lab-preview');
+    document.querySelector('.character-editor-pane')?.scrollIntoView?.({ block: 'start' });
+    requestAnimationFrame(() => layout?.scrollBy({ top: -(preview?.offsetHeight || 0), behavior: 'instant' }));
+  });
 }
 
 function initTemplatePicker() {
@@ -1390,7 +1476,8 @@ function initTemplatePicker() {
   for (const name of TEMPLATE_GROUPS) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.textContent = name === '全部' ? `全部 ${CHARACTER_TEMPLATES.length}` : name;
+    button.dataset.templateGroup = name;
+    button.textContent = name === '全部' ? `全部 ${allCharacterTemplates().length}` : name;
     button.classList.toggle('selected', name === templateFilter);
     button.setAttribute('aria-pressed', String(name === templateFilter));
     button.addEventListener('click', () => {
@@ -1407,40 +1494,207 @@ function initTemplatePicker() {
 }
 
 function renderTemplateDetail(config) {
-  const host = $('template-card-detail');
-  if (!host || !config) return;
-  const card = characterCardFor(config.id);
-  host.innerHTML = '';
-  host.hidden = false;
+  if (!config || (activeTemplateId && config.id !== activeTemplateId)) return;
+  renderCharacterEditor(config);
+}
 
-  const head = document.createElement('header');
-  head.className = 'template-card-detail-head';
-  const heading = document.createElement('div');
-  const kicker = document.createElement('span');
-  kicker.textContent = characterCardOverrides[config.id] ? '角色小档案 · 已在本机修改' : '角色小档案';
-  const title = document.createElement('h3');
-  title.textContent = config.name;
-  heading.append(kicker, title);
-  const callButton = document.createElement('button');
-  callButton.type = 'button';
-  callButton.textContent = '呼叫它';
-  callButton.addEventListener('click', () => startCharacterCall(config));
-  head.append(heading, callButton);
+function refreshEditorGate() {
+  const ready = editorCreating || Boolean(activeTemplateId);
+  document.querySelectorAll('[data-lab-tab]').forEach(button => {
+    if (button.dataset.labTab !== 'templates') button.disabled = !ready;
+  });
+  if ($('copy-recipe')) $('copy-recipe').disabled = !ready;
+}
 
-  const intro = document.createElement('p');
-  intro.textContent = card.greeting;
-  const facts = document.createElement('dl');
-  facts.className = 'template-card-facts';
-  for (const field of CHARACTER_CARD_FIELDS.filter(item => !['greeting', 'memoryRule'].includes(item.key))) {
-    const row = document.createElement('div');
-    const term = document.createElement('dt');
-    const value = document.createElement('dd');
-    term.textContent = field.label;
-    value.textContent = cardValue(card, field);
-    row.append(term, value);
-    facts.appendChild(row);
+function setEditorSelect(id, value) {
+  const select = $(id);
+  if (!select) return;
+  const next = String(value || '');
+  if ([...select.options].some(option => option.value === next)) select.value = next;
+}
+
+function refreshCharacterEditorAppearance() {
+  if (!recipe || $('character-editor-form')?.hidden) return;
+  setEditorSelect('character-editor-species', recipe.species);
+  setEditorSelect('character-editor-base', recipe.base);
+  setEditorSelect('character-editor-eyes', recipe.parts.eyes.params.type);
+  setEditorSelect('character-editor-crest', recipe.parts.crest.params.style);
+  setEditorSelect('character-editor-mouth', recipe.parts.mouth.params.style);
+  setEditorSelect('character-editor-skull', recipe.parts.skull.params.shape);
+  setEditorSelect('character-editor-torso', recipe.parts.torso.params.shape);
+  setEditorSelect('character-editor-arms', recipe.parts.arms.params.style);
+  setEditorSelect('character-editor-tail', recipe.parts.tail.params.style);
+  setEditorSelect('character-editor-voice', speaker?.activeId || DEFAULT_VOICE);
+  setEditorSelect('character-editor-scene', sceneId);
+}
+
+function renderCharacterEditor(config, { creating = editorCreating } = {}) {
+  const form = $('character-editor-form');
+  if (!form) return;
+  editorCreating = creating;
+  editorTemplate = config || null;
+  $('character-editor-empty').hidden = true;
+  form.hidden = false;
+  $('character-editor-title').textContent = creating ? '创建新角色' : config.name;
+  $('character-editor-name').value = creating ? '我的新角色' : config.name;
+  editorCardDraft = creating ? baseCharacterCard('bean-dog') : characterCardFor(config.id);
+  const fields = $('character-card-fields');
+  fields.innerHTML = '';
+  for (const field of CHARACTER_CARD_FIELDS) {
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    const input = document.createElement(field.max > 48 ? 'textarea' : 'input');
+    if (input instanceof HTMLTextAreaElement) input.rows = field.max > 100 ? 3 : 2;
+    input.maxLength = field.list ? field.max * 5 + 4 : field.max;
+    input.dataset.cardField = field.key;
+    input.dataset.cardList = String(Boolean(field.list));
+    input.value = cardValue(editorCardDraft, field);
+    label.appendChild(input);
+    fields.appendChild(label);
   }
-  host.append(head, intro, facts);
+  $('character-editor-call').disabled = creating;
+  $('character-editor-reset').hidden = creating || Boolean(config?.id?.startsWith('custom-'));
+  refreshCharacterEditorAppearance();
+}
+
+function readEditorCard() {
+  const draft = { ...(editorCardDraft || {}) };
+  document.querySelectorAll('[data-card-field]').forEach(input => {
+    draft[input.dataset.cardField] = input.dataset.cardList === 'true'
+      ? input.value.split(/[、，,]/).map(value => value.trim()).filter(Boolean)
+      : input.value.trim();
+  });
+  return draft;
+}
+
+function createCharacter() {
+  editorCreating = true;
+  editorTemplate = null;
+  activeTemplateId = '';
+  recipe = makeInitialRecipe((Math.random() * 1e9) | 0);
+  editorCardDraft = baseCharacterCard('bean-dog');
+  speaker.choose(DEFAULT_VOICE);
+  setEnvironment(DEFAULT_SCENE, { speak: false });
+  buildNow();
+  refreshTemplateControls();
+  refreshEditorGate();
+  renderCharacterEditor(null, { creating: true });
+  setBubble('这是一个新角色。选好外观和角色设定，再保存它。');
+  $('recipe-summary').textContent = '正在创建新角色，完成后请保存。';
+  showStatus('已经打开新角色编辑器。');
+  scrollEditorForMobile();
+}
+
+function saveCharacterEditor(event) {
+  event?.preventDefault();
+  const name = $('character-editor-name').value.trim().replace(/[<>]/g, '').slice(0, 16);
+  if (name.length < 2) {
+    showStatus('请给角色起一个至少两个字的名字。');
+    void playUISFX('error');
+    return;
+  }
+  let id = activeTemplateId;
+  if (editorCreating) {
+    id = `custom-${Date.now().toString(36)}`;
+    customCharacterTemplates.push({
+      id,
+      group: recipe.species === 'human' ? '人物' : '小动物',
+      name,
+      hint: '自己创建并保存在当前设备的角色。',
+      seed: recipe.seed || FACE_DEFAULT_SEED,
+      species: recipe.species,
+      base: recipe.base,
+      parts: {},
+    });
+  }
+  recipe.templateId = id;
+  recipe.voiceId = speaker.activeId;
+  recipe.sceneId = sceneId;
+  activeTemplateId = id;
+  characterNames[id] = name;
+  savedCharacterRecipes[id] = cloneRecipe(recipe);
+  editorCardDraft = storeCharacterCard(id, readEditorCard());
+  if (id.startsWith('custom-')) {
+    const custom = customCharacterTemplates.find(item => item.id === id);
+    if (custom) Object.assign(custom, { name, species: recipe.species, base: recipe.base, group: recipe.species === 'human' ? '人物' : '小动物' });
+  }
+  saveCharacterLibrary();
+  templateFilter = '全部';
+  document.querySelectorAll('[data-template-group]').forEach(button => {
+    const selected = button.dataset.templateGroup === '全部';
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+    if (selected) button.textContent = `全部 ${allCharacterTemplates().length}`;
+  });
+  editorCreating = false;
+  editorTemplate = characterTemplateById(id);
+  buildNow();
+  refreshEditorGate();
+  renderTemplateCards();
+  renderCharacterEditor(editorTemplate);
+  $('recipe-summary').textContent = `“${name}”的外观和角色卡已保存在当前设备。`;
+  setBubble(`${name}已经保存好了。`);
+  showStatus(`${name}已经保存。`);
+  void playUISFX('complete', { volume: 0.14 });
+}
+
+function resetCharacterEditor() {
+  const original = CHARACTER_TEMPLATES.find(item => item.id === activeTemplateId);
+  if (!original) return;
+  delete savedCharacterRecipes[activeTemplateId];
+  delete characterNames[activeTemplateId];
+  clearStoredCharacterCard(activeTemplateId);
+  saveCharacterLibrary();
+  templateCardsReady = false;
+  applyTemplate(original, { speak: false });
+  renderTemplateCards();
+  $('recipe-summary').textContent = `“${original.name}”已经恢复为原始模板。`;
+  showStatus('已经恢复原始模板。');
+  void playUISFX('back');
+}
+
+function initCharacterEditor() {
+  const sceneSelect = $('character-editor-scene');
+  for (const config of LAB_SCENES) {
+    const option = document.createElement('option');
+    option.value = config.id;
+    option.textContent = config.name;
+    sceneSelect.appendChild(option);
+  }
+  const appearance = [
+    ['character-editor-species', 'root', 'species'], ['character-editor-base', 'root', 'base'],
+    ['character-editor-eyes', 'eyes', 'type'], ['character-editor-crest', 'crest', 'style'],
+    ['character-editor-mouth', 'mouth', 'style'], ['character-editor-skull', 'skull', 'shape'],
+    ['character-editor-torso', 'torso', 'shape'], ['character-editor-arms', 'arms', 'style'],
+    ['character-editor-tail', 'tail', 'style'],
+  ];
+  for (const [id, part, key] of appearance) {
+    $(id).addEventListener('change', event => {
+      if (part === 'root') recipe[key] = event.target.value;
+      else recipe.parts[part].params[key] = event.target.value;
+      if (activeTemplateId) recipe.templateId = activeTemplateId;
+      rebuild();
+      refreshControls();
+      $('recipe-summary').textContent = '外观已改变，保存后会更新角色模板。';
+    });
+  }
+  $('character-editor-voice').addEventListener('change', event => {
+    speaker.choose(event.target.value);
+    recipe.voiceId = speaker.activeId;
+    $('recipe-summary').textContent = '声音已改变，保存后会更新角色模板。';
+  });
+  $('character-editor-scene').addEventListener('change', event => {
+    setEnvironment(event.target.value, { speak: false });
+    recipe.sceneId = sceneId;
+    $('recipe-summary').textContent = '场景已改变，保存后会更新角色模板。';
+  });
+  $('character-editor-form').addEventListener('submit', saveCharacterEditor);
+  $('character-editor-call').addEventListener('click', () => {
+    const config = characterTemplateById(activeTemplateId);
+    if (config) startCharacterCall(config);
+  });
+  $('character-editor-reset').addEventListener('click', resetCharacterEditor);
+  $('create-character').addEventListener('click', createCharacter);
 }
 
 function setCharacterCallStatus(state, text) {
@@ -1756,6 +2010,9 @@ function initCharacterCalling() {
   });
   $('character-call-mic').addEventListener('click', beginCharacterCallRecognition);
   $('character-card-reset').addEventListener('click', resetActiveCharacterCard);
+  $('character-call-transcript').addEventListener('click', event => {
+    if (event.target.closest('.character-call-message.assistant')) skipLabSpeech();
+  });
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && callState.active) endCharacterCall();
   });
@@ -1951,6 +2208,10 @@ function initActionStudio() {
 }
 
 function selectTab(id) {
+  if (id !== 'templates' && !editorCreating && !activeTemplateId) {
+    showStatus('请先选择一个角色，或创建新角色。');
+    id = 'templates';
+  }
   document.querySelectorAll('[data-lab-tab]').forEach(button => {
     const selected = button.dataset.labTab === id;
     button.setAttribute('aria-selected', String(selected));
@@ -2030,7 +2291,6 @@ function answerQuestion(question, option, selectedButton) {
   if (option.reason) profile.reasons = [...profile.reasons.filter(item => item !== option.reason), option.reason].slice(-12);
   if (option.voice) speaker.choose(option.voice);
   option.apply?.();
-  if (option.apply) clearTemplateSelection();
   saveProfile();
   refreshInterviewProgress();
   if (option.apply) rebuild();
@@ -2075,8 +2335,6 @@ function finishInterest(value) {
 function resetInterview() {
   profile = createEmptyChildProfile();
   questionIndex = 0;
-  recipe = makeInitialRecipe();
-  activeTemplateId = '';
   speaker.choose(DEFAULT_VOICE);
   saveProfile();
   rebuild();
@@ -2086,16 +2344,18 @@ function resetInterview() {
 }
 
 function setManualReason(part) {
-  clearTemplateSelection();
   const names = { eyes: '眼睛', crest: '耳朵和头顶', mouth: '嘴巴', skull: '脸形', torso: '身体', arms: '手臂', tail: '尾巴' };
-  $('recipe-summary').textContent = `刚刚在实验室里调整了${names[part] || '角色外貌'}。问答记录不会被覆盖。`;
+  $('recipe-summary').textContent = `刚刚调整了${names[part] || '角色外貌'}，保存后会更新当前角色。`;
+  refreshCharacterEditorAppearance();
 }
 
 function initUI() {
   speaker = new LabSpeaker();
+  if (activeTemplateId && VOICE_PRESETS[recipe.voiceId]) speaker.choose(recipe.voiceId);
   refreshProfile();
   initScenePicker();
   initTemplatePicker();
+  initCharacterEditor();
   initActionStudio();
   initCharacterInteraction();
   initCharacterCalling();
@@ -2135,8 +2395,8 @@ function initUI() {
     const button = event.target.closest('[data-base]');
     if (!button) return;
     recipe.base = button.dataset.base;
-    clearTemplateSelection();
-    $('recipe-summary').textContent = '刚刚改变了角色的整体站姿。问答记录不会被覆盖。';
+    $('recipe-summary').textContent = '刚刚改变了角色的整体站姿，保存后会更新当前角色。';
+    refreshCharacterEditorAppearance();
     rebuild();
   });
 
@@ -2145,23 +2405,10 @@ function initUI() {
     if (!button) return;
     speaker.choose(button.dataset.voice);
     const preset = VOICE_PRESETS[button.dataset.voice];
+    recipe.voiceId = button.dataset.voice;
+    refreshCharacterEditorAppearance();
     speaker.speak(preset.sample, { preview: true });
     showStatus(`已经切换到${preset.label}的声音。`);
-  });
-
-  $('dialogue-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const text = $('dialogue-input').value;
-    const offlineKey = text.trim() === '我记住啦。你喜欢发现小动物，也喜欢先安静看一会儿。'
-      ? 'dialogue-profile'
-      : '';
-    speaker.speak(text, { offlineKey });
-  });
-  document.querySelector('.quick-lines').addEventListener('click', event => {
-    const button = event.target.closest('[data-line]');
-    if (!button) return;
-    $('dialogue-input').value = button.dataset.line;
-    speaker.speak(button.dataset.line, { offlineKey: button.dataset.audio });
   });
 
   $('interest-form').addEventListener('submit', event => {
@@ -2170,23 +2417,16 @@ function initUI() {
   });
   $('restart-interview').addEventListener('click', resetInterview);
 
-  $('lab-random').addEventListener('click', () => {
-    clearTemplateSelection();
-    recipe.base = 'biped';
-    recipe.species = 'human';
-    recipe.media = 'watercolor';
-    regenUnlocked(recipe, (Math.random() * 1e9) | 0);
-    Object.assign(recipe.parts.extras.params, { tears: false, accidents: false, smudge: false, eraser: false });
-    speaker.speak('我换了一张完全不同的脸。还可以继续慢慢调整。', { offlineKey: 'action-random' });
-    $('recipe-summary').textContent = '刚刚随机生成了一只新角色。兴趣档案仍然保留。';
-    rebuild();
-    void playUISFX('skip-next');
-  });
   $('copy-recipe').addEventListener('click', async () => {
-    const payload = JSON.stringify({ recipe, profile }, null, 2);
+    const payload = JSON.stringify({
+      name: $('character-editor-name').value,
+      templateId: activeTemplateId,
+      recipe,
+      characterCard: readEditorCard(),
+    }, null, 2);
     try {
       await navigator.clipboard.writeText(payload);
-      showStatus('角色配方和兴趣档案已经复制。');
+      showStatus('当前角色的外观和角色卡已经复制。');
       void playUISFX('copy');
     } catch {
       showStatus('当前浏览器不允许复制，可以稍后再试。');
@@ -2196,6 +2436,12 @@ function initUI() {
 
   refreshControls();
   renderQuestion({ speak: false });
+  refreshEditorGate();
+  if (activeTemplateId) {
+    const selected = characterTemplateById(activeTemplateId);
+    if (selected) renderCharacterEditor(selected);
+  }
+  selectTab('templates');
 }
 
 async function initialize() {
@@ -2213,8 +2459,10 @@ export async function activateLab() {
   renderer.setAnimationLoop(animationLoop);
   refreshProfile();
   refreshControls();
-  if (profile.completed) renderQuestion({ speak: false });
-  else renderQuestion({ speak: true });
+  refreshEditorGate();
+  selectTab('templates');
+  if (activeTemplateId) renderCharacterEditor(characterTemplateById(activeTemplateId));
+  else setBubble('先选择一个角色，再开始编辑。');
 }
 
 export function deactivateLab() {

@@ -24,16 +24,17 @@
 | 开始听、暂停听的提示音 | 语音会话边界提示 | `startGuideVoiceSession()`、`toggleGuideVoice()`、`start/stop` | 只在人为开始或暂停时响一次，连续收音和 AI 理解期间保持安静 |
 | 草地点击圈、落脚圈 | 移动目标反馈 | `targetRipple` | 点击或轻触场景后立即出现 |
 | 主页、两个入口、模式扉页 | 双入口主页 | `#mode-gate`、`.mode-choice` | 根地址固定显示，可选回声故事或角色模拟器 |
-| 返回主页、角落主页 | 统一主页按钮 | `#mode-switch`、`.home-button`、`showHome()` | 原故事和模拟器复用角落按钮，回声故事在页头显示文字按钮 |
+| 返回主页、Home 图标 | 统一主页按钮 | `#mode-switch`、`.home-button`、`showHome()` | 模拟器左上角使用 Home 图标，回声故事在页头显示文字按钮 |
 | 调试模式、角色实验室、角色模拟器 | 角色实验环境 | `#debug-lab`、`activateLab()` | 与故事模式共用角色生成体系，但状态独立 |
 | 头顶问题、说话泡泡 | Calligraph 实时对话气泡 | `#lab-bubble`、`#lab-bubble-text`、`setBubble()` | 每次换句重新入场并逐字显示；通过角色头顶锚点定位，不固定在场景顶部 |
 | 气泡尖角、纸尾巴 | 气泡中心指示尾 | `.lab-bubble-tail`、`positionBubble()` | `left: 50%` 水平居中，并随头顶投影一起移动 |
-| 气泡里的字、打字效果 | Calligraph 文字过渡组件 | `src/calligraph-bubble.jsx`、`mengmeng:bubble-text` | 34ms 追加一个字形，减弱动态时立即显示全文 |
-| 左边工具、实验台 | 角色工具区 | `.lab-workbench`、`.lab-tabs` | 包含成长问答、角色模板、捏脸、身体、动作、场景、声音和对话 |
-| 整体捏脸、预制角色 | 完整角色模板样本册 | `[data-lab-tab="templates"]`、`#template-grid`、`CHARACTER_TEMPLATES` | 12 个小动物、3 个特色人物，套用后仍可继续调整 |
+| 气泡里的字、打字效果 | Calligraph 文字过渡组件 | `src/calligraph-bubble.jsx`、`mengmeng:bubble-text`、`mengmeng:bubble-skip` | 34ms 追加一个字形；点击立即显示全文并跳过当前语音，减弱动态时直接显示全文 |
+| 左边工具、实验台 | 角色工具区 | `.lab-workbench`、`.lab-tabs` | 角色模板是上层入口，选择或创建角色后才开放成长问答、捏脸、身体、动作、场景和声音 |
+| 整体捏脸、预制角色 | 完整角色模板样本册 | `[data-lab-tab="templates"]`、`#template-grid`、`CHARACTER_TEMPLATES` | 12 个小动物、3 个特色人物和当前设备保存的自建角色，选中后右侧直接编辑 |
 | 小动物模板 | 动物角色模板组 | `group: "小动物"`、`makeTemplateRecipe()` | 使用真实 recipe、站姿和器官组合，不是静态贴图 |
 | 人物模板 | 特色人物模板组 | `group: "人物"` | 星路探险家、安静小画家、云顶发明家 |
-| 右边记录、兴趣档案 | 分组儿童画像笔记 | `.lab-notebook`、`[data-profile-group]`、`summarizeProfileGroups()` | 6 组摘要只保存在当前设备；手机端隐藏以留出操作空间 |
+| 右边角色卡、外观属性 | 当前角色编辑器 | `.character-editor-pane`、`#character-editor-form`、`#character-card-fields` | 编辑角色名、外观、音色、场景和儿童化角色卡，桌面常驻，手机端在预览下方可滚动到达 |
+| 创建角色、新建模板 | 自建角色流程 | `#create-character`、`createCharacter()`、`saveCharacterEditor()` | 只有主动创建时开放全属性初始配方，保存后进入同一模板册并留在当前设备 |
 | 17 个问题、深入认识 | 第三版儿童画像访谈 | `QUESTIONS`、`PROFILE_FIELDS`、`mengmeng-child-profile-v3` | 6 个阶段可断点续答；旧 v1/v2 档案自动迁移并补答新增字段 |
 | 已记住几项、绿色进度条 | 画像完成度 | `#question-memory-count`、`#interview-progress`、`profileCompletion()` | 每次选择立即从 0/17 递增，不必等整套完成 |
 | 大眼睛、豆豆眼、大耳朵 | 信息偏好核心特征 | `QUESTIONS[1]`、学习偏好选项的 `apply()` | 后续兴趣只叠加特征，不能覆盖它们 |
@@ -41,7 +42,7 @@
 | 放大糊、像贴图 | Canvas 部件纹理清晰度 | `setRender({ u: 176 })`、`displayPixelRatio`、`makePart()` | 角色不是 SVG；提高部件绘制密度、画布超采样和纹理过滤，不移除手绘颗粒 |
 | 四种音色、声音卡 | 内置音色试听 | `.voice-grid`、`VOICE_PRESETS` | 小芽、泡泡、阿绒、星仔；播放静态 MP3 |
 | 默认声音、星仔声音 | 玩家默认音色 | `DEFAULT_VOICE`、`VOICE_PRESETS.star` | 首次进入、旧档案迁移和重新开始都默认选中星仔 |
-| 模拟说话、对话测试 | 自由对话面板 | `#dialogue-form`、`LabSpeaker` | 动态台词调用 `/api/tts`；失败时保留气泡和口型，不使用设备系统 TTS |
+| 点击气泡、跳过这句 | 当前语音跳过 | `#lab-bubble`、`skipLabSpeech()`、`LabSpeaker.cancel()` | 停止当前句并立即显示完整字幕，不恢复旧的模拟对话面板 |
 | 离线反馈、预制星仔语音 | 固定 Fish Audio 资源 | `assets/voice/star/`、`offlineAudioPath()` | 包含 17 问画像、模板、选择、动作、对话、场景和连续脚本，共 155 段 |
 | Fish 语音接口 | 角色实验室 TTS 代理 | `/api/tts`、`fishWithCache()` | 固定星仔台词优先缓存，动态台词在线生成；不降级到系统 TTS |
 | 眼神跟着鼠标、看按钮 | 连续目光目标 | `animator.setGaze()`、`pointGazeAt()` | 鼠标和触摸都可驱动；靠近底部按钮时向下看 |
@@ -69,14 +70,14 @@
 | 新故事、不见了的回声 | 连续语音故事 | `/story-v2`、`story-v2.html`、`src/story-v2.js` | 主页第一入口，也是当前唯一故事入口 |
 | 小狐狸、图鉴员、小卷 | 新版开场引导角色 | `STORY_GUIDE_TEMPLATE`、`state.guide`、`#guide-canvas`、`guideRenderer` | 固定复用角色模拟器的卷尾小狐狸 recipe 与动画，问题从它头顶气泡出现，不用 SVG 或 CSS 拼角色 |
 | 头上冒的气泡、提问气泡 | 图鉴员主问题气泡 | `#guide-speech`、`#interview-question`、`data-mode` | 问题与即时回应共用同一个角色头顶气泡，通过 `question/reaction` 状态切换 |
-| 一直收音、点一次以后一直听 | 开场连续语音会话 | `guideVoiceSession`、`startGuideVoiceSession()`、`resumeGuideListening()` | 首次用户动作申请麦克风；角色朗读和理解期间暂停识别，孩子手动点到下一句后恢复 |
-| 我听到什么、实时听写小气泡 | 临时语音转写反馈 | `#live-answer-bubble`、`#live-answer-text`、`showLiveAnswer()` | 浏览器中间文本即时显示，豆包句末校准后交给回应门控，不进入长期聊天记录 |
+| 一直收音、点一次以后一直听 | 开场连续语音会话 | `guideVoiceSession`、`startGuideVoiceSession()`、`resumeGuideListening()` | 首次用户动作申请麦克风；角色朗读和理解期间暂停识别，当前语音与字幕自动结束后恢复 |
+| 实时听写小气泡 | 临时语音转写反馈 | `#live-answer-bubble`、`#live-answer-text`、`showLiveAnswer()` | 气泡只显示浏览器中间文本，不附加“我听到”等小标签；豆包句末校准后交给回应门控，不进入长期聊天记录 |
 | 麦克风这一行、语音输入 | 无提交语音入口 | `#mic-button`、`.guide-mic`、`.voice-listen-zone` | 访谈只显示一个麦克风图标；孩子的话在上方气泡显示，不设输入框与提交按钮 |
 | 三轮聊天、先领宠物 | 新版低敏感度偏好访谈 | `INTERVIEW_QUESTIONS`、`/api/story-turn` | 只问外形、颜色、陪伴方式；不询问身份信息 |
 | 分配给我的宠物 | 随机模板同行宠物 | `state.petTemplate`、`state.pet`、`PetRenderer` | 从 12 个模拟器动物模板随机选择，再映射 palette、feature 和可复现 seed |
 | 形色陪三个印章 | 宠物配方摘要 | `.voice-seals`、`finishInterview()` | 只展示三个回答如何进入配方，不再向孩子追加取名或问候问题 |
 | 场景里的小角色 | 当前场景 NPC 群 | `#npc-wrap`、`#npc-companions`、`scene.cast` | 1 位主 NPC 和 2 位可点击 NPC，全部复用模拟器角色配方 |
-| 角落小包、道具包 | 连续故事背包 | `#backpack-button`、`state.inventory` | 数字只统计未使用物品，已送出物品仍可查看说明 |
+| 角落小包、道具包 | 连续故事背包 | `#backpack-button`、`#backpack-quick-items`、`state.inventory` | 小框直接展示最近三件道具，已送出物品降低不透明度，点开仍可查看说明 |
 | 贝壳、听声音的贝 | 听风贝 | `ITEMS.listeningShell`、`listening-shell.png` | 放大小声音，不替别人说话 |
 | 红线团、星星毛线 | 星线团 | `ITEMS.starThread`、`star-thread.png` | 连接没有说完的话 |
 | 叶子信、没寄出的信 | 没寄出的问候 | `ITEMS.unsentGreeting`、`unsent-greeting.png` | 第二章暂存并送给慢钟先生 |

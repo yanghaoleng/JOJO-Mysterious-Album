@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-direct-pet-story-2">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-voice-skip">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
@@ -37,15 +37,11 @@
       <div class="place-object" id="place-object" role="button" tabindex="0" aria-label="触摸场景里的物件"><span></span></div>
 
       <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
-        <div class="npc-speech" id="npc-speech" role="status" hidden>
-          <span id="npc-bubble-state">正在说</span>
+        <div class="npc-speech" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" hidden>
           <b id="npc-bubble-text"></b>
-          <i id="npc-bubble-more" aria-hidden="true"></i>
         </div>
         <div class="npc-portal" aria-hidden="true"></div>
         <div class="npc-character" id="npc-character" aria-hidden="true">
-          <i class="npc-listen-ear npc-listen-ear-left"></i>
-          <i class="npc-listen-ear npc-listen-ear-right"></i>
           <canvas id="npc-canvas"></canvas>
         </div>
         <b id="npc-name">河湾小水獭</b>
@@ -62,7 +58,7 @@
 
       <div class="pet-stage" id="pet-stage" role="button" tabindex="0" aria-label="触摸你的小伙伴" hidden>
         <canvas id="pet-canvas" aria-label="根据回答生成的小宠物"></canvas>
-        <div class="pet-thought" id="pet-thought" role="status" hidden></div>
+        <div class="pet-thought" id="pet-thought" role="button" tabindex="0" aria-label="跳过当前语音" hidden></div>
       </div>
 
       <p class="world-tap-hint" id="world-tap-hint" hidden>轻触场景，伙伴会走过去</p>
@@ -77,7 +73,7 @@
         <ul class="cover-promises">
           <li>只回答外形、颜色和陪伴方式三个问题</li>
           <li>角色和场景都来自角色模拟器的预制模板</li>
-          <li>每句话读完后，点气泡或屏幕才会继续</li>
+          <li>字幕会跟着角色的语音自动出现和切换</li>
         </ul>
         <p class="cover-mic-callout">点下方麦克风，故事就会开始</p>
         <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存。不会询问姓名、学校、住址或精确生日。</p>
@@ -86,18 +82,11 @@
 
     <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
       <div class="guide-encounter">
-        <div class="guide-speech" id="guide-speech" data-mode="question" role="button" tabindex="0" aria-label="轻触继续阅读气泡">
-          <div class="guide-speech-meta">
-            <span id="guide-bubble-state">想听你说</span>
-            <span class="question-count" id="question-count">1 / 3</span>
-          </div>
+        <div class="guide-speech" id="guide-speech" role="button" tabindex="0" aria-label="跳过当前语音" data-mode="question">
           <h2 id="interview-question">你希望小宠物最特别的地方是什么？</h2>
-          <i class="guide-bubble-more" id="guide-bubble-more" aria-hidden="true"></i>
         </div>
 
         <div class="guide-figure" id="guide-figure" role="button" tabindex="0" aria-label="触摸图鉴员小卷">
-          <i class="guide-listen-ear guide-listen-ear-left" aria-hidden="true"></i>
-          <i class="guide-listen-ear guide-listen-ear-right" aria-hidden="true"></i>
           <canvas id="guide-canvas" aria-label="角色模拟器里的卷尾小狐狸"></canvas>
           <div class="guide-nameplate">
             <b id="guide-name">小卷</b>
@@ -117,7 +106,7 @@
         <span data-seal="listen">色</span>
         <span data-seal="voice">陪</span>
       </div>
-      <p class="ritual-status" id="ritual-status" role="status">读完气泡后，点一下屏幕进入故事。</p>
+      <p class="ritual-status" id="ritual-status" role="status">小宠物会先介绍自己，然后自动出发。</p>
     </section>
 
     <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
@@ -151,7 +140,6 @@
 
     <section class="voice-dock" id="voice-dock" data-voice-state="setup" aria-label="故事语音控制">
       <div class="live-answer-bubble" id="live-answer-bubble" hidden aria-live="polite">
-        <span id="live-answer-state">我听到</span>
         <b id="live-answer-text"></b>
       </div>
       <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="允许麦克风并开始故事">
@@ -163,8 +151,8 @@
 
   <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog" data-uisfx="open">
     <span class="backpack-mark" aria-hidden="true">包</span>
-    <b>背包</b>
-    <i id="backpack-count">0</i>
+    <span class="backpack-label">背包</span>
+    <span class="backpack-quick-items" id="backpack-quick-items" aria-hidden="true"></span>
   </button>
 
   <dialog class="backpack-dialog" id="backpack-dialog" aria-labelledby="backpack-title">
@@ -182,8 +170,8 @@
   <div class="ink-transition" id="ink-transition" aria-hidden="true"><span></span></div>
   <div class="toast" id="toast" role="status"></div>
 
-  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260826-direct-pet-story-2"></script>
+  <script type="module" src="./src/story-v2.js?v=20260826-voice-skip"></script>
 </body>
 </html>

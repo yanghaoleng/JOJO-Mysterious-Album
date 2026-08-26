@@ -50,7 +50,7 @@
 }
 
 body[data-mode="debug"] .ui-sfx-toggle {
-  right: max(86px, calc(env(safe-area-inset-right) + 86px));
+  display: none;
 }
 
 body[data-phase] .story-header-actions {
@@ -83,7 +83,7 @@ body[data-page="data"] .ui-sfx-toggle {
   }
 
   body[data-mode="debug"] .ui-sfx-toggle {
-    right: max(76px, calc(env(safe-area-inset-right) + 76px));
+    display: none;
   }
 
   body[data-phase] .story-header-actions {

@@ -375,7 +375,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260826-two-entry-home">
+<link rel="stylesheet" href="./src/lab.css?v=20260826-template-editor">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -409,7 +409,9 @@
     </div>
   </section>
 
-  <button id="mode-switch" type="button" hidden>返回主页</button>
+  <button id="mode-switch" type="button" aria-label="返回主页" title="返回主页" hidden>
+    <span aria-hidden="true">⌂</span><span class="sr-only">返回主页</span>
+  </button>
 
   <header id="topbar">
     <div class="brand">
@@ -420,27 +422,22 @@
 
   <section id="debug-lab" aria-labelledby="lab-title" hidden>
     <header class="lab-header">
-      <div>
-        <p>萌萌星角色实验室</p>
-        <h1 id="lab-title">它会从你的回答里，慢慢长出来。</h1>
-      </div>
-      <div class="lab-header-note">所有兴趣档案只保存在当前设备</div>
+      <h1 id="lab-title">角色模拟器</h1>
     </header>
 
     <main class="lab-layout">
       <aside class="lab-workbench" aria-label="角色实验工具">
         <nav class="lab-tabs" role="tablist" aria-label="实验室功能">
-          <button type="button" role="tab" aria-selected="true" data-lab-tab="interview">成长问答</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="templates">角色模板</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="face">捏脸</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="body">身体</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="actions">动作</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="scene">场景</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="voice">声音</button>
-          <button type="button" role="tab" aria-selected="false" data-lab-tab="dialogue">对话</button>
+          <button class="template-root-tab" type="button" role="tab" aria-selected="true" data-lab-tab="templates">角色模板</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="interview" disabled>成长问答</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="face" disabled>捏脸</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="body" disabled>身体</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="actions" disabled>动作</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="scene" disabled>场景</button>
+          <button type="button" role="tab" aria-selected="false" data-lab-tab="voice" disabled>声音</button>
         </nav>
 
-        <section class="lab-panel active" data-lab-panel="interview" role="tabpanel">
+        <section class="lab-panel" data-lab-panel="interview" role="tabpanel" hidden>
           <div class="question-meta">
             <span id="question-progress">正在认识你</span>
             <button id="restart-interview" type="button">重新开始</button>
@@ -465,17 +462,18 @@
           </form>
           <div id="interview-finish" class="interview-finish" hidden>
             <b>它已经记住你啦</b>
-            <p>现在可以继续捏脸、换声音，或者让它和你模拟一段对话。</p>
-            <button type="button" data-open-tab="dialogue">和它说句话</button>
+            <p>现在可以继续编辑它的外观、声音和场景。</p>
+            <button type="button" data-open-tab="face">继续编辑外观</button>
           </div>
         </section>
 
-        <section class="lab-panel" data-lab-panel="templates" role="tabpanel" hidden>
-          <h2>从一只完整角色开始</h2>
-          <p class="panel-help">每只角色都有自己的性格、世界和陪伴方式。先翻开角色卡，也可以直接呼叫它。</p>
+        <section class="lab-panel active" data-lab-panel="templates" role="tabpanel">
+          <div class="template-panel-heading">
+            <div><h2>先选择一个角色</h2><p class="panel-help">选中后，右侧会直接打开它的角色卡和外观属性。</p></div>
+            <button id="create-character" type="button">创建角色</button>
+          </div>
           <div id="template-groups" class="template-groups" aria-label="角色模板分类"></div>
           <div id="template-grid" class="template-grid" aria-label="预制角色模板"></div>
-          <section id="template-card-detail" class="template-card-detail" aria-live="polite" hidden></section>
         </section>
 
         <section class="lab-panel" data-lab-panel="face" role="tabpanel" hidden>
@@ -650,34 +648,16 @@
           <p class="voice-note">固定台词都有星仔离线音频。自由输入会发送文字到 Fish Audio 生成语音，不会上传孩子的声音；服务不可用时仍会显示气泡和口型。</p>
         </section>
 
-        <section class="lab-panel" data-lab-panel="dialogue" role="tabpanel" hidden>
-          <h2>模拟一段对话</h2>
-          <p class="panel-help">输入它要说的话，检查口型、气泡、语速和角色感觉。</p>
-          <form id="dialogue-form" class="dialogue-form">
-            <label for="dialogue-input">让它说</label>
-            <textarea id="dialogue-input" maxlength="100" rows="4">我记住啦。你喜欢发现小动物，也喜欢先安静看一会儿。</textarea>
-            <p>台词会发送到本项目服务端，再由 Fish Audio 生成所选音色；不会保存，也不会上传麦克风声音。</p>
-            <button type="submit">开始说话</button>
-          </form>
-          <div class="quick-lines" aria-label="快速对话">
-            <button type="button" data-audio="dialogue-question" data-line="你愿意带我去看看你最喜欢的地方吗？">提出问题</button>
-            <button type="button" data-audio="dialogue-choice" data-line="这次换你来决定，我会认真听。">交出选择</button>
-            <button type="button" data-audio="dialogue-encourage" data-line="没关系，我们可以慢一点，再试一次。">温柔鼓励</button>
-          </div>
-        </section>
       </aside>
 
       <section class="lab-preview" aria-label="角色实时预览">
-        <div id="lab-bubble" role="status" aria-live="polite" aria-atomic="true" data-text="先告诉我，你更容易用眼睛记住，还是用耳朵记住？">
+        <div id="lab-bubble" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" aria-atomic="true" data-text="先选择一个角色，再开始编辑。">
           <span class="lab-bubble-fold" aria-hidden="true"></span>
-          <span id="lab-bubble-text" aria-hidden="true">先告诉我，你更容易用眼睛记住，还是用耳朵记住？</span>
-          <span id="lab-bubble-a11y" class="sr-only">先告诉我，你更容易用眼睛记住，还是用耳朵记住？</span>
+          <span id="lab-bubble-text" aria-hidden="true">先选择一个角色，再开始编辑。</span>
+          <span id="lab-bubble-a11y" class="sr-only">先选择一个角色，再开始编辑。</span>
           <span class="lab-bubble-tail" aria-hidden="true"></span>
         </div>
         <div id="lab-stage" aria-hidden="true"></div>
-        <button id="lab-random" class="lab-random-icon" type="button" data-uisfx="none" aria-label="随机换一只角色" title="随机换一只">
-          <span aria-hidden="true">换</span>
-        </button>
         <section id="character-call" class="character-call" role="dialog" aria-modal="true" aria-label="角色视频通话" hidden>
           <header class="character-call-head">
             <div class="character-call-person">
@@ -720,25 +700,45 @@
         </section>
       </section>
 
-      <aside class="lab-notebook" aria-labelledby="notebook-title">
+      <aside class="lab-notebook character-editor-pane" aria-labelledby="character-editor-title">
         <div class="notebook-heading">
-          <span aria-hidden="true">记</span>
-          <div><p>孩子的兴趣小档案</p><h2 id="notebook-title">我已经记住 <small id="profile-count">0 / 17</small></h2></div>
+          <span aria-hidden="true">角</span>
+          <div><h2 id="character-editor-title">请选择角色</h2></div>
         </div>
-        <dl id="profile-list">
-          <div><dt>基本认识</dt><dd data-profile-group="basics">还在认识</dd></div>
-          <div><dt>探索方式</dt><dd data-profile-group="exploration">还在认识</dd></div>
-          <div><dt>表达相处</dt><dd data-profile-group="expression">还在认识</dd></div>
-          <div><dt>兴趣地图</dt><dd data-profile-group="interests">还在认识</dd></div>
-          <div><dt>陪伴方式</dt><dd data-profile-group="support">还在认识</dd></div>
-          <div><dt>最近着迷</dt><dd data-profile-group="current">还在认识</dd></div>
-          <div><dt>互动观察</dt><dd data-profile="scriptSummary">还没有互动记录</dd></div>
-        </dl>
+        <p id="character-editor-empty" class="character-editor-empty">从角色模板中选择一个已有角色，或点击“创建角色”。</p>
+        <form id="character-editor-form" class="character-editor-form" hidden>
+          <label>角色名字<input id="character-editor-name" maxlength="16" autocomplete="off"></label>
+          <fieldset>
+            <legend>外观属性</legend>
+            <div class="character-appearance-grid">
+              <label>种类<select id="character-editor-species"><option value="human">人物</option><option value="cat">猫科</option><option value="dog">犬科</option></select></label>
+              <label>站姿<select id="character-editor-base"><option value="biped">两脚站立</option><option value="sit">坐姿</option><option value="quad">四脚小兽</option></select></label>
+              <label>眼睛<select id="character-editor-eyes"><option value="sparkle">亮晶晶</option><option value="dot">豆豆眼</option><option value="saucer">圆眼睛</option><option value="sleepy">困困眼</option><option value="wide">大眼睛</option><option value="happy">笑眼</option><option value="void">墨色眼</option></select></label>
+              <label>头顶<select id="character-editor-crest"><option value="none">没有</option><option value="floppy">大耳朵</option><option value="cat">猫耳朵</option><option value="bear">圆耳朵</option><option value="bunny">兔耳朵</option><option value="sprout">小芽</option><option value="flower">小花</option><option value="antlers">小鹿角</option><option value="spikes">短刺</option></select></label>
+              <label>嘴巴<select id="character-editor-mouth"><option value="tiny">小嘴巴</option><option value="cat">弯弯嘴</option><option value="smirk">歪歪笑</option><option value="buckteeth">小门牙</option><option value="wobble">软软嘴</option></select></label>
+              <label>脸形<select id="character-editor-skull"><option value="round">圆脸</option><option value="wide">宽脸</option><option value="pear">梨形脸</option><option value="square">方脸</option><option value="wonky">歪歪脸</option></select></label>
+              <label>身体<select id="character-editor-torso"><option value="bean">豆子</option><option value="round">圆滚滚</option><option value="tiny">小小只</option><option value="pear">梨形</option><option value="barrel">胖桶</option></select></label>
+              <label>手臂<select id="character-editor-arms"><option value="stub">短短手</option><option value="noodle">长长手</option><option value="clasped">抱在一起</option><option value="hips">叉着腰</option><option value="wing">小翅膀</option></select></label>
+              <label>尾巴<select id="character-editor-tail"><option value="none">没有</option><option value="wag">摇摇尾巴</option><option value="curl">卷尾巴</option><option value="puff">绒球尾巴</option></select></label>
+              <label>声音<select id="character-editor-voice"><option value="sprout">小芽</option><option value="bubble">泡泡</option><option value="moss">阿绒</option><option value="star">星仔</option></select></label>
+              <label class="wide">场景<select id="character-editor-scene"></select></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>角色卡</legend>
+            <div id="character-card-fields" class="character-card-fields"></div>
+          </fieldset>
+          <div class="character-editor-actions">
+            <button id="character-editor-save" type="submit">保存角色</button>
+            <button id="character-editor-call" type="button">呼叫它</button>
+            <button id="character-editor-reset" type="button">恢复模板</button>
+          </div>
+        </form>
         <div class="recipe-summary">
-          <b>角色变化</b>
-          <p id="recipe-summary">回答问题后，这里会记录它为什么长成现在的样子。</p>
+          <b>编辑状态</b>
+          <p id="recipe-summary">选择角色后即可编辑并保存。</p>
         </div>
-        <button id="copy-recipe" type="button">复制角色配方</button>
+        <button id="copy-recipe" type="button" disabled>复制当前角色</button>
         <p id="lab-status" role="status"></p>
       </aside>
     </main>
@@ -764,9 +764,9 @@
       addEventListener('resize', paint, { passive: true });
     })();
   </script>
-  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260826-two-entry-home"></script>
+  <script type="module" src="./src/mode.js?v=20260826-template-editor"></script>
 </body>
 </html>
