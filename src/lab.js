@@ -34,6 +34,18 @@ const DEFAULT_VOICE = 'star';
 const DEFAULT_SCENE = 'paper-ground';
 const offlineAudioPath = key => key ? `assets/voice/star/${key}.mp3` : '';
 const TEMPLATE_GROUPS = ['全部', '小动物', '人物'];
+const CHARACTER_APPEARANCE_OPTIONS = {
+  species: ['human', 'cat', 'dog'],
+  base: ['biped', 'sit', 'quad'],
+  eyes: ['sparkle', 'dot', 'saucer', 'sleepy', 'wide', 'happy', 'void'],
+  crest: ['none', 'floppy', 'cat', 'bear', 'bunny', 'sprout', 'flower', 'antlers', 'spikes'],
+  mouth: ['tiny', 'cat', 'smirk', 'buckteeth', 'wobble'],
+  skull: ['round', 'wide', 'pear', 'square', 'wonky'],
+  torso: ['bean', 'round', 'tiny', 'pear', 'barrel'],
+  arms: ['stub', 'noodle', 'clasped', 'hips', 'wing'],
+  tail: ['none', 'wag', 'curl', 'puff'],
+  voice: ['sprout', 'bubble', 'moss', 'star'],
+};
 
 const CHARACTER_TEMPLATES = [
   {
@@ -1798,9 +1810,77 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   const node = document.createElement('p');
   node.className = `character-call-message ${role}${pending ? ' pending' : ''}`;
   node.textContent = message.content;
-  $('character-call-transcript').appendChild(node);
-  while ($('character-call-transcript').children.length > 4) $('character-call-transcript').firstElementChild?.remove();
+  $('character-call-transcript').replaceChildren(node);
   return { message, node };
+}
+
+function characterCallAppearance() {
+  if (!recipe) return {};
+  return {
+    species: recipe.species,
+    base: recipe.base,
+    eyes: recipe.parts.eyes.params.type,
+    crest: recipe.parts.crest.params.style,
+    mouth: recipe.parts.mouth.params.style,
+    skull: recipe.parts.skull.params.shape,
+    torso: recipe.parts.torso.params.shape,
+    arms: recipe.parts.arms.params.style,
+    tail: recipe.parts.tail.params.style,
+    voice: speaker?.activeId || recipe.voiceId || DEFAULT_VOICE,
+  };
+}
+
+function applyCharacterCallTool(payload) {
+  if (!recipe || !callState.template) return;
+  const source = payload?.appearancePatch && typeof payload.appearancePatch === 'object' ? payload.appearancePatch : {};
+  const patch = {};
+  for (const [key, allowed] of Object.entries(CHARACTER_APPEARANCE_OPTIONS)) {
+    const value = String(source[key] || '');
+    if (allowed.includes(value)) patch[key] = value;
+  }
+  let appearanceChanged = false;
+  if (patch.species && patch.species !== recipe.species) { recipe.species = patch.species; appearanceChanged = true; }
+  if (patch.base && patch.base !== recipe.base) { recipe.base = patch.base; appearanceChanged = true; }
+  const partBindings = {
+    eyes: ['eyes', 'type'], crest: ['crest', 'style'], mouth: ['mouth', 'style'],
+    skull: ['skull', 'shape'], torso: ['torso', 'shape'], arms: ['arms', 'style'], tail: ['tail', 'style'],
+  };
+  for (const [key, [part, param]] of Object.entries(partBindings)) {
+    if (patch[key] && patch[key] !== recipe.parts[part].params[param]) {
+      recipe.parts[part].params[param] = patch[key];
+      appearanceChanged = true;
+    }
+  }
+  if (patch.voice && patch.voice !== speaker.activeId) {
+    speaker.choose(patch.voice);
+    recipe.voiceId = patch.voice;
+    appearanceChanged = true;
+  }
+
+  const requestedScene = String(payload?.sceneId || '');
+  const nextScene = LAB_SCENES.some(item => item.id === requestedScene) ? requestedScene : '';
+  const sceneChanged = Boolean(nextScene && nextScene !== sceneId);
+  if (sceneChanged) setEnvironment(nextScene, { speak: false });
+  recipe.sceneId = sceneId;
+  if (!appearanceChanged && !sceneChanged) return;
+
+  recipe.templateId = callState.template.id;
+  savedCharacterRecipes[callState.template.id] = cloneRecipe(recipe);
+  if (callState.template.id.startsWith('custom-')) {
+    const custom = customCharacterTemplates.find(item => item.id === callState.template.id);
+    if (custom) Object.assign(custom, { species: recipe.species, base: recipe.base, group: recipe.species === 'human' ? '人物' : '小动物' });
+  }
+  saveCharacterLibrary();
+  templateCardsReady = false;
+  if (appearanceChanged) rebuild();
+  refreshControls();
+  refreshCharacterEditorAppearance();
+  renderTemplateDetail(characterTemplateById(callState.template.id) || callState.template);
+  const summary = String(payload?.summary || '角色外观或场景已经更新。').slice(0, 80);
+  $('character-card-change').textContent = summary;
+  $('recipe-summary').textContent = summary;
+  trackAnalytics('lab_character_tool_apply', { depth: 5 });
+  void playUISFX('complete', { volume: 0.12 });
 }
 
 function setCharacterCallMic(state, label) {
@@ -1863,7 +1943,7 @@ function setCharacterCallTopic(topic, { announce = true } = {}) {
   const descriptions = {
     growth: '成长问答会沿用原来的问题，但现在全程用语音自然聊。',
     free: '自由对话会从角色卡里的兴趣、世界和使命自然展开。',
-    character: '人物设定会把你说的修改同步到当前角色卡。',
+    character: '人物设定会直接修改角色的外观、性格和所在场景，并同步保存。',
   };
   $('character-card-change').textContent = descriptions[callState.topic];
   if (!announce || !callState.active) return;
@@ -1992,6 +2072,10 @@ function handleCharacterCallEvent(eventName, payload, target) {
     void playUISFX('complete', { volume: 0.12 });
     return;
   }
+  if (eventName === 'tool') {
+    applyCharacterCallTool(payload);
+    return;
+  }
   if (eventName === 'error') throw new Error(String(payload?.error || 'character_call_failed'));
 }
 
@@ -2051,6 +2135,8 @@ async function sendCharacterCall(messageText) {
         message,
         history,
         card: callState.card,
+        appearance: characterCallAppearance(),
+        sceneId,
       }),
       signal: callState.controller.signal,
     });

@@ -76,6 +76,38 @@ CHARACTER_CARD_FIELDS = {
     "companionStyle": 100, "relationship": 100, "boundary": 120,
     "greeting": 120, "memoryRule": 140,
 }
+CHARACTER_APPEARANCE_OPTIONS = {
+    "species": {"human", "cat", "dog"},
+    "base": {"biped", "sit", "quad"},
+    "eyes": {"sparkle", "dot", "saucer", "sleepy", "wide", "happy", "void"},
+    "crest": {"none", "floppy", "cat", "bear", "bunny", "sprout", "flower", "antlers", "spikes"},
+    "mouth": {"tiny", "cat", "smirk", "buckteeth", "wobble"},
+    "skull": {"round", "wide", "pear", "square", "wonky"},
+    "torso": {"bean", "round", "tiny", "pear", "barrel"},
+    "arms": {"stub", "noodle", "clasped", "hips", "wing"},
+    "tail": {"none", "wag", "curl", "puff"},
+    "voice": {"sprout", "bubble", "moss", "star"},
+}
+CHARACTER_SCENES = {
+    "paper-ground": "纸上地面", "classroom-desk": "教室书桌", "library": "安静图书馆",
+    "attic": "玩具阁楼", "breakfast-table": "早餐餐桌", "rainy-window": "雨天窗台",
+    "meadow": "萤火草地", "mushroom-forest": "蘑菇森林", "seaside": "贝壳海边",
+    "greenhouse": "温室花房", "paper-creek": "纸船小溪", "snow-globe": "雪花玻璃球",
+    "castle-window": "城堡窗台", "clouds": "云朵里面", "space": "星星宇宙",
+    "moon": "月亮表面", "underwater": "海底气泡", "train": "慢火车车厢",
+    "rooftop": "屋顶晚风", "blanket-fort": "被窝城堡", "giant-pocket": "巨人口袋",
+    "music-stage": "音乐小舞台",
+}
+CHARACTER_SCENE_KEYWORDS = (
+    (r"教室|书桌", "classroom-desk"), (r"图书馆|书架", "library"), (r"阁楼|玩具箱", "attic"),
+    (r"早餐|餐桌", "breakfast-table"), (r"雨天|下雨|窗台", "rainy-window"), (r"草地|萤火", "meadow"),
+    (r"蘑菇|森林", "mushroom-forest"), (r"海边|沙滩|贝壳", "seaside"), (r"温室|花房", "greenhouse"),
+    (r"小溪|纸船", "paper-creek"), (r"雪花|玻璃球", "snow-globe"), (r"城堡", "castle-window"),
+    (r"云朵|云里", "clouds"), (r"宇宙|星空|太空", "space"), (r"月亮|月球", "moon"),
+    (r"海底|水下", "underwater"), (r"火车|车厢", "train"), (r"屋顶|晚风", "rooftop"),
+    (r"被窝|毯子|帐篷", "blanket-fort"), (r"口袋", "giant-pocket"), (r"舞台|表演|音乐", "music-stage"),
+    (r"纸上|空白场景|简单场景", "paper-ground"),
+)
 FISH_VOICES = {
     "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "speed": 0.92},
     "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "speed": 1.08},
@@ -555,6 +587,21 @@ def sanitize_character_card(raw):
     return card
 
 
+def sanitize_character_appearance(raw):
+    source = raw if isinstance(raw, dict) else {}
+    appearance = {}
+    for key, allowed in CHARACTER_APPEARANCE_OPTIONS.items():
+        value = clean_character_text(source.get(key), 20)
+        if value in allowed:
+            appearance[key] = value
+    return appearance
+
+
+def sanitize_character_scene(value):
+    scene_id = clean_character_text(value, 32)
+    return scene_id if scene_id in CHARACTER_SCENES else ""
+
+
 def sanitize_character_history(raw):
     if not isinstance(raw, list):
         return []
@@ -568,25 +615,63 @@ def sanitize_character_history(raw):
     return history
 
 
-def fallback_character_edit(card, message):
+def fallback_character_edit(card, message, current_appearance=None, current_scene=""):
     next_card = dict(card)
-    summary = "我先记下了这条方向，设定没有需要强行改动的地方。"
+    appearance_patch = {}
+    scene_id = ""
+    changed = []
     if re.search(r"活泼|开朗|快一点|有精神", message):
         next_card["speakingStyle"] = "短句、明亮、有活力，但会等孩子说完再回应。"
-        summary = "已把说话方式调得更活泼，同时保留倾听和停顿。"
+        changed.append("说话方式")
     elif re.search(r"温柔|慢一点|轻一点|安静", message):
         next_card["speakingStyle"] = "声音轻、速度慢、一次只说一件事，并给孩子留出停顿。"
-        summary = "已把说话方式调得更轻、更慢。"
+        changed.append("说话方式")
     elif re.search(r"少说|简短|不要说太多", message):
         next_card["speakingStyle"] = "每次最多两句短话，先回应重点，再等待孩子继续。"
-        summary = "已把回答收短为每次最多两句。"
+        changed.append("说话方式")
     elif re.search(r"多问|提问|好奇", message):
         next_card["mission"] = "用一个具体的小问题陪孩子继续发现，不替孩子决定答案。"
-        summary = "已增加好奇提问，但每轮仍只问一个问题。"
-    return {"card": sanitize_character_card(next_card), "summary": summary}
+        changed.append("角色使命")
+    traits = list(next_card.get("personality") or [])
+    for pattern, trait in ((r"勇敢|大胆", "勇敢"), (r"温柔|体贴", "温柔"), (r"好奇", "好奇"), (r"活泼|开朗", "活泼"), (r"安静|沉稳", "沉稳")):
+        if re.search(pattern, message) and trait not in traits:
+            traits.append(trait)
+    if traits != list(next_card.get("personality") or []):
+        next_card["personality"] = traits[-5:]
+        changed.append("性格")
+
+    appearance_rules = (
+        (r"大眼|眼睛.*大", "eyes", "wide"), (r"亮晶晶|闪亮.*眼", "eyes", "sparkle"),
+        (r"圆眼|眼睛.*圆", "eyes", "saucer"), (r"困困眼|眯眼", "eyes", "sleepy"),
+        (r"兔耳|长耳朵", "crest", "bunny"), (r"猫耳", "crest", "cat"), (r"圆耳", "crest", "bear"),
+        (r"软耳|垂耳|大耳朵", "crest", "floppy"), (r"小芽", "crest", "sprout"), (r"小花", "crest", "flower"),
+        (r"鹿角", "crest", "antlers"), (r"短刺|刺猬", "crest", "spikes"),
+        (r"卷尾", "tail", "curl"), (r"摇摇尾巴|摇尾|狗尾", "tail", "wag"), (r"绒球尾", "tail", "puff"),
+        (r"不要尾巴|没有尾巴|去掉尾巴", "tail", "none"),
+        (r"小小只|身体.*小", "torso", "tiny"), (r"圆滚滚|圆肚子", "torso", "round"),
+        (r"方脸", "skull", "square"), (r"圆脸", "skull", "round"), (r"梨形脸", "skull", "pear"),
+        (r"小翅膀|翅膀", "arms", "wing"), (r"抱着手|手.*抱", "arms", "clasped"), (r"叉腰", "arms", "hips"),
+    )
+    for pattern, key, value in appearance_rules:
+        if re.search(pattern, message):
+            appearance_patch[key] = value
+    if appearance_patch:
+        changed.append("外观")
+    for pattern, target_scene in CHARACTER_SCENE_KEYWORDS:
+        if re.search(pattern, message):
+            scene_id = target_scene
+            changed.append("场景")
+            break
+    summary = f"已更新{'、'.join(dict.fromkeys(changed))}。" if changed else "我先记下了这条方向，设定没有需要强行改动的地方。"
+    return {
+        "card": sanitize_character_card(next_card),
+        "appearancePatch": sanitize_character_appearance(appearance_patch),
+        "sceneId": sanitize_character_scene(scene_id),
+        "summary": summary,
+    }
 
 
-def character_call_result(character_name, mode, topic, topic_context, message, history, card):
+def character_call_result(character_name, mode, topic, topic_context, message, history, card, appearance, current_scene):
     if likely_private_info(message):
         return {"reply": "这些个人信息不用告诉我。我们只聊现在想一起做什么就好。"}
     topic = topic if mode == "debug" and topic in {"growth", "character"} else "free"
@@ -604,17 +689,17 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
             fallback = f"我听见你说“{message[:24]}”了。我的角色卡很喜欢{card_topic}，你想从这里聊起吗？"
         result = {"reply": fallback}
         if topic == "character":
-            result.update(fallback_character_edit(card, message))
+            result.update(fallback_character_edit(card, message, appearance, current_scene))
         return result
 
     if topic == "character":
-        mode_rule = "当前是人物设定调试。根据创作者的话更新角色卡，只修改确实提到的字段；先用角色口吻简短确认理解。"
+        mode_rule = "当前是人物设定调试。根据创作者的话更新角色卡、外观和场景，只修改确实提到的内容；先用角色口吻简短确认理解。"
     elif topic == "growth":
         mode_rule = f"当前是成长问答语音对话。孩子正在回答：{current_question or '当前成长问题'}。先自然承接回答，{f'再只问下一个问题：{next_question}' if next_question else '这是最后一个问题，请温柔总结，不再提问'}。不要给选项，不要像填表。"
     else:
         mode_rule = "当前是自由对话。保持角色口吻，从角色卡的兴趣、世界、使命或开场白自然发起和延续话题；每次最多两句，只问一个温和的小问题。"
     output_rule = (
-        '只输出JSON，reply是角色口吻的两句以内回应，card是完整角色卡对象，summary是40字以内修改摘要。'
+        '只输出JSON：{"reply":"角色口吻的两句以内回应","card":完整角色卡对象,"appearancePatch":只含明确要求修改的外观字段,"sceneId":"明确要求的新场景ID，否则为空字符串","summary":"40字以内修改摘要"}。'
         if topic == "character"
         else '只输出JSON：{"reply":"角色口吻的两句以内回应"}。'
     )
@@ -624,7 +709,7 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
             "messages": [
                 {
                     "role": "system",
-                    "content": f"你正在扮演儿童角色“{character_name}”。{mode_rule}\n角色卡：{json.dumps(card, ensure_ascii=False)}\n{CHARACTER_CALL_SAFETY}\n{output_rule}",
+                    "content": f"你正在扮演儿童角色“{character_name}”。{mode_rule}\n角色卡：{json.dumps(card, ensure_ascii=False)}\n当前外观：{json.dumps(appearance, ensure_ascii=False)}\n当前场景：{current_scene}\n外观字段可选值：{json.dumps({key: sorted(values) for key, values in CHARACTER_APPEARANCE_OPTIONS.items()}, ensure_ascii=False)}\n场景ID与名称：{json.dumps(CHARACTER_SCENES, ensure_ascii=False)}\nappearancePatch和sceneId只能使用上面的值，不得编造。\n{CHARACTER_CALL_SAFETY}\n{output_rule}",
                 },
                 *history,
                 {"role": "user", "content": message},
@@ -650,9 +735,13 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
         raise RuntimeError("character_call_upstream_error")
     result = {"reply": reply}
     if topic == "character":
+        deterministic = fallback_character_edit(card, message, appearance, current_scene)
+        deterministic_card_patch = {key: value for key, value in deterministic["card"].items() if value != card.get(key)}
         incoming = parsed.get("card") if isinstance(parsed.get("card"), dict) else {}
-        result["card"] = sanitize_character_card({**card, **incoming})
-        result["summary"] = clean_character_text(parsed.get("summary"), 80) or "角色设定已经根据这轮对话更新。"
+        result["card"] = sanitize_character_card({**card, **incoming, **deterministic_card_patch})
+        result["appearancePatch"] = sanitize_character_appearance({**deterministic["appearancePatch"], **sanitize_character_appearance(parsed.get("appearancePatch"))})
+        result["sceneId"] = sanitize_character_scene(parsed.get("sceneId")) or deterministic["sceneId"]
+        result["summary"] = clean_character_text(parsed.get("summary"), 80) or deterministic["summary"]
     return result
 
 
@@ -759,11 +848,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             self.respond_json(400, {"error": "invalid_character_call"})
             return
         card = sanitize_character_card(payload.get("card"))
+        appearance = sanitize_character_appearance(payload.get("appearance"))
+        current_scene = sanitize_character_scene(payload.get("sceneId")) or "paper-ground"
         history = sanitize_character_history(payload.get("history"))
         try:
-            result = character_call_result(character_name, mode, topic, topic_context, message, history, card)
+            result = character_call_result(character_name, mode, topic, topic_context, message, history, card, appearance, current_scene)
         except Exception:
-            fallback = character_call_result(character_name, mode, topic, topic_context, message, history, card) if not os.environ.get("ARK_API_KEY") else {
+            fallback = character_call_result(character_name, mode, topic, topic_context, message, history, card, appearance, current_scene) if not os.environ.get("ARK_API_KEY") else {
                 "reply": "刚才的声音绕远了一点。我还在这里，你可以再说一次。"
             }
             result = fallback
@@ -780,6 +871,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             time.sleep(0.026)
         if topic == "character" and result.get("card"):
             self.write_sse("card", {"card": result["card"], "summary": result.get("summary", "角色设定已经更新。")})
+            appearance_patch = sanitize_character_appearance(result.get("appearancePatch"))
+            next_scene = sanitize_character_scene(result.get("sceneId"))
+            if appearance_patch or next_scene:
+                self.write_sse("tool", {"appearancePatch": appearance_patch, "sceneId": next_scene, "summary": result.get("summary", "角色外观或场景已经更新。")})
         self.write_sse("done", {"ok": True})
         self.close_connection = True
 

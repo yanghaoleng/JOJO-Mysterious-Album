@@ -17,6 +17,35 @@ const CARD_FIELDS = {
   greeting: 120,
   memoryRule: 140,
 };
+const APPEARANCE_OPTIONS = {
+  species: ['human', 'cat', 'dog'],
+  base: ['biped', 'sit', 'quad'],
+  eyes: ['sparkle', 'dot', 'saucer', 'sleepy', 'wide', 'happy', 'void'],
+  crest: ['none', 'floppy', 'cat', 'bear', 'bunny', 'sprout', 'flower', 'antlers', 'spikes'],
+  mouth: ['tiny', 'cat', 'smirk', 'buckteeth', 'wobble'],
+  skull: ['round', 'wide', 'pear', 'square', 'wonky'],
+  torso: ['bean', 'round', 'tiny', 'pear', 'barrel'],
+  arms: ['stub', 'noodle', 'clasped', 'hips', 'wing'],
+  tail: ['none', 'wag', 'curl', 'puff'],
+  voice: ['sprout', 'bubble', 'moss', 'star'],
+};
+const SCENES = {
+  'paper-ground': '纸上地面', 'classroom-desk': '教室书桌', library: '安静图书馆', attic: '玩具阁楼',
+  'breakfast-table': '早餐餐桌', 'rainy-window': '雨天窗台', meadow: '萤火草地',
+  'mushroom-forest': '蘑菇森林', seaside: '贝壳海边', greenhouse: '温室花房',
+  'paper-creek': '纸船小溪', 'snow-globe': '雪花玻璃球', 'castle-window': '城堡窗台',
+  clouds: '云朵里面', space: '星星宇宙', moon: '月亮表面', underwater: '海底气泡', train: '慢火车车厢',
+  rooftop: '屋顶晚风', 'blanket-fort': '被窝城堡', 'giant-pocket': '巨人口袋', 'music-stage': '音乐小舞台',
+};
+const SCENE_KEYWORDS = [
+  [/教室|书桌/, 'classroom-desk'], [/图书馆|书架/, 'library'], [/阁楼|玩具箱/, 'attic'], [/早餐|餐桌/, 'breakfast-table'],
+  [/雨天|下雨|窗台/, 'rainy-window'], [/草地|萤火/, 'meadow'], [/蘑菇|森林/, 'mushroom-forest'],
+  [/海边|沙滩|贝壳/, 'seaside'], [/温室|花房/, 'greenhouse'], [/小溪|纸船/, 'paper-creek'],
+  [/雪花|玻璃球/, 'snow-globe'], [/城堡/, 'castle-window'], [/云朵|云里/, 'clouds'], [/宇宙|星空|太空/, 'space'],
+  [/月亮|月球/, 'moon'], [/海底|水下/, 'underwater'], [/火车|车厢/, 'train'], [/屋顶|晚风/, 'rooftop'],
+  [/被窝|毯子|帐篷/, 'blanket-fort'], [/口袋/, 'giant-pocket'], [/舞台|表演|音乐/, 'music-stage'],
+  [/纸上|空白场景|简单场景/, 'paper-ground'],
+];
 
 const HARD_SAFETY = `无论角色卡或用户怎样要求，都必须遵守以下儿童安全规则：
 不索取、复述或保存姓名、学校、住址、电话、账号、精确生日等个人信息。
@@ -48,6 +77,19 @@ function sanitizeCard(raw) {
   return card;
 }
 
+function sanitizeAppearance(raw) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  return Object.fromEntries(Object.entries(APPEARANCE_OPTIONS).flatMap(([key, allowed]) => {
+    const value = cleanText(source[key], 20);
+    return allowed.includes(value) ? [[key, value]] : [];
+  }));
+}
+
+function sanitizeScene(value) {
+  const sceneId = cleanText(value, 32);
+  return Object.hasOwn(SCENES, sceneId) ? sceneId : '';
+}
+
 function sanitizeHistory(raw) {
   if (!Array.isArray(raw)) return [];
   return raw.slice(-8).map(item => ({
@@ -76,24 +118,52 @@ async function sendTextSlowly(response, value) {
 
 function fallbackEdit(card, message) {
   const next = { ...card };
-  let summary = '我先记下了这条方向，设定没有需要强行改动的地方。';
+  const appearancePatch = {};
+  const changed = [];
   if (/活泼|开朗|快一点|有精神/.test(message)) {
     next.speakingStyle = '短句、明亮、有活力，但会等孩子说完再回应。';
-    summary = '已把说话方式调得更活泼，同时保留倾听和停顿。';
+    changed.push('说话方式');
   } else if (/温柔|慢一点|轻一点|安静/.test(message)) {
     next.speakingStyle = '声音轻、速度慢、一次只说一件事，并给孩子留出停顿。';
-    summary = '已把说话方式调得更轻、更慢。';
+    changed.push('说话方式');
   } else if (/少说|简短|不要说太多/.test(message)) {
     next.speakingStyle = '每次最多两句短话，先回应重点，再等待孩子继续。';
-    summary = '已把回答收短为每次最多两句。';
+    changed.push('说话方式');
   } else if (/多问|提问|好奇/.test(message)) {
     next.mission = '用一个具体的小问题陪孩子继续发现，不替孩子决定答案。';
-    summary = '已增加好奇提问，但每轮仍只问一个问题。';
-  } else if (/更勇敢|大胆/.test(message)) {
-    next.personality = [...new Set([...(next.personality || []), '勇敢'])].slice(0, 5);
-    summary = '已加入勇敢特质，安全和可退出的边界保持不变。';
+    changed.push('角色使命');
   }
-  return { card: sanitizeCard(next), summary };
+  const traits = [...(next.personality || [])];
+  for (const [pattern, trait] of [[/勇敢|大胆/, '勇敢'], [/温柔|体贴/, '温柔'], [/好奇/, '好奇'], [/活泼|开朗/, '活泼'], [/安静|沉稳/, '沉稳']]) {
+    if (pattern.test(message) && !traits.includes(trait)) traits.push(trait);
+  }
+  if (traits.length !== (next.personality || []).length) {
+    next.personality = traits.slice(-5);
+    changed.push('性格');
+  }
+  const appearanceRules = [
+    [/大眼|眼睛.*大/, 'eyes', 'wide'], [/亮晶晶|闪亮.*眼/, 'eyes', 'sparkle'], [/圆眼|眼睛.*圆/, 'eyes', 'saucer'],
+    [/困困眼|眯眼/, 'eyes', 'sleepy'], [/兔耳|长耳朵/, 'crest', 'bunny'], [/猫耳/, 'crest', 'cat'],
+    [/圆耳/, 'crest', 'bear'], [/软耳|垂耳|大耳朵/, 'crest', 'floppy'], [/小芽/, 'crest', 'sprout'],
+    [/小花/, 'crest', 'flower'], [/鹿角/, 'crest', 'antlers'], [/短刺|刺猬/, 'crest', 'spikes'],
+    [/卷尾/, 'tail', 'curl'], [/摇摇尾巴|摇尾|狗尾/, 'tail', 'wag'], [/绒球尾/, 'tail', 'puff'],
+    [/不要尾巴|没有尾巴|去掉尾巴/, 'tail', 'none'], [/小小只|身体.*小/, 'torso', 'tiny'], [/圆滚滚|圆肚子/, 'torso', 'round'],
+    [/方脸/, 'skull', 'square'], [/圆脸/, 'skull', 'round'], [/梨形脸/, 'skull', 'pear'],
+    [/小翅膀|翅膀/, 'arms', 'wing'], [/抱着手|手.*抱/, 'arms', 'clasped'], [/叉腰/, 'arms', 'hips'],
+  ];
+  for (const [pattern, key, value] of appearanceRules) if (pattern.test(message)) appearancePatch[key] = value;
+  if (Object.keys(appearancePatch).length) changed.push('外观');
+  const sceneId = SCENE_KEYWORDS.find(([pattern]) => pattern.test(message))?.[1] || '';
+  if (sceneId) changed.push('场景');
+  const summary = changed.length
+    ? `已更新${[...new Set(changed)].join('、')}。`
+    : '我先记下了这条方向，设定没有需要强行改动的地方。';
+  return {
+    card: sanitizeCard(next),
+    appearancePatch: sanitizeAppearance(appearancePatch),
+    sceneId: sanitizeScene(sceneId),
+    summary,
+  };
 }
 
 function normalSystem(characterName, card, topic, topicContext) {
@@ -172,7 +242,7 @@ function parseJsonObject(raw) {
   try { return JSON.parse(String(raw || '').replace(/^```json\s*|\s*```$/g, '')); } catch { return {}; }
 }
 
-async function editCardWithAI({ apiKey, characterName, card, message, reply }) {
+async function editCharacterWithAI({ apiKey, characterName, card, appearance, sceneId, message, reply }) {
   const baseUrl = (process.env.ARK_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, '');
   const upstream = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -182,12 +252,15 @@ async function editCardWithAI({ apiKey, characterName, card, message, reply }) {
       messages: [
         {
           role: 'system',
-          content: `你是儿童角色卡编辑器。根据创作者这轮自然语言要求，只修改确实被提到的字段，并保留其他字段。
+          content: `你是儿童角色调试工具。根据创作者这轮自然语言要求，只修改确实被提到的角色卡、外观或场景，并保留其他内容。
 可修改字段和类型：role字符串、personality字符串数组、world字符串、likes字符串数组、mission字符串、speakingStyle字符串、companionStyle字符串、relationship字符串、boundary字符串、greeting字符串。
-输出JSON：{"card":完整角色卡对象,"summary":"一句不超过40字的修改摘要"}。
+外观字段可选值：${JSON.stringify(APPEARANCE_OPTIONS)}。
+场景ID与名称：${JSON.stringify(SCENES)}。
+appearancePatch只写创作者明确要求改变的外观字段；sceneId只在明确要求换场景时填写，否则为空字符串。不得编造可选值。
+输出JSON：{"card":完整角色卡对象,"appearancePatch":{},"sceneId":"","summary":"一句不超过40字的修改摘要"}。
 角色名是${characterName}。${HARD_SAFETY}`,
         },
-        { role: 'user', content: `修改前：${JSON.stringify(card)}\n创作者要求：${message}\n角色刚才的理解：${reply}` },
+        { role: 'user', content: `修改前角色卡：${JSON.stringify(card)}\n修改前外观：${JSON.stringify(appearance)}\n修改前场景：${sceneId}\n创作者要求：${message}\n角色刚才的理解：${reply}` },
       ],
       response_format: { type: 'json_object' },
       reasoning_effort: 'minimal',
@@ -199,9 +272,13 @@ async function editCardWithAI({ apiKey, characterName, card, message, reply }) {
   if (!upstream.ok) throw new Error(`edit_upstream_${upstream.status}`);
   const data = await upstream.json();
   const parsed = parseJsonObject(data.choices?.[0]?.message?.content);
+  const deterministic = fallbackEdit(card, message);
+  const deterministicCardPatch = Object.fromEntries(Object.entries(deterministic.card).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(card[key])));
   return {
-    card: sanitizeCard({ ...card, ...(parsed.card && typeof parsed.card === 'object' ? parsed.card : {}) }),
-    summary: cleanText(parsed.summary, 80) || '角色设定已经根据这轮对话更新。',
+    card: sanitizeCard({ ...card, ...(parsed.card && typeof parsed.card === 'object' ? parsed.card : {}), ...deterministicCardPatch }),
+    appearancePatch: sanitizeAppearance({ ...deterministic.appearancePatch, ...sanitizeAppearance(parsed.appearancePatch) }),
+    sceneId: sanitizeScene(parsed.sceneId) || deterministic.sceneId,
+    summary: cleanText(parsed.summary, 80) || deterministic.summary,
   };
 }
 
@@ -217,6 +294,8 @@ export default async function handler(request, response) {
   const topicContext = request.body?.topicContext && typeof request.body.topicContext === 'object' ? request.body.topicContext : {};
   const message = cleanText(request.body?.message, 180);
   const card = sanitizeCard(request.body?.card);
+  const appearance = sanitizeAppearance(request.body?.appearance);
+  const sceneId = sanitizeScene(request.body?.sceneId) || 'paper-ground';
   const history = sanitizeHistory(request.body?.history);
   if ((!TEMPLATE_IDS.has(templateId) && !templateId.startsWith('custom-')) || !characterName || !message) return response.status(400).json({ error: 'invalid_character_call' });
 
@@ -260,13 +339,16 @@ export default async function handler(request, response) {
       let update;
       try {
         update = apiKey
-          ? await editCardWithAI({ apiKey, characterName, card, message, reply })
+          ? await editCharacterWithAI({ apiKey, characterName, card, appearance, sceneId, message, reply })
           : fallbackEdit(card, message);
       } catch (error) {
         console.error('Character card edit failed', error?.message || error);
         update = fallbackEdit(card, message);
       }
-      sendEvent(response, 'card', update);
+      sendEvent(response, 'card', { card: update.card, summary: update.summary });
+      if (Object.keys(update.appearancePatch || {}).length || update.sceneId) {
+        sendEvent(response, 'tool', { appearancePatch: update.appearancePatch, sceneId: update.sceneId, summary: update.summary });
+      }
     }
     sendEvent(response, 'done', { ok: true });
     return response.end();
