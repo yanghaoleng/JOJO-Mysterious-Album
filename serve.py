@@ -53,6 +53,13 @@ forceRespond=true表示孩子点了完整选项，必须shouldRespond=true。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若孩子说出个人信息，提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，不要把个人信息写入字段。
 不要诊断、贴负面标签或生成恐怖、伤害、羞辱、成人、竞争压力内容。
 只输出JSON：{"shouldRespond":true,"keywords":["最多3个真正听到的关键词"],"listeningPrompt":"shouldRespond=false时给孩子的8至22字继续表达提示","reaction":"18至38个中文字符","heard":"12字以内","profileValue":"18字以内","petHint":{"species":"cat|dog|human","palette":"moss|sky|coral|moon","feature":"listening-ears|bright-eyes|soft-tail|star-freckles"},"privacyRedirect":false}。"""
+SCENE_TURN_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全故事角色。
+孩子约5至8岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
+只允许从提供的choiceId中选择，不得编造新ID。若只是语气词、明显没说完、不知道、环境声，或无法判断想采取哪种行动，shouldRespond=false，并用8至22个中文字符温柔引导孩子把想做的事再说具体一点。
+如果表达已经明确，即使只有很短的一句，也应shouldRespond=true。reaction用18至42个中文字符承接孩子的表达，描述场景真的发生了什么，不评价对错，不再提出新问题。
+出现姓名、学校、住址、电话、账号或精确生日等个人信息时，privacyRedirect=true，shouldRespond=false，引导回故事行动。
+不要生成恐怖、伤害、羞辱、成人或竞争压力内容。
+只输出JSON：{"shouldRespond":true,"choiceId":"必须来自提供的ID","reaction":"场景回应","listeningPrompt":"没听完整时的引导","privacyRedirect":false}。"""
 FISH_VOICES = {
     "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "speed": 0.92},
     "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "speed": 1.08},
@@ -430,6 +437,97 @@ def story_turn_result(question_id, question, answer, force_respond=False):
     }
 
 
+def sanitize_scene_choices(raw):
+    if not isinstance(raw, list):
+        return []
+    choices = []
+    for item in raw[:4]:
+        if not isinstance(item, dict):
+            continue
+        choice_id = re.sub(r"[^a-z0-9-]", "", str(item.get("id", ""))[:32])
+        label = str(item.get("label", "")).replace("<", "").replace(">", "").strip()[:36]
+        result = str(item.get("result", "")).replace("<", "").replace(">", "").strip()[:80]
+        hints = item.get("voiceHints", [])
+        if not isinstance(hints, list):
+            hints = []
+        hints = [str(value).replace("<", "").replace(">", "").strip()[:16] for value in hints[:6] if str(value).strip()]
+        if choice_id and label:
+            choices.append({"id": choice_id, "label": label, "result": result, "voiceHints": hints})
+    return choices
+
+
+def fallback_scene_choice(answer, choices):
+    compact = re.sub(r"[，。！？、,.!?\s]", "", str(answer or ""))
+    best_id = ""
+    best_score = 0
+    for choice in choices:
+        score = sum(len(hint) for hint in [*choice.get("voiceHints", []), choice["label"]] if hint and re.sub(r"\s", "", hint) in compact)
+        if score > best_score:
+            best_id = choice["id"]
+            best_score = score
+    return best_id
+
+
+def scene_turn_result(scene_id, question, answer, choices):
+    key = os.environ.get("ARK_API_KEY", "")
+    if not key:
+        raise RuntimeError("story_ai_not_configured")
+    body = json.dumps(
+        {
+            "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
+            "messages": [
+                {"role": "system", "content": SCENE_TURN_PROMPT},
+                {
+                    "role": "user",
+                    "content": (
+                        f"场景：{scene_id}\n角色问题：{question}\n"
+                        f"可用行动：{json.dumps([{'id': item['id'], 'label': item['label'], 'voiceHints': item['voiceHints']} for item in choices], ensure_ascii=False)}\n"
+                        f"孩子说：{answer}"
+                    ),
+                },
+            ],
+            "reasoning_effort": "minimal",
+            "response_format": {"type": "json_object"},
+            "max_tokens": 320,
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        os.environ.get("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/") + "/chat/completions",
+        data=body,
+        method="POST",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=24) as result:
+        data = json.load(result)
+    raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+    parsed = json.loads(raw.removeprefix("```json").removesuffix("```").strip())
+    if likely_private_info(answer) or parsed.get("privacyRedirect") is True:
+        return {
+            "shouldRespond": False,
+            "choiceId": "",
+            "reaction": "",
+            "listeningPrompt": "这些信息不用告诉我，只说故事里想做什么。",
+            "privacyRedirect": True,
+            "sceneId": scene_id,
+        }
+    compact = re.sub(r"[，。！？、,.!?\s]", "", answer)
+    incomplete = bool(re.fullmatch(r"(?:嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我想想|让我想想)", compact))
+    allowed = {item["id"] for item in choices}
+    parsed_choice = str(parsed.get("choiceId", ""))[:32]
+    choice_id = parsed_choice if parsed_choice in allowed else fallback_scene_choice(answer, choices)
+    should_respond = not incomplete and bool(choice_id) and parsed.get("shouldRespond") is not False
+    choice = next((item for item in choices if item["id"] == choice_id), {})
+    return {
+        "shouldRespond": should_respond,
+        "choiceId": choice_id if should_respond else "",
+        "reaction": str(parsed.get("reaction") or choice.get("result", "")).replace("<", "").replace(">", "").strip()[:56] if should_respond else "",
+        "listeningPrompt": "" if should_respond else str(parsed.get("listeningPrompt") or "我还在听，可以再说具体一点。").replace("<", "").replace(">", "").strip()[:42],
+        "privacyRedirect": False,
+        "sceneId": scene_id,
+    }
+
+
 def fish_tts(text, voice):
     key = os.environ.get("FISH_AUDIO_API_KEY", "")
     if not key:
@@ -506,6 +604,8 @@ def tts_audio(text, voice):
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
     def respond_json(self, status, payload):
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -665,15 +765,26 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 self.respond_audio(audio, provider)
                 return
             if path == "/api/story-turn":
+                mode = str(payload.get("mode", "interview")).strip()[:16]
+                answer = str(payload.get("answer", "")).strip().replace("<", "").replace(">", "")[:180]
+                if not answer:
+                    self.respond_json(400, {"error": "answer_required"})
+                    return
+                if mode == "scene":
+                    scene_id = str(payload.get("sceneId", "")).strip()[:32]
+                    question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
+                    scene_ids = {"paper-harbor", "whisper-slope", "backward-market", "moon-post", "silent-lighthouse", "page-sea"}
+                    choices = sanitize_scene_choices(payload.get("choices"))
+                    if scene_id not in scene_ids or len(choices) < 2:
+                        self.respond_json(400, {"error": "unknown_scene"})
+                        return
+                    self.respond_json(200, scene_turn_result(scene_id, question, answer, choices))
+                    return
                 question_id = str(payload.get("questionId", "")).strip()[:24]
                 question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
-                answer = str(payload.get("answer", "")).strip().replace("<", "").replace(">", "")[:180]
                 force_respond = payload.get("forceRespond") is True
                 if question_id not in {"theme", "approach", "companion", "comfort"}:
                     self.respond_json(400, {"error": "unknown_question"})
-                    return
-                if not answer:
-                    self.respond_json(400, {"error": "answer_required"})
                     return
                 self.respond_json(200, story_turn_result(question_id, question, answer, force_respond))
                 return

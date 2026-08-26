@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-fox-listen">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-voice-world">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
@@ -28,109 +28,86 @@
   </header>
 
   <main id="story-world">
-    <section class="world-stage" aria-label="水墨故事舞台">
+    <section class="world-stage" id="world-stage" aria-label="水墨故事舞台，轻触空白处可以让伙伴走过去">
       <div class="sky-wash" aria-hidden="true"></div>
       <div class="far-shape far-shape-a" aria-hidden="true"></div>
       <div class="far-shape far-shape-b" aria-hidden="true"></div>
       <div class="ground-wash" aria-hidden="true"></div>
-      <div class="place-object" aria-hidden="true"><span></span></div>
+      <div class="place-object" id="place-object" role="button" tabindex="0" aria-label="触摸场景里的物件"><span></span></div>
 
-      <div class="npc-wrap" id="npc-wrap" hidden>
+      <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
+        <div class="npc-speech" id="npc-speech" role="status" hidden>
+          <span id="npc-bubble-state">正在说</span>
+          <b id="npc-bubble-text"></b>
+          <i id="npc-bubble-more" aria-hidden="true"></i>
+        </div>
         <div class="npc-portal" aria-hidden="true"></div>
         <div class="npc-character" id="npc-character" aria-hidden="true">
+          <i class="npc-ear npc-ear-left"></i>
+          <i class="npc-ear npc-ear-right"></i>
           <span id="npc-mark">折</span>
         </div>
         <b id="npc-name">折角婆婆</b>
       </div>
 
-      <div class="pet-stage" id="pet-stage" hidden>
+      <div class="pet-stage" id="pet-stage" role="button" tabindex="0" aria-label="触摸你的小伙伴" hidden>
         <canvas id="pet-canvas" aria-label="根据回答生成的小宠物"></canvas>
         <div class="pet-thought" id="pet-thought" role="status" hidden></div>
       </div>
+
+      <p class="world-tap-hint" id="world-tap-hint" hidden>轻触场景，伙伴会走过去</p>
     </section>
 
     <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
       <div class="cover-mark" aria-hidden="true">声</div>
       <div>
-        <p class="section-label">新版故事体验草稿</p>
+        <p class="section-label">全程语音互动故事</p>
         <h1 id="cover-title">不见了的回声</h1>
-        <p class="cover-copy">先遇见角色模拟器里的卷尾小狐狸。它会认真听你说，再把一只只属于你的小宠物签给你。</p>
+        <p class="cover-copy">小卷会一直认真听你说。你的每一句话，都会让伙伴和世界慢慢长出来。</p>
         <ul class="cover-promises">
-          <li>点一次麦克风，之后自然说话或点选</li>
+          <li>点一次麦克风，之后只需要自然说话</li>
           <li>回答会改变宠物的模样和陪伴方式</li>
-          <li>三章冒险，六个场景，一个会记住选择的背包</li>
+          <li>轻触角色有回应，轻触场景让伙伴走过去</li>
         </ul>
-        <button class="primary-action" id="begin-button" type="button" data-uisfx="start">让图鉴员来找我</button>
-        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存；也可全程点选。不会询问姓名、学校、住址或精确生日。</p>
+        <p class="cover-mic-callout">点下方麦克风，故事就会开始</p>
+        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存。不会询问姓名、学校、住址或精确生日。</p>
       </div>
     </section>
 
     <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
       <div class="guide-encounter">
-        <div class="guide-speech" id="guide-speech" data-mode="question">
+        <div class="guide-speech" id="guide-speech" data-mode="question" role="button" tabindex="0" aria-label="轻触继续阅读气泡">
           <div class="guide-speech-meta">
             <span id="guide-bubble-state">想听你说</span>
             <span class="question-count" id="question-count">1 / 4</span>
           </div>
-          <p class="guide-reaction" id="guide-reaction" role="status" hidden></p>
           <h2 id="interview-question">如果今天能钻进一页图鉴，你最想在里面看见什么？</h2>
-          <p class="question-hint" id="question-hint"></p>
+          <i class="guide-bubble-more" id="guide-bubble-more" aria-hidden="true"></i>
         </div>
 
-        <div class="guide-figure" id="guide-figure">
+        <div class="guide-figure" id="guide-figure" role="button" tabindex="0" aria-label="触摸图鉴员小卷">
+          <i class="guide-listen-ear guide-listen-ear-left" aria-hidden="true"></i>
+          <i class="guide-listen-ear guide-listen-ear-right" aria-hidden="true"></i>
           <canvas id="guide-canvas" aria-label="角色模拟器里的卷尾小狐狸"></canvas>
           <div class="guide-nameplate">
             <b id="guide-name">小卷</b>
-            <span id="guide-manner">会认真等你说完，也会从一句话里找到最亮的词</span>
           </div>
         </div>
       </div>
 
-      <div class="conversation-controls">
-        <div class="quick-answers" id="quick-answers" aria-label="也可以点一个回答"></div>
-        <div class="speech-form voice-listen-zone">
-          <div class="live-answer-bubble" id="live-answer-bubble" hidden aria-live="polite">
-            <span id="live-answer-state">我听到</span>
-            <b id="live-answer-text"></b>
-          </div>
-          <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="打开麦克风，开始聊天">
-            <span aria-hidden="true"></span>
-          </button>
-          <p class="speech-status" id="speech-status" role="status"><i aria-hidden="true"></i>先点一下麦克风，之后会自动继续听</p>
-        </div>
-        <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
-      </div>
-    </section>
-
-    <section class="paper-panel assignment-panel" id="assignment-panel" hidden aria-labelledby="assignment-title">
-      <p class="section-label">图鉴员的签领页</p>
-      <h2 id="assignment-title">它愿意跟你走。</h2>
-      <p id="assignment-copy"></p>
-      <div class="pet-reasons" id="pet-reasons"></div>
-      <p class="silent-note">它现在还不会说话，只会用耳朵、眼睛和动作回答你。</p>
-      <button class="primary-action" id="accept-pet" type="button" data-uisfx="reward">把它轻轻接过来</button>
+      <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
     </section>
 
     <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
       <p class="section-label">开口仪式</p>
-      <h2 id="ritual-title">给它一个名字和第一句问候</h2>
-      <p>名字让它知道有人在叫自己，第一句问候让它知道这段声音是安全的。</p>
-      <div class="ritual-fields">
-        <label for="pet-name-input">给它取名</label>
-        <input id="pet-name-input" maxlength="8" autocomplete="off" placeholder="比如：团团">
-        <label for="first-hello-input">你想先对它说什么</label>
-        <div class="ritual-speech-row">
-          <input id="first-hello-input" maxlength="80" autocomplete="off" placeholder="比如：你好，我们一起走吧">
-          <button class="mic-button compact" id="ritual-mic" type="button" data-uisfx="none"><span aria-hidden="true"></span><b>说给它听</b></button>
-        </div>
-      </div>
+      <h2 id="ritual-title">你想给它取什么名字？</h2>
+      <p id="ritual-copy">直接说出名字就好。它会认真记住你叫它的声音。</p>
       <div class="voice-seals" aria-label="开口仪式的三枚声印">
         <span data-seal="name">名</span>
         <span data-seal="listen">听</span>
         <span data-seal="voice">声</span>
       </div>
-      <p class="speech-status" id="ritual-status" role="status">两项都准备好以后，三枚声印会依次亮起。</p>
-      <button class="primary-action" id="wake-pet" type="button" data-uisfx="start" disabled>让它开口</button>
+      <p class="ritual-status" id="ritual-status" role="status">小伙伴正在等你开口。</p>
     </section>
 
     <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
@@ -141,19 +118,12 @@
         </div>
         <p id="scene-objective">问问码头为什么听不见靠岸的船。</p>
       </div>
-      <p class="entrance-line" id="entrance-line"></p>
-      <div class="npc-dialogue">
-        <b id="dialogue-speaker">折角婆婆</b>
-        <p id="scene-dialogue"></p>
-      </div>
-      <div class="scene-choices" id="scene-choices"></div>
-      <div class="choice-result" id="choice-result" hidden>
+      <div class="choice-result" id="choice-result" hidden aria-live="polite">
         <p id="result-copy"></p>
         <div class="reward-row" id="reward-row" hidden>
           <img id="reward-image" alt="">
           <div><b id="reward-name"></b><span id="reward-short"></span></div>
         </div>
-        <button class="primary-action" id="continue-scene" type="button" data-uisfx="forward">继续往前走</button>
       </div>
     </section>
 
@@ -167,6 +137,17 @@
         <button class="primary-action" id="save-ending" type="button">收进这台设备的图鉴</button>
         <button class="secondary-action" id="play-again" type="button">换一位图鉴员再玩</button>
       </div>
+    </section>
+
+    <section class="voice-dock" id="voice-dock" data-voice-state="setup" aria-label="故事语音控制">
+      <div class="live-answer-bubble" id="live-answer-bubble" hidden aria-live="polite">
+        <span id="live-answer-state">我听到</span>
+        <b id="live-answer-text"></b>
+      </div>
+      <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="允许麦克风并开始故事">
+        <span aria-hidden="true"></span>
+      </button>
+      <p class="speech-status" id="speech-status" role="status"><i aria-hidden="true"></i><span>麦克风还未授权，点一下开始</span></p>
     </section>
   </main>
 
@@ -193,6 +174,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260826-fox-listen"></script>
+  <script type="module" src="./src/story-v2.js?v=20260826-voice-world"></script>
 </body>
 </html>

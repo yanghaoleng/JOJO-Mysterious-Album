@@ -1,4 +1,5 @@
 const QUESTION_FIELDS = new Set(['theme', 'approach', 'companion', 'comfort']);
+const SCENE_IDS = new Set(['paper-harbor', 'whisper-slope', 'backward-market', 'moon-post', 'silent-lighthouse', 'page-sea']);
 const SPECIES = new Set(['cat', 'dog', 'human']);
 const PALETTES = new Set(['moss', 'sky', 'coral', 'moon']);
 const FEATURES = new Set(['listening-ears', 'bright-eyes', 'soft-tail', 'star-freckles']);
@@ -23,6 +24,22 @@ forceRespond=true 表示孩子点了完整选项，必须 shouldRespond=true。
     "palette": "moss|sky|coral|moon",
     "feature": "listening-ears|bright-eyes|soft-tail|star-freckles"
   },
+  "privacyRedirect": false
+}
+不要输出 Markdown。`;
+
+const SCENE_SYSTEM_PROMPT = `你是“萌萌星的奇妙图鉴”的儿童安全故事角色。
+孩子约 5 至 8 岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
+只允许从提供的 choiceId 中选择，不得编造新 ID。若只是语气词、明显没说完、不知道、环境声，或无法判断想采取哪种行动，shouldRespond=false，并用 8 至 22 个中文字符温柔引导孩子把想做的事再说具体一点。
+如果表达已经明确，即使只有很短的一句，也应 shouldRespond=true。reaction 用 18 至 42 个中文字符承接孩子的表达，描述场景真的发生了什么，不评价对错，不再提出新问题。
+不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若出现个人信息，privacyRedirect=true，shouldRespond=false，引导回故事行动。
+不要生成恐怖、伤害、羞辱、成人或竞争压力内容。
+只输出 JSON：
+{
+  "shouldRespond": true,
+  "choiceId": "必须来自提供的 ID",
+  "reaction": "场景回应",
+  "listeningPrompt": "没听完整时的引导",
   "privacyRedirect": false
 }
 不要输出 Markdown。`;
@@ -58,6 +75,62 @@ function fallbackShouldRespond(questionId, answer) {
   const compact = String(answer).replace(/[，。！？、,.!?\s]/g, '');
   if (/^(嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)$/.test(compact)) return false;
   return fallbackKeywords(questionId, answer).length > 0 || compact.length >= 3;
+}
+
+function sanitizeSceneChoices(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, 4).map(choice => ({
+    id: text(choice?.id, 32).replace(/[^a-z0-9-]/g, ''),
+    label: text(choice?.label, 36),
+    result: text(choice?.result, 80),
+    trait: text(choice?.trait, 24),
+    voiceHints: Array.isArray(choice?.voiceHints) ? choice.voiceHints.map(value => text(value, 16)).filter(Boolean).slice(0, 6) : [],
+  })).filter(choice => choice.id && choice.label);
+}
+
+function fallbackSceneChoice(answer, choices) {
+  const compact = String(answer || '').replace(/[，。！？、,.!?\s]/g, '');
+  let best = null;
+  for (const choice of choices) {
+    const hints = [...choice.voiceHints, choice.label];
+    const score = hints.reduce((total, hint) => total + (compact.includes(String(hint).replace(/\s/g, '')) ? String(hint).length : 0), 0);
+    if (!best || score > best.score) best = { id: choice.id, score };
+  }
+  return best?.score > 0 ? best.id : '';
+}
+
+function cleanScene(raw, answer, sceneId, choices) {
+  let parsed = {};
+  try {
+    parsed = JSON.parse(String(raw || '').replace(/^```json\s*|\s*```$/g, ''));
+  } catch {
+    parsed = {};
+  }
+  if (hasLikelyPrivateInfo(answer) || parsed.privacyRedirect === true) {
+    return {
+      shouldRespond: false,
+      choiceId: '',
+      reaction: '',
+      listeningPrompt: '这些信息不用告诉我，只说故事里想做什么。',
+      privacyRedirect: true,
+      sceneId,
+    };
+  }
+  const compact = String(answer).replace(/[，。！？、,.!?\s]/g, '');
+  const incomplete = /^(嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我想想|让我想想)$/u.test(compact);
+  const allowed = new Set(choices.map(choice => choice.id));
+  const parsedChoice = text(parsed.choiceId, 32);
+  const choiceId = allowed.has(parsedChoice) ? parsedChoice : fallbackSceneChoice(answer, choices);
+  const shouldRespond = !incomplete && Boolean(choiceId) && parsed.shouldRespond !== false;
+  const choice = choices.find(item => item.id === choiceId);
+  return {
+    shouldRespond,
+    choiceId: shouldRespond ? choiceId : '',
+    reaction: shouldRespond ? text(parsed.reaction, 56) || choice?.result || '' : '',
+    listeningPrompt: shouldRespond ? '' : text(parsed.listeningPrompt, 42) || '我还在听，可以再说具体一点。',
+    privacyRedirect: false,
+    sceneId,
+  };
 }
 
 function clean(raw, answer, questionId, forceRespond = false) {
@@ -112,12 +185,19 @@ function clean(raw, answer, questionId, forceRespond = false) {
 export default async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
 
+  const mode = text(request.body?.mode, 16) || 'interview';
   const answer = text(request.body?.answer, 180);
   const questionId = text(request.body?.questionId, 24);
   const question = text(request.body?.question, 100);
   const forceRespond = request.body?.forceRespond === true;
-  if (!QUESTION_FIELDS.has(questionId)) return response.status(400).json({ error: 'unknown_question' });
   if (answer.length < 1) return response.status(400).json({ error: 'answer_required' });
+  const sceneId = text(request.body?.sceneId, 32);
+  const sceneChoices = sanitizeSceneChoices(request.body?.choices);
+  if (mode === 'scene') {
+    if (!SCENE_IDS.has(sceneId) || sceneChoices.length < 2) return response.status(400).json({ error: 'unknown_scene' });
+  } else if (!QUESTION_FIELDS.has(questionId)) {
+    return response.status(400).json({ error: 'unknown_question' });
+  }
 
   const apiKey = process.env.ARK_API_KEY;
   if (!apiKey) return response.status(503).json({ error: 'story_ai_not_configured' });
@@ -133,8 +213,13 @@ export default async function handler(request, response) {
       body: JSON.stringify({
         model: process.env.ARK_LLM_MODEL || 'doubao-seed-2-0-mini-260428',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `问题字段：${questionId}\n问题：${question}\n孩子当前说的话：${answer}\nforceRespond：${forceRespond}` },
+          { role: 'system', content: mode === 'scene' ? SCENE_SYSTEM_PROMPT : SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: mode === 'scene'
+              ? `场景：${sceneId}\n角色问题：${question}\n可用行动：${JSON.stringify(sceneChoices.map(({ id, label, voiceHints }) => ({ id, label, voiceHints })))}\n孩子说：${answer}`
+              : `问题字段：${questionId}\n问题：${question}\n孩子当前说的话：${answer}\nforceRespond：${forceRespond}`,
+          },
         ],
         reasoning_effort: 'minimal',
         response_format: { type: 'json_object' },
@@ -145,7 +230,10 @@ export default async function handler(request, response) {
 
     if (!upstream.ok) return response.status(502).json({ error: 'story_ai_upstream_error' });
     const data = await upstream.json();
-    return response.status(200).json(clean(data.choices?.[0]?.message?.content, answer, questionId, forceRespond));
+    const raw = data.choices?.[0]?.message?.content;
+    return response.status(200).json(mode === 'scene'
+      ? cleanScene(raw, answer, sceneId, sceneChoices)
+      : clean(raw, answer, questionId, forceRespond));
   } catch (error) {
     console.error('Story turn failed', error?.name || 'Error', error?.message || 'unknown');
     return response.status(502).json({ error: 'story_ai_unavailable' });

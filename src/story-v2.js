@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-fox-listen';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-voice-world';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
 
@@ -13,7 +13,7 @@ THREE.ColorManagement.enabled = false;
 
 const $ = id => document.getElementById(id);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const panels = ['cover-panel', 'interview-panel', 'assignment-panel', 'ritual-panel', 'quest-panel', 'ending-panel'];
+const panels = ['cover-panel', 'interview-panel', 'ritual-panel', 'quest-panel', 'ending-panel'];
 const STORY_STORAGE_KEY = 'mengmeng-story-v2-draft';
 const MAX_INTERVIEW_ANSWER = 180;
 
@@ -29,6 +29,9 @@ const state = {
   inventory: [],
   sceneIndex: 0,
   choices: [],
+  ritualStep: 'name',
+  ritualHello: '',
+  petOffset: { x: 0, y: 0 },
   busy: false,
 };
 
@@ -49,6 +52,19 @@ const guideVoiceSession = {
   pendingAnswer: '',
 };
 
+const bubblePages = {
+  guide: { pages: [], index: 0, label: '' },
+  npc: { pages: [], index: 0, label: '' },
+  pet: { pages: [], index: 0, label: '' },
+};
+
+const petTapLines = [
+  '我在这里。',
+  '我听见你啦。',
+  '要一起往前走吗？',
+  '这边好像有一点新声音。',
+];
+
 function hashString(value) {
   let hash = 2166136261;
   for (let i = 0; i < value.length; i++) {
@@ -62,6 +78,68 @@ function mostCommon(values, fallback) {
   const counts = new Map();
   for (const value of values.filter(Boolean)) counts.set(value, (counts.get(value) || 0) + 1);
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || fallback;
+}
+
+function splitBubblePages(text, limit = 24) {
+  const source = String(text || '').replace(/\s+/g, '').trim();
+  if (!source) return [''];
+  const sentences = source.match(/[^，。！？；]+[，。！？；]?/g) || [source];
+  const pages = [];
+  let page = '';
+  for (const sentence of sentences) {
+    const pieces = [];
+    for (let offset = 0; offset < sentence.length; offset += limit) pieces.push(sentence.slice(offset, offset + limit));
+    for (const piece of pieces) {
+      if (page && page.length + piece.length > limit) {
+        pages.push(page);
+        page = piece;
+      } else {
+        page += piece;
+      }
+    }
+  }
+  if (page) pages.push(page);
+  return pages;
+}
+
+function renderBubblePage(kind) {
+  const model = bubblePages[kind];
+  const more = model.index < model.pages.length - 1;
+  if (kind === 'guide') {
+    $('guide-bubble-state').textContent = model.label;
+    $('interview-question').textContent = model.pages[model.index] || '';
+    $('guide-bubble-more').classList.toggle('show', more);
+    $('guide-speech').classList.remove('bubble-refresh');
+    void $('guide-speech').offsetWidth;
+    $('guide-speech').classList.add('bubble-refresh');
+    return;
+  }
+  if (kind === 'pet') {
+    $('pet-thought').hidden = false;
+    $('pet-thought').textContent = model.pages[model.index] || '';
+    $('pet-thought').classList.toggle('has-more', more);
+    return;
+  }
+  $('npc-speech').hidden = false;
+  $('npc-bubble-state').textContent = model.label;
+  $('npc-bubble-text').textContent = model.pages[model.index] || '';
+  $('npc-bubble-more').classList.toggle('show', more);
+}
+
+function setBubble(kind, text, label) {
+  bubblePages[kind] = { pages: splitBubblePages(text), index: 0, label };
+  renderBubblePage(kind);
+}
+
+function advanceBubble(kind) {
+  const model = bubblePages[kind];
+  if (kind === 'pet' && $('pet-thought').hidden) return false;
+  if (kind === 'npc' && ($('npc-wrap').hidden || $('npc-speech').hidden)) return false;
+  if (!model || model.index >= model.pages.length - 1) return false;
+  model.index += 1;
+  renderBubblePage(kind);
+  void playUISFX('forward', { volume: 0.12 });
+  return true;
 }
 
 function showPanel(id, phase) {
@@ -191,7 +269,11 @@ class PetRenderer {
     if (kind === 'happy') this.animator.setFace('happy');
     if (kind === 'brave') this.animator.setPose('attack');
     if (kind === 'listen') this.animator.setFace('sleepy');
-    setTimeout(() => this.animator?.setFace('idle'), 1400);
+    if (kind === 'walk') this.animator.setPose('walk');
+    setTimeout(() => {
+      this.animator?.setFace('idle');
+      if (kind === 'walk' || kind === 'brave') this.animator?.setPose('idle');
+    }, kind === 'walk' ? 760 : 1400);
   }
 
   tick() {
@@ -238,9 +320,10 @@ function stopAudio() {
   activeAudio = null;
   petRenderer.setTalking(false);
   guideRenderer.setTalking(false);
+  $('npc-wrap').dataset.state = '';
 }
 
-async function playTts(text, voice, { pet = false } = {}) {
+async function playTts(text, voice, { pet = false, npc = false } = {}) {
   stopAudio();
   try {
     const response = await fetch('/api/tts', {
@@ -253,11 +336,13 @@ async function playTts(text, voice, { pet = false } = {}) {
     const audio = new Audio(URL.createObjectURL(await response.blob()));
     activeAudio = audio;
     if (pet) petRenderer.setTalking(true);
+    else if (npc) $('npc-wrap').dataset.state = 'speaking';
     else guideRenderer.setTalking(true);
     await new Promise(resolve => {
       const finish = () => {
         if (activeAudio === audio) activeAudio = null;
         if (pet) petRenderer.setTalking(false);
+        else if (npc) $('npc-wrap').dataset.state = '';
         else guideRenderer.setTalking(false);
         URL.revokeObjectURL(audio.src);
         resolve();
@@ -269,6 +354,7 @@ async function playTts(text, voice, { pet = false } = {}) {
     return true;
   } catch {
     if (pet) petRenderer.setTalking(false);
+    else if (npc) $('npc-wrap').dataset.state = '';
     else guideRenderer.setTalking(false);
     document.documentElement.dataset.ttsSource = 'visual-only';
     return false;
@@ -440,114 +526,45 @@ async function doubaoTranscript(pcm, status, fallbackText = '', maxLength = MAX_
   }
 }
 
-async function listenOnceInto(input, status, button) {
-  if (activeRecognition) {
-    status.textContent = '正在收好这句话，请稍等一下';
-    try { activeRecognition.stop(); } catch { /* already stopped */ }
-    void playUISFX('stop', { volume: 0.14 });
-    return;
-  }
-  stopAudio();
-  const Recognition = recognitionConstructor();
-  if (!Recognition) {
-    status.textContent = '这个浏览器暂时不能直接识别语音，可以在旁边打字。';
-    input.focus();
-    document.documentElement.dataset.asrSource = 'unavailable';
-    void playUISFX('error');
-    return;
-  }
-
-  const recognition = new Recognition();
-  const buttonLabel = button.querySelector('b');
-  const idleLabel = buttonLabel?.textContent || '';
-  activeRecognition = recognition;
-  recognition.lang = 'zh-CN';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
-  let denied = false;
-  let capture = null;
-  try {
-    capture = await startPcmCapture();
-    activePcmCapture = capture;
-  } catch {
-    denied = true;
-  }
-  if (denied) {
-    activeRecognition = null;
-    status.textContent = '没有获得麦克风许可，可以改用打字。';
-    void playUISFX('error');
-    return;
-  }
-  button.setAttribute('aria-pressed', 'true');
-  if (buttonLabel) buttonLabel.textContent = '再按一下说完';
-  status.textContent = '正在听，你可以慢慢说；再按一下就会收好这句话';
-  document.documentElement.dataset.asrSource = 'browser-live';
-  void playUISFX('start', { volume: 0.14 });
-
-  recognition.onresult = event => {
-    let transcript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-    input.value = transcript.trim().slice(0, Number(input.maxLength) || 180);
-    status.textContent = event.results[event.results.length - 1].isFinal ? '听见了，可以再改一改，或者直接告诉它。' : `正在听：${input.value}`;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  };
-  recognition.onerror = event => {
-    denied = event.error === 'not-allowed' || event.error === 'service-not-allowed';
-    status.textContent = denied ? '没有获得麦克风许可，可以改用打字。' : '这次没有听清，可以再试一次或改用打字。';
-    void playUISFX('error');
-  };
-  recognition.onend = async () => {
-    button.setAttribute('aria-pressed', 'false');
-    if (buttonLabel) buttonLabel.textContent = idleLabel;
-    if (activeRecognition === recognition) activeRecognition = null;
-    if (activePcmCapture === capture) activePcmCapture = null;
-    const pcm = await capture?.stop().catch(() => null);
-    if (!denied && pcm) {
-      const corrected = await doubaoTranscript(pcm, status, input.value, Number(input.maxLength) || 80);
-      if (corrected) {
-        input.value = corrected;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    }
-    else if (!input.value.trim() && status.textContent.startsWith('正在')) status.textContent = '没有听到完整的一句，可以再试一次。';
-  };
-  try { recognition.start(); } catch {
-    activeRecognition = null;
-    if (activePcmCapture === capture) activePcmCapture = null;
-    await capture?.stop().catch(() => null);
-    if (buttonLabel) buttonLabel.textContent = idleLabel;
-    status.textContent = '麦克风还在准备，请等一下再试。';
-    void playUISFX('error');
-  }
-}
-
 function setGuideVoiceUi(mode, message) {
-  const panel = $('interview-panel');
+  const panel = $('voice-dock');
   const button = $('mic-button');
   const labels = {
-    setup: '打开麦克风，开始聊天',
+    setup: '允许麦克风并开始故事',
     requesting: '正在打开麦克风',
     listening: '我在听，点一下暂停',
     thinking: '正在理解你的回答',
-    speaking: `${state.guide.name}正在说话`,
+    speaking: '故事角色正在说话',
     paused: '继续听我说',
     error: '再试一次打开麦克风',
+    complete: '故事已经讲完',
   };
   const bubbleStates = {
-    setup: '想听你说',
+    setup: '等待麦克风',
     requesting: '正在准备耳朵',
     listening: '正在听',
     thinking: '正在想',
     speaking: '正在说',
     paused: '安静等你',
-    error: '也可以点选',
+    error: '需要麦克风',
+    complete: '故事完成',
   };
   panel.dataset.voiceState = mode;
+  document.body.dataset.voiceState = mode;
   button.setAttribute('aria-pressed', String(mode === 'listening'));
   button.setAttribute('aria-label', labels[mode] || labels.setup);
   button.title = labels[mode] || labels.setup;
-  $('guide-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
+  button.disabled = ['requesting', 'thinking', 'speaking', 'complete'].includes(mode);
+  const phase = document.body.dataset.phase;
+  $('guide-figure').dataset.state = phase === 'interview' && ['listening', 'thinking'].includes(mode) ? mode : '';
+  if (phase === 'interview') $('guide-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
+  if (phase === 'quest') {
+    $('npc-wrap').dataset.state = ['listening', 'thinking', 'speaking'].includes(mode) ? mode : '';
+    if (!bubblePages.npc.label || ['listening', 'thinking'].includes(mode)) {
+      $('npc-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
+    }
+  }
+  if (mode === 'speaking') showLiveAnswer();
   if (message) writeSpeechStatus($('speech-status'), message);
 }
 
@@ -607,7 +624,7 @@ function startGuideRecognition() {
     const denied = event.error === 'not-allowed' || event.error === 'service-not-allowed';
     if (denied) {
       stopGuideVoiceSession();
-      setGuideVoiceUi('error', '没有获得麦克风许可，可以直接点一个回答');
+      setGuideVoiceUi('error', '还没有获得麦克风许可，点麦克风可以再次尝试');
       return;
     }
     if (event.error !== 'aborted' && event.error !== 'no-speech') {
@@ -659,7 +676,7 @@ async function startGuideVoiceSession() {
   const Recognition = recognitionConstructor();
   if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
     document.documentElement.dataset.asrSource = 'unavailable';
-    setGuideVoiceUi('error', '这个浏览器暂时不能连续听，可以直接点一个回答');
+    setGuideVoiceUi('error', '这个浏览器暂时不能连续听，请换用支持语音识别的浏览器');
     void playUISFX('error');
     return;
   }
@@ -671,7 +688,7 @@ async function startGuideVoiceSession() {
   } catch {
     $('mic-button').disabled = false;
     document.documentElement.dataset.asrSource = 'permission-denied';
-    setGuideVoiceUi('error', '没有打开麦克风，也可以直接点一个回答');
+    setGuideVoiceUi('error', '麦克风还未授权，点一下可以重新申请');
     void playUISFX('error');
     return;
   }
@@ -682,6 +699,7 @@ async function startGuideVoiceSession() {
   guideVoiceSession.speaking = true;
   void playUISFX('start', { volume: 0.14 });
   trackAnalytics('echo_voice_enabled', { depth: 2 });
+  if (document.body.dataset.phase === 'cover') await beginInterview();
   setGuideVoiceUi('speaking', `${state.guide.name}先问一句，话音结束后会自动开始听`);
   await playTts(`${state.guide.hello}${INTERVIEW_QUESTIONS[state.questionIndex].question}`, state.guide.voice);
   guideVoiceSession.speaking = false;
@@ -700,7 +718,14 @@ async function handleGuideUtterance(browserText) {
   const currentAnswer = corrected || browserAnswer;
   const answer = [guideVoiceSession.pendingAnswer, currentAnswer].filter(Boolean).join('，').slice(0, MAX_INTERVIEW_ANSWER);
   showLiveAnswer(answer);
-  await submitInterviewAnswer(answer, { fromVoice: true });
+  const phase = document.body.dataset.phase;
+  if (phase === 'interview') await submitInterviewAnswer(answer, { fromVoice: true });
+  else if (phase === 'ritual') await submitRitualAnswer(answer);
+  else if (phase === 'quest') await submitSceneAnswer(answer);
+  else {
+    guideVoiceSession.processing = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
+  }
 }
 
 function toggleGuideVoice() {
@@ -765,7 +790,6 @@ async function understandAnswer(question, answer, { forceRespond = false } = {})
 
 function renderGuide() {
   $('guide-name').textContent = state.guide.name;
-  $('guide-manner').textContent = state.guide.manner;
   $('guide-figure').dataset.guide = state.guide.id;
   $('guide-canvas').setAttribute('aria-label', `角色模拟器里的卷尾小狐狸，图鉴员${state.guide.name}`);
   requestAnimationFrame(() => {
@@ -777,28 +801,12 @@ function renderGuide() {
 function renderQuestion() {
   const question = INTERVIEW_QUESTIONS[state.questionIndex];
   $('question-count').textContent = `${state.questionIndex + 1} / ${INTERVIEW_QUESTIONS.length}`;
-  $('interview-question').textContent = question.question;
-  $('question-hint').textContent = question.hint;
-  $('guide-reaction').textContent = '';
-  $('guide-reaction').hidden = true;
   $('guide-speech').dataset.mode = 'question';
-  const bubble = $('guide-speech');
-  bubble.classList.remove('bubble-refresh');
-  void bubble.offsetWidth;
-  bubble.classList.add('bubble-refresh');
+  setBubble('guide', question.question, '想听你说');
   guideVoiceSession.pendingAnswer = '';
   showLiveAnswer('');
-  if (!guideVoiceSession.active) setGuideVoiceUi('setup', '先点一下麦克风，之后会自动继续听');
+  if (!guideVoiceSession.active) setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
   else if (guideVoiceSession.manualPause) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
-  const quick = $('quick-answers');
-  quick.replaceChildren(...question.quick.map(label => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = label;
-    button.disabled = state.busy;
-    button.addEventListener('click', () => submitInterviewAnswer(label, { forceRespond: true }));
-    return button;
-  }));
 }
 
 function renderHeardNotes() {
@@ -820,7 +828,7 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
   if (state.busy) return;
   const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, MAX_INTERVIEW_ANSWER);
   if (!answer) {
-    writeSpeechStatus($('speech-status'), '先说一点点，或者点一个你喜欢的回答');
+    writeSpeechStatus($('speech-status'), '我还在听，你可以先说一点点');
     guideVoiceSession.processing = false;
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
     return;
@@ -859,10 +867,8 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
   state.profile[question.id] = result.profileValue;
   if (result.heard) state.heard.push(result.heard);
   if (result.petHint) state.petHints.push(result.petHint);
-  $('guide-reaction').textContent = result.reaction;
-  $('guide-reaction').hidden = false;
   $('guide-speech').dataset.mode = 'reaction';
-  $('guide-bubble-state').textContent = '回应你';
+  setBubble('guide', result.reaction, '回应你');
   renderHeardNotes();
   guideVoiceSession.speaking = true;
   setGuideVoiceUi('speaking', result.privacyRedirect ? '这部分不会被记进小宠物配方' : `${state.guide.name}正在回应你`);
@@ -872,8 +878,7 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
     setBusy(false);
     guideVoiceSession.processing = false;
     guideVoiceSession.speaking = false;
-    await stopGuideVoiceSession();
-    finishInterview();
+    await finishInterview();
     return;
   }
   renderQuestion();
@@ -884,7 +889,7 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
   guideVoiceSession.speaking = false;
   if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
   else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
-  else setGuideVoiceUi('setup', '先点一下麦克风，之后会自动继续听');
+  else setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 }
 
 function petDescription(pet) {
@@ -898,7 +903,7 @@ function petDescription(pet) {
   return `${species}，${feature}`;
 }
 
-function finishInterview() {
+async function finishInterview() {
   const species = mostCommon(state.petHints.map(item => item.species), 'cat');
   const palette = mostCommon(state.petHints.map(item => item.palette), 'moss');
   const feature = mostCommon(state.petHints.map(item => item.feature), 'listening-ears');
@@ -910,15 +915,21 @@ function finishInterview() {
     $('pet-stage').classList.add('show');
     petRenderer.resize();
   });
-  $('assignment-copy').textContent = `${state.guide.name}把刚才听见的偏好折进一张小小签领页。纸上出现了${petDescription(state.pet)}。`;
-  $('pet-reasons').replaceChildren(...state.heard.map(note => {
-    const chip = document.createElement('span');
-    chip.textContent = note;
-    return chip;
-  }));
-  showPanel('assignment-panel', 'assignment');
+  state.ritualStep = 'name';
+  for (const seal of document.querySelectorAll('[data-seal]')) seal.classList.remove('active');
+  $('ritual-title').textContent = '你想给它取什么名字？';
+  $('ritual-copy').textContent = '直接说出名字就好。它会认真记住你叫它的声音。';
+  $('ritual-status').textContent = `${state.guide.name}从你的回答里找到了${petDescription(state.pet)}。`;
+  showPanel('ritual-panel', 'ritual');
   petRenderer.react('listen');
+  showPetThought('它愿意跟你走。');
   void playUISFX('complete');
+  guideVoiceSession.speaking = true;
+  setGuideVoiceUi('speaking', `${state.guide.name}正在把新伙伴介绍给你`);
+  await playTts(`我找到了一位新伙伴。它是${petDescription(state.pet)}。你想给它取什么名字？`, state.guide.voice);
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，直接说出你想叫它的名字' });
 }
 
 function pickPetVoice() {
@@ -926,21 +937,60 @@ function pickPetVoice() {
   return preferred === state.guide.voice ? 'star' : preferred;
 }
 
-function updateRitualReady() {
-  const ready = $('pet-name-input').value.trim() && $('first-hello-input').value.trim();
-  $('wake-pet').disabled = !ready || state.busy;
+function extractPetName(answer) {
+  const source = String(answer || '')
+    .replace(/[<>]/g, '')
+    .replace(/^(?:我想|那就|我觉得|要不|可以)?(?:叫|喊|取名(?:叫|为)?|名字(?:叫|是)?)(?:它|他|她)?/u, '')
+    .replace(/^(?:就|为|成|做|是)+/u, '')
+    .split(/[，。！？、,.!?\s]/u)[0]
+    .replace(/[“”"']/g, '')
+    .trim();
+  return source.slice(0, 8);
+}
+
+async function submitRitualAnswer(raw) {
+  const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, MAX_INTERVIEW_ANSWER);
+  showLiveAnswer(answer);
+  if (!answer || /^(?:嗯+|啊+|不知道|没想好|等一下|我想想)[。！]?$/u.test(answer)) {
+    $('ritual-status').textContent = '没关系，我会一直等你慢慢想。';
+    guideVoiceSession.processing = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true, message: '我还在听，想到名字以后直接说出来' });
+    return;
+  }
+  if (state.ritualStep === 'name') {
+    const name = extractPetName(answer);
+    if (!name) {
+      guideVoiceSession.processing = false;
+      resumeGuideListening({ preserveBubble: true, message: '这次没有听清名字，可以再说一次' });
+      return;
+    }
+    state.petName = name;
+    state.ritualStep = 'hello';
+    document.querySelector('[data-seal="name"]')?.classList.add('active');
+    $('ritual-title').textContent = `${name}听见自己的名字了`;
+    $('ritual-copy').textContent = `现在对${name}说第一句话。问候、邀请，或者你此刻最想说的话都可以。`;
+    $('ritual-status').textContent = '第一枚声印亮起来了。';
+    petRenderer.react('happy');
+    void playUISFX('progress-step', { volume: 0.14 });
+    guideVoiceSession.speaking = true;
+    setGuideVoiceUi('speaking', `${state.guide.name}正在告诉你下一步`);
+    await playTts(`${name}听见自己的名字了。现在请直接对它说第一句话吧。`, state.guide.voice);
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: `正在听，把第一句话说给${name}` });
+    return;
+  }
+  state.ritualHello = answer.slice(0, 80);
+  await wakePet();
 }
 
 async function wakePet() {
-  if (state.busy) return;
-  const name = $('pet-name-input').value.trim().replace(/[<>]/g, '').slice(0, 8);
-  const hello = $('first-hello-input').value.trim().replace(/[<>]/g, '').slice(0, 80);
-  if (!name || !hello) return;
+  if (state.busy || !state.petName || !state.ritualHello) return;
+  const name = state.petName;
+  const hello = state.ritualHello;
   state.busy = true;
   trackAnalytics('echo_pet_wake', { depth: 7 });
-  state.petName = name;
   state.petVoice = pickPetVoice();
-  $('wake-pet').disabled = true;
   const seals = [...document.querySelectorAll('[data-seal]')];
   const lines = [`名字写好了。${name}知道你在叫它。`, '它听见了你的第一句问候。', '现在，把自己的声音还给它。'];
   for (let i = 0; i < seals.length; i++) {
@@ -951,20 +1001,39 @@ async function wakePet() {
     await delay(520);
   }
   const reply = `我听见你了。我叫${name}。我的声音还很小，不过我想和你一起去找不见了的回声。`;
-  showPetThought(reply);
+  showPetThought(`我听见你了。一起去找回声吧！`);
   void playUISFX('wake');
+  guideVoiceSession.speaking = true;
+  setGuideVoiceUi('speaking', `${name}第一次开口说话`);
   await playTts(reply, state.petVoice, { pet: true });
   state.busy = false;
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
   await delay(260);
-  startQuest();
+  await startQuest();
 }
 
 function showPetThought(text, duration = 5200) {
   const thought = $('pet-thought');
-  thought.textContent = text;
-  thought.hidden = false;
+  setBubble('pet', text, '');
   clearTimeout(showPetThought.timer);
   showPetThought.timer = setTimeout(() => { thought.hidden = true; }, duration);
+}
+
+function movePetTo(clientX, clientY) {
+  const stage = $('world-stage').getBoundingClientRect();
+  const pet = $('pet-stage').getBoundingClientRect();
+  const deltaX = clientX - (pet.left + pet.width * .5);
+  const deltaY = clientY - (pet.top + pet.height * .7);
+  state.petOffset.x = Math.max(-stage.width * .34, Math.min(stage.width * .48, state.petOffset.x + deltaX));
+  state.petOffset.y = Math.max(-stage.height * .24, Math.min(stage.height * .2, state.petOffset.y + deltaY));
+  $('pet-stage').style.setProperty('--pet-shift-x', `${Math.round(state.petOffset.x)}px`);
+  $('pet-stage').style.setProperty('--pet-shift-y', `${Math.round(state.petOffset.y)}px`);
+  $('pet-stage').classList.add('is-walking');
+  petRenderer.react('walk');
+  void playUISFX('forward', { volume: 0.1 });
+  clearTimeout(movePetTo.timer);
+  movePetTo.timer = setTimeout(() => $('pet-stage').classList.remove('is-walking'), 820);
 }
 
 function updateChapterProgress(chapter) {
@@ -981,19 +1050,60 @@ async function playTransition(action) {
   void transition.offsetWidth;
   transition.classList.add('play');
   await delay(320);
-  action();
+  await action();
   await delay(460);
   transition.classList.remove('play');
 }
 
-function startQuest() {
+function fallbackSceneTurn(scene, answer) {
+  const compact = String(answer || '').replace(/[，。！？、,.!?\s]/g, '');
+  const filler = /^(?:嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我想想|让我想想)$/u;
+  if (!compact || filler.test(compact)) {
+    return { shouldRespond: false, choiceId: '', listeningPrompt: '我还在听，想到以后慢慢说。' };
+  }
+  let best = null;
+  for (const choice of scene.choices) {
+    const hints = [...(choice.voiceHints || []), choice.label, choice.id];
+    const score = hints.reduce((total, hint) => total + (String(hint) && compact.includes(String(hint).replace(/\s/g, '')) ? String(hint).length : 0), 0);
+    if (!best || score > best.score) best = { choice, score };
+  }
+  if (!best || best.score === 0) {
+    return { shouldRespond: false, choiceId: '', listeningPrompt: '可以再说具体一点，你想先做什么？' };
+  }
+  return { shouldRespond: true, choiceId: best.choice.id, listeningPrompt: '', reaction: best.choice.result };
+}
+
+async function understandSceneAnswer(scene, answer) {
+  try {
+    const response = await fetch('/api/story-turn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'scene',
+        sceneId: scene.id,
+        question: scene.dialogue,
+        answer,
+        choices: scene.choices.map(({ id, label, result, trait, voiceHints }) => ({ id, label, result, trait, voiceHints })),
+      }),
+    });
+    if (!response.ok) throw new Error('story scene unavailable');
+    document.documentElement.dataset.storyAi = 'doubao';
+    return response.json();
+  } catch {
+    document.documentElement.dataset.storyAi = 'deterministic-fallback';
+    return fallbackSceneTurn(scene, answer);
+  }
+}
+
+async function startQuest() {
   $('chapter-progress').hidden = false;
   $('backpack-button').hidden = false;
   state.sceneIndex = 0;
-  playTransition(() => renderScene(SCENES[0]));
+  await playTransition(() => renderScene(SCENES[0]));
 }
 
-function renderScene(scene) {
+async function renderScene(scene) {
+  state.busy = true;
   document.body.dataset.place = scene.place;
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
@@ -1001,29 +1111,27 @@ function renderScene(scene) {
   $('chapter-label').textContent = `第${['一', '二', '三'][scene.chapter - 1]}章 ${chapter.title}`;
   $('scene-title').textContent = scene.name;
   $('scene-objective').textContent = scene.objective;
-  $('entrance-line').textContent = scene.entranceLine;
-  $('dialogue-speaker').textContent = scene.npc.name;
-  $('scene-dialogue').textContent = scene.dialogue;
   $('choice-result').hidden = true;
+  $('world-tap-hint').hidden = true;
 
   const npc = $('npc-wrap');
   npc.hidden = true;
   npc.className = 'npc-wrap';
   $('npc-mark').textContent = scene.npc.mark;
   $('npc-name').textContent = scene.npc.name;
-  setTimeout(() => {
-    npc.classList.add(`enter-${scene.npc.entrance}`);
-    npc.hidden = false;
-  }, 240);
-
-  $('scene-choices').replaceChildren(...scene.choices.map(choice => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = choice.label;
-    button.addEventListener('click', () => chooseSceneOption(scene, choice));
-    return button;
-  }));
+  await delay(240);
+  npc.classList.add(`enter-${scene.npc.entrance}`);
+  npc.hidden = false;
+  setBubble('npc', scene.dialogue, scene.npc.name);
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
+  guideVoiceSession.speaking = true;
+  setGuideVoiceUi('speaking', `${scene.npc.name}正在说话，结束后会自动继续听`);
+  await playTts(`${scene.entranceLine}${scene.dialogue}`, scene.npc.voice || 'moss', { npc: true });
+  state.busy = false;
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  $('world-tap-hint').hidden = false;
+  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，说出你想怎么做' });
 }
 
 function inventoryEntry(id) {
@@ -1071,14 +1179,45 @@ function updateBackpack() {
   $('empty-inventory').hidden = state.inventory.length > 0;
 }
 
-async function chooseSceneOption(scene, choice) {
+async function submitSceneAnswer(raw) {
+  if (state.busy) return;
+  const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, MAX_INTERVIEW_ANSWER);
+  if (!answer) {
+    guideVoiceSession.processing = false;
+    resumeGuideListening({ message: '我还在听，你可以慢慢说' });
+    return;
+  }
+  const scene = SCENES[state.sceneIndex];
+  setBubble('npc', `我听见了“${answer.slice(0, 18)}”`, '正在想');
+  setGuideVoiceUi('thinking', `${scene.npc.name}正在理解你想做什么`);
+  const result = await understandSceneAnswer(scene, answer);
+  if (result.shouldRespond === false) {
+    setBubble('npc', result.listeningPrompt || '我还在听，你可以再说具体一点。', '我还在听');
+    guideVoiceSession.processing = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true, message: result.listeningPrompt || '我还在听，你可以再说具体一点' });
+    return;
+  }
+  const choice = scene.choices.find(item => item.id === result.choiceId);
+  if (!choice) {
+    setBubble('npc', '我还没听懂你想先做什么，可以换一种说法。', '再告诉我一点');
+    guideVoiceSession.processing = false;
+    resumeGuideListening({ preserveBubble: true, message: '可以换一种说法，再告诉我你想先做什么' });
+    return;
+  }
+  await resolveSceneChoice(scene, choice, result.reaction || choice.result);
+}
+
+async function resolveSceneChoice(scene, choice, reaction) {
   if (state.busy) return;
   state.busy = true;
   trackAnalytics('echo_scene_choice', { depth: 8 + state.sceneIndex });
   state.choices.push({ scene: scene.id, choice: choice.id, trait: choice.trait });
-  for (const button of $('scene-choices').querySelectorAll('button')) button.disabled = true;
-  $('result-copy').textContent = choice.result;
+  $('result-copy').textContent = reaction;
   $('choice-result').hidden = false;
+  setBubble('npc', reaction, '故事发生了');
+  guideVoiceSession.speaking = true;
+  setGuideVoiceUi('speaking', '你的话正在改变这个场景');
+  const reactionSpoken = await playTts(reaction, scene.npc.voice || 'moss', { npc: true });
   if (scene.consume) useItem(scene.consume);
   if (scene.reward) {
     const item = ITEMS[scene.reward];
@@ -1093,9 +1232,18 @@ async function chooseSceneOption(scene, choice) {
   }
   showPetThought(scene.petLine);
   petRenderer.react(choice.trait === 'listen' ? 'listen' : choice.trait === 'bold' ? 'brave' : 'happy');
-  playTts(scene.petLine, state.petVoice, { pet: true });
-  $('continue-scene').textContent = scene.final ? '看看灯塔记住了什么' : '继续往前走';
+  const petSpoken = await playTts(scene.petLine, state.petVoice, { pet: true });
+  await delay(reactionSpoken && petSpoken ? 900 : 3200);
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  if (scene.final) {
+    state.busy = false;
+    await playTransition(finishStory);
+    return;
+  }
+  state.sceneIndex += 1;
   state.busy = false;
+  await playTransition(() => renderScene(SCENES[state.sceneIndex]));
 }
 
 function dominantTrait() {
@@ -1113,10 +1261,12 @@ function dominantTrait() {
   return groups[trait] || groups.together;
 }
 
-function finishStory() {
+async function finishStory() {
   trackAnalytics('echo_complete', { depth: 20 });
   stopAudio();
+  await stopGuideVoiceSession();
   $('npc-wrap').hidden = true;
+  $('world-tap-hint').hidden = true;
   updateChapterProgress(4);
   showPanel('ending-panel', 'ending');
   $('ending-copy').textContent = `${state.petName}和你把灯塔种子种在最高的一页。${dominantTrait()}回声回到了原来的句子里，新的声音也得到了一条不着急的小路。`;
@@ -1128,6 +1278,7 @@ function finishStory() {
   }));
   petRenderer.react('happy');
   showPetThought('下一次，我们会去一张还没有画出来的图鉴。');
+  setGuideVoiceUi('complete', '故事讲完了，麦克风已经安静关闭');
   void playUISFX('achievement');
 }
 
@@ -1156,25 +1307,65 @@ function saveEnding() {
   }
 }
 
-$('begin-button').addEventListener('click', beginInterview);
 $('mic-button').addEventListener('click', toggleGuideVoice);
-$('accept-pet').addEventListener('click', () => {
-  showPanel('ritual-panel', 'ritual');
-  petRenderer.react('happy');
-});
-$('pet-name-input').addEventListener('input', updateRitualReady);
-$('first-hello-input').addEventListener('input', updateRitualReady);
-$('ritual-mic').addEventListener('click', () => listenOnceInto($('first-hello-input'), $('ritual-status'), $('ritual-mic')));
-$('wake-pet').addEventListener('click', wakePet);
-$('continue-scene').addEventListener('click', () => {
-  if (state.busy) return;
-  const scene = SCENES[state.sceneIndex];
-  if (scene.final) {
-    playTransition(finishStory);
-    return;
+$('guide-speech').addEventListener('click', () => advanceBubble('guide'));
+$('guide-speech').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    advanceBubble('guide');
   }
-  state.sceneIndex++;
-  playTransition(() => renderScene(SCENES[state.sceneIndex]));
+});
+$('guide-figure').addEventListener('click', () => {
+  guideRenderer.react('happy');
+  void playUISFX('select', { volume: 0.12 });
+});
+$('npc-wrap').addEventListener('click', event => {
+  event.stopPropagation();
+  if (!advanceBubble('npc')) setBubble('npc', '我在听，你慢慢说。', '听见你了');
+  $('npc-wrap').classList.remove('is-tapped');
+  void $('npc-wrap').offsetWidth;
+  $('npc-wrap').classList.add('is-tapped');
+  void playUISFX('select', { volume: 0.12 });
+});
+$('npc-wrap').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    $('npc-wrap').click();
+  }
+});
+$('pet-stage').addEventListener('click', event => {
+  event.stopPropagation();
+  if (advanceBubble('pet')) return;
+  showPetThought(petTapLines[Math.floor(Math.random() * petTapLines.length)]);
+  petRenderer.react('happy');
+  void playUISFX('select', { volume: 0.12 });
+});
+$('pet-stage').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    $('pet-stage').click();
+  }
+});
+$('place-object').addEventListener('click', event => {
+  event.stopPropagation();
+  const object = $('place-object');
+  object.classList.remove('is-tapped');
+  void object.offsetWidth;
+  object.classList.add('is-tapped');
+  toast('场景轻轻回应了一下。');
+  void playUISFX('open', { volume: 0.12 });
+});
+$('place-object').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    $('place-object').click();
+  }
+});
+$('world-stage').addEventListener('click', event => {
+  if (document.body.dataset.phase === 'interview' && advanceBubble('guide')) return;
+  if (document.body.dataset.phase === 'quest' && advanceBubble('npc')) return;
+  if (advanceBubble('pet')) return;
+  if (!$('pet-stage').hidden) movePetTo(event.clientX, event.clientY);
 });
 $('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
 $('close-backpack').addEventListener('click', () => $('backpack-dialog').close());
@@ -1195,5 +1386,10 @@ addEventListener('beforeunload', () => {
   stopGuideVoiceSession();
 });
 updateBackpack();
+setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
-window.__storyV2 = { state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory };
+window.__storyV2 = {
+  state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
+  beginInterview, submitInterviewAnswer, finishInterview, submitRitualAnswer, submitSceneAnswer, resolveSceneChoice,
+  setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, movePetTo,
+};
