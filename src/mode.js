@@ -1,3 +1,7 @@
+import { installUISFX, playUISFX } from './ui-sfx.js';
+
+installUISFX();
+
 const gate = document.getElementById('mode-gate');
 const switcher = document.getElementById('mode-switch');
 const lab = document.getElementById('debug-lab');
@@ -56,6 +60,7 @@ async function applyMode(mode, { updateUrl = true } = {}) {
     gate.hidden = false;
     switcher.hidden = true;
     modeNote.textContent = '这一页暂时没有打开，请检查网络后再试一次。';
+    void playUISFX('error');
     return;
   } finally {
     gate.removeAttribute('aria-busy');
@@ -68,7 +73,10 @@ async function applyMode(mode, { updateUrl = true } = {}) {
   lab.hidden = next !== 'debug';
   switcher.textContent = '返回主页';
   switcher.setAttribute('aria-label', '返回主页并选择其他模式');
-  if (updateUrl) updateModeUrl(next);
+  if (updateUrl) {
+    updateModeUrl(next);
+    void playUISFX('forward');
+  }
 
   modeNote.textContent = originalModeNote;
   if (next === 'debug') {

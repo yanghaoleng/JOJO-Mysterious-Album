@@ -1,8 +1,18 @@
-# 萌萌星的奇妙图鉴
+# JOJO Mysterious Album
+
+**中文产品名：萌萌星的奇妙图鉴**
 
 面向 5 至 8 岁孩子的 AI 原生创意箱庭。孩子先说出一个角色特质，再亲手为角色选择性格、取名并进入世界。这个特质会在后续冒险中真正解决问题，让孩子直观看见“我的想象改变了世界”。
 
 主页固定提供三种入口：原故事“雾灯花园”、连续语音故事“不见了的回声”和可独立测试角色、声音、场景及儿童访谈脚本的“角色模拟器”。三个模式都能用明确的“返回主页”回到入口，故事进度、角色配方和兴趣档案不会因切换而清空。
+
+## 全站交互音效
+
+- 使用 [UISFX](https://uisfx.com/) 0.4.0 的 `organic` 音色包。木头、水、呼吸和小石子的质感与儿童水彩绘本一致。
+- `src/ui-sfx.js` 统一管理语义提示：选择、前进、返回、开合、录音开始与暂停、奖励、道具送出、复制、完成、失败和重试。
+- 首次可信点击或按键后才解锁 Web Audio；不使用悬停音，不给数字口令逐键发声，连续收音时也不播放循环提示，避免干扰儿童语音识别。
+- 页面右上角提供持久化“音效开/关”。它只控制非语言界面音效，不替代文字反馈，也不关闭故事角色的 TTS 语音。
+- 音效由本地确定性配方实时合成，不下载远端声音文件。UISFX 运行时代码为 MIT，声音资产为 CC0，详见 `THIRD_PARTY_NOTICES.md`。
 
 ## 角色实验室
 
@@ -35,7 +45,7 @@
 
 ## 本地运行
 
-项目不需要安装依赖，使用支持 ES Modules 的现代浏览器即可。
+运行已提交的静态版本只需要支持 ES Modules 的现代浏览器；参与开发和重新打包依赖时需要 Node.js。
 
 ```bash
 cp .env.example .env.local
@@ -45,20 +55,20 @@ python3 serve.py 8137
 
 打开 `http://localhost:8137/`。
 
-如需修改气泡文字组件，先安装开发依赖并重新打包：
+如需修改气泡文字或界面音效组件，先安装开发依赖并重新打包：
 
 ```bash
 npm install
-npm run build:bubble
+npm run build
 ```
 
-运行时直接加载已经生成的 `vendor/calligraph-bubble.js`，不依赖外部 CDN。
+运行时直接加载已经生成的 `vendor/calligraph-bubble.js` 和 `vendor/uisfx.js`，不依赖外部 CDN。
 
 操作方式：
 
 - 电脑：点击草地移动，也支持方向键或 WASD。
 - 手机和平板：轻触草地移动。
-- 声音：教学和反馈按剧情自动播放 Fish Audio，页面不提供全局声音开关；所有信息同时有文字版本。
+- 声音：教学和角色反馈按剧情播放豆包或 Fish Audio；右上角开关控制 UISFX 非语言界面音效。所有信息同时有文字版本。
 
 ## API
 
@@ -127,6 +137,7 @@ python3 scripts/generate_star_offline.py
 - `index.html`：产品结构、响应式 UI、设计变量和无障碍信息。
 - `src/mode.js`：三入口主页、原故事/模拟器按需加载、统一返回主页和浏览器前进后退同步；根地址不会自动跳进上次模式。
 - `src/analytics.js`：匿名访客号、有效停留、模式页面、交互事件和深度采集。
+- `src/ui-sfx.js`、`src/ui-sfx.css`、`vendor/uisfx.js`：全站 Organic 语义音效、首次交互解锁、持久静音偏好和可访问开关。
 - `data.html`、`src/data.js`、`src/data.css`：六位口令门与自托管访问数据后台。
 - `src/lab.js`、`src/lab.css`：角色实验室、15 个完整角色模板、6 种动作、5 套连续脚本、17 问画像塑形、音色和三端布局。
 - `src/child-profile.js`：第三版本机儿童画像、旧档案迁移、17 维完成度、分组摘要和关卡启发映射。
@@ -197,4 +208,13 @@ python3 scripts/generate_star_offline.py
 
 ## 项目来源与许可
 
-本项目以 [albertobeiz/kindergrimm](https://github.com/albertobeiz/kindergrimm) 的程序化绘本角色系统为基础继续设计。原项目及当前代码采用 [Unlicense](LICENSE)，属于公共领域。
+本项目以 [albertobeiz/kindergrimm](https://github.com/albertobeiz/kindergrimm) 的程序化绘本角色系统为基础继续设计。上游 Kindergrimm 保持 Unlicense，第三方部分保持各自许可。
+
+本仓库是**源码可见、限非商业使用**，不是 OSI 定义的开源软件：
+
+- 项目拥有版权的新代码使用 [PolyForm Noncommercial 1.0.0](LICENSE)。
+- 项目原创故事文本、原创 UI 美术、`assets/story/items/` 道具图和项目文档使用 [CC BY-NC-SA 4.0](LICENSE-CONTENT.md)。
+- 商业使用需要仓库所有者另行书面授权，见 [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)。
+- 上游与第三方权利不受新许可收窄，完整清单见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+历史上已按 Unlicense 公开的版本无法被追溯性收回；本许可仅约束权利人可许可的当前及后续新增内容。

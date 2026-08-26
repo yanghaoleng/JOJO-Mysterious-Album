@@ -18,7 +18,10 @@
 | 成长报告、图鉴页、结算页 | 冒险结果 | `#ending` | 总结创作、数感、推理和情绪概念 |
 | 收进图鉴 | 本机保存 | `#save-card`、`mengmeng-atlas` | 只写入当前浏览器 `localStorage` |
 | 自由想法、AI 输入 | 世界导演入口 | `#custom-idea-form`、`/api/director` | 只有此处把能力描述发给服务端配置的世界导演模型 |
-| 声音按钮、语音开关（已移除） | 不再提供全局声音开关 | `VoiceGuide` 固定启用，`#sound-toggle` 已删除 | 教学与反馈默认播放 Fish Audio，所有内容保留文字替代 |
+| 右上角音效、音效开关 | 非语言界面音效总开关 | `#ui-sfx-toggle`、`uiSFX`、`jojo-mysterious-album:ui-sfx` | 只控制 UISFX，不关闭豆包/Fish 角色语音；偏好跨页面保存 |
+| Organic 音效、交互声音 | 全站语义音效系统 | `src/ui-sfx.js`、`vendor/uisfx.js`、`playUISFX()` | 不做悬停音；选择、导航、开合、奖励、完成和错误按语义触发 |
+| 音效标记、这个按钮用什么声音 | 声明式音效覆盖 | `data-uisfx`、`inferCue()` | `data-uisfx="none"` 表示刻意静音；复制、保存等异步结果由成功后显式触发 |
+| 开始听、暂停听的提示音 | 语音会话边界提示 | `startGuideVoiceSession()`、`toggleGuideVoice()`、`start/stop` | 只在人为开始或暂停时响一次，连续收音和 AI 理解期间保持安静 |
 | 草地点击圈、落脚圈 | 移动目标反馈 | `targetRipple` | 点击或轻触场景后立即出现 |
 | 主页、三个入口、模式扉页 | 三入口主页 | `#mode-gate`、`.mode-choice` | 根地址固定显示，可选回声故事、雾灯花园或角色模拟器 |
 | 返回主页、角落主页 | 统一主页按钮 | `#mode-switch`、`.home-button`、`showHome()` | 原故事和模拟器复用角落按钮，回声故事在页头显示文字按钮 |

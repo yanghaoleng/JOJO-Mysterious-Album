@@ -8,7 +8,7 @@
   <title>访问数据 · 萌萌星的奇妙图鉴</title>
   <link rel="stylesheet" href="./src/data.css">
 </head>
-<body>
+<body data-page="data">
   <canvas id="data-grain" aria-hidden="true"></canvas>
 
   <main id="data-gate" class="data-gate" aria-labelledby="gate-title">
@@ -25,12 +25,12 @@
         </div>
         <p id="code-error" class="code-error" role="alert"></p>
         <div class="keypad" aria-label="数字键盘">
-          <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
-          <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
-          <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
-          <button type="button" data-action="clear"><span>清除</span></button><button type="button" data-key="0">0</button><button type="button" data-action="backspace" aria-label="退格">⌫</button>
+          <button type="button" data-key="1" data-uisfx="none">1</button><button type="button" data-key="2" data-uisfx="none">2</button><button type="button" data-key="3" data-uisfx="none">3</button>
+          <button type="button" data-key="4" data-uisfx="none">4</button><button type="button" data-key="5" data-uisfx="none">5</button><button type="button" data-key="6" data-uisfx="none">6</button>
+          <button type="button" data-key="7" data-uisfx="none">7</button><button type="button" data-key="8" data-uisfx="none">8</button><button type="button" data-key="9" data-uisfx="none">9</button>
+          <button type="button" data-action="clear" data-uisfx="cancel"><span>清除</span></button><button type="button" data-key="0" data-uisfx="none">0</button><button type="button" data-action="backspace" data-uisfx="back" aria-label="退格">⌫</button>
         </div>
-        <button class="sr-only" type="submit">进入数据页</button>
+        <button class="sr-only" type="submit" data-uisfx="none">进入数据页</button>
       </form>
       <a class="back-link" href="/">返回奇妙图鉴</a>
     </section>
@@ -101,6 +101,7 @@
     </section>
   </main>
 
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="module" src="./src/data.js"></script>
 </body>
 </html>

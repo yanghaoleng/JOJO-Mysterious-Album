@@ -4,6 +4,9 @@ import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-fox-listen';
 import { trackAnalytics } from './analytics.js';
+import { installUISFX, playUISFX } from './ui-sfx.js';
+
+installUISFX();
 
 setRender({ u: 176, frames: 2 });
 THREE.ColorManagement.enabled = false;
@@ -441,6 +444,7 @@ async function listenOnceInto(input, status, button) {
   if (activeRecognition) {
     status.textContent = '正在收好这句话，请稍等一下';
     try { activeRecognition.stop(); } catch { /* already stopped */ }
+    void playUISFX('stop', { volume: 0.14 });
     return;
   }
   stopAudio();
@@ -449,6 +453,7 @@ async function listenOnceInto(input, status, button) {
     status.textContent = '这个浏览器暂时不能直接识别语音，可以在旁边打字。';
     input.focus();
     document.documentElement.dataset.asrSource = 'unavailable';
+    void playUISFX('error');
     return;
   }
 
@@ -471,12 +476,14 @@ async function listenOnceInto(input, status, button) {
   if (denied) {
     activeRecognition = null;
     status.textContent = '没有获得麦克风许可，可以改用打字。';
+    void playUISFX('error');
     return;
   }
   button.setAttribute('aria-pressed', 'true');
   if (buttonLabel) buttonLabel.textContent = '再按一下说完';
   status.textContent = '正在听，你可以慢慢说；再按一下就会收好这句话';
   document.documentElement.dataset.asrSource = 'browser-live';
+  void playUISFX('start', { volume: 0.14 });
 
   recognition.onresult = event => {
     let transcript = '';
@@ -488,6 +495,7 @@ async function listenOnceInto(input, status, button) {
   recognition.onerror = event => {
     denied = event.error === 'not-allowed' || event.error === 'service-not-allowed';
     status.textContent = denied ? '没有获得麦克风许可，可以改用打字。' : '这次没有听清，可以再试一次或改用打字。';
+    void playUISFX('error');
   };
   recognition.onend = async () => {
     button.setAttribute('aria-pressed', 'false');
@@ -510,6 +518,7 @@ async function listenOnceInto(input, status, button) {
     await capture?.stop().catch(() => null);
     if (buttonLabel) buttonLabel.textContent = idleLabel;
     status.textContent = '麦克风还在准备，请等一下再试。';
+    void playUISFX('error');
   }
 }
 
@@ -651,6 +660,7 @@ async function startGuideVoiceSession() {
   if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
     document.documentElement.dataset.asrSource = 'unavailable';
     setGuideVoiceUi('error', '这个浏览器暂时不能连续听，可以直接点一个回答');
+    void playUISFX('error');
     return;
   }
   stopAudio();
@@ -662,6 +672,7 @@ async function startGuideVoiceSession() {
     $('mic-button').disabled = false;
     document.documentElement.dataset.asrSource = 'permission-denied';
     setGuideVoiceUi('error', '没有打开麦克风，也可以直接点一个回答');
+    void playUISFX('error');
     return;
   }
   guideVoiceSession.active = true;
@@ -669,6 +680,7 @@ async function startGuideVoiceSession() {
   guideVoiceSession.manualPause = false;
   guideVoiceSession.pendingAnswer = '';
   guideVoiceSession.speaking = true;
+  void playUISFX('start', { volume: 0.14 });
   trackAnalytics('echo_voice_enabled', { depth: 2 });
   setGuideVoiceUi('speaking', `${state.guide.name}先问一句，话音结束后会自动开始听`);
   await playTts(`${state.guide.hello}${INTERVIEW_QUESTIONS[state.questionIndex].question}`, state.guide.voice);
@@ -697,8 +709,13 @@ function toggleGuideVoice() {
     startGuideVoiceSession();
     return;
   }
-  if (guideVoiceSession.manualPause || guideVoiceSession.paused) resumeGuideListening();
-  else pauseGuideListening({ manual: true });
+  if (guideVoiceSession.manualPause || guideVoiceSession.paused) {
+    void playUISFX('start', { volume: 0.14 });
+    resumeGuideListening();
+  } else {
+    pauseGuideListening({ manual: true });
+    void playUISFX('stop', { volume: 0.14 });
+  }
 }
 
 function fallbackTurn(question, answer, { forceRespond = false } = {}) {
@@ -901,6 +918,7 @@ function finishInterview() {
   }));
   showPanel('assignment-panel', 'assignment');
   petRenderer.react('listen');
+  void playUISFX('complete');
 }
 
 function pickPetVoice() {
@@ -929,10 +947,12 @@ async function wakePet() {
     seals[i].classList.add('active');
     $('ritual-status').textContent = lines[i];
     petRenderer.react(i === 1 ? 'listen' : 'happy');
+    void playUISFX('progress-step', { volume: 0.14 });
     await delay(520);
   }
   const reply = `我听见你了。我叫${name}。我的声音还很小，不过我想和你一起去找不见了的回声。`;
   showPetThought(reply);
+  void playUISFX('wake');
   await playTts(reply, state.petVoice, { pet: true });
   state.busy = false;
   await delay(260);
@@ -1017,12 +1037,14 @@ function collectItem(id) {
   $('backpack-button').classList.remove('got-item');
   void $('backpack-button').offsetWidth;
   $('backpack-button').classList.add('got-item');
+  void playUISFX('reward');
 }
 
 function useItem(id) {
   const entry = inventoryEntry(id);
   if (entry) entry.used = true;
   updateBackpack();
+  void playUISFX('send');
 }
 
 function updateBackpack() {
@@ -1106,6 +1128,7 @@ function finishStory() {
   }));
   petRenderer.react('happy');
   showPetThought('下一次，我们会去一张还没有画出来的图鉴。');
+  void playUISFX('achievement');
 }
 
 function saveEnding() {
@@ -1126,8 +1149,10 @@ function saveEnding() {
     $('save-ending').disabled = true;
     $('save-ending').textContent = '已经收进图鉴';
     toast('这次冒险只保存在当前设备。');
+    void playUISFX('success');
   } catch {
     toast('这次没能保存，但灯塔已经在故事里亮起来了。');
+    void playUISFX('error');
   }
 }
 
@@ -1154,7 +1179,10 @@ $('continue-scene').addEventListener('click', () => {
 $('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
 $('close-backpack').addEventListener('click', () => $('backpack-dialog').close());
 $('backpack-dialog').addEventListener('click', event => {
-  if (event.target === $('backpack-dialog')) $('backpack-dialog').close();
+  if (event.target === $('backpack-dialog')) {
+    $('backpack-dialog').close();
+    void playUISFX('close');
+  }
 });
 $('save-ending').addEventListener('click', saveEnding);
 $('play-again').addEventListener('click', () => location.reload());

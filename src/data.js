@@ -1,3 +1,7 @@
+import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js';
+
+installUISFX();
+
 const $ = id => document.getElementById(id);
 const PAGE_LABELS = { choose: '三入口主页', story: '雾灯花园', echo: '不见了的回声', debug: '角色模拟器' };
 const EVENT_LABELS = {
@@ -82,15 +86,19 @@ async function submitCode() {
     });
     if (response.status === 429) {
       resetCode('尝试次数较多，请十分钟后再试');
+      void playUISFX('warning');
       return;
     }
     if (!response.ok) {
       resetCode('口令不正确');
+      void playUISFX('error');
       return;
     }
     showDashboard();
+    void playUISFX('unlock');
   } catch {
     resetCode('网络暂时不可用，请稍后再试');
+    void playUISFX('error');
   } finally {
     loading = false;
   }
@@ -262,6 +270,7 @@ async function loadDashboard() {
   loading = true;
   $('dashboard-error').hidden = true;
   $('dashboard-content').setAttribute('aria-busy', 'true');
+  const loadingCue = startUISFXLoop('loading', { volume: 0.04 });
   try {
     const response = await fetch(`/api/data/summary?range=${activeRange}`, { credentials: 'same-origin' });
     if (response.status === 401) {
@@ -270,9 +279,12 @@ async function loadDashboard() {
     }
     if (!response.ok) throw new Error('summary_unavailable');
     renderDashboard(await response.json());
+    void playUISFX('success', { volume: 0.13 });
   } catch {
     $('dashboard-error').hidden = false;
+    void playUISFX('error');
   } finally {
+    (await loadingCue)?.stop();
     $('dashboard-content').removeAttribute('aria-busy');
     loading = false;
   }

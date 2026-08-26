@@ -680,7 +680,7 @@
           <span class="lab-bubble-tail" aria-hidden="true"></span>
         </div>
         <div id="lab-stage" aria-hidden="true"></div>
-        <button id="lab-random" class="lab-random-icon" type="button" aria-label="随机换一只角色" title="随机换一只">
+        <button id="lab-random" class="lab-random-icon" type="button" data-uisfx="none" aria-label="随机换一只角色" title="随机换一只">
           <span aria-hidden="true">换</span>
         </button>
       </section>
@@ -830,7 +830,7 @@
         </div>
       </div>
       <div class="ending-actions">
-        <button class="primary-action" id="save-card" type="button">收进我的图鉴</button>
+        <button class="primary-action" id="save-card" type="button" data-uisfx="none">收进我的图鉴</button>
         <button class="secondary-action" id="replay" type="button">再创造一只</button>
       </div>
     </div>
@@ -858,6 +858,7 @@
       addEventListener('resize', paint, { passive: true });
     })();
   </script>
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
   <script type="module" src="./src/mode.js"></script>

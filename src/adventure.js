@@ -4,6 +4,7 @@ import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { buildGameInspiration, loadChildProfile } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
+import { playUISFX } from './ui-sfx.js';
 
 setRender({ u: 176, frames: 2 });
 THREE.ColorManagement.enabled = false;
@@ -119,32 +120,14 @@ class VoiceGuide {
 
 }
 
-class GameSound {
-  constructor() { this.ctx = null; }
-  ready() {
-    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-  }
-  tone(freq, at = 0, duration = .16, volume = .055, type = 'sine') {
-    if (!this.ctx) return;
-    const o = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    const t = this.ctx.currentTime + at;
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(.001, t);
-    g.gain.exponentialRampToValueAtTime(volume, t + .02);
-    g.gain.exponentialRampToValueAtTime(.001, t + duration);
-    o.connect(g).connect(this.ctx.destination);
-    o.start(t); o.stop(t + duration + .03);
-  }
-  tap() { this.ready(); this.tone(330, 0, .08, .028, 'triangle'); }
-  choose() { this.ready(); this.tone(392, 0, .12); this.tone(523, .08, .16); }
-  collect(n) { this.ready(); this.tone([523, 659, 784][n - 1] || 784, 0, .22); this.tone(1046, .1, .25, .04); }
-  reveal() { this.ready(); [392, 523, 659, 784].forEach((f, i) => this.tone(f, i * .11, .28, .04)); }
-}
-
 const voice = new VoiceGuide();
-const sfx = new GameSound();
+const sfx = {
+  ready() {},
+  tap() { void playUISFX('select', { volume: 0.12 }); },
+  choose() { void playUISFX('select'); },
+  collect(n) { void playUISFX(n >= 3 ? 'complete' : 'reward'); },
+  reveal() { void playUISFX('unlock'); },
+};
 
 function showPanel(id) {
   for (const panel of panels) panel.hidden = panel.id !== id;
@@ -756,8 +739,8 @@ $('enter-world').addEventListener('click',async()=>{
 
 $('save-card').addEventListener('click',()=>{
   const entry={name:profile.name,trait:profile.traitLabel,heart:profile.heart,completedAt:new Date().toISOString(),world:'雾灯花园',inspiration:{role:gameInspiration.role,theme:childProfile.theme,playStyle:childProfile.playStyle},profileVersion:gameInspiration.profileVersion};
-  try{const book=JSON.parse(localStorage.getItem('mengmeng-atlas')||'[]');book.push(entry);localStorage.setItem('mengmeng-atlas',JSON.stringify(book.slice(-24)));toast('已经收进这台设备上的奇妙图鉴。');$('save-card').disabled=true;$('save-card').textContent='已经收进图鉴';}
-  catch{toast('这一次没能保存，但冒险仍然完成了。');}
+  try{const book=JSON.parse(localStorage.getItem('mengmeng-atlas')||'[]');book.push(entry);localStorage.setItem('mengmeng-atlas',JSON.stringify(book.slice(-24)));toast('已经收进这台设备上的奇妙图鉴。');$('save-card').disabled=true;$('save-card').textContent='已经收进图鉴';void playUISFX('success');}
+  catch{toast('这一次没能保存，但冒险仍然完成了。');void playUISFX('error');}
 });
 
 $('replay').addEventListener('click',()=>location.reload());

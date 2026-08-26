@@ -14,6 +14,7 @@ import {
   summarizeProfileGroups,
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
+import { playUISFX } from './ui-sfx.js';
 
 setRender({ u: 176, frames: 2 });
 
@@ -1204,6 +1205,7 @@ function applyTemplate(config) {
   animator?.setPose('play');
   window.setTimeout(() => animator?.setPose('idle'), 1050);
   showStatus(`已经套用${config.name}模板。`);
+  void playUISFX('complete', { volume: 0.14 });
 }
 
 function pointGazeAt(clientX, clientY, { releaseAfter = 0 } = {}) {
@@ -1264,6 +1266,7 @@ function respondToCharacterTap(event) {
   animator.setFace('idle');
   animator.setPose('play');
   speaker.speak(feedback[index], { offlineKey: `action-tap-${index}` });
+  void playUISFX('reaction', { volume: 0.13 });
   window.setTimeout(() => animator?.setPose('idle'), 1150);
 }
 
@@ -1381,6 +1384,7 @@ function startScript(script) {
   scriptStepIndex = 0;
   scriptAnswers = [];
   scriptBusy = true;
+  void playUISFX('start');
   $('script-picker').hidden = true;
   $('script-session').hidden = false;
   $('script-complete').hidden = true;
@@ -1496,6 +1500,7 @@ function finishScript() {
   performAction('play');
   speaker.speak(script.complete, { offlineKey: script.completeAudio });
   showStatus(`已经完成“${script.title}”。选择结果保存在当前设备。`);
+  void playUISFX('complete');
 }
 
 function initActionStudio() {
@@ -1628,6 +1633,7 @@ function finishInterest(value) {
   const clean = value.trim().replace(/[<>]/g, '').slice(0, 36);
   if (clean.length < 2) {
     $('interest-error').textContent = '再多说一点点，它才能认真记住。';
+    void playUISFX('blocked');
     return;
   }
   $('interest-error').textContent = '';
@@ -1640,6 +1646,7 @@ function finishInterest(value) {
   setBubble(`我记住啦。你最近喜欢${clean}。以后遇到新的故事，我会先问问你想怎么做。`);
   speaker.speak(`我记住啦。你最近喜欢${clean}。以后遇到新的故事，我会先问问你想怎么做。`, { offlineKey: 'interview-complete' });
   animator.setPose('play');
+  void playUISFX('complete');
   window.setTimeout(() => { animator.setPose('idle'); renderQuestion({ speak: false }); }, 4200);
 }
 
@@ -1750,14 +1757,17 @@ function initUI() {
     speaker.speak('我换了一张完全不同的脸。还可以继续慢慢调整。', { offlineKey: 'action-random' });
     $('recipe-summary').textContent = '刚刚随机生成了一只新角色。兴趣档案仍然保留。';
     rebuild();
+    void playUISFX('skip-next');
   });
   $('copy-recipe').addEventListener('click', async () => {
     const payload = JSON.stringify({ recipe, profile }, null, 2);
     try {
       await navigator.clipboard.writeText(payload);
       showStatus('角色配方和兴趣档案已经复制。');
+      void playUISFX('copy');
     } catch {
       showStatus('当前浏览器不允许复制，可以稍后再试。');
+      void playUISFX('error');
     }
   });
 

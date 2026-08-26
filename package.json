@@ -1,9 +1,16 @@
 {
+  "name": "jojo-mysterious-album",
+  "private": true,
+  "description": "面向儿童的 AI 原生实时语音互动绘本与角色实验室",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
-    "build:bubble": "esbuild src/calligraph-bubble.jsx --bundle --format=esm --minify --outfile=vendor/calligraph-bubble.js"
+    "build": "npm run build:bubble && npm run build:sfx",
+    "build:bubble": "esbuild src/calligraph-bubble.jsx --bundle --format=esm --minify --outfile=vendor/calligraph-bubble.js",
+    "build:sfx": "esbuild node_modules/uisfx/dist/index.js --bundle --format=esm --minify --outfile=vendor/uisfx.js"
   },
   "dependencies": {
     "calligraph": "^1.4.1",
+    "uisfx": "^0.4.0",
     "ws": "^8.21.3"
   },
   "devDependencies": {

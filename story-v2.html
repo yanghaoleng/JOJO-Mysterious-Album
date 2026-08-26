@@ -60,7 +60,7 @@
           <li>回答会改变宠物的模样和陪伴方式</li>
           <li>三章冒险，六个场景，一个会记住选择的背包</li>
         </ul>
-        <button class="primary-action" id="begin-button" type="button">让图鉴员来找我</button>
+        <button class="primary-action" id="begin-button" type="button" data-uisfx="start">让图鉴员来找我</button>
         <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存；也可全程点选。不会询问姓名、学校、住址或精确生日。</p>
       </div>
     </section>
@@ -93,7 +93,7 @@
             <span id="live-answer-state">我听到</span>
             <b id="live-answer-text"></b>
           </div>
-          <button class="mic-button guide-mic" id="mic-button" type="button" aria-pressed="false" aria-label="打开麦克风，开始聊天">
+          <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="打开麦克风，开始聊天">
             <span aria-hidden="true"></span>
           </button>
           <p class="speech-status" id="speech-status" role="status"><i aria-hidden="true"></i>先点一下麦克风，之后会自动继续听</p>
@@ -108,7 +108,7 @@
       <p id="assignment-copy"></p>
       <div class="pet-reasons" id="pet-reasons"></div>
       <p class="silent-note">它现在还不会说话，只会用耳朵、眼睛和动作回答你。</p>
-      <button class="primary-action" id="accept-pet" type="button">把它轻轻接过来</button>
+      <button class="primary-action" id="accept-pet" type="button" data-uisfx="reward">把它轻轻接过来</button>
     </section>
 
     <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
@@ -121,7 +121,7 @@
         <label for="first-hello-input">你想先对它说什么</label>
         <div class="ritual-speech-row">
           <input id="first-hello-input" maxlength="80" autocomplete="off" placeholder="比如：你好，我们一起走吧">
-          <button class="mic-button compact" id="ritual-mic" type="button"><span aria-hidden="true"></span><b>说给它听</b></button>
+          <button class="mic-button compact" id="ritual-mic" type="button" data-uisfx="none"><span aria-hidden="true"></span><b>说给它听</b></button>
         </div>
       </div>
       <div class="voice-seals" aria-label="开口仪式的三枚声印">
@@ -130,7 +130,7 @@
         <span data-seal="voice">声</span>
       </div>
       <p class="speech-status" id="ritual-status" role="status">两项都准备好以后，三枚声印会依次亮起。</p>
-      <button class="primary-action" id="wake-pet" type="button" disabled>让它开口</button>
+      <button class="primary-action" id="wake-pet" type="button" data-uisfx="start" disabled>让它开口</button>
     </section>
 
     <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
@@ -153,7 +153,7 @@
           <img id="reward-image" alt="">
           <div><b id="reward-name"></b><span id="reward-short"></span></div>
         </div>
-        <button class="primary-action" id="continue-scene" type="button">继续往前走</button>
+        <button class="primary-action" id="continue-scene" type="button" data-uisfx="forward">继续往前走</button>
       </div>
     </section>
 
@@ -170,7 +170,7 @@
     </section>
   </main>
 
-  <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog">
+  <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog" data-uisfx="open">
     <span class="backpack-mark" aria-hidden="true">包</span>
     <b>背包</b>
     <i id="backpack-count">0</i>
@@ -191,6 +191,7 @@
   <div class="ink-transition" id="ink-transition" aria-hidden="true"><span></span></div>
   <div class="toast" id="toast" role="status"></div>
 
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/story-v2.js?v=20260826-fox-listen"></script>
 </body>
