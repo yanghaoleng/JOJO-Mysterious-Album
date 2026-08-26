@@ -15,12 +15,18 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
+import {
+  CHARACTER_CARD_FIELDS,
+  baseCharacterCard,
+  sanitizeCharacterCard,
+} from './character-cards.js';
 
 setRender({ u: 176, frames: 2 });
 
 const $ = id => document.getElementById(id);
 const RECIPE_KEY = 'mengmeng-lab-recipe-v1';
 const SCENE_KEY = 'mengmeng-lab-scene-v1';
+const CHARACTER_CARD_KEY = 'mengmeng-character-cards-v1';
 const FACE_DEFAULT_SEED = 20260825;
 const DEFAULT_VOICE = 'star';
 const DEFAULT_SCENE = 'paper-ground';
@@ -274,6 +280,40 @@ function readRecipe() {
   }
 }
 
+function readCharacterCardOverrides() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CHARACTER_CARD_KEY) || '{}');
+    return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
+function characterCardFor(templateId) {
+  const base = baseCharacterCard(templateId);
+  return sanitizeCharacterCard(characterCardOverrides[templateId], base);
+}
+
+function storeCharacterCard(templateId, card) {
+  const base = baseCharacterCard(templateId);
+  const safe = sanitizeCharacterCard(card, base);
+  characterCardOverrides = { ...characterCardOverrides, [templateId]: safe };
+  try { localStorage.setItem(CHARACTER_CARD_KEY, JSON.stringify(characterCardOverrides)); } catch { /* keep this call's edits in memory */ }
+  return safe;
+}
+
+function clearStoredCharacterCard(templateId) {
+  const { [templateId]: removed, ...rest } = characterCardOverrides;
+  characterCardOverrides = rest;
+  try { localStorage.setItem(CHARACTER_CARD_KEY, JSON.stringify(characterCardOverrides)); } catch { /* keep reset in memory */ }
+  return baseCharacterCard(templateId);
+}
+
+function cardValue(card, field) {
+  const value = card?.[field.key];
+  return field.list && Array.isArray(value) ? value.join('、') : String(value || '');
+}
+
 let profile = loadChildProfile();
 let questionIndex = firstUnansweredProfileIndex(profile);
 let initialized = false;
@@ -305,6 +345,18 @@ let activeScript = null;
 let scriptStepIndex = 0;
 let scriptAnswers = [];
 let scriptBusy = false;
+let characterCardOverrides = readCharacterCardOverrides();
+const callState = {
+  active: false,
+  mode: 'normal',
+  template: null,
+  card: null,
+  messages: [],
+  busy: false,
+  controller: null,
+  recognition: null,
+  returnFocus: null,
+};
 const pointerRaycaster = new THREE.Raycaster();
 const pointerNdc = new THREE.Vector2();
 const pointerHeadWorld = new THREE.Vector3();
@@ -1188,20 +1240,21 @@ function paintTemplateThumbnail(canvas, config) {
 }
 
 function refreshTemplateControls() {
-  document.querySelectorAll('[data-template-id]').forEach(button => {
-    const selected = button.dataset.templateId === activeTemplateId;
-    button.classList.toggle('selected', selected);
-    button.setAttribute('aria-pressed', String(selected));
+  document.querySelectorAll('.template-card[data-template-id]').forEach(card => {
+    const selected = card.dataset.templateId === activeTemplateId;
+    card.classList.toggle('selected', selected);
+    card.querySelector('.template-card-main')?.setAttribute('aria-pressed', String(selected));
   });
 }
 
-function applyTemplate(config) {
+function applyTemplate(config, { speak = true } = {}) {
   recipe = makeTemplateRecipe(config);
   activeTemplateId = config.id;
   rebuild();
   refreshTemplateControls();
+  renderTemplateDetail(config);
   $('recipe-summary').textContent = `已套用“${config.name}”完整模板。兴趣档案仍然保留，可以继续修改任何细节。`;
-  speaker.speak(`你好，我现在是${config.name}。你还想帮我改一改哪里？`, { offlineKey: `template-${config.id}` });
+  if (speak) speaker.speak(`你好，我现在是${config.name}。你还想帮我改一改哪里？`, { offlineKey: `template-${config.id}` });
   animator?.setPose('play');
   window.setTimeout(() => animator?.setPose('idle'), 1050);
   showStatus(`已经套用${config.name}模板。`);
@@ -1294,11 +1347,13 @@ function renderTemplateCards() {
     ? CHARACTER_TEMPLATES
     : CHARACTER_TEMPLATES.filter(item => item.group === templateFilter);
   for (const config of items) {
+    const article = document.createElement('article');
+    article.className = 'template-card';
+    article.dataset.templateId = config.id;
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'template-card';
-    button.dataset.templateId = config.id;
-    button.setAttribute('aria-label', `套用${config.name}：${config.hint}`);
+    button.className = 'template-card-main';
+    button.setAttribute('aria-label', `查看并套用${config.name}：${config.hint}`);
     const canvas = document.createElement('canvas');
     canvas.width = 260;
     canvas.height = 176;
@@ -1310,12 +1365,24 @@ function renderTemplateCards() {
     hint.textContent = config.hint;
     copy.append(title, hint);
     button.append(canvas, copy);
-    button.addEventListener('click', () => applyTemplate(config));
-    grid.appendChild(button);
+    const callButton = document.createElement('button');
+    callButton.type = 'button';
+    callButton.className = 'template-card-call';
+    callButton.textContent = `呼叫${config.name}`;
+    callButton.setAttribute('aria-label', `呼叫${config.name}开始视频通话`);
+    button.addEventListener('click', () => {
+      applyTemplate(config);
+      requestAnimationFrame(() => $('template-card-detail')?.scrollIntoView?.({ block: 'nearest' }));
+    });
+    callButton.addEventListener('click', () => startCharacterCall(config));
+    article.append(button, callButton);
+    grid.appendChild(article);
     paintTemplateThumbnail(canvas, config);
   }
   templateCardsReady = true;
   refreshTemplateControls();
+  const detailTemplate = CHARACTER_TEMPLATES.find(item => item.id === activeTemplateId) || items[0];
+  if (detailTemplate) renderTemplateDetail(detailTemplate);
 }
 
 function initTemplatePicker() {
@@ -1337,6 +1404,361 @@ function initTemplatePicker() {
     });
     groups.appendChild(button);
   }
+}
+
+function renderTemplateDetail(config) {
+  const host = $('template-card-detail');
+  if (!host || !config) return;
+  const card = characterCardFor(config.id);
+  host.innerHTML = '';
+  host.hidden = false;
+
+  const head = document.createElement('header');
+  head.className = 'template-card-detail-head';
+  const heading = document.createElement('div');
+  const kicker = document.createElement('span');
+  kicker.textContent = characterCardOverrides[config.id] ? '角色小档案 · 已在本机修改' : '角色小档案';
+  const title = document.createElement('h3');
+  title.textContent = config.name;
+  heading.append(kicker, title);
+  const callButton = document.createElement('button');
+  callButton.type = 'button';
+  callButton.textContent = '呼叫它';
+  callButton.addEventListener('click', () => startCharacterCall(config));
+  head.append(heading, callButton);
+
+  const intro = document.createElement('p');
+  intro.textContent = card.greeting;
+  const facts = document.createElement('dl');
+  facts.className = 'template-card-facts';
+  for (const field of CHARACTER_CARD_FIELDS.filter(item => !['greeting', 'memoryRule'].includes(item.key))) {
+    const row = document.createElement('div');
+    const term = document.createElement('dt');
+    const value = document.createElement('dd');
+    term.textContent = field.label;
+    value.textContent = cardValue(card, field);
+    row.append(term, value);
+    facts.appendChild(row);
+  }
+  host.append(head, intro, facts);
+}
+
+function setCharacterCallStatus(state, text) {
+  const overlay = $('character-call');
+  if (!overlay) return;
+  overlay.dataset.state = state;
+  $('character-call-status').textContent = text;
+}
+
+function renderCharacterCallCard() {
+  const host = $('character-call-card');
+  if (!host || !callState.card) return;
+  host.innerHTML = '';
+  for (const field of CHARACTER_CARD_FIELDS) {
+    const row = document.createElement('div');
+    const term = document.createElement('dt');
+    const value = document.createElement('dd');
+    term.textContent = field.label;
+    value.textContent = cardValue(callState.card, field);
+    row.append(term, value);
+    host.appendChild(row);
+  }
+}
+
+function appendCharacterCallMessage(role, text, { pending = false } = {}) {
+  const message = { role, content: String(text || '').trim().slice(0, 220) };
+  callState.messages.push(message);
+  callState.messages = callState.messages.slice(-12);
+  const node = document.createElement('p');
+  node.className = `character-call-message ${role}${pending ? ' pending' : ''}`;
+  node.textContent = message.content;
+  $('character-call-transcript').appendChild(node);
+  while ($('character-call-transcript').children.length > 4) $('character-call-transcript').firstElementChild?.remove();
+  return { message, node };
+}
+
+function stopCharacterCallRecognition() {
+  if (!callState.recognition) return;
+  try { callState.recognition.abort(); } catch { /* already stopped */ }
+  callState.recognition = null;
+  const button = $('character-call-mic');
+  if (button) {
+    button.dataset.state = 'idle';
+    button.setAttribute('aria-label', '开始语音输入');
+  }
+}
+
+function setCharacterCallMode(mode) {
+  callState.mode = mode === 'debug' ? 'debug' : 'normal';
+  const overlay = $('character-call');
+  overlay.classList.toggle('is-debug', callState.mode === 'debug');
+  overlay.querySelectorAll('[data-call-mode]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.callMode === callState.mode));
+  });
+  $('character-call-debug').hidden = callState.mode !== 'debug';
+  $('character-call-input').placeholder = callState.mode === 'debug'
+    ? '例如：让它少说一点，多问孩子问题'
+    : `对${callState.template?.name || '角色'}说一句话`;
+  $('character-call-kicker').textContent = callState.mode === 'debug' ? '调试通话' : '视频通话';
+  renderCharacterCallCard();
+  setCharacterCallStatus('connected', callState.mode === 'debug' ? '可以用对话修改设定' : '已接通');
+  trackAnalytics('lab_character_call_mode', { depth: callState.mode === 'debug' ? 3 : 2 });
+}
+
+function startCharacterCall(config) {
+  if (!config) return;
+  callState.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  speaker?.cancel();
+  stopCharacterCallRecognition();
+  callState.controller?.abort();
+  callState.active = true;
+  callState.busy = false;
+  callState.template = config;
+  callState.card = characterCardFor(config.id);
+  callState.messages = [];
+  applyTemplate(config, { speak: false });
+
+  const preview = document.querySelector('.lab-preview');
+  const overlay = $('character-call');
+  document.body.classList.add('character-call-active');
+  preview.classList.add('is-calling');
+  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook')) element.inert = true;
+  overlay.hidden = false;
+  $('character-call-name').textContent = config.name;
+  $('character-call-transcript').innerHTML = '';
+  $('character-card-change').textContent = '直接告诉角色想改哪里，例如“说话再活泼一点”。修改只保存在当前设备。';
+  $('character-call-input').value = '';
+  setCharacterCallMode('normal');
+  appendCharacterCallMessage('assistant', callState.card.greeting);
+  animator?.setPose('play');
+  const greetingSpeech = speaker.speak(callState.card.greeting);
+  setCharacterCallStatus('speaking', `${config.name}正在打招呼`);
+  Promise.resolve(greetingSpeech).finally(() => {
+    if (callState.active && !callState.busy) setCharacterCallStatus('connected', '已接通');
+  });
+  window.setTimeout(() => animator?.setPose('idle'), 1050);
+  trackAnalytics('lab_character_call_start', { depth: 3 });
+  void playUISFX('forward', { volume: 0.14 });
+  $('character-call-end').focus({ preventScroll: true });
+}
+
+function endCharacterCall() {
+  if (!callState.active) return;
+  callState.controller?.abort();
+  callState.controller = null;
+  stopCharacterCallRecognition();
+  speaker?.cancel();
+  callState.active = false;
+  callState.busy = false;
+  document.body.classList.remove('character-call-active');
+  document.querySelector('.lab-preview')?.classList.remove('is-calling');
+  for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook')) element.inert = false;
+  $('character-call').hidden = true;
+  $('character-call-transcript').innerHTML = '';
+  setBubble(`${callState.template?.name || '角色'}已经挂断通话，角色卡还保存在这里。`);
+  trackAnalytics('lab_character_call_end', { depth: 3 });
+  void playUISFX('back', { volume: 0.12 });
+  const focusTarget = callState.returnFocus;
+  callState.returnFocus = null;
+  requestAnimationFrame(() => focusTarget?.isConnected && focusTarget.focus({ preventScroll: true }));
+}
+
+function handleCharacterCallEvent(eventName, payload, target) {
+  if (eventName === 'token') {
+    const text = String(payload?.text || '');
+    if (!text) return;
+    target.message.content = `${target.message.content}${text}`.slice(0, 220);
+    target.node.textContent = target.message.content;
+    target.node.classList.remove('pending');
+    anim.talk = true;
+    setCharacterCallStatus('streaming', `${callState.template.name}正在回答`);
+    return;
+  }
+  if (eventName === 'card' && payload?.card) {
+    callState.card = storeCharacterCard(callState.template.id, payload.card);
+    const summary = String(payload.summary || '角色设定已经更新。').slice(0, 80);
+    $('character-card-change').textContent = summary;
+    renderCharacterCallCard();
+    renderTemplateDetail(callState.template);
+    trackAnalytics('lab_character_card_edit', { depth: 4 });
+    void playUISFX('complete', { volume: 0.12 });
+    return;
+  }
+  if (eventName === 'error') throw new Error(String(payload?.error || 'character_call_failed'));
+}
+
+async function readCharacterCallStream(response, target) {
+  if (!response.ok || !response.body) throw new Error(`character_call_${response.status}`);
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+    const blocks = buffer.split(/\r?\n\r?\n/);
+    buffer = blocks.pop() || '';
+    for (const block of blocks) {
+      let eventName = 'message';
+      const dataLines = [];
+      for (const line of block.split(/\r?\n/)) {
+        if (line.startsWith('event:')) eventName = line.slice(6).trim();
+        if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+      }
+      if (!dataLines.length) continue;
+      let payload = {};
+      try { payload = JSON.parse(dataLines.join('\n')); } catch { payload = { text: dataLines.join('\n') }; }
+      handleCharacterCallEvent(eventName, payload, target);
+    }
+    if (done) break;
+  }
+}
+
+async function sendCharacterCall(messageText) {
+  const message = String(messageText || '').trim().slice(0, 180);
+  if (!callState.active || callState.busy || !message) return;
+  speaker?.cancel();
+  stopCharacterCallRecognition();
+  callState.busy = true;
+  $('character-call-input').value = '';
+  $('character-call-send').disabled = true;
+  $('character-call-mic').disabled = true;
+  appendCharacterCallMessage('user', message);
+  const history = callState.messages.slice(0, -1);
+  const target = appendCharacterCallMessage('assistant', '', { pending: true });
+  setCharacterCallStatus('thinking', `${callState.template.name}正在想`);
+  animator?.setFace('idle');
+  animator?.setPose('sit');
+  callState.controller = new AbortController();
+  try {
+    const response = await fetch('/api/character-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: callState.template.id,
+        characterName: callState.template.name,
+        mode: callState.mode,
+        message,
+        history,
+        card: callState.card,
+      }),
+      signal: callState.controller.signal,
+    });
+    await readCharacterCallStream(response, target);
+    if (!target.message.content) throw new Error('character_call_empty');
+    target.node.classList.remove('pending');
+    anim.talk = false;
+    animator?.setPose('idle');
+    callState.busy = false;
+    setCharacterCallStatus('speaking', `${callState.template.name}正在说话`);
+    const speech = speaker.speak(target.message.content);
+    Promise.resolve(speech).finally(() => {
+      if (callState.active && !callState.busy) setCharacterCallStatus('connected', callState.mode === 'debug' ? '设定可继续调整' : '已接通');
+    });
+    trackAnalytics('lab_character_call_turn', { depth: 4 });
+  } catch (error) {
+    if (error?.name === 'AbortError') return;
+    console.error('Character call failed', error);
+    target.message.content = '刚才的声音断了一下。你可以再说一次，我会继续听。';
+    target.node.textContent = target.message.content;
+    target.node.classList.remove('pending');
+    anim.talk = false;
+    animator?.setPose('idle');
+    setCharacterCallStatus('error', '连接刚才停了一下');
+    void playUISFX('error', { volume: 0.12 });
+  } finally {
+    callState.controller = null;
+    callState.busy = false;
+    $('character-call-send').disabled = false;
+    $('character-call-mic').disabled = false;
+  }
+}
+
+function beginCharacterCallRecognition() {
+  if (!callState.active || callState.busy) return;
+  if (callState.recognition) {
+    stopCharacterCallRecognition();
+    setCharacterCallStatus('connected', '语音输入已停止');
+    return;
+  }
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setCharacterCallStatus('error', '当前浏览器未开放语音输入，可以先打字');
+    void playUISFX('error', { volume: 0.1 });
+    return;
+  }
+  speaker?.cancel();
+  const recognition = new Recognition();
+  callState.recognition = recognition;
+  recognition.lang = 'zh-CN';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.onstart = () => {
+    $('character-call-mic').dataset.state = 'listening';
+    $('character-call-mic').setAttribute('aria-label', '停止语音输入');
+    setCharacterCallStatus('listening', `${callState.template.name}正在听`);
+    animator?.setPose('sit');
+  };
+  recognition.onresult = event => {
+    let transcript = '';
+    let final = false;
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      transcript += event.results[index][0]?.transcript || '';
+      final ||= event.results[index].isFinal;
+    }
+    $('character-call-input').value = transcript.trim().slice(0, 180);
+    if (final && transcript.trim()) {
+      const complete = transcript.trim();
+      stopCharacterCallRecognition();
+      void sendCharacterCall(complete);
+    }
+  };
+  recognition.onerror = event => {
+    stopCharacterCallRecognition();
+    setCharacterCallStatus('error', event.error === 'not-allowed' ? '请先允许麦克风权限' : '没有听清，可以再试一次');
+  };
+  recognition.onend = () => {
+    if (callState.recognition === recognition) stopCharacterCallRecognition();
+    if (callState.active && !callState.busy) {
+      animator?.setPose('idle');
+      setCharacterCallStatus('connected', '已接通');
+    }
+  };
+  try { recognition.start(); } catch {
+    stopCharacterCallRecognition();
+    setCharacterCallStatus('error', '麦克风还没准备好，请再试一次');
+  }
+}
+
+function resetActiveCharacterCard() {
+  if (!callState.template) return;
+  callState.card = clearStoredCharacterCard(callState.template.id);
+  renderCharacterCallCard();
+  renderTemplateDetail(callState.template);
+  $('character-card-change').textContent = '已经恢复这只角色最初的设定。';
+  setCharacterCallStatus('connected', '角色设定已恢复');
+  void playUISFX('back', { volume: 0.11 });
+}
+
+function initCharacterCalling() {
+  $('character-call-end').addEventListener('click', endCharacterCall);
+  $('character-call').querySelectorAll('[data-call-mode]').forEach(button => {
+    button.addEventListener('click', () => setCharacterCallMode(button.dataset.callMode));
+  });
+  $('character-call-form').addEventListener('submit', event => {
+    event.preventDefault();
+    void sendCharacterCall($('character-call-input').value);
+  });
+  $('character-call-input').addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void sendCharacterCall(event.currentTarget.value);
+    }
+  });
+  $('character-call-mic').addEventListener('click', beginCharacterCallRecognition);
+  $('character-card-reset').addEventListener('click', resetActiveCharacterCard);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && callState.active) endCharacterCall();
+  });
 }
 
 function performAction(pose, { button = null, duration, speed } = {}) {
@@ -1676,6 +2098,7 @@ function initUI() {
   initTemplatePicker();
   initActionStudio();
   initCharacterInteraction();
+  initCharacterCalling();
 
   document.querySelectorAll('[data-lab-tab]').forEach(button => {
     button.addEventListener('click', () => selectTab(button.dataset.labTab));
@@ -1797,7 +2220,8 @@ export async function activateLab() {
 export function deactivateLab() {
   active = false;
   if (renderer) renderer.setAnimationLoop(null);
+  if (callState.active) endCharacterCall();
   speaker?.cancel();
 }
 
-export { VOICE_PRESETS, QUESTIONS, ACTION_PRESETS, INTERACTION_SCRIPTS };
+export { VOICE_PRESETS, QUESTIONS, ACTION_PRESETS, INTERACTION_SCRIPTS, CHARACTER_TEMPLATES };

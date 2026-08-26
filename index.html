@@ -478,9 +478,10 @@
 
         <section class="lab-panel" data-lab-panel="templates" role="tabpanel" hidden>
           <h2>从一只完整角色开始</h2>
-          <p class="panel-help">先挑一只喜欢的模板，再去捏脸和身体里继续修改。</p>
+          <p class="panel-help">每只角色都有自己的性格、世界和陪伴方式。先翻开角色卡，也可以直接呼叫它。</p>
           <div id="template-groups" class="template-groups" aria-label="角色模板分类"></div>
           <div id="template-grid" class="template-grid" aria-label="预制角色模板"></div>
+          <section id="template-card-detail" class="template-card-detail" aria-live="polite" hidden></section>
         </section>
 
         <section class="lab-panel" data-lab-panel="face" role="tabpanel" hidden>
@@ -683,6 +684,46 @@
         <button id="lab-random" class="lab-random-icon" type="button" data-uisfx="none" aria-label="随机换一只角色" title="随机换一只">
           <span aria-hidden="true">换</span>
         </button>
+        <section id="character-call" class="character-call" role="dialog" aria-modal="true" aria-label="角色视频通话" hidden>
+          <header class="character-call-head">
+            <div class="character-call-person">
+              <span id="character-call-kicker">正在呼叫</span>
+              <b id="character-call-name">角色</b>
+            </div>
+            <div class="character-call-actions">
+              <div class="character-call-modes" aria-label="通话模式">
+                <button type="button" data-call-mode="normal" aria-pressed="true">普通</button>
+                <button type="button" data-call-mode="debug" aria-pressed="false">调试</button>
+              </div>
+              <button id="character-call-end" class="character-call-end" type="button">挂断</button>
+            </div>
+          </header>
+
+          <div class="character-call-status" aria-live="polite">
+            <i aria-hidden="true"></i>
+            <span id="character-call-status">已接通</span>
+          </div>
+
+          <div id="character-call-transcript" class="character-call-transcript" aria-live="polite"></div>
+
+          <aside id="character-call-debug" class="character-call-debug" aria-label="当前角色设定" hidden>
+            <header>
+              <div><span>创作者调试</span><b>边聊边改角色</b></div>
+              <button id="character-card-reset" type="button">恢复原设定</button>
+            </header>
+            <p id="character-card-change">直接告诉角色想改哪里，例如“说话再活泼一点”。修改只保存在当前设备。</p>
+            <dl id="character-call-card"></dl>
+          </aside>
+
+          <form id="character-call-form" class="character-call-form">
+            <label class="sr-only" for="character-call-input">对角色说话</label>
+            <textarea id="character-call-input" rows="1" maxlength="180" placeholder="对角色说一句话"></textarea>
+            <button id="character-call-mic" class="character-call-mic" type="button" aria-label="开始语音输入" data-state="idle">
+              <span aria-hidden="true"></span>
+            </button>
+            <button id="character-call-send" class="character-call-send" type="submit">发送</button>
+          </form>
+        </section>
       </section>
 
       <aside class="lab-notebook" aria-labelledby="notebook-title">
