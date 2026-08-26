@@ -23,7 +23,7 @@
 | 音效标记、这个按钮用什么声音 | 声明式音效覆盖 | `data-uisfx`、`inferCue()` | `data-uisfx="none"` 表示刻意静音；复制、保存等异步结果由成功后显式触发 |
 | 开始听、暂停听的提示音 | 语音会话边界提示 | `startGuideVoiceSession()`、`toggleGuideVoice()`、`start/stop` | 只在人为开始或暂停时响一次，连续收音和 AI 理解期间保持安静 |
 | 草地点击圈、落脚圈 | 移动目标反馈 | `targetRipple` | 点击或轻触场景后立即出现 |
-| 主页、三个入口、模式扉页 | 三入口主页 | `#mode-gate`、`.mode-choice` | 根地址固定显示，可选回声故事、雾灯花园或角色模拟器 |
+| 主页、两个入口、模式扉页 | 双入口主页 | `#mode-gate`、`.mode-choice` | 根地址固定显示，可选回声故事或角色模拟器 |
 | 返回主页、角落主页 | 统一主页按钮 | `#mode-switch`、`.home-button`、`showHome()` | 原故事和模拟器复用角落按钮，回声故事在页头显示文字按钮 |
 | 调试模式、角色实验室、角色模拟器 | 角色实验环境 | `#debug-lab`、`activateLab()` | 与故事模式共用角色生成体系，但状态独立 |
 | 头顶问题、说话泡泡 | Calligraph 实时对话气泡 | `#lab-bubble`、`#lab-bubble-text`、`setBubble()` | 每次换句重新入场并逐字显示；通过角色头顶锚点定位，不固定在场景顶部 |
@@ -59,23 +59,23 @@
 | 数据后台、访问统计 | 自托管匿名运营后台 | `/Data`、`data.html`、`src/data.js` | 六位口令进入，查看 UV、PV、停留、事件、深度和每日趋势 |
 | 罗师傅密码盘、数字键盘 | 六位后台口令门 | `#code-form`、`.code-display`、`.keypad` | 顺序为 1 至 9、清除、0、退格；六位自动提交，错误抖动清空 |
 | 去重用户、访问人数 | 匿名浏览器 UV | `mengmeng-visitor-v1`、`visitor_id`、`COUNT(DISTINCT visitor_id)` | 同一浏览器稳定随机号；不使用账号、姓名或原始 IP |
-| 页面访问、页面人数 | 页面 PV / UV | `page_views`、`view_id`、`page` | 页面分为三入口主页、雾灯花园、回声故事、角色模拟器 |
+| 页面访问、页面人数 | 页面 PV / UV | `page_views`、`view_id`、`page` | 当前页面分为双入口主页、回声故事、角色模拟器；旧故事数据仍保留历史标签 |
 | 停留时长 | 前台有效停留 | `activeMs`、`active_ms` | 只累计页面可见且窗口聚焦的时间，15 秒心跳与离页补报 |
 | 交互事件 | 预设匿名事件 | `interaction_events`、`trackAnalytics()` | 只发固定事件名和深度，不发送按钮文字或孩子输入 |
 | 交互深度 | 单次页面最高进度 | `depth`、`max_depth` | 故事按开始、收集、雾门、通关递增；实验室按画像与脚本进度递增 |
 | 统计数据库 | SQLite WAL 持久化 | `/var/lib/kindergrimm/analytics.db`、`ANALYTICS_DB_PATH` | 位于发布目录外，版本切换不覆盖 |
 | 新腾讯服务器、锐驰服务器 | KinderGrimm 生产主机 | `lhins-qgi1l9jg`、`124.221.104.244`、`ssh mikeywa-rive` | 与 Rive 服务隔离端口、目录、systemd 和 Nginx 站点 |
 | 统计服务、站点后端 | Python 零依赖服务 | `kindergrimm.service`、`127.0.0.1:8137`、`serve.py` | 火山、Fish、匿名统计与后台鉴权，只经 Nginx `/api/` 暴露 |
-| 新故事、不见了的回声 | 连续语音故事 | `/story-v2`、`story-v2.html`、`src/story-v2.js` | 主页第一入口，与雾灯花园并列且不替换原关卡 |
+| 新故事、不见了的回声 | 连续语音故事 | `/story-v2`、`story-v2.html`、`src/story-v2.js` | 主页第一入口，也是当前唯一故事入口 |
 | 小狐狸、图鉴员、小卷 | 新版开场引导角色 | `STORY_GUIDE_TEMPLATE`、`state.guide`、`#guide-canvas`、`guideRenderer` | 固定复用角色模拟器的卷尾小狐狸 recipe 与动画，问题从它头顶气泡出现，不用 SVG 或 CSS 拼角色 |
 | 头上冒的气泡、提问气泡 | 图鉴员主问题气泡 | `#guide-speech`、`#interview-question`、`data-mode` | 问题与即时回应共用同一个角色头顶气泡，通过 `question/reaction` 状态切换 |
-| 一直收音、点一次以后一直听 | 开场连续语音会话 | `guideVoiceSession`、`startGuideVoiceSession()`、`resumeGuideListening()` | 首次用户动作申请麦克风；媒体轨道持续存在，角色朗读和理解期间暂停识别，结束后自动恢复 |
+| 一直收音、点一次以后一直听 | 开场连续语音会话 | `guideVoiceSession`、`startGuideVoiceSession()`、`resumeGuideListening()` | 首次用户动作申请麦克风；角色朗读和理解期间暂停识别，孩子手动点到下一句后恢复 |
 | 我听到什么、实时听写小气泡 | 临时语音转写反馈 | `#live-answer-bubble`、`#live-answer-text`、`showLiveAnswer()` | 浏览器中间文本即时显示，豆包句末校准后交给回应门控，不进入长期聊天记录 |
 | 麦克风这一行、语音输入 | 无提交语音入口 | `#mic-button`、`.guide-mic`、`.voice-listen-zone` | 访谈只显示一个麦克风图标；孩子的话在上方气泡显示，不设输入框与提交按钮 |
-| 四轮聊天、先认识孩子 | 新版低敏感度偏好访谈 | `INTERVIEW_QUESTIONS`、`/api/story-turn` | 主题、探索、陪伴、节奏；不询问身份信息 |
-| 签给我的宠物、页灵 | 由回答生成的同行宠物 | `state.pet`、`PetRenderer`、`recipe` | 回答映射 species、palette、feature 和可复现 seed |
-| 三个印章、开口仪式 | 宠物声音激活步骤 | `.voice-seals`、`wakePet()` | 名字、听见、声音依次亮起，之后宠物才使用独立音色 |
-| 右边冒出来的人 | 当前场景 NPC | `#npc-wrap`、`scene.npc.entrance` | 支持 door、grass、box、reflection、curtain、lantern 六种出场 |
+| 三轮聊天、先领宠物 | 新版低敏感度偏好访谈 | `INTERVIEW_QUESTIONS`、`/api/story-turn` | 只问外形、颜色、陪伴方式；不询问身份信息 |
+| 分配给我的宠物 | 随机模板同行宠物 | `state.petTemplate`、`state.pet`、`PetRenderer` | 从 12 个模拟器动物模板随机选择，再映射 palette、feature 和可复现 seed |
+| 形色陪三个印章 | 宠物配方摘要 | `.voice-seals`、`finishInterview()` | 只展示三个回答如何进入配方，不再向孩子追加取名或问候问题 |
+| 场景里的小角色 | 当前场景 NPC 群 | `#npc-wrap`、`#npc-companions`、`scene.cast` | 1 位主 NPC 和 2 位可点击 NPC，全部复用模拟器角色配方 |
 | 角落小包、道具包 | 连续故事背包 | `#backpack-button`、`state.inventory` | 数字只统计未使用物品，已送出物品仍可查看说明 |
 | 贝壳、听声音的贝 | 听风贝 | `ITEMS.listeningShell`、`listening-shell.png` | 放大小声音，不替别人说话 |
 | 红线团、星星毛线 | 星线团 | `ITEMS.starThread`、`star-thread.png` | 连接没有说完的话 |

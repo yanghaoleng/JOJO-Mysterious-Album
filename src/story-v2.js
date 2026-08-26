@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-voice-world';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-direct-pet-story';
+import { paintSceneThumbnail } from './lab-scenes.js';
+import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
 
@@ -23,19 +25,19 @@ const state = {
   profile: {},
   heard: [],
   petHints: [],
+  petTemplate: randomStoryAnimalTemplate(),
   pet: null,
   petName: '',
   petVoice: 'star',
   inventory: [],
   sceneIndex: 0,
   choices: [],
-  ritualStep: 'name',
-  ritualHello: '',
   petOffset: { x: 0, y: 0 },
   busy: false,
 };
 
 let activeAudio = null;
+let activeTtsRequest = 0;
 let activeRecognition = null;
 let activePcmCapture = null;
 let toastTimer = 0;
@@ -57,6 +59,14 @@ const bubblePages = {
   npc: { pages: [], index: 0, label: '' },
   pet: { pages: [], index: 0, label: '' },
 };
+
+const readingGates = {
+  guide: { readyAt: 0, onComplete: null },
+  npc: { readyAt: 0, onComplete: null },
+  pet: { readyAt: 0, onComplete: null },
+};
+
+let dialogueSequence = null;
 
 const petTapLines = [
   '我在这里。',
@@ -80,7 +90,7 @@ function mostCommon(values, fallback) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || fallback;
 }
 
-function splitBubblePages(text, limit = 24) {
+function splitBubblePages(text, limit = 15) {
   const source = String(text || '').replace(/\s+/g, '').trim();
   if (!source) return [''];
   const sentences = source.match(/[^，。！？；]+[，。！？；]?/g) || [source];
@@ -102,44 +112,107 @@ function splitBubblePages(text, limit = 24) {
   return pages;
 }
 
+function readingTime(text) {
+  return Math.min(2600, Math.max(900, 620 + Array.from(String(text || '')).length * 92));
+}
+
+function animateBubbleText(element, text) {
+  const value = String(text || '');
+  element.setAttribute('aria-label', value);
+  const fragment = document.createDocumentFragment();
+  Array.from(value).forEach((character, index) => {
+    const span = document.createElement('span');
+    span.className = 'bubble-char';
+    span.setAttribute('aria-hidden', 'true');
+    span.style.setProperty('--char-index', index);
+    span.textContent = character;
+    fragment.append(span);
+  });
+  element.replaceChildren(fragment);
+}
+
 function renderBubblePage(kind) {
   const model = bubblePages[kind];
   const more = model.index < model.pages.length - 1;
   if (kind === 'guide') {
     $('guide-bubble-state').textContent = model.label;
-    $('interview-question').textContent = model.pages[model.index] || '';
-    $('guide-bubble-more').classList.toggle('show', more);
+    animateBubbleText($('interview-question'), model.pages[model.index] || '');
+    $('guide-bubble-more').classList.toggle('show', more || Boolean(readingGates.guide.onComplete));
     $('guide-speech').classList.remove('bubble-refresh');
     void $('guide-speech').offsetWidth;
     $('guide-speech').classList.add('bubble-refresh');
+    readingGates.guide.readyAt = Date.now() + readingTime(model.pages[model.index]);
     return;
   }
   if (kind === 'pet') {
     $('pet-thought').hidden = false;
-    $('pet-thought').textContent = model.pages[model.index] || '';
-    $('pet-thought').classList.toggle('has-more', more);
+    animateBubbleText($('pet-thought'), model.pages[model.index] || '');
+    $('pet-thought').classList.toggle('has-more', more || Boolean(readingGates.pet.onComplete));
+    readingGates.pet.readyAt = Date.now() + readingTime(model.pages[model.index]);
     return;
   }
   $('npc-speech').hidden = false;
   $('npc-bubble-state').textContent = model.label;
-  $('npc-bubble-text').textContent = model.pages[model.index] || '';
-  $('npc-bubble-more').classList.toggle('show', more);
+  animateBubbleText($('npc-bubble-text'), model.pages[model.index] || '');
+  $('npc-bubble-more').classList.toggle('show', more || Boolean(readingGates.npc.onComplete));
+  readingGates.npc.readyAt = Date.now() + readingTime(model.pages[model.index]);
 }
 
-function setBubble(kind, text, label) {
+function setBubble(kind, text, label, { onComplete = null } = {}) {
+  readingGates[kind].onComplete = onComplete;
   bubblePages[kind] = { pages: splitBubblePages(text), index: 0, label };
   renderBubblePage(kind);
+  readingGates[kind].readyAt = Date.now() + readingTime(bubblePages[kind].pages[0]);
 }
 
 function advanceBubble(kind) {
   const model = bubblePages[kind];
   if (kind === 'pet' && $('pet-thought').hidden) return false;
   if (kind === 'npc' && ($('npc-wrap').hidden || $('npc-speech').hidden)) return false;
-  if (!model || model.index >= model.pages.length - 1) return false;
-  model.index += 1;
-  renderBubblePage(kind);
+  if (Date.now() < readingGates[kind].readyAt) {
+    toast('再读一小会儿，文字读完后再点。');
+    return true;
+  }
+  if (!model) return false;
+  if (model.index < model.pages.length - 1) {
+    model.index += 1;
+    renderBubblePage(kind);
+    void playUISFX('forward', { volume: 0.12 });
+    return true;
+  }
+  const complete = readingGates[kind].onComplete;
+  if (!complete) return false;
+  readingGates[kind].onComplete = null;
+  stopAudio();
   void playUISFX('forward', { volume: 0.12 });
+  complete();
   return true;
+}
+
+function presentDialogueSequence(steps, onComplete) {
+  dialogueSequence = { steps: steps.filter(step => step?.text), index: 0, onComplete };
+  const showNext = () => {
+    const current = dialogueSequence;
+    if (!current) return;
+    if (current.index >= current.steps.length) {
+      dialogueSequence = null;
+      current.onComplete?.();
+      return;
+    }
+    const step = current.steps[current.index];
+    step.onShow?.();
+    setBubble(step.kind, step.text, step.label || '点一下继续', {
+      onComplete: () => {
+        if (!dialogueSequence) return;
+        dialogueSequence.index += 1;
+        showNext();
+      },
+    });
+    guideVoiceSession.speaking = true;
+    setGuideVoiceUi('speaking', '读完这一句后，点气泡或屏幕继续');
+    void playTts(step.text, step.voice, { pet: step.kind === 'pet', npc: step.kind === 'npc' });
+  };
+  showNext();
 }
 
 function showPanel(id, phase) {
@@ -175,6 +248,17 @@ function paintPaperGrain() {
     const size = (.4 + Math.random() * .9) * dpr;
     context.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, size, size);
   }
+}
+
+let activeStorySceneId = SCENES[0].sceneId;
+function paintStoryScene(id = activeStorySceneId) {
+  activeStorySceneId = id;
+  const canvas = $('story-scene-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(1.5, devicePixelRatio || 1);
+  canvas.width = Math.max(320, Math.round(rect.width * dpr));
+  canvas.height = Math.max(240, Math.round(rect.height * dpr));
+  paintSceneThumbnail(canvas, activeStorySceneId);
 }
 
 class PetRenderer {
@@ -213,12 +297,19 @@ class PetRenderer {
   }
 
   build(pet) {
-    const recipe = newRecipe(pet.seed);
-    recipe.species = pet.species;
-    recipe.base = pet.species === 'human' ? 'biped' : 'quad';
-    recipe.media = 'watercolor';
-    recipe.color = 'color';
-    ensureParams(recipe);
+    const template = storyCharacterTemplateById(pet.templateId);
+    const recipe = makeStoryGuideRecipe({ ...template, seed: pet.seed });
+    const palette = {
+      moss: { skin: 7, cloth: 2, hair: 2, accent: 1 },
+      sky: { skin: 6, cloth: 6, hair: 3, accent: 1 },
+      coral: { skin: 5, cloth: 3, hair: 4, accent: 0 },
+      moon: { skin: 6, cloth: 6, hair: 3, accent: 2 },
+    }[pet.palette] || { skin: 7, cloth: 2, hair: 2, accent: 1 };
+
+    Object.assign(recipe.parts.skull.params, { skinOn: true, skinIdx: palette.skin, plain: false });
+    Object.assign(recipe.parts.torso.params, { clothOn: true, clothIdx: palette.cloth });
+    Object.assign(recipe.parts.hair.params, { colIdx: palette.hair });
+    Object.assign(recipe.parts.extras.params, { accentIdx: palette.accent });
 
     recipe.parts.extras.params.tears = false;
     recipe.parts.extras.params.accidents = false;
@@ -238,7 +329,7 @@ class PetRenderer {
       recipe.parts.extras.params.spots = true;
     }
 
-    this.buildRecipe(recipe);
+    this.buildRecipe(recipe, { scaleMultiplier: .92, offsetY: -1.02 });
   }
 
   buildRecipe(recipe, { scaleMultiplier = 1.42, offsetY = -1.15 } = {}) {
@@ -281,7 +372,7 @@ class PetRenderer {
     const dt = Math.min(.04, this.clock.getDelta());
     const elapsed = this.clock.elapsedTime;
     this.animator?.update(elapsed, dt);
-    this.renderer.render(this.scene, this.camera);
+    if (!this.canvas.closest('[hidden]')) this.renderer.render(this.scene, this.camera);
   }
 }
 
@@ -311,20 +402,28 @@ function makeStoryGuideRecipe(config) {
 
 const guideRenderer = new PetRenderer($('guide-canvas'));
 const petRenderer = new PetRenderer($('pet-canvas'));
+const npcRenderer = new PetRenderer($('npc-canvas'));
+const companionRenderers = [
+  new PetRenderer($('npc-companion-canvas-0')),
+  new PetRenderer($('npc-companion-canvas-1')),
+];
 guideRenderer.buildRecipe(makeStoryGuideRecipe(STORY_GUIDE_TEMPLATE), { scaleMultiplier: 1.56, offsetY: -1.08 });
 
 function stopAudio() {
+  activeTtsRequest += 1;
   if (!activeAudio) return;
   activeAudio.pause();
   activeAudio.src = '';
   activeAudio = null;
   petRenderer.setTalking(false);
   guideRenderer.setTalking(false);
+  npcRenderer.setTalking(false);
   $('npc-wrap').dataset.state = '';
 }
 
 async function playTts(text, voice, { pet = false, npc = false } = {}) {
   stopAudio();
+  const requestId = activeTtsRequest;
   try {
     const response = await fetch('/api/tts', {
       method: 'POST',
@@ -333,16 +432,24 @@ async function playTts(text, voice, { pet = false, npc = false } = {}) {
     });
     if (!response.ok) throw new Error('voice unavailable');
     document.documentElement.dataset.ttsSource = response.headers.get('X-TTS-Provider') || 'server';
-    const audio = new Audio(URL.createObjectURL(await response.blob()));
+    const blob = await response.blob();
+    if (requestId !== activeTtsRequest) return false;
+    const audio = new Audio(URL.createObjectURL(blob));
     activeAudio = audio;
     if (pet) petRenderer.setTalking(true);
-    else if (npc) $('npc-wrap').dataset.state = 'speaking';
+    else if (npc) {
+      $('npc-wrap').dataset.state = 'speaking';
+      npcRenderer.setTalking(true);
+    }
     else guideRenderer.setTalking(true);
     await new Promise(resolve => {
       const finish = () => {
         if (activeAudio === audio) activeAudio = null;
         if (pet) petRenderer.setTalking(false);
-        else if (npc) $('npc-wrap').dataset.state = '';
+        else if (npc) {
+          $('npc-wrap').dataset.state = '';
+          npcRenderer.setTalking(false);
+        }
         else guideRenderer.setTalking(false);
         URL.revokeObjectURL(audio.src);
         resolve();
@@ -354,7 +461,10 @@ async function playTts(text, voice, { pet = false, npc = false } = {}) {
     return true;
   } catch {
     if (pet) petRenderer.setTalking(false);
-    else if (npc) $('npc-wrap').dataset.state = '';
+    else if (npc) {
+      $('npc-wrap').dataset.state = '';
+      npcRenderer.setTalking(false);
+    }
     else guideRenderer.setTalking(false);
     document.documentElement.dataset.ttsSource = 'visual-only';
     return false;
@@ -592,7 +702,7 @@ function pauseGuideListening({ manual = false, mode = 'paused', message = '' } =
   clearTimeout(guideVoiceSession.restartTimer);
   guideVoiceSession.capture?.pause();
   detachGuideRecognition();
-  if (mode) setGuideVoiceUi(mode, message || (manual ? '已经暂停，点一下就会继续听' : '先等图鉴员说完，它会自动继续听'));
+  if (mode) setGuideVoiceUi(mode, message || (manual ? '已经暂停，点一下就会继续听' : '先读完这一句，再点一下继续'));
 }
 
 function startGuideRecognition() {
@@ -697,14 +807,22 @@ async function startGuideVoiceSession() {
   guideVoiceSession.manualPause = false;
   guideVoiceSession.pendingAnswer = '';
   guideVoiceSession.speaking = true;
+  setBusy(true);
   void playUISFX('start', { volume: 0.14 });
   trackAnalytics('echo_voice_enabled', { depth: 2 });
   if (document.body.dataset.phase === 'cover') await beginInterview();
-  setGuideVoiceUi('speaking', `${state.guide.name}先问一句，话音结束后会自动开始听`);
-  await playTts(`${state.guide.hello}${INTERVIEW_QUESTIONS[state.questionIndex].question}`, state.guide.voice);
-  guideVoiceSession.speaking = false;
   $('mic-button').disabled = false;
-  resumeGuideListening();
+  presentDialogueSequence([
+    { kind: 'guide', text: state.guide.hello, label: '先领一只小宠物', voice: state.guide.voice },
+    {
+      kind: 'guide', text: INTERVIEW_QUESTIONS[0].question, label: '第一个问题', voice: state.guide.voice,
+      onShow: renderQuestion,
+    },
+  ], () => {
+    setBusy(false);
+    guideVoiceSession.speaking = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
+  });
 }
 
 async function handleGuideUtterance(browserText) {
@@ -720,7 +838,6 @@ async function handleGuideUtterance(browserText) {
   showLiveAnswer(answer);
   const phase = document.body.dataset.phase;
   if (phase === 'interview') await submitInterviewAnswer(answer, { fromVoice: true });
-  else if (phase === 'ritual') await submitRitualAnswer(answer);
   else if (phase === 'quest') await submitSceneAnswer(answer);
   else {
     guideVoiceSession.processing = false;
@@ -748,21 +865,20 @@ function fallbackTurn(question, answer, { forceRespond = false } = {}) {
   const compact = value.replace(/[，。！？、,.!?\s]/g, '');
   const filler = /^(嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)$/;
   const keywordPool = {
-    theme: ['动物', '猫', '狗', '狐狸', '太空', '星星', '飞船', '森林', '植物', '海', '雨'],
-    approach: ['看', '观察', '推', '打开', '敲门', '等', '叫', '伙伴', '一起'],
+    appearance: ['耳朵', '眼睛', '尾巴', '翅膀', '花纹', '毛', '角', '圆', '长', '亮'],
+    color: ['红', '黄', '蓝', '绿', '紫', '粉', '白', '黑', '彩色', '金色'],
     companion: ['陪', '坐', '玩', '问', '听', '抱', '一起', '安静'],
-    comfort: ['声音', '太大', '没看懂', '没看明白', '慢', '自己选', '累', '害怕'],
   }[question.id] || [];
   const keywords = keywordPool.filter(keyword => value.includes(keyword)).slice(0, 3);
   const shouldRespond = forceRespond || !filler.test(compact) && (keywords.length > 0 || compact.length >= 3);
   const species = /一起|伙伴|热闹|跑|玩/.test(value) ? 'dog' : /安静|慢|看看|听/.test(value) ? 'cat' : 'human';
   const palette = /星|月|太空|夜/.test(value) ? 'moon' : /海|水|雨|蓝/.test(value) ? 'sky' : /花|暖|红|太阳/.test(value) ? 'coral' : 'moss';
-  const feature = /听|安静|声音/.test(value) ? 'listening-ears' : /看|观察|发现/.test(value) ? 'bright-eyes' : /一起|朋友|陪/.test(value) ? 'soft-tail' : 'star-freckles';
+  const feature = /耳|听|安静/.test(value) ? 'listening-ears' : /眼|亮|看/.test(value) ? 'bright-eyes' : /尾|软|陪|抱/.test(value) ? 'soft-tail' : 'star-freckles';
   return {
     shouldRespond,
     keywords,
     listeningPrompt: keywords.length ? `听见了“${keywords.join('、')}”，你还可以接着说。` : '我还在听，你可以再说完整一点。',
-    reaction: `我记住了“${value.slice(0, 18)}”。它会变成小伙伴身上的一个秘密。`,
+    reaction: `我记住了“${value.slice(0, 18)}”。我会把它画在小宠物身上。`,
     heard: value.slice(0, 12),
     profileValue: value.slice(0, 18),
     questionId: question.id,
@@ -821,7 +937,6 @@ async function beginInterview() {
   trackAnalytics('echo_start', { depth: 1 });
   renderGuide();
   showPanel('interview-panel', 'interview');
-  renderQuestion();
 }
 
 async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = false } = {}) {
@@ -868,149 +983,81 @@ async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = fa
   if (result.heard) state.heard.push(result.heard);
   if (result.petHint) state.petHints.push(result.petHint);
   $('guide-speech').dataset.mode = 'reaction';
-  setBubble('guide', result.reaction, '回应你');
   renderHeardNotes();
   guideVoiceSession.speaking = true;
-  setGuideVoiceUi('speaking', result.privacyRedirect ? '这部分不会被记进小宠物配方' : `${state.guide.name}正在回应你`);
-  await playTts(result.reaction, state.guide.voice);
   state.questionIndex++;
-  if (state.questionIndex >= INTERVIEW_QUESTIONS.length) {
-    setBusy(false);
+  const finished = state.questionIndex >= INTERVIEW_QUESTIONS.length;
+  const steps = [{ kind: 'guide', text: result.reaction, label: '我听懂了', voice: state.guide.voice }];
+  if (!finished) {
+    steps.push({
+      kind: 'guide', text: INTERVIEW_QUESTIONS[state.questionIndex].question,
+      label: `第${state.questionIndex + 1}个问题`, voice: state.guide.voice, onShow: renderQuestion,
+    });
+  }
+  presentDialogueSequence(steps, () => {
     guideVoiceSession.processing = false;
     guideVoiceSession.speaking = false;
-    await finishInterview();
-    return;
-  }
-  renderQuestion();
-  setGuideVoiceUi('speaking', `${state.guide.name}在问下一个问题，说完会自动继续听`);
-  await playTts(INTERVIEW_QUESTIONS[state.questionIndex].question, state.guide.voice);
-  setBusy(false);
-  guideVoiceSession.processing = false;
-  guideVoiceSession.speaking = false;
-  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
-  else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
-  else setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
+    if (finished) {
+      void finishInterview();
+      return;
+    }
+    setBusy(false);
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
+    else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
+    else setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
+  });
 }
 
 function petDescription(pet) {
-  const species = { cat: '安静机灵的小兽', dog: '愿意一起行动的小兽', human: '像一团会走路的想象' }[pet.species];
   const feature = {
-    'listening-ears': '长着一对特别会听的大耳朵',
-    'bright-eyes': '有一双总能先发现线索的亮眼睛',
-    'soft-tail': '有一条靠近朋友时会轻轻摆动的软尾巴',
-    'star-freckles': '脸上留着几颗从回答里落下来的星斑',
+    'listening-ears': '一对会认真听的大耳朵',
+    'bright-eyes': '一双很亮的眼睛',
+    'soft-tail': '一条软软的尾巴',
+    'star-freckles': '几颗特别的星星花纹',
   }[pet.feature];
-  return `${species}，${feature}`;
+  const palette = { moss: '绿色和暖黄色', sky: '蓝色和白色', coral: '粉色和橙色', moon: '紫色和银白色' }[pet.palette];
+  return `${pet.templateName}，有${feature}，身上带着${palette}`;
 }
 
 async function finishInterview() {
-  const species = mostCommon(state.petHints.map(item => item.species), 'cat');
   const palette = mostCommon(state.petHints.map(item => item.palette), 'moss');
   const feature = mostCommon(state.petHints.map(item => item.feature), 'listening-ears');
-  const seedSource = Object.values(state.profile).join('|') || String(Date.now());
-  state.pet = { seed: hashString(seedSource), species, palette, feature };
+  const template = state.petTemplate;
+  const seedSource = `${template.id}|${Object.values(state.profile).join('|') || Date.now()}`;
+  state.pet = {
+    seed: hashString(seedSource), templateId: template.id, templateName: template.name,
+    species: template.species, palette, feature,
+  };
+  state.petName = template.name;
+  state.petVoice = pickPetVoice();
   $('pet-stage').hidden = false;
   petRenderer.build(state.pet);
   requestAnimationFrame(() => {
     $('pet-stage').classList.add('show');
     petRenderer.resize();
   });
-  state.ritualStep = 'name';
-  for (const seal of document.querySelectorAll('[data-seal]')) seal.classList.remove('active');
-  $('ritual-title').textContent = '你想给它取什么名字？';
-  $('ritual-copy').textContent = '直接说出名字就好。它会认真记住你叫它的声音。';
-  $('ritual-status').textContent = `${state.guide.name}从你的回答里找到了${petDescription(state.pet)}。`;
-  showPanel('ritual-panel', 'ritual');
+  for (const seal of document.querySelectorAll('[data-seal]')) seal.classList.add('active');
+  $('ritual-title').textContent = `今天分配给你的是${template.name}`;
+  $('ritual-copy').textContent = '它来自角色模拟器的动物模板，并照着你的三个回答长出了新特征。';
+  $('ritual-status').textContent = petDescription(state.pet);
+  showPanel('ritual-panel', 'assignment');
   petRenderer.react('listen');
-  showPetThought('它愿意跟你走。');
   void playUISFX('complete');
   guideVoiceSession.speaking = true;
-  setGuideVoiceUi('speaking', `${state.guide.name}正在把新伙伴介绍给你`);
-  await playTts(`我找到了一位新伙伴。它是${petDescription(state.pet)}。你想给它取什么名字？`, state.guide.voice);
-  guideVoiceSession.processing = false;
-  guideVoiceSession.speaking = false;
-  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，直接说出你想叫它的名字' });
+  presentDialogueSequence([
+    { kind: 'pet', text: `我是${template.name}。我已经照着你的描述长出来啦。`, label: '新伙伴', voice: state.petVoice },
+    { kind: 'pet', text: '我准备好了。点一下，我们一起去找不见了的回声。', label: '准备出发', voice: state.petVoice },
+  ], () => {
+    setBusy(false);
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    void startQuest();
+  });
 }
 
 function pickPetVoice() {
   const preferred = state.pet?.feature === 'listening-ears' ? 'moss' : state.pet?.species === 'dog' ? 'bubble' : 'star';
   return preferred === state.guide.voice ? 'star' : preferred;
-}
-
-function extractPetName(answer) {
-  const source = String(answer || '')
-    .replace(/[<>]/g, '')
-    .replace(/^(?:我想|那就|我觉得|要不|可以)?(?:叫|喊|取名(?:叫|为)?|名字(?:叫|是)?)(?:它|他|她)?/u, '')
-    .replace(/^(?:就|为|成|做|是)+/u, '')
-    .split(/[，。！？、,.!?\s]/u)[0]
-    .replace(/[“”"']/g, '')
-    .trim();
-  return source.slice(0, 8);
-}
-
-async function submitRitualAnswer(raw) {
-  const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, MAX_INTERVIEW_ANSWER);
-  showLiveAnswer(answer);
-  if (!answer || /^(?:嗯+|啊+|不知道|没想好|等一下|我想想)[。！]?$/u.test(answer)) {
-    $('ritual-status').textContent = '没关系，我会一直等你慢慢想。';
-    guideVoiceSession.processing = false;
-    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true, message: '我还在听，想到名字以后直接说出来' });
-    return;
-  }
-  if (state.ritualStep === 'name') {
-    const name = extractPetName(answer);
-    if (!name) {
-      guideVoiceSession.processing = false;
-      resumeGuideListening({ preserveBubble: true, message: '这次没有听清名字，可以再说一次' });
-      return;
-    }
-    state.petName = name;
-    state.ritualStep = 'hello';
-    document.querySelector('[data-seal="name"]')?.classList.add('active');
-    $('ritual-title').textContent = `${name}听见自己的名字了`;
-    $('ritual-copy').textContent = `现在对${name}说第一句话。问候、邀请，或者你此刻最想说的话都可以。`;
-    $('ritual-status').textContent = '第一枚声印亮起来了。';
-    petRenderer.react('happy');
-    void playUISFX('progress-step', { volume: 0.14 });
-    guideVoiceSession.speaking = true;
-    setGuideVoiceUi('speaking', `${state.guide.name}正在告诉你下一步`);
-    await playTts(`${name}听见自己的名字了。现在请直接对它说第一句话吧。`, state.guide.voice);
-    guideVoiceSession.processing = false;
-    guideVoiceSession.speaking = false;
-    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: `正在听，把第一句话说给${name}` });
-    return;
-  }
-  state.ritualHello = answer.slice(0, 80);
-  await wakePet();
-}
-
-async function wakePet() {
-  if (state.busy || !state.petName || !state.ritualHello) return;
-  const name = state.petName;
-  const hello = state.ritualHello;
-  state.busy = true;
-  trackAnalytics('echo_pet_wake', { depth: 7 });
-  state.petVoice = pickPetVoice();
-  const seals = [...document.querySelectorAll('[data-seal]')];
-  const lines = [`名字写好了。${name}知道你在叫它。`, '它听见了你的第一句问候。', '现在，把自己的声音还给它。'];
-  for (let i = 0; i < seals.length; i++) {
-    seals[i].classList.add('active');
-    $('ritual-status').textContent = lines[i];
-    petRenderer.react(i === 1 ? 'listen' : 'happy');
-    void playUISFX('progress-step', { volume: 0.14 });
-    await delay(520);
-  }
-  const reply = `我听见你了。我叫${name}。我的声音还很小，不过我想和你一起去找不见了的回声。`;
-  showPetThought(`我听见你了。一起去找回声吧！`);
-  void playUISFX('wake');
-  guideVoiceSession.speaking = true;
-  setGuideVoiceUi('speaking', `${name}第一次开口说话`);
-  await playTts(reply, state.petVoice, { pet: true });
-  state.busy = false;
-  guideVoiceSession.processing = false;
-  guideVoiceSession.speaking = false;
-  await delay(260);
-  await startQuest();
 }
 
 function showPetThought(text, duration = 5200) {
@@ -1102,9 +1149,27 @@ async function startQuest() {
   await playTransition(() => renderScene(SCENES[0]));
 }
 
+function renderSceneCast(scene) {
+  $('npc-companions').hidden = false;
+  const mainTemplate = storyCharacterTemplateById(scene.npc.templateId);
+  npcRenderer.buildRecipe(makeStoryGuideRecipe(mainTemplate), { scaleMultiplier: .82, offsetY: -1.02 });
+  scene.cast.slice(0, 2).forEach((character, index) => {
+    const button = document.querySelector(`[data-companion="${index}"]`);
+    const template = storyCharacterTemplateById(character.templateId);
+    button.hidden = false;
+    button.dataset.line = character.line;
+    button.dataset.name = character.name;
+    button.dataset.voice = index === 0 ? 'bubble' : 'sprout';
+    button.setAttribute('aria-label', `触摸${character.name}`);
+    button.querySelector('span').textContent = character.name;
+    companionRenderers[index].buildRecipe(makeStoryGuideRecipe(template), { scaleMultiplier: .78, offsetY: -1.04 });
+  });
+}
+
 async function renderScene(scene) {
   state.busy = true;
   document.body.dataset.place = scene.place;
+  paintStoryScene(scene.sceneId);
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
   updateChapterProgress(scene.chapter);
@@ -1117,21 +1182,23 @@ async function renderScene(scene) {
   const npc = $('npc-wrap');
   npc.hidden = true;
   npc.className = 'npc-wrap';
-  $('npc-mark').textContent = scene.npc.mark;
   $('npc-name').textContent = scene.npc.name;
+  renderSceneCast(scene);
   await delay(240);
   npc.classList.add(`enter-${scene.npc.entrance}`);
   npc.hidden = false;
-  setBubble('npc', scene.dialogue, scene.npc.name);
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
   guideVoiceSession.speaking = true;
-  setGuideVoiceUi('speaking', `${scene.npc.name}正在说话，结束后会自动继续听`);
-  await playTts(`${scene.entranceLine}${scene.dialogue}`, scene.npc.voice || 'moss', { npc: true });
-  state.busy = false;
-  guideVoiceSession.processing = false;
-  guideVoiceSession.speaking = false;
-  $('world-tap-hint').hidden = false;
-  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，说出你想怎么做' });
+  presentDialogueSequence([
+    { kind: 'npc', text: scene.entranceLine, label: scene.npc.name, voice: scene.npc.voice || 'moss' },
+    { kind: 'npc', text: scene.dialogue, label: '请直接说出你的办法', voice: scene.npc.voice || 'moss' },
+  ], () => {
+    state.busy = false;
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    $('world-tap-hint').hidden = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，说出你想怎么做' });
+  });
 }
 
 function inventoryEntry(id) {
@@ -1213,11 +1280,9 @@ async function resolveSceneChoice(scene, choice, reaction) {
   trackAnalytics('echo_scene_choice', { depth: 8 + state.sceneIndex });
   state.choices.push({ scene: scene.id, choice: choice.id, trait: choice.trait });
   $('result-copy').textContent = reaction;
+  $('result-copy').hidden = true;
   $('choice-result').hidden = false;
-  setBubble('npc', reaction, '故事发生了');
   guideVoiceSession.speaking = true;
-  setGuideVoiceUi('speaking', '你的话正在改变这个场景');
-  const reactionSpoken = await playTts(reaction, scene.npc.voice || 'moss', { npc: true });
   if (scene.consume) useItem(scene.consume);
   if (scene.reward) {
     const item = ITEMS[scene.reward];
@@ -1230,20 +1295,22 @@ async function resolveSceneChoice(scene, choice, reaction) {
   } else {
     $('reward-row').hidden = true;
   }
-  showPetThought(scene.petLine);
   petRenderer.react(choice.trait === 'listen' ? 'listen' : choice.trait === 'bold' ? 'brave' : 'happy');
-  const petSpoken = await playTts(scene.petLine, state.petVoice, { pet: true });
-  await delay(reactionSpoken && petSpoken ? 900 : 3200);
-  guideVoiceSession.processing = false;
-  guideVoiceSession.speaking = false;
-  if (scene.final) {
+  presentDialogueSequence([
+    { kind: 'npc', text: reaction, label: '你的办法成功了', voice: scene.npc.voice || 'moss' },
+    { kind: 'pet', text: scene.petLine, label: state.petName, voice: state.petVoice },
+  ], () => {
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    if (scene.final) {
+      state.busy = false;
+      void playTransition(finishStory);
+      return;
+    }
+    state.sceneIndex += 1;
     state.busy = false;
-    await playTransition(finishStory);
-    return;
-  }
-  state.sceneIndex += 1;
-  state.busy = false;
-  await playTransition(() => renderScene(SCENES[state.sceneIndex]));
+    void playTransition(() => renderScene(SCENES[state.sceneIndex]));
+  });
 }
 
 function dominantTrait() {
@@ -1266,6 +1333,7 @@ async function finishStory() {
   stopAudio();
   await stopGuideVoiceSession();
   $('npc-wrap').hidden = true;
+  $('npc-companions').hidden = true;
   $('world-tap-hint').hidden = true;
   updateChapterProgress(4);
   showPanel('ending-panel', 'ending');
@@ -1321,7 +1389,8 @@ $('guide-figure').addEventListener('click', () => {
 });
 $('npc-wrap').addEventListener('click', event => {
   event.stopPropagation();
-  if (!advanceBubble('npc')) setBubble('npc', '我在听，你慢慢说。', '听见你了');
+  const advanced = advanceBubble('npc') || advanceBubble('pet');
+  if (!advanced && !state.busy) setBubble('npc', '我在听，你慢慢说。', '听见你了');
   $('npc-wrap').classList.remove('is-tapped');
   void $('npc-wrap').offsetWidth;
   $('npc-wrap').classList.add('is-tapped');
@@ -1335,10 +1404,24 @@ $('npc-wrap').addEventListener('keydown', event => {
 });
 $('pet-stage').addEventListener('click', event => {
   event.stopPropagation();
-  if (advanceBubble('pet')) return;
+  if (advanceBubble('pet') || advanceBubble('npc')) return;
+  if (state.busy) return;
   showPetThought(petTapLines[Math.floor(Math.random() * petTapLines.length)]);
   petRenderer.react('happy');
   void playUISFX('select', { volume: 0.12 });
+});
+$('npc-companions').addEventListener('click', event => {
+  const button = event.target.closest('[data-companion]');
+  if (!button || state.busy) return;
+  event.stopPropagation();
+  pauseGuideListening({ mode: 'speaking', message: `${button.dataset.name}正在回应你` });
+  button.classList.add('is-talking');
+  setBubble('npc', button.dataset.line, button.dataset.name);
+  void playUISFX('select', { volume: 0.12 });
+  void playTts(button.dataset.line, button.dataset.voice, { npc: true }).then(() => {
+    button.classList.remove('is-talking');
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true });
+  });
 });
 $('pet-stage').addEventListener('keydown', event => {
   if (event.key === 'Enter' || event.key === ' ') {
@@ -1348,6 +1431,7 @@ $('pet-stage').addEventListener('keydown', event => {
 });
 $('place-object').addEventListener('click', event => {
   event.stopPropagation();
+  if (advanceBubble('npc') || advanceBubble('pet') || advanceBubble('guide')) return;
   const object = $('place-object');
   object.classList.remove('is-tapped');
   void object.offsetWidth;
@@ -1365,6 +1449,7 @@ $('world-stage').addEventListener('click', event => {
   if (document.body.dataset.phase === 'interview' && advanceBubble('guide')) return;
   if (document.body.dataset.phase === 'quest' && advanceBubble('npc')) return;
   if (advanceBubble('pet')) return;
+  if (document.body.dataset.phase === 'assignment' && advanceBubble('guide')) return;
   if (!$('pet-stage').hidden) movePetTo(event.clientX, event.clientY);
 });
 $('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
@@ -1380,7 +1465,11 @@ $('play-again').addEventListener('click', () => location.reload());
 $('restart-button').addEventListener('click', () => location.reload());
 
 paintPaperGrain();
-addEventListener('resize', paintPaperGrain, { passive: true });
+paintStoryScene();
+addEventListener('resize', () => {
+  paintPaperGrain();
+  paintStoryScene();
+}, { passive: true });
 addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
@@ -1390,6 +1479,6 @@ setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
   state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
-  beginInterview, submitInterviewAnswer, finishInterview, submitRitualAnswer, submitSceneAnswer, resolveSceneChoice,
+  beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, movePetTo,
 };

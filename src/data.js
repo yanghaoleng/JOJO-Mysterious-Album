@@ -3,7 +3,7 @@ import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js';
 installUISFX();
 
 const $ = id => document.getElementById(id);
-const PAGE_LABELS = { choose: '三入口主页', story: '雾灯花园', echo: '不见了的回声', debug: '角色模拟器' };
+const PAGE_LABELS = { choose: '双入口主页', story: '已下线故事', echo: '不见了的回声', debug: '角色模拟器' };
 const EVENT_LABELS = {
   choose_mode_story: '选择雾灯花园',
   choose_mode_echo: '选择不见了的回声',

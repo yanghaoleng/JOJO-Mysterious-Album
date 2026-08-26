@@ -46,8 +46,8 @@ DIRECTOR_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全世界�
 只输出 JSON：{"mechanic":"transparent|bounce|glow","abilityLabel":"12字以内能力名","narratorLine":"以它害怕时开头的45字以内温柔旁白","gateLine":"45字以内，写清能力怎样帮助它穿过雾门"}。
 消失、缩小、躲藏、变成雾映射 transparent；变形、变圆、长东西、跳起映射 bounce；发光、变色、发出声音和其他想象映射 glow。"""
 STORY_TURN_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全故事伙伴。
-孩子约5至8岁，正在用自由回答帮助一只小宠物长出性格。
-先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种喜欢的事物、准备采取的行动、陪伴方法或想放慢的情境，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
+孩子约5至8岁，正在回答三个直接问题，帮助系统画出刚刚随机分配的小宠物。三个问题只涉及外形特征、颜色和陪伴方式。
+先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种外形特征、颜色或陪伴方法，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
 forceRespond=true表示孩子点了完整选项，必须shouldRespond=true。
 当shouldRespond=true时，先给一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。回应只承接刚才的内容，不要再向孩子提出新问题，因为下一道正式问题会紧接着出现。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若孩子说出个人信息，提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，不要把个人信息写入字段。
@@ -363,17 +363,16 @@ def likely_private_info(value):
 def fallback_pet_hint(answer):
     value = str(answer or "")
     species = "dog" if re.search(r"一起|伙伴|热闹|跑|玩", value) else "cat" if re.search(r"安静|慢|看看|听", value) else "human"
-    palette = "moon" if re.search(r"星|月|太空|夜", value) else "sky" if re.search(r"海|水|雨|蓝", value) else "coral" if re.search(r"花|暖|红|太阳", value) else "moss"
-    feature = "listening-ears" if re.search(r"听|安静|声音", value) else "bright-eyes" if re.search(r"看|观察|发现", value) else "soft-tail" if re.search(r"一起|朋友|陪", value) else "star-freckles"
+    palette = "moon" if re.search(r"紫|银|星|月|夜", value) else "sky" if re.search(r"蓝|白|海|水|雨", value) else "coral" if re.search(r"粉|橙|红|暖", value) else "moss"
+    feature = "listening-ears" if re.search(r"耳|听|安静", value) else "bright-eyes" if re.search(r"眼|亮|看", value) else "soft-tail" if re.search(r"尾|软|陪|抱", value) else "star-freckles"
     return {"species": species, "palette": palette, "feature": feature}
 
 
 def fallback_story_keywords(question_id, answer):
     pools = {
-        "theme": ["动物", "猫", "狗", "狐狸", "太空", "星星", "飞船", "森林", "植物", "海", "雨"],
-        "approach": ["看", "观察", "推", "打开", "敲门", "等", "叫", "伙伴", "一起"],
+        "appearance": ["耳朵", "眼睛", "尾巴", "翅膀", "花纹", "毛", "角", "圆", "长", "亮"],
+        "color": ["红", "黄", "蓝", "绿", "紫", "粉", "白", "黑", "彩色", "金色"],
         "companion": ["陪", "坐", "玩", "问", "听", "抱", "一起", "安静"],
-        "comfort": ["声音", "太大", "没看懂", "没看明白", "慢", "自己选", "累", "害怕"],
     }
     return [word for word in pools.get(question_id, []) if word in str(answer or "")][:3]
 
@@ -947,7 +946,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 question_id = str(payload.get("questionId", "")).strip()[:24]
                 question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
                 force_respond = payload.get("forceRespond") is True
-                if question_id not in {"theme", "approach", "companion", "comfort"}:
+                if question_id not in {"appearance", "color", "companion"}:
                     self.respond_json(400, {"error": "unknown_question"})
                     return
                 self.respond_json(200, story_turn_result(question_id, question, answer, force_respond))

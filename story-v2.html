@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-voice-world-stage-tap">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-direct-pet-story">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
@@ -17,9 +17,9 @@
       <b>萌萌星的奇妙图鉴</b>
     </a>
     <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
-      <span data-chapter-dot="1">借来第一句话</span>
-      <span data-chapter-dot="2">把回声送回去</span>
-      <span data-chapter-dot="3">谁在害怕安静</span>
+      <span data-chapter-dot="1">先听清声音</span>
+      <span data-chapter-dot="2">把问候送到</span>
+      <span data-chapter-dot="3">点亮回声灯塔</span>
     </div>
     <div class="story-header-actions">
       <a class="home-button" href="./">返回主页</a>
@@ -29,6 +29,7 @@
 
   <main id="story-world">
     <section class="world-stage" id="world-stage" aria-label="水墨故事舞台，轻触空白处可以让伙伴走过去">
+      <canvas class="story-scene-canvas" id="story-scene-canvas" aria-hidden="true"></canvas>
       <div class="sky-wash" aria-hidden="true"></div>
       <div class="far-shape far-shape-a" aria-hidden="true"></div>
       <div class="far-shape far-shape-b" aria-hidden="true"></div>
@@ -43,11 +44,20 @@
         </div>
         <div class="npc-portal" aria-hidden="true"></div>
         <div class="npc-character" id="npc-character" aria-hidden="true">
-          <i class="npc-ear npc-ear-left"></i>
-          <i class="npc-ear npc-ear-right"></i>
-          <span id="npc-mark">折</span>
+          <i class="npc-listen-ear npc-listen-ear-left"></i>
+          <i class="npc-listen-ear npc-listen-ear-right"></i>
+          <canvas id="npc-canvas"></canvas>
         </div>
-        <b id="npc-name">折角婆婆</b>
+        <b id="npc-name">河湾小水獭</b>
+      </div>
+
+      <div class="npc-companions" id="npc-companions" aria-label="场景里的其他角色" hidden>
+        <button class="npc-companion" type="button" data-companion="0" aria-label="触摸场景角色一">
+          <canvas id="npc-companion-canvas-0" aria-hidden="true"></canvas><span></span>
+        </button>
+        <button class="npc-companion" type="button" data-companion="1" aria-label="触摸场景角色二">
+          <canvas id="npc-companion-canvas-1" aria-hidden="true"></canvas><span></span>
+        </button>
       </div>
 
       <div class="pet-stage" id="pet-stage" role="button" tabindex="0" aria-label="触摸你的小伙伴" hidden>
@@ -61,13 +71,13 @@
     <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
       <div class="cover-mark" aria-hidden="true">声</div>
       <div>
-        <p class="section-label">全程语音互动故事</p>
+        <p class="section-label">三问领宠物，语音开始故事</p>
         <h1 id="cover-title">不见了的回声</h1>
-        <p class="cover-copy">小卷会一直认真听你说。你的每一句话，都会让伙伴和世界慢慢长出来。</p>
+        <p class="cover-copy">故事开始前，小卷会随机给你分配一只小动物。你只要回答三个问题，它就会按你的描述长出特别的样子。</p>
         <ul class="cover-promises">
-          <li>点一次麦克风，之后只需要自然说话</li>
-          <li>回答会改变宠物的模样和陪伴方式</li>
-          <li>轻触角色有回应，轻触场景让伙伴走过去</li>
+          <li>只回答外形、颜色和陪伴方式三个问题</li>
+          <li>角色和场景都来自角色模拟器的预制模板</li>
+          <li>每句话读完后，点气泡或屏幕才会继续</li>
         </ul>
         <p class="cover-mic-callout">点下方麦克风，故事就会开始</p>
         <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存。不会询问姓名、学校、住址或精确生日。</p>
@@ -79,9 +89,9 @@
         <div class="guide-speech" id="guide-speech" data-mode="question" role="button" tabindex="0" aria-label="轻触继续阅读气泡">
           <div class="guide-speech-meta">
             <span id="guide-bubble-state">想听你说</span>
-            <span class="question-count" id="question-count">1 / 4</span>
+            <span class="question-count" id="question-count">1 / 3</span>
           </div>
-          <h2 id="interview-question">如果今天能钻进一页图鉴，你最想在里面看见什么？</h2>
+          <h2 id="interview-question">你希望小宠物最特别的地方是什么？</h2>
           <i class="guide-bubble-more" id="guide-bubble-more" aria-hidden="true"></i>
         </div>
 
@@ -99,24 +109,24 @@
     </section>
 
     <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
-      <p class="section-label">开口仪式</p>
-      <h2 id="ritual-title">你想给它取什么名字？</h2>
-      <p id="ritual-copy">直接说出名字就好。它会认真记住你叫它的声音。</p>
-      <div class="voice-seals" aria-label="开口仪式的三枚声印">
-        <span data-seal="name">名</span>
-        <span data-seal="listen">听</span>
-        <span data-seal="voice">声</span>
+      <p class="section-label">随机宠物已经分配</p>
+      <h2 id="ritual-title">这是今天陪你冒险的小伙伴</h2>
+      <p id="ritual-copy">它用了角色模拟器里的动物模板，也长出了你刚才描述的特征。</p>
+      <div class="voice-seals" aria-label="宠物配方的三个部分">
+        <span data-seal="name">形</span>
+        <span data-seal="listen">色</span>
+        <span data-seal="voice">陪</span>
       </div>
-      <p class="ritual-status" id="ritual-status" role="status">小伙伴正在等你开口。</p>
+      <p class="ritual-status" id="ritual-status" role="status">读完气泡后，点一下屏幕进入故事。</p>
     </section>
 
     <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
       <div class="scene-heading">
         <div>
-          <p class="section-label" id="chapter-label">第一章 借来第一句话</p>
-          <h2 id="scene-title">纸船码头</h2>
+          <p class="section-label" id="chapter-label">第一章 先听清声音</p>
+          <h2 id="scene-title">纸船小溪</h2>
         </div>
-        <p id="scene-objective">问问码头为什么听不见靠岸的船。</p>
+        <p id="scene-objective">找出小溪里很轻的声音。</p>
       </div>
       <div class="choice-result" id="choice-result" hidden aria-live="polite">
         <p id="result-copy"></p>
@@ -174,6 +184,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260826-voice-world"></script>
+  <script type="module" src="./src/story-v2.js?v=20260826-direct-pet-story"></script>
 </body>
 </html>

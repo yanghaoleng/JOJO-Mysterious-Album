@@ -98,8 +98,8 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 
 .mode-choices {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(260px, .88fr);
-  grid-template-rows: repeat(2, minmax(128px, auto));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(190px, auto);
   gap: 14px;
   margin-top: 30px;
 }
@@ -123,16 +123,14 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   animation: mode-choice-in .48s cubic-bezier(.16, 1, .3, 1) both;
 }
 .mode-choice.echo {
-  grid-row: 1 / 3;
-  min-height: 278px;
+  min-height: 190px;
   padding: 29px;
   background:
     radial-gradient(circle at 86% 16%, rgba(209, 164, 75, .19), transparent 31%),
     linear-gradient(145deg, rgba(215, 226, 216, .88), rgba(238, 230, 210, .62));
   transform: rotate(-.28deg);
 }
-.mode-choice.story { animation-delay: .06s; }
-.mode-choice.debug { animation-delay: .12s; }
+.mode-choice.debug { animation-delay: .08s; }
 .mode-choice:hover {
   transform: translateY(-3px) rotate(0);
   border-color: var(--moss);
@@ -1470,7 +1468,7 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .mode-choice,
   .mode-choice.echo,
   .mode-choice.debug { grid-row: auto; min-height: 132px; padding: 17px; transform: none; }
-  .mode-choice.echo { min-height: 158px; }
+  .mode-choice.echo { min-height: 148px; }
   .mode-choice.echo b { font-size: 21px; }
   .mode-choice.echo > span:not(.mode-mark) { font-size: 13px; }
   .mode-choice.echo .mode-mark { width: 54px; height: 54px; font-size: 24px; }
@@ -1497,7 +1495,7 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .mode-stamp { width: 44px; height: 44px; font-size: 21px; }
   .mode-heading h1 { margin-top: 2px; font-size: 26px; }
   .mode-heading div > span { margin-top: 4px; font-size: 12px; }
-  .mode-choices { grid-template-columns: 1.12fr 1fr 1fr; grid-template-rows: 1fr; margin-top: 12px; }
+  .mode-choices { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; margin-top: 12px; }
   .mode-choice,
   .mode-choice.echo,
   .mode-choice.debug { grid-row: auto; min-height: 132px; padding: 14px 16px; transform: none; }

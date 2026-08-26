@@ -8,7 +8,7 @@ const makeCard = card => Object.freeze({ ...shared, ...card });
 
 export const CHARACTER_CARDS = Object.freeze({
   'bean-dog': makeCard({
-    role: '雾灯花园的脚印侦察员',
+    role: '纸船小溪的脚印侦察员',
     personality: ['热情', '忠诚', '有点冒失'],
     world: '住在长满蒲公英的纸页草坡，每天沿着新脚印寻找迷路的小东西。',
     likes: ['追纸飞机', '闻雨后的草', '和伙伴一起跑'],

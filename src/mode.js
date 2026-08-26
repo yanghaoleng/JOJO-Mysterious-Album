@@ -8,21 +8,7 @@ const lab = document.getElementById('debug-lab');
 const modeNote = gate.querySelector('.mode-note');
 const originalModeNote = modeNote.textContent;
 let labModule = null;
-let storyModule = null;
-let storyPromise = null;
 let labPromise = null;
-
-function ensureStory() {
-  storyPromise ||= import('./adventure.js').then(module => {
-    storyModule = module;
-    return module;
-  }).catch(error => {
-      storyPromise = null;
-      document.documentElement.dataset.sceneError = error?.message || 'scene failed to start';
-      throw error;
-    });
-  return storyPromise;
-}
 
 function ensureLab() {
   labPromise ||= Promise.all([
@@ -48,13 +34,12 @@ function updateModeUrl(mode, method = 'push') {
 }
 
 async function applyMode(mode, { updateUrl = true } = {}) {
-  const next = mode === 'debug' ? 'debug' : 'story';
+  const next = 'debug';
   gate.setAttribute('aria-busy', 'true');
   gate.querySelectorAll('button[data-mode-choice]').forEach(button => { button.disabled = true; });
-  modeNote.textContent = next === 'debug' ? '正在打开角色实验室' : '正在铺开第一张图鉴';
+  modeNote.textContent = '正在打开角色实验室';
   try {
-    if (next === 'debug') await ensureLab();
-    else await ensureStory();
+    await ensureLab();
   } catch (error) {
     console.error('Mode failed to load', error);
     gate.hidden = false;
@@ -80,17 +65,13 @@ async function applyMode(mode, { updateUrl = true } = {}) {
 
   modeNote.textContent = originalModeNote;
   if (next === 'debug') {
-    storyModule?.deactivateStory?.();
     await labModule.activateLab();
-  } else {
-    labModule?.deactivateLab();
   }
 
   window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: next } }));
 }
 
 function showHome({ updateUrl = true } = {}) {
-  storyModule?.deactivateStory?.();
   labModule?.deactivateLab();
   document.body.dataset.mode = 'choosing';
   lab.hidden = true;
@@ -109,7 +90,7 @@ for (const button of gate.querySelectorAll('button[data-mode-choice]')) {
 switcher.addEventListener('click', () => showHome());
 
 const query = new URLSearchParams(location.search).get('mode');
-if (query === 'story' || query === 'debug') applyMode(query, { updateUrl: false });
+if (query === 'debug') applyMode(query, { updateUrl: false });
 else {
   showHome({ updateUrl: false });
   if (query === 'choose') updateModeUrl(null, 'replace');
@@ -117,7 +98,7 @@ else {
 
 window.addEventListener('popstate', () => {
   const mode = new URLSearchParams(location.search).get('mode');
-  if (mode === 'story' || mode === 'debug') applyMode(mode, { updateUrl: false });
+  if (mode === 'debug') applyMode(mode, { updateUrl: false });
   else showHome({ updateUrl: false });
 });
 

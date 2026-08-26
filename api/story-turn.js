@@ -1,12 +1,12 @@
-const QUESTION_FIELDS = new Set(['theme', 'approach', 'companion', 'comfort']);
+const QUESTION_FIELDS = new Set(['appearance', 'color', 'companion']);
 const SCENE_IDS = new Set(['paper-harbor', 'whisper-slope', 'backward-market', 'moon-post', 'silent-lighthouse', 'page-sea']);
 const SPECIES = new Set(['cat', 'dog', 'human']);
 const PALETTES = new Set(['moss', 'sky', 'coral', 'moon']);
 const FEATURES = new Set(['listening-ears', 'bright-eyes', 'soft-tail', 'star-freckles']);
 
 const SYSTEM_PROMPT = `你是“萌萌星的奇妙图鉴”的儿童安全故事伙伴。
-当前孩子正在用自由回答帮助一只小宠物长出性格。孩子约 5 至 8 岁。
-你的任务先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种喜欢的事物、准备采取的行动、陪伴方法或想放慢的情境，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
+当前孩子正在回答三个直接问题，帮助系统画出刚刚随机分配的小宠物。三个问题只涉及外形特征、颜色和陪伴方式。孩子约 5 至 8 岁。
+你的任务先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种外形特征、颜色或陪伴方法，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
 forceRespond=true 表示孩子点了完整选项，必须 shouldRespond=true。
 当 shouldRespond=true 时，像朋友一样给出一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。回应只承接刚才的内容，不要再向孩子提出新问题，因为下一道正式问题会紧接着出现。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若回答里出现这些内容，用温柔的话提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，并且不要把个人信息写入任何字段。
@@ -56,17 +56,16 @@ function hasLikelyPrivateInfo(value) {
 function fallbackHint(answer) {
   const value = String(answer || '');
   const species = /一起|伙伴|热闹|跑|玩/.test(value) ? 'dog' : /安静|慢|看看|听/.test(value) ? 'cat' : 'human';
-  const palette = /星|月|太空|夜/.test(value) ? 'moon' : /海|水|雨|蓝/.test(value) ? 'sky' : /花|暖|红|太阳/.test(value) ? 'coral' : 'moss';
-  const feature = /听|安静|声音/.test(value) ? 'listening-ears' : /看|观察|发现/.test(value) ? 'bright-eyes' : /一起|朋友|陪/.test(value) ? 'soft-tail' : 'star-freckles';
+  const palette = /紫|银|星|月|夜/.test(value) ? 'moon' : /蓝|白|海|水|雨/.test(value) ? 'sky' : /粉|橙|红|暖/.test(value) ? 'coral' : 'moss';
+  const feature = /耳|听|安静/.test(value) ? 'listening-ears' : /眼|亮|看/.test(value) ? 'bright-eyes' : /尾|软|陪|抱/.test(value) ? 'soft-tail' : 'star-freckles';
   return { species, palette, feature };
 }
 
 function fallbackKeywords(questionId, answer) {
   const pools = {
-    theme: ['动物', '猫', '狗', '狐狸', '太空', '星星', '飞船', '森林', '植物', '海', '雨'],
-    approach: ['看', '观察', '推', '打开', '敲门', '等', '叫', '伙伴', '一起'],
+    appearance: ['耳朵', '眼睛', '尾巴', '翅膀', '花纹', '毛', '角', '圆', '长', '亮'],
+    color: ['红', '黄', '蓝', '绿', '紫', '粉', '白', '黑', '彩色', '金色'],
     companion: ['陪', '坐', '玩', '问', '听', '抱', '一起', '安静'],
-    comfort: ['声音', '太大', '没看懂', '没看明白', '慢', '自己选', '累', '害怕'],
   };
   return (pools[questionId] || []).filter(keyword => String(answer).includes(keyword)).slice(0, 3);
 }

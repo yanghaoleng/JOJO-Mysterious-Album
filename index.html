@@ -375,7 +375,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css">
+<link rel="stylesheet" href="./src/lab.css?v=20260826-two-entry-home">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -388,7 +388,7 @@
         <div>
           <p>萌萌星的奇妙图鉴</p>
           <h1 id="mode-title">今天翻开哪一页？</h1>
-          <span>三个世界都能随时回到这里，再换一条路。</span>
+          <span>故事和角色模拟器都能随时回到这里。</span>
         </div>
       </div>
       <div class="mode-choices">
@@ -398,12 +398,6 @@
           <span>先聊天认识你，再和专属小伙伴完成三章语音冒险。</span>
           <i>进入新故事</i>
         </a>
-        <button class="mode-choice story" type="button" data-mode-choice="story">
-          <span class="mode-mark" aria-hidden="true">篇</span>
-          <b>雾灯花园</b>
-          <span>叫醒一只小墨点，收集萤火种，完成第一张图鉴。</span>
-          <i>原故事模式</i>
-        </button>
         <button class="mode-choice debug" type="button" data-mode-choice="debug">
           <span class="mode-mark" aria-hidden="true">造</span>
           <b>角色模拟器</b>
@@ -750,135 +744,6 @@
     </main>
   </section>
 
-  <div id="chapter-mark"><b>雾灯花园</b><br>第一张图鉴</div>
-
-  <main id="choice-layer">
-    <section class="story-panel compact" id="panel-welcome">
-      <div class="story-kicker">一本会长大的图鉴</div>
-      <h1>有一团小墨点，在等你发现。</h1>
-      <p class="story-copy">它还没有名字，也不知道自己有什么本领。<strong>你说的话，会让它慢慢变成真的。</strong></p>
-      <button class="primary-action" id="start-adventure" type="button" disabled>小墨点正在靠近</button>
-    </section>
-
-    <section class="story-panel" id="panel-trait" hidden>
-      <div class="story-kicker">先发现一个秘密</div>
-      <h2>它一害怕，身体就会发生奇怪的变化。你猜是什么？</h2>
-      <div class="choice-grid" id="trait-choices">
-        <button class="choice-card" type="button" data-trait="transparent">
-          <span class="mark">隐</span><b>变得透明</b><span>像一小团快要消失的雾。</span>
-        </button>
-        <button class="choice-card" type="button" data-trait="bounce">
-          <span class="mark">弹</span><b>鼓成小球</b><span>害怕也会扑通一下弹起来。</span>
-        </button>
-        <button class="choice-card" type="button" data-trait="glow">
-          <span class="mark">亮</span><b>发出暖光</b><span>越紧张，身上的光越明亮。</span>
-        </button>
-        <button class="choice-card wide" type="button" id="custom-idea-toggle">
-          <span class="mark">想</span><b>我有自己的想法</b><span>用一句话告诉小芽。</span>
-        </button>
-      </div>
-      <form class="custom-idea" id="custom-idea-form" hidden>
-        <input id="custom-idea-input" maxlength="60" autocomplete="off" aria-label="它害怕时会发生什么" placeholder="比如：会把耳朵变成小雨伞">
-        <button class="primary-action" id="custom-idea-submit" type="submit">让它出现</button>
-      </form>
-      <p class="privacy-hint" id="idea-privacy" hidden>只会把这句话交给世界导演理解，不发送姓名，也不会保存在服务器。</p>
-      <p id="idea-error" role="alert"></p>
-    </section>
-
-    <section class="story-panel" id="panel-heart" hidden>
-      <div class="story-kicker">再听听它的心</div>
-      <h2>树洞里传来哭声。它会怎么安慰那个没见过的朋友？</h2>
-      <div class="choice-grid" id="heart-choices">
-        <button class="choice-card" type="button" data-heart="flower">
-          <span class="mark">花</span><b>送一朵小花</b><span>不说太多，让花先陪着朋友。</span>
-        </button>
-        <button class="choice-card" type="button" data-heart="stay">
-          <span class="mark">陪</span><b>安静坐旁边</b><span>难过的时候，有人陪着就很好。</span>
-        </button>
-        <button class="choice-card" type="button" data-heart="joke">
-          <span class="mark">笑</span><b>讲个怪笑话</b><span>也许笑声能把眼泪轻轻推走。</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="story-panel compact" id="panel-name" hidden>
-      <div class="story-kicker">这是你的奇妙生物</div>
-      <h2>最后一件事：你想怎么叫它？</h2>
-      <div class="name-field">
-        <label for="creature-name">把名字写在第一张图鉴上</label>
-        <input id="creature-name" maxlength="8" autocomplete="off" placeholder="给它一个名字">
-      </div>
-      <div class="suggestions" aria-label="名字建议">
-        <button type="button" data-name="团团">团团</button>
-        <button type="button" data-name="小雾">小雾</button>
-        <button type="button" data-name="啵啵">啵啵</button>
-        <button type="button" data-name="灯芽">灯芽</button>
-      </div>
-      <button class="primary-action" id="confirm-name" type="button">把名字写下来</button>
-      <p id="name-error" role="alert"></p>
-    </section>
-
-    <section class="story-panel compact" id="panel-forming" hidden>
-      <div class="story-kicker">世界正在回应你</div>
-      <h2><span id="forming-name">它</span>的第一个小世界，正在长出来。</h2>
-      <div class="forming-list" aria-live="polite">
-        <div class="forming-row" data-forming="0">把软软的草铺在纸上</div>
-        <div class="forming-row" data-forming="1">叫醒三颗贪睡的萤火种</div>
-        <div class="forming-row" data-forming="2">让雾藏住一条秘密小路</div>
-        <div class="forming-row" data-forming="3">把“勇”字刻在石门上</div>
-      </div>
-      <button class="primary-action" id="enter-world" type="button" disabled>走进雾灯花园</button>
-    </section>
-  </main>
-
-  <aside id="game-hud" aria-label="任务进度">
-    <b>点亮雾灯</b>
-    <p>找到 3 颗萤火种，让藏起来的小路重新出现。</p>
-    <div class="seed-progress" aria-label="已找到的萤火种">
-      <span class="seed-dot">1</span><span class="seed-dot">2</span><span class="seed-dot">3</span>
-    </div>
-  </aside>
-
-  <div id="tap-hint">点一下草地，带它走过去</div>
-
-  <section id="guide" role="status" aria-live="polite">
-    <div class="guide-face" aria-hidden="true">芽</div>
-    <div class="guide-text">
-      <b>小芽在说</b>
-      <div id="guide-copy"></div>
-    </div>
-    <button id="guide-action" type="button" hidden>一起试试</button>
-  </section>
-
-  <section id="ending" aria-labelledby="ending-title">
-    <div class="ending-sheet">
-      <div class="story-kicker">第一张图鉴完成</div>
-      <h2 id="ending-title"><span id="ending-name">团团</span>，雾灯花园的开路者</h2>
-      <p class="ending-lede" id="ending-story">它用自己独一无二的本领穿过雾门，还把三颗萤火种送回了灯里。</p>
-      <div class="report">
-        <div class="report-main">
-          <h3>这次冒险里，孩子做到了</h3>
-          <ul>
-            <li><strong>主动创造：</strong>决定了生物的本领与性格</li>
-            <li><strong>数量关系：</strong>理解 1 + 2 正好组成 3</li>
-            <li><strong>条件推理：</strong>收集足够的光，雾路才会出现</li>
-            <li><strong>情绪理解：</strong>害怕时仍然愿意向前尝试</li>
-          </ul>
-        </div>
-        <div class="report-side">
-          <h3>今天认识的字</h3>
-          <div class="hero-word">勇</div>
-        </div>
-      </div>
-      <div class="ending-actions">
-        <button class="primary-action" id="save-card" type="button" data-uisfx="none">收进我的图鉴</button>
-        <button class="secondary-action" id="replay" type="button">再创造一只</button>
-      </div>
-    </div>
-  </section>
-
-  <div id="toast" role="status"></div>
-
   <script>
     (() => {
       const canvas = document.getElementById('paper-grain');
@@ -902,6 +767,6 @@
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-album">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js"></script>
+  <script type="module" src="./src/mode.js?v=20260826-two-entry-home"></script>
 </body>
 </html>
