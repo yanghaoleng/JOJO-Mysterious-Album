@@ -47,10 +47,12 @@ DIRECTOR_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全世界�
 消失、缩小、躲藏、变成雾映射 transparent；变形、变圆、长东西、跳起映射 bounce；发光、变色、发出声音和其他想象映射 glow。"""
 STORY_TURN_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全故事伙伴。
 孩子约5至8岁，正在用自由回答帮助一只小宠物长出性格。
-理解回答后，先给一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。
+先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种喜欢的事物、准备采取的行动、陪伴方法或想放慢的情境，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
+forceRespond=true表示孩子点了完整选项，必须shouldRespond=true。
+当shouldRespond=true时，先给一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。回应只承接刚才的内容，不要再向孩子提出新问题，因为下一道正式问题会紧接着出现。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若孩子说出个人信息，提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，不要把个人信息写入字段。
 不要诊断、贴负面标签或生成恐怖、伤害、羞辱、成人、竞争压力内容。
-只输出JSON：{"reaction":"18至38个中文字符","heard":"12字以内","profileValue":"18字以内","petHint":{"species":"cat|dog|human","palette":"moss|sky|coral|moon","feature":"listening-ears|bright-eyes|soft-tail|star-freckles"},"privacyRedirect":false}。"""
+只输出JSON：{"shouldRespond":true,"keywords":["最多3个真正听到的关键词"],"listeningPrompt":"shouldRespond=false时给孩子的8至22字继续表达提示","reaction":"18至38个中文字符","heard":"12字以内","profileValue":"18字以内","petHint":{"species":"cat|dog|human","palette":"moss|sky|coral|moon","feature":"listening-ears|bright-eyes|soft-tail|star-freckles"},"privacyRedirect":false}。"""
 FISH_VOICES = {
     "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "speed": 0.92},
     "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "speed": 1.08},
@@ -343,7 +345,24 @@ def fallback_pet_hint(answer):
     return {"species": species, "palette": palette, "feature": feature}
 
 
-def story_turn_result(question_id, question, answer):
+def fallback_story_keywords(question_id, answer):
+    pools = {
+        "theme": ["动物", "猫", "狗", "狐狸", "太空", "星星", "飞船", "森林", "植物", "海", "雨"],
+        "approach": ["看", "观察", "推", "打开", "敲门", "等", "叫", "伙伴", "一起"],
+        "companion": ["陪", "坐", "玩", "问", "听", "抱", "一起", "安静"],
+        "comfort": ["声音", "太大", "没看懂", "没看明白", "慢", "自己选", "累", "害怕"],
+    }
+    return [word for word in pools.get(question_id, []) if word in str(answer or "")][:3]
+
+
+def fallback_should_respond(question_id, answer):
+    compact = re.sub(r"[，。！？、,.!?\s]", "", str(answer or ""))
+    if re.fullmatch(r"(?:嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)", compact):
+        return False
+    return bool(fallback_story_keywords(question_id, answer)) or len(compact) >= 3
+
+
+def story_turn_result(question_id, question, answer, force_respond=False):
     key = os.environ.get("ARK_API_KEY", "")
     if not key:
         raise RuntimeError("story_ai_not_configured")
@@ -352,11 +371,11 @@ def story_turn_result(question_id, question, answer):
             "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
             "messages": [
                 {"role": "system", "content": STORY_TURN_PROMPT},
-                {"role": "user", "content": f"问题字段：{question_id}\n问题：{question}\n孩子回答：{answer}"},
+                {"role": "user", "content": f"问题字段：{question_id}\n问题：{question}\n孩子当前说的话：{answer}\nforceRespond：{str(force_respond).lower()}"},
             ],
             "reasoning_effort": "minimal",
             "response_format": {"type": "json_object"},
-            "max_tokens": 260,
+            "max_tokens": 320,
         },
         ensure_ascii=False,
     ).encode("utf-8")
@@ -371,12 +390,23 @@ def story_turn_result(question_id, question, answer):
     raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
     parsed = json.loads(raw.removeprefix("```json").removesuffix("```").strip())
     hint = fallback_pet_hint(answer)
+    fallback_keywords = fallback_story_keywords(question_id, answer)
+    parsed_keywords = parsed.get("keywords") if isinstance(parsed.get("keywords"), list) else []
+    keywords = [str(value).replace("<", "").replace(">", "").strip()[:10] for value in parsed_keywords if str(value).strip()][:3]
+    if not keywords:
+        keywords = fallback_keywords
+    safe_to_respond = fallback_should_respond(question_id, answer)
+    parsed_decision = parsed.get("shouldRespond") if isinstance(parsed.get("shouldRespond"), bool) else safe_to_respond
+    should_respond = bool(force_respond or (safe_to_respond and parsed_decision))
     suggested = parsed.get("petHint") if isinstance(parsed.get("petHint"), dict) else {}
     species = suggested.get("species") if suggested.get("species") in {"cat", "dog", "human"} else hint["species"]
     palette = suggested.get("palette") if suggested.get("palette") in {"moss", "sky", "coral", "moon"} else hint["palette"]
     feature = suggested.get("feature") if suggested.get("feature") in {"listening-ears", "bright-eyes", "soft-tail", "star-freckles"} else hint["feature"]
     if likely_private_info(answer) or parsed.get("privacyRedirect") is True:
         return {
+            "shouldRespond": True,
+            "keywords": [],
+            "listeningPrompt": "",
             "reaction": "这些个人信息不用告诉我，我们只聊你喜欢怎样冒险就好。",
             "heard": "保护自己的信息",
             "profileValue": "愿意保护个人信息",
@@ -388,6 +418,9 @@ def story_turn_result(question_id, question, answer):
     heard = str(parsed.get("heard") or answer).replace("<", "").replace(">", "").strip()[:12]
     profile_value = str(parsed.get("profileValue") or answer).replace("<", "").replace(">", "").strip()[:18]
     return {
+        "shouldRespond": should_respond,
+        "keywords": keywords,
+        "listeningPrompt": str(parsed.get("listeningPrompt") or (f"听见了“{'、'.join(keywords)}”，你还可以接着说。" if keywords else "我还在听，你可以再说完整一点。")).replace("<", "").replace(">", "").strip()[:42],
         "reaction": reaction,
         "heard": heard,
         "profileValue": profile_value,
@@ -635,13 +668,14 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 question_id = str(payload.get("questionId", "")).strip()[:24]
                 question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
                 answer = str(payload.get("answer", "")).strip().replace("<", "").replace(">", "")[:180]
+                force_respond = payload.get("forceRespond") is True
                 if question_id not in {"theme", "approach", "companion", "comfort"}:
                     self.respond_json(400, {"error": "unknown_question"})
                     return
                 if not answer:
                     self.respond_json(400, {"error": "answer_required"})
                     return
-                self.respond_json(200, story_turn_result(question_id, question, answer))
+                self.respond_json(200, story_turn_result(question_id, question, answer, force_respond))
                 return
             idea = str(payload.get("idea", "")).strip()[:60]
             if len(idea) < 2:

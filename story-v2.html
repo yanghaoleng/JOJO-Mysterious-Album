@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-fox-listen">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
@@ -54,43 +54,52 @@
       <div>
         <p class="section-label">新版故事体验草稿</p>
         <h1 id="cover-title">不见了的回声</h1>
-        <p class="cover-copy">先遇见一位随机图鉴员。它会认真听你说，再把一只只属于你的小宠物签给你。</p>
+        <p class="cover-copy">先遇见角色模拟器里的卷尾小狐狸。它会认真听你说，再把一只只属于你的小宠物签给你。</p>
         <ul class="cover-promises">
-          <li>自由说话，也可以打字或点选</li>
+          <li>点一次麦克风，之后自然说话或点选</li>
           <li>回答会改变宠物的模样和陪伴方式</li>
           <li>三章冒险，六个场景，一个会记住选择的背包</li>
         </ul>
         <button class="primary-action" id="begin-button" type="button">让图鉴员来找我</button>
-        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存；也可全程打字或点选。不会询问姓名、学校、住址或精确生日。</p>
+        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存；也可全程点选。不会询问姓名、学校、住址或精确生日。</p>
       </div>
     </section>
 
-    <section class="paper-panel conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question">
-      <div class="guide-row">
-        <div class="guide-avatar" id="guide-avatar" aria-hidden="true">芽</div>
-        <div>
-          <b id="guide-name">小芽</b>
-          <span id="guide-manner">温柔地把问题一小块一小块递过来</span>
+    <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
+      <div class="guide-encounter">
+        <div class="guide-speech" id="guide-speech" data-mode="question">
+          <div class="guide-speech-meta">
+            <span id="guide-bubble-state">想听你说</span>
+            <span class="question-count" id="question-count">1 / 4</span>
+          </div>
+          <p class="guide-reaction" id="guide-reaction" role="status" hidden></p>
+          <h2 id="interview-question">如果今天能钻进一页图鉴，你最想在里面看见什么？</h2>
+          <p class="question-hint" id="question-hint"></p>
         </div>
-        <span class="question-count" id="question-count">1 / 4</span>
+
+        <div class="guide-figure" id="guide-figure">
+          <canvas id="guide-canvas" aria-label="角色模拟器里的卷尾小狐狸"></canvas>
+          <div class="guide-nameplate">
+            <b id="guide-name">小卷</b>
+            <span id="guide-manner">会认真等你说完，也会从一句话里找到最亮的词</span>
+          </div>
+        </div>
       </div>
-      <p class="guide-reaction" id="guide-reaction" role="status"></p>
-      <h2 id="interview-question">如果今天能钻进一页图鉴，你最想在里面看见什么？</h2>
-      <p class="question-hint" id="question-hint"></p>
-      <div class="quick-answers" id="quick-answers"></div>
-      <form class="speech-form" id="answer-form">
-        <label for="answer-input">也可以自己说</label>
-        <div class="speech-row">
-          <button class="mic-button" id="mic-button" type="button" aria-pressed="false">
+
+      <div class="conversation-controls">
+        <div class="quick-answers" id="quick-answers" aria-label="也可以点一个回答"></div>
+        <div class="speech-form voice-listen-zone">
+          <div class="live-answer-bubble" id="live-answer-bubble" hidden aria-live="polite">
+            <span id="live-answer-state">我听到</span>
+            <b id="live-answer-text"></b>
+          </div>
+          <button class="mic-button guide-mic" id="mic-button" type="button" aria-pressed="false" aria-label="打开麦克风，开始聊天">
             <span aria-hidden="true"></span>
-            <b>按一下开始说</b>
           </button>
-          <input id="answer-input" maxlength="180" autocomplete="off" placeholder="也可以在这里打字">
-          <button class="send-button" id="send-answer" type="submit">告诉它</button>
+          <p class="speech-status" id="speech-status" role="status"><i aria-hidden="true"></i>先点一下麦克风，之后会自动继续听</p>
         </div>
-        <p class="speech-status" id="speech-status" role="status">还没有开始听</p>
-      </form>
-      <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
+        <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
+      </div>
     </section>
 
     <section class="paper-panel assignment-panel" id="assignment-panel" hidden aria-labelledby="assignment-title">
@@ -183,6 +192,6 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js"></script>
+  <script type="module" src="./src/story-v2.js?v=20260826-fox-listen"></script>
 </body>
 </html>

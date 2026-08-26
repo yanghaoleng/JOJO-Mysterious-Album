@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_ID } from './story-blueprints.js';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-fox-listen';
 import { trackAnalytics } from './analytics.js';
 
 setRender({ u: 176, frames: 2 });
@@ -12,9 +12,10 @@ const $ = id => document.getElementById(id);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const panels = ['cover-panel', 'interview-panel', 'assignment-panel', 'ritual-panel', 'quest-panel', 'ending-panel'];
 const STORY_STORAGE_KEY = 'mengmeng-story-v2-draft';
+const MAX_INTERVIEW_ANSWER = 180;
 
 const state = {
-  guide: GUIDES[Math.floor(Math.random() * GUIDES.length)],
+  guide: GUIDES.find(guide => guide.id === STORY_GUIDE_TEMPLATE.id) || GUIDES[0],
   questionIndex: 0,
   profile: {},
   heard: [],
@@ -32,6 +33,18 @@ let activeAudio = null;
 let activeRecognition = null;
 let activePcmCapture = null;
 let toastTimer = 0;
+
+const guideVoiceSession = {
+  active: false,
+  paused: true,
+  manualPause: false,
+  processing: false,
+  speaking: false,
+  recognition: null,
+  capture: null,
+  restartTimer: 0,
+  pendingAnswer: '',
+};
 
 function hashString(value) {
   let hash = 2166136261;
@@ -64,8 +77,7 @@ function toast(message) {
 
 function setBusy(busy) {
   state.busy = busy;
-  for (const button of document.querySelectorAll('#interview-panel button, #answer-form button')) button.disabled = busy;
-  $('answer-input').disabled = busy;
+  for (const button of document.querySelectorAll('#interview-panel button')) button.disabled = busy;
 }
 
 function paintPaperGrain() {
@@ -120,9 +132,6 @@ class PetRenderer {
   }
 
   build(pet) {
-    if (this.face) this.face.dispose();
-    if (this.holder) this.scene.remove(this.holder);
-
     const recipe = newRecipe(pet.seed);
     recipe.species = pet.species;
     recipe.base = pet.species === 'human' ? 'biped' : 'quad';
@@ -148,13 +157,20 @@ class PetRenderer {
       recipe.parts.extras.params.spots = true;
     }
 
+    this.buildRecipe(recipe);
+  }
+
+  buildRecipe(recipe, { scaleMultiplier = 1.42, offsetY = -1.15 } = {}) {
+    if (this.face) this.face.dispose();
+    if (this.holder) this.scene.remove(this.holder);
+
     this.face = buildCharacter(recipe);
     this.holder = new THREE.Group();
     this.face.group.position.y = this.face.F.B.floorY / U;
     this.holder.add(this.face.group);
     const scale = (2.15 / 1.4) * (.58 / (this.face.F.s / U));
-    this.holder.scale.setScalar(scale * 1.42);
-    this.holder.position.set(0, -1.15, 0);
+    this.holder.scale.setScalar(scale * scaleMultiplier);
+    this.holder.position.set(0, offsetY, 0);
     this.scene.add(this.holder);
     this.animator = createAnimator(() => this.face, this.options);
     this.animator.setPose('idle');
@@ -184,7 +200,33 @@ class PetRenderer {
   }
 }
 
+function makeStoryGuideRecipe(config) {
+  const recipe = newRecipe(config.seed);
+  recipe.species = config.species;
+  recipe.base = config.base;
+  recipe.media = 'watercolor';
+  recipe.color = 'color';
+  ensureParams(recipe);
+  Object.assign(recipe.parts.extras.params, {
+    mark: 'none', mod: 'none', tears: false, freckles: false, spots: false,
+    whiskers: false, studs: false, bandage: false, blush: false, glasses: false,
+    antenna: false, accidents: false, smudge: false, eraser: false,
+  });
+  Object.assign(recipe.parts.brows.params, { on: config.group === '人物' });
+  Object.assign(recipe.parts.hair.params, { style: config.group === '人物' ? recipe.parts.hair.params.style : 'bald' });
+  for (const slot of ['held', 'offhand', 'worn']) {
+    if (recipe.parts[slot]?.params) recipe.parts[slot].params.family = 'none';
+  }
+  for (const [part, values] of Object.entries(config.parts || {})) {
+    if (recipe.parts[part]?.params) Object.assign(recipe.parts[part].params, values);
+  }
+  recipe.templateId = config.id;
+  return recipe;
+}
+
+const guideRenderer = new PetRenderer($('guide-canvas'));
 const petRenderer = new PetRenderer($('pet-canvas'));
+guideRenderer.buildRecipe(makeStoryGuideRecipe(STORY_GUIDE_TEMPLATE), { scaleMultiplier: 1.56, offsetY: -1.08 });
 
 function stopAudio() {
   if (!activeAudio) return;
@@ -192,6 +234,7 @@ function stopAudio() {
   activeAudio.src = '';
   activeAudio = null;
   petRenderer.setTalking(false);
+  guideRenderer.setTalking(false);
 }
 
 async function playTts(text, voice, { pet = false } = {}) {
@@ -207,10 +250,12 @@ async function playTts(text, voice, { pet = false } = {}) {
     const audio = new Audio(URL.createObjectURL(await response.blob()));
     activeAudio = audio;
     if (pet) petRenderer.setTalking(true);
+    else guideRenderer.setTalking(true);
     await new Promise(resolve => {
       const finish = () => {
         if (activeAudio === audio) activeAudio = null;
         if (pet) petRenderer.setTalking(false);
+        else guideRenderer.setTalking(false);
         URL.revokeObjectURL(audio.src);
         resolve();
       };
@@ -221,6 +266,7 @@ async function playTts(text, voice, { pet = false } = {}) {
     return true;
   } catch {
     if (pet) petRenderer.setTalking(false);
+    else guideRenderer.setTalking(false);
     document.documentElement.dataset.ttsSource = 'visual-only';
     return false;
   }
@@ -234,6 +280,23 @@ function stopRecognition() {
   if (!activeRecognition) return;
   try { activeRecognition.stop(); } catch { /* already stopped */ }
   activeRecognition = null;
+}
+
+function encodePcmChunks(chunks, sourceRate) {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const joined = new Float32Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    joined.set(chunk, offset);
+    offset += chunk.length;
+  }
+  const ratio = sourceRate / 16000;
+  const pcm = new Int16Array(Math.floor(joined.length / ratio));
+  for (let index = 0; index < pcm.length; index++) {
+    const sample = Math.max(-1, Math.min(1, joined[Math.floor(index * ratio)] || 0));
+    pcm[index] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+  }
+  return new Uint8Array(pcm.buffer);
 }
 
 async function startPcmCapture() {
@@ -264,17 +327,68 @@ async function startPcmCapture() {
       stream.getTracks().forEach(track => track.stop());
       const sourceRate = context.sampleRate;
       await context.close().catch(() => {});
-      const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-      const joined = new Float32Array(total);
-      let offset = 0;
-      for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.length; }
-      const ratio = sourceRate / 16000;
-      const pcm = new Int16Array(Math.floor(joined.length / ratio));
-      for (let index = 0; index < pcm.length; index++) {
-        const sample = Math.max(-1, Math.min(1, joined[Math.floor(index * ratio)] || 0));
-        pcm[index] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
-      }
-      return new Uint8Array(pcm.buffer);
+      return encodePcmChunks(chunks, sourceRate);
+    },
+  };
+}
+
+async function startContinuousPcmCapture() {
+  if (!navigator.mediaDevices?.getUserMedia) throw new Error('media unavailable');
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  });
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    stream.getTracks().forEach(track => track.stop());
+    throw new Error('audio context unavailable');
+  }
+  const context = new AudioContextClass();
+  await context.resume();
+  const source = context.createMediaStreamSource(stream);
+  const processor = context.createScriptProcessor(4096, 1, 1);
+  const silent = context.createGain();
+  let chunks = [];
+  let bufferedSamples = 0;
+  let paused = true;
+  const maxBufferedSamples = context.sampleRate * 45;
+  silent.gain.value = 0;
+  processor.onaudioprocess = event => {
+    if (paused) return;
+    const chunk = new Float32Array(event.inputBuffer.getChannelData(0));
+    chunks.push(chunk);
+    bufferedSamples += chunk.length;
+    while (bufferedSamples > maxBufferedSamples && chunks.length > 1) bufferedSamples -= chunks.shift().length;
+  };
+  source.connect(processor);
+  processor.connect(silent);
+  silent.connect(context.destination);
+  stream.getAudioTracks().forEach(track => { track.enabled = false; });
+  return {
+    resume() {
+      chunks = [];
+      bufferedSamples = 0;
+      paused = false;
+      stream.getAudioTracks().forEach(track => { track.enabled = true; });
+    },
+    pause() {
+      paused = true;
+      stream.getAudioTracks().forEach(track => { track.enabled = false; });
+    },
+    take() {
+      paused = true;
+      const captured = chunks;
+      chunks = [];
+      bufferedSamples = 0;
+      return encodePcmChunks(captured, context.sampleRate);
+    },
+    async close() {
+      paused = true;
+      chunks = [];
+      bufferedSamples = 0;
+      processor.onaudioprocess = null;
+      try { source.disconnect(); processor.disconnect(); silent.disconnect(); } catch { /* already closed */ }
+      stream.getTracks().forEach(track => track.stop());
+      await context.close().catch(() => {});
     },
   };
 }
@@ -287,9 +401,20 @@ function bytesToBase64(bytes) {
   return btoa(binary);
 }
 
-async function doubaoTranscript(pcm, input, status) {
-  if (!pcm || pcm.length < 1600) return false;
-  status.textContent = '豆包正在确认刚才听到的这句话';
+function writeSpeechStatus(status, message) {
+  if (status.id !== 'speech-status') {
+    status.textContent = message;
+    return;
+  }
+  const dot = document.createElement('i');
+  dot.setAttribute('aria-hidden', 'true');
+  status.replaceChildren(dot, document.createTextNode(message));
+}
+
+async function doubaoTranscript(pcm, status, fallbackText = '', maxLength = MAX_INTERVIEW_ANSWER) {
+  if (!pcm || pcm.length < 1600) return '';
+  const interviewMode = status.id === 'speech-status';
+  writeSpeechStatus(status, '豆包正在确认刚才听到的这句话');
   try {
     const response = await fetch('/api/asr', {
       method: 'POST',
@@ -298,21 +423,21 @@ async function doubaoTranscript(pcm, input, status) {
     });
     if (!response.ok) throw new Error('asr unavailable');
     const result = await response.json();
-    const transcript = String(result.transcript || '').trim().slice(0, Number(input.maxLength) || 180);
+    const transcript = String(result.transcript || '').trim().slice(0, maxLength);
     if (!transcript) throw new Error('empty transcript');
-    input.value = transcript;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
     document.documentElement.dataset.asrSource = 'doubao';
-    status.textContent = '豆包听见了，可以再改一改，或者直接告诉它。';
-    return true;
+    writeSpeechStatus(status, interviewMode ? '豆包听清了，正在判断要继续听还是回应' : '豆包听见了，可以再改一改');
+    return transcript;
   } catch {
-    document.documentElement.dataset.asrSource = input.value.trim() ? 'browser-fallback' : 'unavailable';
-    status.textContent = input.value.trim() ? '已经听见了，也可以在文字里再改一改。' : '这次没有听清，可以再试一次或改用打字。';
-    return false;
+    document.documentElement.dataset.asrSource = fallbackText.trim() ? 'browser-fallback' : 'unavailable';
+    writeSpeechStatus(status, fallbackText.trim()
+      ? (interviewMode ? '已经听见了，正在理解这句话' : '已经听见了，也可以在文字里再改一改')
+      : (interviewMode ? '这次没有听清，我会继续听' : '这次没有听清，可以再试一次'));
+    return '';
   }
 }
 
-async function listenInto(input, status, button) {
+async function listenOnceInto(input, status, button) {
   if (activeRecognition) {
     status.textContent = '正在收好这句话，请稍等一下';
     try { activeRecognition.stop(); } catch { /* already stopped */ }
@@ -370,7 +495,13 @@ async function listenInto(input, status, button) {
     if (activeRecognition === recognition) activeRecognition = null;
     if (activePcmCapture === capture) activePcmCapture = null;
     const pcm = await capture?.stop().catch(() => null);
-    if (!denied && pcm) await doubaoTranscript(pcm, input, status);
+    if (!denied && pcm) {
+      const corrected = await doubaoTranscript(pcm, status, input.value, Number(input.maxLength) || 80);
+      if (corrected) {
+        input.value = corrected;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
     else if (!input.value.trim() && status.textContent.startsWith('正在')) status.textContent = '没有听到完整的一句，可以再试一次。';
   };
   try { recognition.start(); } catch {
@@ -382,12 +513,213 @@ async function listenInto(input, status, button) {
   }
 }
 
-function fallbackTurn(question, answer) {
+function setGuideVoiceUi(mode, message) {
+  const panel = $('interview-panel');
+  const button = $('mic-button');
+  const labels = {
+    setup: '打开麦克风，开始聊天',
+    requesting: '正在打开麦克风',
+    listening: '我在听，点一下暂停',
+    thinking: '正在理解你的回答',
+    speaking: `${state.guide.name}正在说话`,
+    paused: '继续听我说',
+    error: '再试一次打开麦克风',
+  };
+  const bubbleStates = {
+    setup: '想听你说',
+    requesting: '正在准备耳朵',
+    listening: '正在听',
+    thinking: '正在想',
+    speaking: '正在说',
+    paused: '安静等你',
+    error: '也可以点选',
+  };
+  panel.dataset.voiceState = mode;
+  button.setAttribute('aria-pressed', String(mode === 'listening'));
+  button.setAttribute('aria-label', labels[mode] || labels.setup);
+  button.title = labels[mode] || labels.setup;
+  $('guide-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
+  if (message) writeSpeechStatus($('speech-status'), message);
+}
+
+function showLiveAnswer(text = '', label = '我听到') {
+  const bubble = $('live-answer-bubble');
+  const value = String(text).trim().slice(0, 80);
+  bubble.hidden = !value;
+  $('live-answer-state').textContent = label;
+  $('live-answer-text').textContent = value;
+}
+
+function detachGuideRecognition() {
+  const recognition = guideVoiceSession.recognition;
+  guideVoiceSession.recognition = null;
+  if (!recognition) return;
+  recognition.onresult = null;
+  recognition.onerror = null;
+  recognition.onend = null;
+  try { recognition.abort(); } catch { /* already stopped */ }
+}
+
+function pauseGuideListening({ manual = false, mode = 'paused', message = '' } = {}) {
+  guideVoiceSession.paused = true;
+  if (manual) guideVoiceSession.manualPause = true;
+  clearTimeout(guideVoiceSession.restartTimer);
+  guideVoiceSession.capture?.pause();
+  detachGuideRecognition();
+  if (mode) setGuideVoiceUi(mode, message || (manual ? '已经暂停，点一下就会继续听' : '先等图鉴员说完，它会自动继续听'));
+}
+
+function startGuideRecognition() {
+  if (!guideVoiceSession.active || guideVoiceSession.paused || guideVoiceSession.processing || guideVoiceSession.speaking || guideVoiceSession.recognition) return;
+  const Recognition = recognitionConstructor();
+  if (!Recognition) return;
+  const recognition = new Recognition();
+  guideVoiceSession.recognition = recognition;
+  recognition.lang = 'zh-CN';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+  recognition.onresult = event => {
+    let interim = '';
+    let finalText = '';
+    for (let index = event.resultIndex; index < event.results.length; index++) {
+      const value = event.results[index][0].transcript;
+      if (event.results[index].isFinal) finalText += value;
+      else interim += value;
+    }
+    const heard = String(finalText || interim).trim().slice(0, MAX_INTERVIEW_ANSWER);
+    if (heard) {
+      showLiveAnswer(heard);
+      writeSpeechStatus($('speech-status'), `正在听：${heard}`);
+    }
+    if (finalText.trim()) handleGuideUtterance(finalText.trim());
+  };
+  recognition.onerror = event => {
+    const denied = event.error === 'not-allowed' || event.error === 'service-not-allowed';
+    if (denied) {
+      stopGuideVoiceSession();
+      setGuideVoiceUi('error', '没有获得麦克风许可，可以直接点一个回答');
+      return;
+    }
+    if (event.error !== 'aborted' && event.error !== 'no-speech') {
+      writeSpeechStatus($('speech-status'), '刚才没有听清，我还在继续听');
+    }
+  };
+  recognition.onend = () => {
+    if (guideVoiceSession.recognition === recognition) guideVoiceSession.recognition = null;
+    if (!guideVoiceSession.active || guideVoiceSession.paused || guideVoiceSession.processing || guideVoiceSession.speaking) return;
+    clearTimeout(guideVoiceSession.restartTimer);
+    guideVoiceSession.restartTimer = setTimeout(startGuideRecognition, 260);
+  };
+  try {
+    recognition.start();
+    document.documentElement.dataset.asrSource = 'browser-live';
+  } catch {
+    guideVoiceSession.recognition = null;
+    clearTimeout(guideVoiceSession.restartTimer);
+    guideVoiceSession.restartTimer = setTimeout(startGuideRecognition, 360);
+  }
+}
+
+function resumeGuideListening({ preserveBubble = false, message = '正在听，你说完一句后我会自己回应' } = {}) {
+  if (!guideVoiceSession.active || !guideVoiceSession.capture || guideVoiceSession.processing || guideVoiceSession.speaking) return;
+  guideVoiceSession.paused = false;
+  guideVoiceSession.manualPause = false;
+  guideVoiceSession.capture.resume();
+  if (!preserveBubble) showLiveAnswer('');
+  setGuideVoiceUi('listening', message);
+  startGuideRecognition();
+}
+
+async function stopGuideVoiceSession() {
+  guideVoiceSession.active = false;
+  guideVoiceSession.paused = true;
+  guideVoiceSession.manualPause = false;
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  guideVoiceSession.pendingAnswer = '';
+  clearTimeout(guideVoiceSession.restartTimer);
+  detachGuideRecognition();
+  const capture = guideVoiceSession.capture;
+  guideVoiceSession.capture = null;
+  await capture?.close().catch(() => {});
+}
+
+async function startGuideVoiceSession() {
+  if (guideVoiceSession.active || state.busy) return;
+  const Recognition = recognitionConstructor();
+  if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
+    document.documentElement.dataset.asrSource = 'unavailable';
+    setGuideVoiceUi('error', '这个浏览器暂时不能连续听，可以直接点一个回答');
+    return;
+  }
+  stopAudio();
+  $('mic-button').disabled = true;
+  setGuideVoiceUi('requesting', '请在浏览器提示里允许使用麦克风，只需要这一次');
+  try {
+    guideVoiceSession.capture = await startContinuousPcmCapture();
+  } catch {
+    $('mic-button').disabled = false;
+    document.documentElement.dataset.asrSource = 'permission-denied';
+    setGuideVoiceUi('error', '没有打开麦克风，也可以直接点一个回答');
+    return;
+  }
+  guideVoiceSession.active = true;
+  guideVoiceSession.paused = true;
+  guideVoiceSession.manualPause = false;
+  guideVoiceSession.pendingAnswer = '';
+  guideVoiceSession.speaking = true;
+  trackAnalytics('echo_voice_enabled', { depth: 2 });
+  setGuideVoiceUi('speaking', `${state.guide.name}先问一句，话音结束后会自动开始听`);
+  await playTts(`${state.guide.hello}${INTERVIEW_QUESTIONS[state.questionIndex].question}`, state.guide.voice);
+  guideVoiceSession.speaking = false;
+  $('mic-button').disabled = false;
+  resumeGuideListening();
+}
+
+async function handleGuideUtterance(browserText) {
+  if (!guideVoiceSession.active || guideVoiceSession.processing || state.busy) return;
+  guideVoiceSession.processing = true;
+  pauseGuideListening({ mode: 'thinking', message: '豆包正在确认刚才听到的这句话' });
+  const pcm = guideVoiceSession.capture?.take();
+  const browserAnswer = String(browserText).trim().slice(0, MAX_INTERVIEW_ANSWER);
+  showLiveAnswer(browserAnswer);
+  const corrected = await doubaoTranscript(pcm, $('speech-status'), browserAnswer);
+  const currentAnswer = corrected || browserAnswer;
+  const answer = [guideVoiceSession.pendingAnswer, currentAnswer].filter(Boolean).join('，').slice(0, MAX_INTERVIEW_ANSWER);
+  showLiveAnswer(answer);
+  await submitInterviewAnswer(answer, { fromVoice: true });
+}
+
+function toggleGuideVoice() {
+  if (state.busy || guideVoiceSession.processing || guideVoiceSession.speaking) return;
+  if (!guideVoiceSession.active) {
+    startGuideVoiceSession();
+    return;
+  }
+  if (guideVoiceSession.manualPause || guideVoiceSession.paused) resumeGuideListening();
+  else pauseGuideListening({ manual: true });
+}
+
+function fallbackTurn(question, answer, { forceRespond = false } = {}) {
   const value = String(answer);
+  const compact = value.replace(/[，。！？、,.!?\s]/g, '');
+  const filler = /^(嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)$/;
+  const keywordPool = {
+    theme: ['动物', '猫', '狗', '狐狸', '太空', '星星', '飞船', '森林', '植物', '海', '雨'],
+    approach: ['看', '观察', '推', '打开', '敲门', '等', '叫', '伙伴', '一起'],
+    companion: ['陪', '坐', '玩', '问', '听', '抱', '一起', '安静'],
+    comfort: ['声音', '太大', '没看懂', '没看明白', '慢', '自己选', '累', '害怕'],
+  }[question.id] || [];
+  const keywords = keywordPool.filter(keyword => value.includes(keyword)).slice(0, 3);
+  const shouldRespond = forceRespond || !filler.test(compact) && (keywords.length > 0 || compact.length >= 3);
   const species = /一起|伙伴|热闹|跑|玩/.test(value) ? 'dog' : /安静|慢|看看|听/.test(value) ? 'cat' : 'human';
   const palette = /星|月|太空|夜/.test(value) ? 'moon' : /海|水|雨|蓝/.test(value) ? 'sky' : /花|暖|红|太阳/.test(value) ? 'coral' : 'moss';
   const feature = /听|安静|声音/.test(value) ? 'listening-ears' : /看|观察|发现/.test(value) ? 'bright-eyes' : /一起|朋友|陪/.test(value) ? 'soft-tail' : 'star-freckles';
   return {
+    shouldRespond,
+    keywords,
+    listeningPrompt: keywords.length ? `听见了“${keywords.join('、')}”，你还可以接着说。` : '我还在听，你可以再说完整一点。',
     reaction: `我记住了“${value.slice(0, 18)}”。它会变成小伙伴身上的一个秘密。`,
     heard: value.slice(0, 12),
     profileValue: value.slice(0, 18),
@@ -397,12 +729,12 @@ function fallbackTurn(question, answer) {
   };
 }
 
-async function understandAnswer(question, answer) {
+async function understandAnswer(question, answer, { forceRespond = false } = {}) {
   try {
     const response = await fetch('/api/story-turn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId: question.id, question: question.question, answer }),
+      body: JSON.stringify({ questionId: question.id, question: question.question, answer, forceRespond }),
     });
     if (!response.ok) throw new Error('story turn unavailable');
     document.documentElement.dataset.storyAi = 'doubao';
@@ -410,14 +742,19 @@ async function understandAnswer(question, answer) {
   } catch {
     document.documentElement.dataset.storyAi = 'deterministic-fallback';
     toast('图鉴员的远程耳朵暂时没连上，但你的回答仍然会改变小宠物。');
-    return fallbackTurn(question, answer);
+    return fallbackTurn(question, answer, { forceRespond });
   }
 }
 
 function renderGuide() {
-  $('guide-avatar').textContent = state.guide.mark;
   $('guide-name').textContent = state.guide.name;
   $('guide-manner').textContent = state.guide.manner;
+  $('guide-figure').dataset.guide = state.guide.id;
+  $('guide-canvas').setAttribute('aria-label', `角色模拟器里的卷尾小狐狸，图鉴员${state.guide.name}`);
+  requestAnimationFrame(() => {
+    guideRenderer.resize();
+    guideRenderer.react('happy');
+  });
 }
 
 function renderQuestion() {
@@ -426,14 +763,23 @@ function renderQuestion() {
   $('interview-question').textContent = question.question;
   $('question-hint').textContent = question.hint;
   $('guide-reaction').textContent = '';
-  $('answer-input').value = '';
-  $('speech-status').textContent = '还没有开始听';
+  $('guide-reaction').hidden = true;
+  $('guide-speech').dataset.mode = 'question';
+  const bubble = $('guide-speech');
+  bubble.classList.remove('bubble-refresh');
+  void bubble.offsetWidth;
+  bubble.classList.add('bubble-refresh');
+  guideVoiceSession.pendingAnswer = '';
+  showLiveAnswer('');
+  if (!guideVoiceSession.active) setGuideVoiceUi('setup', '先点一下麦克风，之后会自动继续听');
+  else if (guideVoiceSession.manualPause) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
   const quick = $('quick-answers');
   quick.replaceChildren(...question.quick.map(label => {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = label;
-    button.addEventListener('click', () => submitInterviewAnswer(label));
+    button.disabled = state.busy;
+    button.addEventListener('click', () => submitInterviewAnswer(label, { forceRespond: true }));
     return button;
   }));
 }
@@ -451,37 +797,77 @@ async function beginInterview() {
   renderGuide();
   showPanel('interview-panel', 'interview');
   renderQuestion();
-  await playTts(`${state.guide.hello}${INTERVIEW_QUESTIONS[0].question}`, state.guide.voice);
 }
 
-async function submitInterviewAnswer(raw) {
+async function submitInterviewAnswer(raw, { fromVoice = false, forceRespond = false } = {}) {
   if (state.busy) return;
-  const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, 180);
+  const answer = String(raw || '').trim().replace(/[<>]/g, '').slice(0, MAX_INTERVIEW_ANSWER);
   if (!answer) {
-    $('speech-status').textContent = '先说一点点，或者点一个你喜欢的回答。';
-    $('answer-input').focus();
+    writeSpeechStatus($('speech-status'), '先说一点点，或者点一个你喜欢的回答');
+    guideVoiceSession.processing = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
     return;
   }
-  stopRecognition();
-  trackAnalytics('echo_interview_answer', { depth: 2 + state.questionIndex });
+  if (guideVoiceSession.active) {
+    guideVoiceSession.processing = true;
+    pauseGuideListening({ mode: 'thinking', message: '豆包正在理解你刚才说的内容' });
+  }
+  if (!fromVoice) showLiveAnswer(answer);
   setBusy(true);
-  $('speech-status').textContent = '豆包正在理解你刚才说的内容';
+  setGuideVoiceUi('thinking', '豆包正在理解你刚才说的内容');
   const question = INTERVIEW_QUESTIONS[state.questionIndex];
-  const result = await understandAnswer(question, answer);
+  const result = await understandAnswer(question, answer, { forceRespond });
+  if (result.shouldRespond === false) {
+    guideVoiceSession.pendingAnswer = answer;
+    const keywords = Array.isArray(result.keywords) ? result.keywords.slice(0, 3) : [];
+    const label = keywords.length ? `听见了：${keywords.join('、')}` : '我还在听';
+    const listeningPrompt = String(result.listeningPrompt || '我还在听，你可以再说完整一点。').slice(0, 42);
+    showLiveAnswer(answer, label);
+    trackAnalytics('echo_listen_continue', { depth: 2 + state.questionIndex });
+    setBusy(false);
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) {
+      resumeGuideListening({ preserveBubble: true, message: listeningPrompt });
+    } else if (guideVoiceSession.active) {
+      setGuideVoiceUi('paused', listeningPrompt);
+    } else {
+      setGuideVoiceUi('setup', listeningPrompt);
+    }
+    return;
+  }
+  guideVoiceSession.pendingAnswer = '';
+  trackAnalytics('echo_interview_answer', { depth: 2 + state.questionIndex });
+  showLiveAnswer(answer, '听懂了');
   state.profile[question.id] = result.profileValue;
   if (result.heard) state.heard.push(result.heard);
   if (result.petHint) state.petHints.push(result.petHint);
   $('guide-reaction').textContent = result.reaction;
+  $('guide-reaction').hidden = false;
+  $('guide-speech').dataset.mode = 'reaction';
+  $('guide-bubble-state').textContent = '回应你';
   renderHeardNotes();
-  $('speech-status').textContent = result.privacyRedirect ? '这部分不会被记进小宠物配方。' : '已经记进这次的小宠物配方。';
+  guideVoiceSession.speaking = true;
+  setGuideVoiceUi('speaking', result.privacyRedirect ? '这部分不会被记进小宠物配方' : `${state.guide.name}正在回应你`);
   await playTts(result.reaction, state.guide.voice);
   state.questionIndex++;
-  setBusy(false);
-  if (state.questionIndex >= INTERVIEW_QUESTIONS.length) finishInterview();
-  else {
-    renderQuestion();
-    await playTts(INTERVIEW_QUESTIONS[state.questionIndex].question, state.guide.voice);
+  if (state.questionIndex >= INTERVIEW_QUESTIONS.length) {
+    setBusy(false);
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    await stopGuideVoiceSession();
+    finishInterview();
+    return;
   }
+  renderQuestion();
+  setGuideVoiceUi('speaking', `${state.guide.name}在问下一个问题，说完会自动继续听`);
+  await playTts(INTERVIEW_QUESTIONS[state.questionIndex].question, state.guide.voice);
+  setBusy(false);
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening();
+  else if (guideVoiceSession.active) setGuideVoiceUi('paused', '已经暂停，点一下就会继续听');
+  else setGuideVoiceUi('setup', '先点一下麦克风，之后会自动继续听');
 }
 
 function petDescription(pet) {
@@ -746,18 +1132,14 @@ function saveEnding() {
 }
 
 $('begin-button').addEventListener('click', beginInterview);
-$('mic-button').addEventListener('click', () => listenInto($('answer-input'), $('speech-status'), $('mic-button')));
-$('answer-form').addEventListener('submit', event => {
-  event.preventDefault();
-  submitInterviewAnswer($('answer-input').value);
-});
+$('mic-button').addEventListener('click', toggleGuideVoice);
 $('accept-pet').addEventListener('click', () => {
   showPanel('ritual-panel', 'ritual');
   petRenderer.react('happy');
 });
 $('pet-name-input').addEventListener('input', updateRitualReady);
 $('first-hello-input').addEventListener('input', updateRitualReady);
-$('ritual-mic').addEventListener('click', () => listenInto($('first-hello-input'), $('ritual-status'), $('ritual-mic')));
+$('ritual-mic').addEventListener('click', () => listenOnceInto($('first-hello-input'), $('ritual-status'), $('ritual-mic')));
 $('wake-pet').addEventListener('click', wakePet);
 $('continue-scene').addEventListener('click', () => {
   if (state.busy) return;
@@ -780,6 +1162,10 @@ $('restart-button').addEventListener('click', () => location.reload());
 
 paintPaperGrain();
 addEventListener('resize', paintPaperGrain, { passive: true });
+addEventListener('beforeunload', () => {
+  stopRecognition();
+  stopGuideVoiceSession();
+});
 updateBackpack();
 document.documentElement.dataset.storyReady = 'true';
-window.__storyV2 = { state, ITEMS, SCENES, petRenderer, renderScene, collectItem, finishStory };
+window.__storyV2 = { state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory };

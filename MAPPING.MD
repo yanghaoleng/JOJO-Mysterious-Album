@@ -64,7 +64,11 @@
 | 新腾讯服务器、锐驰服务器 | KinderGrimm 生产主机 | `lhins-qgi1l9jg`、`124.221.104.244`、`ssh mikeywa-rive` | 与 Rive 服务隔离端口、目录、systemd 和 Nginx 站点 |
 | 统计服务、站点后端 | Python 零依赖服务 | `kindergrimm.service`、`127.0.0.1:8137`、`serve.py` | 火山、Fish、匿名统计与后台鉴权，只经 Nginx `/api/` 暴露 |
 | 新故事、不见了的回声 | 连续语音故事 | `/story-v2`、`story-v2.html`、`src/story-v2.js` | 主页第一入口，与雾灯花园并列且不替换原关卡 |
-| 随机提问的人、图鉴员 | 新版开场引导角色 | `GUIDES`、`state.guide`、`#guide-avatar` | 小芽、阿页、钟果随机出现，问题相同但节奏和音色不同 |
+| 小狐狸、图鉴员、小卷 | 新版开场引导角色 | `STORY_GUIDE_TEMPLATE`、`state.guide`、`#guide-canvas`、`guideRenderer` | 固定复用角色模拟器的卷尾小狐狸 recipe 与动画，问题从它头顶气泡出现，不用 SVG 或 CSS 拼角色 |
+| 头上冒的气泡、提问气泡 | 图鉴员主问题气泡 | `#guide-speech`、`#interview-question`、`data-mode` | 问题与即时回应共用同一个角色头顶气泡，通过 `question/reaction` 状态切换 |
+| 一直收音、点一次以后一直听 | 开场连续语音会话 | `guideVoiceSession`、`startGuideVoiceSession()`、`resumeGuideListening()` | 首次用户动作申请麦克风；媒体轨道持续存在，角色朗读和理解期间暂停识别，结束后自动恢复 |
+| 我听到什么、实时听写小气泡 | 临时语音转写反馈 | `#live-answer-bubble`、`#live-answer-text`、`showLiveAnswer()` | 浏览器中间文本即时显示，豆包句末校准后交给回应门控，不进入长期聊天记录 |
+| 麦克风这一行、语音输入 | 无提交语音入口 | `#mic-button`、`.guide-mic`、`.voice-listen-zone` | 访谈只显示一个麦克风图标；孩子的话在上方气泡显示，不设输入框与提交按钮 |
 | 四轮聊天、先认识孩子 | 新版低敏感度偏好访谈 | `INTERVIEW_QUESTIONS`、`/api/story-turn` | 主题、探索、陪伴、节奏；不询问身份信息 |
 | 签给我的宠物、页灵 | 由回答生成的同行宠物 | `state.pet`、`PetRenderer`、`recipe` | 回答映射 species、palette、feature 和可复现 seed |
 | 三个印章、开口仪式 | 宠物声音激活步骤 | `.voice-seals`、`wakePet()` | 名字、听见、声音依次亮起，之后宠物才使用独立音色 |
@@ -74,8 +78,8 @@
 | 红线团、星星毛线 | 星线团 | `ITEMS.starThread`、`star-thread.png` | 连接没有说完的话 |
 | 叶子信、没寄出的信 | 没寄出的问候 | `ITEMS.unsentGreeting`、`unsent-greeting.png` | 第二章暂存并送给慢钟先生 |
 | 发光种子、灯种 | 灯塔种子 | `ITEMS.lighthouseSeed`、`lighthouse-seed.png` | 第三章种在灯塔顶部并消耗 |
-| 豆包在理解、故事 AI | 儿童安全偏好理解 | `/api/story-turn`、`story_turn_result()` | 只返回回应、偏好和受限宠物提示，失败走确定性映射 |
-| 火山语音识别、豆包听写 | 句末豆包 ASR 校准 | `/api/asr`、`volc_asr.py`、`doubaoTranscript()` | 浏览器先显示中间文本，PCM 经同源服务端送豆包，最终结果回填；Access Token 不下发 |
+| 豆包在理解、AI 自己决定回应 | 儿童安全偏好理解与回应门控 | `/api/story-turn`、`story_turn_result()`、`shouldRespond`、`forceRespond` | 未完成表达继续收音；完整回答才回应并推进，点选答案强制立即回应，失败走确定性映射 |
+| 火山语音识别、豆包听写 | 句末豆包 ASR 校准 | `/api/asr`、`volc_asr.py`、`doubaoTranscript()` | 浏览器先显示中间文本，持续媒体轨道按每句切片，PCM 经同源服务端送豆包，最终结果回填并交给 AI 判断是否回应；Access Token 不下发 |
 | 故事语音应用、流式语音应用 | 火山豆包语音专用应用 | `kindergrimm_story_voice`、AppID `6570862201` | ASR/TTS 2.0 与大模型兼容能力使用试用包；真实 Token 仅在服务端环境 |
 | 豆包宠物声音、火山 TTS | 可切换动态语音代理 | `/api/tts`、`volc_tts()`、`PET_TTS_PROVIDER` | 当前本机为 `volc`，四个角色音色名映射不同语速；`fish` 保留回退配置 |
 | 语音是否真的接通 | 语音健康状态 | `speechRecognition`、`doubaoTts`、`petTtsProvider` | 只返回布尔状态和供应方，不返回 AppID、Token 或音色凭证 |

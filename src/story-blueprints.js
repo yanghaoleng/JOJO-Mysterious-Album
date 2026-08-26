@@ -1,6 +1,33 @@
 export const STORY_ID = 'lost-echo';
 
+export const STORY_GUIDE_TEMPLATE = {
+  id: 'curl-fox',
+  group: '小动物',
+  name: '卷尾小狐狸',
+  seed: 64525,
+  species: 'cat',
+  base: 'quad',
+  parts: {
+    eyes: { type: 'wide', scale: 1.34, sx: .61 },
+    crest: { style: 'cat', tone: 'skin', len: 1.25, spread: .75 },
+    mouth: { style: 'smirk' },
+    nose: { style: 'triangle', size: 1.2 },
+    skull: { shape: 'pear' },
+    torso: { shape: 'bean', wF: .48, hF: .52 },
+    tail: { style: 'puff', len: 1.85 },
+    extras: { whiskers: true, spots: true },
+  },
+};
+
 export const GUIDES = [
+  {
+    id: 'curl-fox',
+    name: '小卷',
+    mark: '狐',
+    voice: 'sprout',
+    manner: '会认真等你说完，也会从一句话里找到最亮的词',
+    hello: '你好呀，我是小卷。你只要像和朋友聊天一样慢慢说，我会自己听懂什么时候该回应。',
+  },
   {
     id: 'sprout',
     name: '小芽',
