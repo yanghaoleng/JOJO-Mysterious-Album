@@ -516,8 +516,10 @@ h2 { font-size: clamp(27px, 4vw, 40px); line-height: 1.22; }
   min-height: 100dvh;
   margin: 0 auto;
   padding: clamp(92px, 12vh, 118px) 20px max(54px, env(safe-area-inset-bottom));
+  pointer-events: none;
   animation: panel-in 420ms cubic-bezier(.16, 1, .3, 1) both;
 }
+.guide-speech, .guide-figure { pointer-events: auto; }
 body[data-phase="interview"] .place-object { opacity: .22; filter: blur(2px); }
 body[data-phase="interview"] .far-shape { opacity: .28; }
 .guide-encounter {
