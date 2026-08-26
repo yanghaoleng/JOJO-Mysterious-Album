@@ -1563,6 +1563,7 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
     width: auto;
     max-height: 29vh;
   }
+  .character-call.is-debug .character-call-status { top: calc(var(--safe-top) + 76px + 29vh); }
   .character-call-transcript { bottom: calc(var(--safe-bottom) + 96px); width: calc(100% - 26px); }
   .character-call-voice { bottom: calc(var(--safe-bottom) + 12px); width: calc(100% - 26px); }
   .character-call.is-debug .character-call-transcript,
