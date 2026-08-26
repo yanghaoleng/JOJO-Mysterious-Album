@@ -6,14 +6,20 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-mic-icon">
+  <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260827-generated-icons">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/listening-shell.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/star-thread.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/unsent-greeting.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/lighthouse-seed.webp">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-generated-icons">
+  <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
 
   <header class="story-header">
     <a href="./" class="brand-link" aria-label="返回萌萌星的奇妙图鉴">
-      <span aria-hidden="true">萌</span>
+      <span class="brush-icon brush-icon-brand" aria-hidden="true"></span>
       <b>萌萌星的奇妙图鉴</b>
     </a>
     <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
@@ -65,7 +71,7 @@
     </section>
 
     <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
-      <div class="cover-mark" aria-hidden="true">声</div>
+      <div class="cover-mark brush-icon brush-icon-voice" aria-hidden="true"></div>
       <div>
         <p class="section-label">三问领宠物，语音开始故事</p>
         <h1 id="cover-title">不见了的回声</h1>
@@ -154,7 +160,7 @@
   </main>
 
   <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog" data-uisfx="open">
-    <span class="backpack-mark" aria-hidden="true">包</span>
+    <span class="backpack-mark brush-icon brush-icon-backpack" aria-hidden="true"></span>
     <span class="backpack-label">背包</span>
     <span class="backpack-quick-items" id="backpack-quick-items" aria-hidden="true"></span>
   </button>
@@ -176,6 +182,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260826-voice-skip"></script>
+  <script type="module" src="./src/story-v2.js?v=20260827-webp"></script>
 </body>
 </html>

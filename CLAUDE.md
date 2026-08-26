@@ -46,7 +46,7 @@ the real generator (`src/how.js` composes parts onto ONE Sketch
 canvas — legal because parts draw in character coordinates — and
 stands three real rigs in three small renderers), so the page cannot
 drift from the code it explains. Its share card is drawn by the
-generator too — `assets/og.html` is the generator, `assets/how-og.png`
+generator too — `assets/og.html` is the generator, `assets/how-og.webp`
 the output, and the command to regenerate it is in that file's head. `crowdbrush.html` is the **second hand**: the crowd, drawn by
 [p5.brush](https://github.com/acamposuribe/p5.brush) instead of
 `sketch.js` — a parallel HAND behind the same part contract

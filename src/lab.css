@@ -163,7 +163,7 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 }
 .mode-choice.echo b { font-size: clamp(25px, 3vw, 32px); }
 .mode-choice.echo > span:not(.mode-mark) { max-width: 23em; font-size: 16px; }
-.mode-choice.echo .mode-mark { width: 62px; height: 64px; font-size: 30px; }
+.mode-choice.echo .mode-mark { width: 62px; height: 62px; font-size: 30px; }
 .mode-note {
   margin-top: 25px;
   color: var(--ink-soft);

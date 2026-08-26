@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#eee6d2">
 <meta name="description" content="萌萌星的奇妙图鉴：让孩子创造一只奇妙生物，再进入它的第一个箱庭世界。">
 <title>萌萌星的奇妙图鉴</title>
+<link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260827-generated-icons">
 <style>
   :root {
     --paper: #eee6d2;
@@ -375,7 +376,8 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260827-seed-voices">
+<link rel="stylesheet" href="./src/lab.css?v=20260827-generated-icons">
+<link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -384,7 +386,7 @@
   <section id="mode-gate" role="dialog" aria-modal="true" aria-labelledby="mode-title">
     <div class="mode-sheet">
       <div class="mode-heading">
-        <span class="mode-stamp" aria-hidden="true">萌</span>
+        <span class="mode-stamp brush-icon brush-icon-brand" aria-hidden="true"></span>
         <div>
           <p>萌萌星的奇妙图鉴</p>
           <h1 id="mode-title">今天翻开哪一页？</h1>
@@ -393,13 +395,13 @@
       </div>
       <div class="mode-choices">
         <a class="mode-choice echo" href="./story-v2" data-mode-choice="echo">
-          <span class="mode-mark" aria-hidden="true">声</span>
+          <span class="mode-mark brush-icon brush-icon-voice" aria-hidden="true"></span>
           <b>不见了的回声</b>
           <span>先聊天认识你，再和专属小伙伴完成三章语音冒险。</span>
           <i>进入新故事</i>
         </a>
         <button class="mode-choice debug" type="button" data-mode-choice="debug">
-          <span class="mode-mark" aria-hidden="true">造</span>
+          <span class="mode-mark brush-icon brush-icon-create" aria-hidden="true"></span>
           <b>角色模拟器</b>
           <span>选择或创建角色，编辑外观、声音、场景和完整角色卡。</span>
           <i>自由创造</i>
@@ -544,22 +546,22 @@
             <h3 id="action-preview-title">动作预览</h3>
             <div id="action-options" class="action-grid">
               <button type="button" data-action="play" data-line="你好呀！我在这里。" data-audio="action-wave">
-                <span aria-hidden="true">招</span><b>挥挥手</b><small>轻快地打个招呼</small>
+                <span class="brush-icon brush-icon-wave" aria-hidden="true"></span><b>挥挥手</b><small>轻快地打个招呼</small>
               </button>
               <button type="button" data-action="walk" data-line="我慢慢走两步，边走边看看。" data-audio="action-walk">
-                <span aria-hidden="true">走</span><b>走一走</b><small>慢慢观察周围</small>
+                <span class="brush-icon brush-icon-walk" aria-hidden="true"></span><b>走一走</b><small>慢慢观察周围</small>
               </button>
               <button type="button" data-action="run" data-line="我要跑起来啦，风会从耳边经过。" data-audio="action-run">
-                <span aria-hidden="true">跑</span><b>跑起来</b><small>快快跑上一小段</small>
+                <span class="brush-icon brush-icon-run" aria-hidden="true"></span><b>跑起来</b><small>快快跑上一小段</small>
               </button>
               <button type="button" data-action="sit" data-line="我先坐下来，听听你接下来想说什么。" data-audio="action-sit">
-                <span aria-hidden="true">坐</span><b>坐下来</b><small>安静等一会儿</small>
+                <span class="brush-icon brush-icon-sit" aria-hidden="true"></span><b>坐下来</b><small>安静等一会儿</small>
               </button>
               <button type="button" data-action="sleep" data-line="我闭一会儿眼睛，做一个很短的梦。" data-audio="action-sleep">
-                <span aria-hidden="true">梦</span><b>打个盹</b><small>慢慢呼吸休息</small>
+                <span class="brush-icon brush-icon-sleep" aria-hidden="true"></span><b>打个盹</b><small>慢慢呼吸休息</small>
               </button>
               <button type="button" data-action="attack" data-line="我鼓起勇气，向前迈出一步。" data-audio="action-brave">
-                <span aria-hidden="true">勇</span><b>勇气动作</b><small>蓄力后向前一步</small>
+                <span class="brush-icon brush-icon-courage" aria-hidden="true"></span><b>勇气动作</b><small>蓄力后向前一步</small>
               </button>
             </div>
           </section>
@@ -678,7 +680,7 @@
 
       <aside class="lab-notebook character-editor-pane" aria-labelledby="character-editor-title">
         <div class="notebook-heading">
-          <span aria-hidden="true">角</span>
+          <span class="brush-icon brush-icon-character" aria-hidden="true"></span>
           <div><h2 id="character-editor-title">请选择角色</h2></div>
         </div>
         <p id="character-editor-empty" class="character-editor-empty">从角色模板中选择一个已有角色，或点击“创建角色”。</p>

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260826-direct-pet-story';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
 import { paintSceneThumbnail } from './lab-scenes.js';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';

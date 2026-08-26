@@ -593,10 +593,15 @@ stage.addEventListener('wheel', e => {
 // ---- save -------------------------------------------------------------
 function save() {
   frame(performance.now());
-  const a = document.createElement('a');
-  a.href = renderer.domElement.toDataURL('image/png');
-  a.download = `photo-${shotSeed}.png`;
-  a.click();
+  renderer.domElement.toBlob(blob => {
+    if (!blob) return;
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = `photo-${shotSeed}.webp`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }, 'image/webp', .86);
 }
 
 document.getElementById('again')?.addEventListener('click', () => reshoot());

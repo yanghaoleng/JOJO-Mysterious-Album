@@ -1,0 +1,24 @@
+.brush-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background-image: url('../assets/icons/brush-icons.webp?v=20260827-generated-icons') !important;
+  background-repeat: no-repeat !important;
+  background-size: 400% 300% !important;
+  font-size: 0 !important;
+  line-height: 0;
+}
+
+.brush-icon-brand { background-position: 0 0 !important; }
+.brush-icon-voice { background-position: 33.333% 0 !important; }
+.brush-icon-create { background-position: 66.667% 0 !important; }
+.brush-icon-wave { background-position: 100% 0 !important; }
+.brush-icon-walk { background-position: 0 50% !important; }
+.brush-icon-run { background-position: 33.333% 50% !important; }
+.brush-icon-sit { background-position: 66.667% 50% !important; }
+.brush-icon-sleep { background-position: 100% 50% !important; }
+.brush-icon-courage { background-position: 0 100% !important; }
+.brush-icon-character { background-position: 33.333% 100% !important; }
+.brush-icon-backpack { background-position: 66.667% 100% !important; }
+.brush-icon-data { background-position: 100% 100% !important; }

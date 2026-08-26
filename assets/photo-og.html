@@ -13,17 +13,19 @@
   Two ways to give it that strip, and the fast one is the usual one:
 
   1. A SHOT YOU PICKED. Open /photo, reshoot until you like the class,
-     press S, and hand the saved PNG over as ?plate= (it can live
+     press S, and hand the saved WebP over as ?plate= (it can live
      anywhere — serve the folder it is in):
 
        python3 serve.py 8140 &
        python3 serve.py 8141 ~/Downloads &
        chrome --headless=new --hide-scrollbars --window-size=1200,630 \
-              --virtual-time-budget=8000 --screenshot=assets/photo-og.png \
-       'http://localhost:8140/assets/photo-og.html?plate=http://localhost:8141/photo-440569354.png'
+              --virtual-time-budget=8000 --screenshot=/tmp/photo-og.png \
+       'http://localhost:8140/assets/photo-og.html?plate=http://localhost:8141/photo-440569354.webp'
+
+       cwebp -quiet -q 82 -m 6 -metadata none /tmp/photo-og.png -o assets/photo-og.webp
 
   2. NO PLATE — the page boots src/photo.js and shoots itself, which
-     is what keeps this file honest when nobody has a PNG to hand.
+     is what keeps this file honest when nobody has a WebP to hand.
      Headless Chrome has no GPU, so it needs software GL, and this
      page is the one with an SSAO stack: budget minutes, not seconds.
      Without the swiftshader flags the strip comes out blank — that is
@@ -32,15 +34,17 @@
        chrome --headless=new --hide-scrollbars \
               --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader \
               --window-size=1200,630 --virtual-time-budget=90000 \
-              --screenshot=assets/photo-og.png \
+              --screenshot=/tmp/photo-og.png \
               'http://localhost:8140/assets/photo-og.html?seed=440569354'
+
+       cwebp -quiet -q 82 -m 6 -metadata none /tmp/photo-og.png -o assets/photo-og.webp
 
   The menu thumbnail is the same plate, cropped 3:2 like every other
   card in assets/thumbs:
 
-       sips -c 1724 2586 shot.png --out /tmp/c.png
-       sips -z 320 480 -s format jpeg -s formatOptions 84 /tmp/c.png \
-            --out assets/thumbs/photo.jpg
+       magick shot.webp -gravity center -crop 2586x1724+0+0 +repage \
+              -resize 480x320 -strip -define webp:method=6 -quality 80 \
+              assets/thumbs/photo.webp
 -->
 <style>
   :root { --ink: #1f1d1a; --paper: #f6f1e5; }

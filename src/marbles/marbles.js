@@ -2105,11 +2105,12 @@ function frame(now = performance.now()) {
  * `?shot=N` — run N seconds of a naive auto-played game synchronously at
  * load and stop throwing at the end, so a headless screenshot catches a
  * board mid-run with a full hand rather than the title card. It is how
- * `assets/thumbs/marbles.jpg` is made:
+ * `assets/thumbs/marbles.webp` is made:
  *
  *   python3 serve.py &
  *   chrome --headless=new --window-size=900,1100 --use-gl=swiftshader \
  *          --screenshot=/tmp/m.png "http://localhost:8137/marbles.html?shot=26"
+ *   cwebp -quiet -q 80 -m 6 -metadata none /tmp/m.png -o assets/thumbs/marbles.webp
  *
  * Synchronous on purpose: a virtual-time budget will not wait for a
  * rAF-driven warm-up, and a page that screenshots itself has to be
