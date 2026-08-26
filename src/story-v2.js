@@ -670,6 +670,11 @@ function setGuideVoiceUi(mode, message) {
   if (phase === 'interview') $('guide-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
   if (phase === 'quest') {
     $('npc-wrap').dataset.state = ['listening', 'thinking', 'speaking'].includes(mode) ? mode : '';
+    if (mode === 'listening' && !state.busy && !guideVoiceSession.processing) {
+      setBubble('npc', '我在认真听你说…', '');
+    } else if (mode === 'thinking') {
+      setBubble('npc', '正在想你的办法…', '');
+    }
     if (!bubblePages.npc.label || ['listening', 'thinking'].includes(mode)) {
       $('npc-bubble-state').textContent = bubbleStates[mode] || bubbleStates.setup;
     }

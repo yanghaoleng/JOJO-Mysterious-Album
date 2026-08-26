@@ -307,8 +307,8 @@ body[data-place="sea"] .place-object { width: 120px; height: 290px; right: 12vw;
   right: -28px;
   bottom: calc(100% + 18px);
   width: min(268px, 76vw);
-  min-height: 62px;
-  padding: 10px 15px 12px;
+  min-height: 48px;
+  padding: 11px 15px 12px;
   border: 1px solid rgba(58, 65, 52, .3);
   border-radius: 21px 17px 24px 16px;
   background: rgba(250, 246, 235, .96);
@@ -331,11 +331,7 @@ body[data-place="sea"] .place-object { width: 120px; height: 290px; right: 12vw;
 }
 @keyframes npc-bubble-in { from { opacity: 0; transform: translateY(8px) scale(.96); } }
 .npc-speech > span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--moss-deep);
-  font-size: 10px;
-  font-weight: 780;
+  display: none;
 }
 .npc-speech > b {
   display: block;
