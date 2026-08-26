@@ -163,7 +163,7 @@ python3 scripts/generate_star_offline.py
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
 - `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
 
-正式站部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为回滚点。
+正式站 `https://jma.mikeywa.site` 部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。HTTP 自动跳转 HTTPS，Let's Encrypt 证书自动续期；Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为回滚点。
 
 ## 新版故事模式原型
 

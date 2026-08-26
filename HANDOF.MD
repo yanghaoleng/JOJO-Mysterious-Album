@@ -19,7 +19,7 @@
 - [x] 移除全局声音开关；Fish Audio 教学和反馈按剧情自动播放，同时保留文字反馈。
 - [x] 首次入口改为按模式加载：入口压缩传输约 22KB，故事模式增量约 575KB，角色实验室增量约 707KB；音频继续按播放进度加载和缓存。
 - [x] 资源盘点：完整静态文件约 24.93MB，其中语音 13.47MB、音乐 5.83MB、图片 1.07MB、代码和页面 4.32MB；完整发布压缩包约 21.48MB，用户不会一次下载全部资源。
-- [ ] DNSPod 的 `jma.mikeywa.site` A 记录编辑值已改为 `124.221.104.244`，但腾讯云仍停在微信扫码身份校验；验证完成并确认权威解析生效后，再签发腾讯机 HTTPS 证书。旧 Vercel 继续提供正式域名，腾讯机已可随时接管。
+- [x] DNSPod 的 `jma.mikeywa.site` A 记录已切至 `124.221.104.244`；权威 DNSPod、阿里公共 DNS 和 Cloudflare DNS 均验证生效。腾讯机已签发 Let's Encrypt 证书并启用 HTTP 自动跳转 HTTPS，证书到期日为 2026-11-24 且已配置自动续期。
 
 ## 当前目标
 
@@ -70,8 +70,8 @@
 ## 运行状态
 
 - 本地入口：`python3 serve.py 8137`
-- Vercel 生产项目：`jma`，正式入口 `https://jma.mikeywa.site`，备用入口 `https://jma-zeta.vercel.app`。
-- 当前生产部署由 Vercel 项目 `jma` 的 Production 目标管理；自定义域名 DNS 与 HTTPS 已生效，旧部署保留为回滚点。
+- 腾讯生产主机：`lhins-qgi1l9jg / 124.221.104.244`，正式入口 `https://jma.mikeywa.site`，当前发布目录 `/opt/kindergrimm/releases/20260826-0041-3ba7d60`。
+- Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为独立回滚点，不再承载正式域名。
 - 页面：`http://localhost:8137/`
 - 健康检查：`GET /api/health`
 - AI 接口：`POST /api/director`，服务端使用火山方舟 Doubao Seed 2.0 Mini。
