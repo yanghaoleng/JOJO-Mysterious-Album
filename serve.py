@@ -86,7 +86,7 @@ CHARACTER_APPEARANCE_OPTIONS = {
     "torso": {"bean", "round", "tiny", "pear", "barrel"},
     "arms": {"stub", "noodle", "clasped", "hips", "wing"},
     "tail": {"none", "wag", "curl", "puff"},
-    "voice": {"sprout", "bubble", "moss", "star"},
+    "voice": {"sprout", "bubble", "moss", "star", "clever", "bright", "lively", "sweet", "clear", "neighbor", "youth", "gentle", "soft", "smart", "caring"},
 }
 CHARACTER_APPEARANCE_LABELS = {
     "human": "人物", "cat": "猫科", "dog": "犬科", "biped": "两脚站立", "sit": "坐姿", "quad": "四脚小兽",
@@ -94,7 +94,11 @@ CHARACTER_APPEARANCE_LABELS = {
     "none": "无", "floppy": "软耳朵", "bear": "圆耳朵", "bunny": "兔耳朵", "sprout": "小芽", "flower": "小花", "antlers": "小鹿角", "spikes": "短刺",
     "tiny": "小巧", "smirk": "歪歪笑", "buckteeth": "小门牙", "wobble": "软软嘴", "round": "圆润", "pear": "梨形", "square": "方形", "wonky": "歪歪形",
     "bean": "豆子形", "barrel": "胖桶形", "stub": "短短手", "noodle": "长长手", "clasped": "抱手", "hips": "叉腰", "wing": "小翅膀",
-    "wag": "摇摇尾巴", "curl": "卷尾巴", "puff": "绒球尾巴", "bubble": "泡泡声音", "moss": "阿绒声音", "star": "星仔声音",
+    "wag": "摇摇尾巴", "curl": "卷尾巴", "puff": "绒球尾巴",
+    "sprout": "小芽", "bubble": "泡泡声音", "moss": "阿绒声音", "star": "星仔声音",
+    "clever": "聪聪声音", "bright": "亮仔声音", "lively": "跳跳声音", "sweet": "小源声音",
+    "clear": "梓梓声音", "neighbor": "小邻声音", "youth": "小辛声音", "gentle": "小雅声音",
+    "soft": "小林声音", "smart": "阿机声音", "caring": "依依声音",
 }
 CHARACTER_SCENES = {
     "paper-ground": "纸上地面", "classroom-desk": "教室书桌", "library": "安静图书馆",
@@ -116,17 +120,22 @@ CHARACTER_SCENE_KEYWORDS = (
     (r"被窝|毯子|帐篷", "blanket-fort"), (r"口袋", "giant-pocket"), (r"舞台|表演|音乐", "music-stage"),
     (r"纸上|空白场景|简单场景", "paper-ground"),
 )
-FISH_VOICES = {
-    "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "speed": 0.92},
-    "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "speed": 1.08},
-    "moss": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "speed": 0.82},
-    "star": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "speed": 1.04},
-}
-VOLC_VOICE_SPEED = {
-    "sprout": 0.94,
-    "bubble": 1.08,
-    "moss": 0.86,
-    "star": 1.0,
+TTS_VOICES = {
+    "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.94, "pitch": 1.04, "speaker": "ICL_zh_female_keainvsheng_tob"},
+    "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.08, "speaker": "ICL_zh_female_tiaopigongzhu_tob"},
+    "moss": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.82, "volc_speed": 0.86, "pitch": 0.94, "speaker": "zh_male_lanxiaoyang_mars_bigtts"},
+    "star": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.00, "pitch": 1.00, "speaker": "ICL_zh_male_shuanglangshaonian_tob"},
+    "clever": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 1.02, "speaker": "ICL_zh_male_tiancaitongzhuo_tob"},
+    "bright": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.06, "volc_speed": 1.05, "pitch": 1.07, "speaker": "zh_male_dongmanhaimian_mars_bigtts"},
+    "lively": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.06, "speaker": "ICL_zh_female_huoponvhai_tob"},
+    "sweet": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.98, "volc_speed": 0.98, "pitch": 1.04, "speaker": "zh_female_tianmeixiaoyuan_moon_bigtts"},
+    "clear": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.96, "volc_speed": 0.96, "pitch": 1.00, "speaker": "zh_female_qingchezizi_moon_bigtts"},
+    "neighbor": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.02, "volc_speed": 1.02, "pitch": 0.98, "speaker": "zh_male_linjiananhai_moon_bigtts"},
+    "youth": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 0.97, "speaker": "zh_male_shaonianzixin_moon_bigtts"},
+    "gentle": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.88, "volc_speed": 0.90, "pitch": 0.98, "speaker": "zh_female_wenrouxiaoya_moon_bigtts"},
+    "soft": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.92, "pitch": 1.00, "speaker": "zh_female_linjianvhai_moon_bigtts"},
+    "smart": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.06, "volc_speed": 1.06, "pitch": 1.02, "speaker": "ICL_zh_male_shenmi_v1_tob"},
+    "caring": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.95, "volc_speed": 0.95, "pitch": 1.03, "speaker": "ICL_zh_female_yilin_tob"},
 }
 
 
@@ -631,8 +640,17 @@ def sanitize_character_history(raw):
     return history
 
 
+def character_edit_intent(message):
+    text = clean_character_text(message, 180)
+    action = r"换|切换|改变|修改|调整|设置|设成|变成|改成|弄成|去掉|加上|添加|放到|搬到|来到|移到|让它|让你|更"
+    target = r"外观|造型|样子|形象|场景|背景|地方|地点|眼睛|耳朵|头顶|嘴巴|脸|身体|手臂|翅膀|尾巴|站姿|小猫|小狗|人物|声音|音色|性格|说话|角色设定|温柔|活泼|开朗|勇敢|好奇|安静|沉稳"
+    style_request = re.search(r"(?:性格|说话).{0,8}(?:温柔|活泼|开朗|勇敢|好奇|安静|沉稳|慢|快|简短|少说|多问)", text)
+    return bool((re.search(action, text) and re.search(target, text)) or style_request)
+
+
 def fallback_character_edit(card, message, current_appearance=None, current_scene=""):
     next_card = dict(card)
+    current_appearance = sanitize_character_appearance(current_appearance)
     appearance_patch = {}
     scene_id = ""
     changed = []
@@ -667,10 +685,24 @@ def fallback_character_edit(card, message, current_appearance=None, current_scen
         (r"小小只|身体.*小", "torso", "tiny"), (r"圆滚滚|圆肚子", "torso", "round"),
         (r"方脸", "skull", "square"), (r"圆脸", "skull", "round"), (r"梨形脸", "skull", "pear"),
         (r"小翅膀|翅膀", "arms", "wing"), (r"抱着手|手.*抱", "arms", "clasped"), (r"叉腰", "arms", "hips"),
+        (r"变成.*小猫|换成.*小猫|猫咪造型", "species", "cat"),
+        (r"变成.*小狗|换成.*小狗|小狗造型", "species", "dog"),
+        (r"变成.*人物|换成.*人物|人物造型", "species", "human"),
     )
     for pattern, key, value in appearance_rules:
         if re.search(pattern, message):
             appearance_patch[key] = value
+    if not appearance_patch and re.search(r"(?:(?:换|切换|改变|修改|调整).{0,8}(?:外观|造型|样子|形象)|(?:外观|造型|样子|形象).{0,8}(?:换|切换|改变|修改|调整))", message):
+        eye_cycle = ["sparkle", "wide", "happy", "saucer"]
+        crest_cycle = ["sprout", "flower", "floppy", "bear"]
+        current_eye = current_appearance.get("eyes", "sparkle")
+        current_crest = current_appearance.get("crest", "sprout")
+        appearance_patch["eyes"] = eye_cycle[(eye_cycle.index(current_eye) + 1) % len(eye_cycle)] if current_eye in eye_cycle else eye_cycle[0]
+        appearance_patch["crest"] = crest_cycle[(crest_cycle.index(current_crest) + 1) % len(crest_cycle)] if current_crest in crest_cycle else crest_cycle[0]
+    if re.search(r"(?:换|切换|改变|修改|调整).{0,8}(?:声音|音色)", message):
+        voice_cycle = list(TTS_VOICES)
+        current_voice = current_appearance.get("voice", "star")
+        appearance_patch["voice"] = voice_cycle[(voice_cycle.index(current_voice) + 1) % len(voice_cycle)] if current_voice in voice_cycle else voice_cycle[0]
     if appearance_patch:
         changed.append("外观")
     for pattern, target_scene in CHARACTER_SCENE_KEYWORDS:
@@ -678,6 +710,11 @@ def fallback_character_edit(card, message, current_appearance=None, current_scen
             scene_id = target_scene
             changed.append("场景")
             break
+    if not scene_id and re.search(r"(?:(?:换|切换|改变|修改|调整).{0,8}(?:场景|背景|地方|地点)|(?:场景|背景|地方|地点).{0,8}(?:换|切换|改变|修改|调整))", message):
+        scene_cycle = ["mushroom-forest", "seaside", "clouds", "music-stage", "paper-ground"]
+        current = current_scene if current_scene in scene_cycle else scene_cycle[-1]
+        scene_id = scene_cycle[(scene_cycle.index(current) + 1) % len(scene_cycle)]
+        changed.append("场景")
     summary = f"已更新{'、'.join(dict.fromkeys(changed))}。" if changed else "我先记下了这条方向，设定没有需要强行改动的地方。"
     return {
         "card": sanitize_character_card(next_card),
@@ -691,13 +728,15 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
     if likely_private_info(message):
         return {"reply": "这些个人信息不用告诉我。我们只聊现在想一起做什么就好。"}
     topic = topic if mode == "debug" and topic in {"growth", "character"} else "free"
+    if mode == "debug" and character_edit_intent(message):
+        topic = "character"
     current_question = clean_character_text(topic_context.get("currentQuestion"), 100) if isinstance(topic_context, dict) else ""
     next_question = clean_character_text(topic_context.get("nextQuestion"), 100) if isinstance(topic_context, dict) else ""
     card_topic = (card.get("likes") or [clean_character_text(card.get("mission"), 36) or "今天的小发现"])[0]
     key = os.environ.get("ARK_API_KEY", "")
     if not key:
         if topic == "character":
-            fallback = f"我明白了，你想让我{message.rstrip('。！？!?')}。我会把这个变化说得更清楚。"
+            fallback = f"我明白了，你想让我{message.rstrip('。！？!?')}。好，我来试试这个变化。"
         elif topic == "growth":
             follow_up = next_question or "谢谢你，我已经更了解你喜欢怎样一起探索了。"
             fallback = f"我听见你说“{message[:24]}”了。{follow_up}"
@@ -766,7 +805,7 @@ def fish_tts(text, voice):
     key = os.environ.get("FISH_AUDIO_API_KEY", "")
     if not key:
         raise RuntimeError("tts_not_configured")
-    preset = FISH_VOICES.get(voice, FISH_VOICES["star"])
+    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
     body = json.dumps(
         {
             "text": text,
@@ -777,7 +816,7 @@ def fish_tts(text, voice):
             "normalize": True,
             "temperature": 0.7,
             "top_p": 0.7,
-            "prosody": {"speed": preset["speed"], "volume": 0, "normalize_loudness": True},
+            "prosody": {"speed": preset["fish_speed"], "volume": 0, "normalize_loudness": True},
         },
         ensure_ascii=False,
     ).encode("utf-8")
@@ -798,7 +837,9 @@ def fish_tts(text, voice):
 def volc_tts(text, voice):
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
-    speaker = os.environ.get("VOLC_TTS_SPEAKER_ID", "")
+    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
+    voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
+    speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
     if not app_id or not token or not speaker:
         raise RuntimeError("tts_not_configured")
     body = json.dumps(
@@ -808,7 +849,8 @@ def volc_tts(text, voice):
             "audio": {
                 "voice_type": speaker,
                 "encoding": "mp3",
-                "speed_ratio": VOLC_VOICE_SPEED.get(voice, VOLC_VOICE_SPEED["star"]),
+                "speed_ratio": preset["volc_speed"],
+                "pitch_ratio": preset["pitch"],
             },
             "request": {"reqid": str(uuid.uuid4()), "text": text, "operation": "query"},
         },
@@ -861,6 +903,8 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         topic = topic if mode == "debug" and topic in {"growth", "free", "character"} else "free"
         topic_context = payload.get("topicContext") if isinstance(payload.get("topicContext"), dict) else {}
         message = clean_character_text(payload.get("message"), 180)
+        if mode == "debug" and character_edit_intent(message):
+            topic = "character"
         if (template_id not in CHARACTER_TEMPLATE_IDS and not template_id.startswith("custom-")) or not character_name or not message:
             self.respond_json(400, {"error": "invalid_character_call"})
             return

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#e9e3d3">
   <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
   <meta name="description" content="先聊天认识孩子，再生成会一起成长的小宠物，走进三章水墨语音冒险。">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260826-voice-skip">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-mic-icon">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
   <canvas id="paper-grain" aria-hidden="true"></canvas>
@@ -143,7 +143,11 @@
         <b id="live-answer-text"></b>
       </div>
       <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="允许麦克风并开始故事">
-        <span aria-hidden="true"></span>
+        <svg data-icon="lucide-microphone" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" x2="12" y1="19" y2="22"></line><line x1="8" x2="16" y1="22" y2="22"></line>
+        </svg>
       </button>
       <p class="speech-status" id="speech-status" role="status"><i aria-hidden="true"></i><span>麦克风还未授权，点一下开始</span></p>
     </section>

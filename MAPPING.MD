@@ -40,11 +40,11 @@
 | 大眼睛、豆豆眼、大耳朵 | 信息偏好核心特征 | `QUESTIONS[1]`、学习偏好选项的 `apply()` | 后续兴趣只叠加特征，不能覆盖它们 |
 | 孩子画像怎样影响关卡 | 游戏启发上下文 | `buildGameInspiration()`、`gameInspiration` | 开场、收集、雾门鼓励和结局读取本机画像；图鉴只保存最小主题摘要 |
 | 放大糊、像贴图 | Canvas 部件纹理清晰度 | `setRender({ u: 176 })`、`displayPixelRatio`、`makePart()` | 角色不是 SVG；提高部件绘制密度、画布超采样和纹理过滤，不移除手绘颗粒 |
-| 四种音色、声音卡 | 内置音色试听 | `.voice-grid`、`VOICE_PRESETS` | 小芽、泡泡、阿绒、星仔；播放静态 MP3 |
-| 默认声音、星仔声音 | 玩家默认音色 | `DEFAULT_VOICE`、`VOICE_PRESETS.star` | 首次进入、旧档案迁移和重新开始都默认选中星仔 |
+| 多种音色、声音卡 | Seed 角色音色试听 | `.voice-grid`、`VOICE_PRESETS` | 15 个儿童化或角色化发音人在线试听；每个内置角色默认不同，仍可单独改选 |
+| 默认声音、角色专属声音 | 角色级默认音色 | `CHARACTER_TEMPLATES[].voice`、`VOICE_CATALOG_VERSION` | 旧角色配方自动迁移到模板专属音色；新建角色仍从星仔开始选择 |
 | 点击气泡、跳过这句 | 当前语音跳过 | `#lab-bubble`、`skipLabSpeech()`、`LabSpeaker.cancel()` | 停止当前句并立即显示完整字幕，不恢复旧的模拟对话面板 |
 | 离线反馈、预制星仔语音 | 固定 Fish Audio 资源 | `assets/voice/star/`、`offlineAudioPath()` | 包含 17 问画像、模板、选择、动作、对话、场景和连续脚本，共 155 段 |
-| Fish 语音接口 | 角色实验室 TTS 代理 | `/api/tts`、`fishWithCache()` | 固定星仔台词优先缓存，动态台词在线生成；不降级到系统 TTS |
+| Seed / Fish 语音接口 | 角色实验室 TTS 代理 | `/api/tts`、`onlineWithCache()` | 固定星仔台词可用缓存，角色试听和动态台词按供应方在线生成；不降级到系统 TTS |
 | 眼神跟着鼠标、看按钮 | 连续目光目标 | `animator.setGaze()`、`pointGazeAt()` | 鼠标和触摸都可驱动；靠近底部按钮时向下看 |
 | 点人物、戳角色 | 角色射线点击反馈 | `hitsCharacter()`、`respondToCharacterTap()` | 命中角色后轮换 4 条文字、动作和缓存星仔语音 |
 | 动作页、动作模拟 | 角色动作工作台 | `[data-lab-tab="actions"]`、`#action-options`、`performAction()` | 提供 6 种连续动作和 5 种表情，结束后回到待机 |
@@ -85,5 +85,5 @@
 | 豆包在理解、AI 自己决定回应 | 儿童安全偏好理解与回应门控 | `/api/story-turn`、`story_turn_result()`、`shouldRespond`、`forceRespond` | 未完成表达继续收音；完整回答才回应并推进，点选答案强制立即回应，失败走确定性映射 |
 | 火山语音识别、豆包听写 | 句末豆包 ASR 校准 | `/api/asr`、`volc_asr.py`、`doubaoTranscript()` | 浏览器先显示中间文本，持续媒体轨道按每句切片，PCM 经同源服务端送豆包，最终结果回填并交给 AI 判断是否回应；Access Token 不下发 |
 | 故事语音应用、流式语音应用 | 火山豆包语音专用应用 | `kindergrimm_story_voice`、AppID `6570862201` | ASR/TTS 2.0 与大模型兼容能力使用试用包；真实 Token 仅在服务端环境 |
-| 豆包宠物声音、火山 TTS | 可切换动态语音代理 | `/api/tts`、`volc_tts()`、`PET_TTS_PROVIDER` | 当前本机为 `volc`，四个角色音色名映射不同语速；`fish` 保留回退配置 |
+| Seed 角色声音、火山 TTS | 可切换动态语音代理 | `/api/tts`、`volc_tts()`、`PET_TTS_PROVIDER` | 当前本机为 `volc`，15 个角色音色映射 15 个已验证发音人及各自语速、音高；`fish` 保留回退配置 |
 | 语音是否真的接通 | 语音健康状态 | `speechRecognition`、`doubaoTts`、`petTtsProvider` | 只返回布尔状态和供应方，不返回 AppID、Token 或音色凭证 |

@@ -1292,27 +1292,7 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
 .character-call-mic:hover { transform: translateY(-2px); }
 .character-call-mic:active { transform: scale(.96); }
 .character-call-mic:focus-visible { outline: 3px solid rgba(255, 250, 240, .72); outline-offset: 3px; }
-.character-call-mic span {
-  position: absolute;
-  top: 17px;
-  left: 25px;
-  width: 11px;
-  height: 17px;
-  border: 2px solid #fffaf0;
-  border-radius: 8px;
-}
-.character-call-mic span::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 16px;
-  height: 9px;
-  border: 2px solid #fffaf0;
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
-  transform: translateX(-50%);
-}
+.character-call-mic svg { width: 28px; height: 28px; color: #fffaf0; pointer-events: none; }
 .character-call-mic[data-state="listening"] { border-color: #fffaf0; background: var(--moss); animation: character-call-mic-breathe 1.45s ease-in-out infinite; }
 .character-call-mic[data-state="thinking"],
 .character-call-mic[data-state="speaking"] { background: rgba(180, 138, 66, .74); }
@@ -1597,7 +1577,7 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .character-call-modes button,
   .character-call-end { min-height: 28px; padding: 0 8px; font-size: 9px; }
   .character-call-mic { width: 58px; height: 58px; }
-  .character-call-mic span { top: 14px; left: 22px; }
+  .character-call-mic svg { width: 25px; height: 25px; }
   .character-call-message { max-width: 94%; font-size: 12px; }
   .character-call-message.user { max-width: 84%; }
 }

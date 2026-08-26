@@ -26,7 +26,7 @@
 - 气泡通过 Three.js 角色包围盒计算头顶锚点，尖角始终水平居中并随角色、场景比例和漂浮动画移动，不再固定在场景顶部。
 - “场景”内置 22 个程序化水彩舞台，覆盖纸上地面、草地、城堡窗台、云朵、宇宙、教室书桌、图书馆、海底等环境；宇宙、云朵与海底会改变角色的漂浮动作。
 - 角色会平滑注视鼠标、触摸位置和底部操作按钮；直接点击角色会触发轮换的文字、动作和星仔语音反馈。
-- 星仔是玩家的默认音色。后续问答、场景和角色通话优先由 Fish Audio 生成，固定台词均有星仔离线资源。
+- 15 个内置角色各有不同的 Seed/豆包角色音色；编辑器可逐个试听、改选并随角色保存。固定台词仍保留星仔离线资源。
 - 角色配方、角色卡和兴趣小档案只保存在当前设备；右侧可保存当前角色，也可一键复制完整角色数据用于产品调试。
 - 儿童画像会被第一关读取：主题和玩法会进入开场提示，受挫与鼓励偏好会进入雾门挑战，角色称号和故事感觉会进入结局；它不是只展示在右侧笔记里。
 - 角色不是 SVG，而是由程序化 recipe 把每个器官绘制到 Canvas，再挂到 Three.js 骨骼平面上。实验室和第一关现以 176px/世界单位绘制部件，并在 1× 屏上至少 1.5× 超采样，放大后仍保留清楚的石墨边缘。
@@ -100,7 +100,7 @@ npm run build
 
 ### `POST /api/tts`
 
-把不超过 120 个字符的动态台词和音色 ID 发送到服务端。`PET_TTS_PROVIDER=volc` 时使用豆包语音，`fish` 时保留原 Fish Audio 链路；密钥都不会进入浏览器。接口返回 `audio/mpeg`，并用 `X-TTS-Provider` 标记实际供应方。`star`、`sprout`、`bubble`、`moss` 在豆包链路中使用同一儿童友好音色的不同语速，保证宠物与图鉴员的听感有区分。远端不可用时只保留文字、口型和动作，不切换设备机械 TTS。
+把不超过 120 个字符的动态台词和角色音色 ID 发送到服务端。`PET_TTS_PROVIDER=volc` 时使用 15 个已验证的 Seed/豆包儿童化或角色化发音人，`fish` 时保留原 Fish Audio 链路；密钥都不会进入浏览器。接口返回 `audio/mpeg`，并用 `X-TTS-Provider` 标记实际供应方。可通过 `VOLC_TTS_SPEAKER_<VOICE_ID>` 为任意角色替换成已购买的声音复刻 speaker ID。远端不可用时只保留文字、口型和动作，不切换设备机械 TTS。
 
 ### `POST /api/asr`
 
@@ -117,7 +117,7 @@ npm run build
 
 ## 语音
 
-项目内置 169 段 MP3：10 段故事教学、4 段音色试听，以及 155 段星仔问答、模板、反馈、动作、场景和连续脚本提示。默认星仔的固定台词直接使用本地 Fish Audio 缓存；切换其他音色或输入自由台词时调用在线 Fish Audio。无论语音是否成功，气泡和口型都会正常工作，角色实验室不会调用系统 TTS。
+项目内置 169 段 MP3：10 段故事教学、4 段旧音色试听，以及 155 段星仔问答、模板、反馈、动作、场景和连续脚本提示。默认星仔的固定台词可直接使用本地缓存；角色试听和自由台词调用当前配置的在线语音服务。无论语音是否成功，气泡和口型都会正常工作，角色实验室不会调用系统 TTS。
 
 如需重新生成：
 
@@ -169,7 +169,7 @@ python3 scripts/generate_star_offline.py
 - `FISH_AUDIO_API_KEY`：角色实验室在线语音和开发阶段静态语音生成。
 - `FISH_AUDIO_REFERENCE_ID`：儿童感中文音色 ID。
 - `VOLC_SPEECH_APP_ID`、`VOLC_SPEECH_ACCESS_TOKEN`、`VOLC_SPEECH_RESOURCE_ID`：豆包大模型语音识别服务端鉴权；小时版 Resource ID 为 `volc.bigasr.sauc.duration`。
-- `VOLC_TTS_SPEAKER_ID`、`VOLC_TTS_RESOURCE_ID`：豆包 TTS 音色与资源；当前音色为 `zh_female_cancan_mars_bigtts`，资源为 `volc.service_type.10029`。
+- `VOLC_TTS_SPEAKER_ID`、`VOLC_TTS_RESOURCE_ID`：豆包 TTS 的全局回退音色与资源。15 个内置音色默认使用代码中已验证的发音人；获得声音复刻 speaker ID 后，可用 `VOLC_TTS_SPEAKER_<VOICE_ID>` 单独替换某个角色音色。
 - `PET_TTS_PROVIDER`：动态语音供应方，`volc` 或 `fish`；当前本机已切到 `volc`。
 - `DATA_ADMIN_PASSWORD`：六位统计后台口令，只放服务器环境变量。
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。

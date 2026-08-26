@@ -375,7 +375,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260827-character-tools">
+<link rel="stylesheet" href="./src/lab.css?v=20260827-seed-voices">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -607,14 +607,9 @@
 
         <section class="lab-panel" data-lab-panel="voice" role="tabpanel" hidden>
           <h2>它应该怎样说话？</h2>
-          <p class="panel-help">星仔是默认音色。四种试听都随项目一起打包，后续反馈优先使用 Fish Audio。</p>
-          <div class="voice-grid" id="voice-options">
-            <button type="button" data-voice="sprout"><b>小芽</b><span>轻轻的，像讲睡前故事</span><i>试听</i></button>
-            <button type="button" data-voice="bubble"><b>泡泡</b><span>明亮的，想到什么就说什么</span><i>试听</i></button>
-            <button type="button" data-voice="moss"><b>阿绒</b><span>慢一点，让每句话都能听清</span><i>试听</i></button>
-            <button type="button" data-voice="star"><b>星仔</b><span>好奇的，问题一个接一个</span><i>默认试听</i></button>
-          </div>
-          <p class="voice-note">固定台词都有星仔离线音频。自由输入会发送文字到 Fish Audio 生成语音，不会上传孩子的声音；服务不可用时仍会显示气泡和口型。</p>
+          <p class="panel-help">每个模板已经分配不同的 Seed 角色音色，也可以在这里试听并重新选择。</p>
+          <div class="voice-grid" id="voice-options"></div>
+          <p class="voice-note">这里只发送需要朗读的文字，不会上传或拿孩子的声音训练模型；服务不可用时仍会显示气泡和口型。</p>
         </section>
 
       </aside>
@@ -669,7 +664,11 @@
           <div id="character-call-voice" class="character-call-voice">
             <p id="character-call-live" class="character-call-live" aria-live="polite"></p>
             <button id="character-call-mic" class="character-call-mic" type="button" aria-label="开始语音输入" data-state="idle">
-              <span aria-hidden="true"></span>
+              <svg data-icon="lucide-microphone" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" x2="12" y1="19" y2="22"></line><line x1="8" x2="16" y1="22" y2="22"></line>
+              </svg>
             </button>
           </div>
         </section>
@@ -697,7 +696,7 @@
               <label>身体<select id="character-editor-torso"><option value="bean">豆子</option><option value="round">圆滚滚</option><option value="tiny">小小只</option><option value="pear">梨形</option><option value="barrel">胖桶</option></select></label>
               <label>手臂<select id="character-editor-arms"><option value="stub">短短手</option><option value="noodle">长长手</option><option value="clasped">抱在一起</option><option value="hips">叉着腰</option><option value="wing">小翅膀</option></select></label>
               <label>尾巴<select id="character-editor-tail"><option value="none">没有</option><option value="wag">摇摇尾巴</option><option value="curl">卷尾巴</option><option value="puff">绒球尾巴</option></select></label>
-              <label>声音<select id="character-editor-voice"><option value="sprout">小芽</option><option value="bubble">泡泡</option><option value="moss">阿绒</option><option value="star">星仔</option></select></label>
+              <label>声音<select id="character-editor-voice"></select></label>
               <label class="wide">场景<select id="character-editor-scene"></select></label>
             </div>
           </fieldset>
@@ -746,6 +745,6 @@
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260827-character-tools">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260827-character-tools"></script>
+  <script type="module" src="./src/mode.js?v=20260827-seed-voices"></script>
 </body>
 </html>

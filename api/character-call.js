@@ -27,7 +27,7 @@ const APPEARANCE_OPTIONS = {
   torso: ['bean', 'round', 'tiny', 'pear', 'barrel'],
   arms: ['stub', 'noodle', 'clasped', 'hips', 'wing'],
   tail: ['none', 'wag', 'curl', 'puff'],
-  voice: ['sprout', 'bubble', 'moss', 'star'],
+  voice: ['sprout', 'bubble', 'moss', 'star', 'clever', 'bright', 'lively', 'sweet', 'clear', 'neighbor', 'youth', 'gentle', 'soft', 'smart', 'caring'],
 };
 const APPEARANCE_LABELS = {
   human: '人物', cat: '猫科', dog: '犬科', biped: '两脚站立', sit: '坐姿', quad: '四脚小兽',
@@ -35,7 +35,9 @@ const APPEARANCE_LABELS = {
   none: '无', floppy: '软耳朵', bear: '圆耳朵', bunny: '兔耳朵', sprout: '小芽', flower: '小花', antlers: '小鹿角', spikes: '短刺',
   tiny: '小巧', smirk: '歪歪笑', buckteeth: '小门牙', wobble: '软软嘴', round: '圆润', pear: '梨形', square: '方形', wonky: '歪歪形',
   bean: '豆子形', barrel: '胖桶形', stub: '短短手', noodle: '长长手', clasped: '抱手', hips: '叉腰', wing: '小翅膀',
-  wag: '摇摇尾巴', curl: '卷尾巴', puff: '绒球尾巴', bubble: '泡泡声音', moss: '阿绒声音', star: '星仔声音',
+  wag: '摇摇尾巴', curl: '卷尾巴', puff: '绒球尾巴', sprout: '小芽', bubble: '泡泡声音', moss: '阿绒声音', star: '星仔声音',
+  clever: '聪聪声音', bright: '亮仔声音', lively: '跳跳声音', sweet: '小源声音', clear: '梓梓声音',
+  neighbor: '小邻声音', youth: '小辛声音', gentle: '小雅声音', soft: '小林声音', smart: '阿机声音', caring: '依依声音',
 };
 const SCENES = {
   'paper-ground': '纸上地面', 'classroom-desk': '教室书桌', library: '安静图书馆', attic: '玩具阁楼',
@@ -117,6 +119,14 @@ function hasLikelyPrivateInfo(value) {
   return /(?:1[3-9]\d{9}|\d{5,}@|(?:住在|地址|学校叫|手机号|微信号|QQ号|身份证|我的学校|我家在))/.test(String(value || ''));
 }
 
+function hasCharacterEditIntent(value) {
+  const text = cleanText(value, 180);
+  const action = /换|切换|改变|修改|调整|设置|设成|变成|改成|弄成|去掉|加上|添加|放到|搬到|来到|移到|让它|让你|更/;
+  const target = /外观|造型|样子|形象|场景|背景|地方|地点|眼睛|耳朵|头顶|嘴巴|脸|身体|手臂|翅膀|尾巴|站姿|小猫|小狗|人物|声音|音色|性格|说话|角色设定|温柔|活泼|开朗|勇敢|好奇|安静|沉稳/;
+  const styleRequest = /(?:性格|说话).{0,8}(?:温柔|活泼|开朗|勇敢|好奇|安静|沉稳|慢|快|简短|少说|多问)/;
+  return (action.test(text) && target.test(text)) || styleRequest.test(text);
+}
+
 function sendEvent(response, event, payload) {
   response.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
 }
@@ -131,8 +141,9 @@ async function sendTextSlowly(response, value) {
   return text;
 }
 
-function fallbackEdit(card, message) {
+function fallbackEdit(card, message, currentAppearance = {}, currentScene = '') {
   const next = { ...card };
+  const appearance = sanitizeAppearance(currentAppearance);
   const appearancePatch = {};
   const changed = [];
   if (/活泼|开朗|快一点|有精神/.test(message)) {
@@ -165,10 +176,30 @@ function fallbackEdit(card, message) {
     [/不要尾巴|没有尾巴|去掉尾巴/, 'tail', 'none'], [/小小只|身体.*小/, 'torso', 'tiny'], [/圆滚滚|圆肚子/, 'torso', 'round'],
     [/方脸/, 'skull', 'square'], [/圆脸/, 'skull', 'round'], [/梨形脸/, 'skull', 'pear'],
     [/小翅膀|翅膀/, 'arms', 'wing'], [/抱着手|手.*抱/, 'arms', 'clasped'], [/叉腰/, 'arms', 'hips'],
+    [/变成.*小猫|换成.*小猫|猫咪造型/, 'species', 'cat'], [/变成.*小狗|换成.*小狗|小狗造型/, 'species', 'dog'],
+    [/变成.*人物|换成.*人物|人物造型/, 'species', 'human'],
   ];
   for (const [pattern, key, value] of appearanceRules) if (pattern.test(message)) appearancePatch[key] = value;
+  if (!Object.keys(appearancePatch).length && /(?:(?:换|切换|改变|修改|调整).{0,8}(?:外观|造型|样子|形象)|(?:外观|造型|样子|形象).{0,8}(?:换|切换|改变|修改|调整))/.test(message)) {
+    const eyeCycle = ['sparkle', 'wide', 'happy', 'saucer'];
+    const crestCycle = ['sprout', 'flower', 'floppy', 'bear'];
+    const eyeIndex = eyeCycle.indexOf(appearance.eyes);
+    const crestIndex = crestCycle.indexOf(appearance.crest);
+    appearancePatch.eyes = eyeCycle[(eyeIndex + 1) % eyeCycle.length];
+    appearancePatch.crest = crestCycle[(crestIndex + 1) % crestCycle.length];
+  }
+  if (/(?:换|切换|改变|修改|调整).{0,8}(?:声音|音色)/.test(message)) {
+    const voiceCycle = APPEARANCE_OPTIONS.voice;
+    const currentIndex = voiceCycle.indexOf(appearance.voice);
+    appearancePatch.voice = voiceCycle[(currentIndex + 1) % voiceCycle.length];
+  }
   if (Object.keys(appearancePatch).length) changed.push('外观');
-  const sceneId = SCENE_KEYWORDS.find(([pattern]) => pattern.test(message))?.[1] || '';
+  let sceneId = SCENE_KEYWORDS.find(([pattern]) => pattern.test(message))?.[1] || '';
+  if (!sceneId && /(?:(?:换|切换|改变|修改|调整).{0,8}(?:场景|背景|地方|地点)|(?:场景|背景|地方|地点).{0,8}(?:换|切换|改变|修改|调整))/.test(message)) {
+    const sceneCycle = ['mushroom-forest', 'seaside', 'clouds', 'music-stage', 'paper-ground'];
+    const currentIndex = sceneCycle.indexOf(currentScene);
+    sceneId = sceneCycle[(currentIndex + 1) % sceneCycle.length];
+  }
   if (sceneId) changed.push('场景');
   const summary = changed.length
     ? `已更新${[...new Set(changed)].join('、')}。`
@@ -287,7 +318,7 @@ appearancePatch只写创作者明确要求改变的外观字段；sceneId只在�
   if (!upstream.ok) throw new Error(`edit_upstream_${upstream.status}`);
   const data = await upstream.json();
   const parsed = parseJsonObject(data.choices?.[0]?.message?.content);
-  const deterministic = fallbackEdit(card, message);
+  const deterministic = fallbackEdit(card, message, appearance, sceneId);
   const deterministicCardPatch = Object.fromEntries(Object.entries(deterministic.card).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(card[key])));
   const summarySource = deterministic.summary.startsWith('已更新') ? deterministic.summary : parsed.summary;
   return {
@@ -306,9 +337,10 @@ export default async function handler(request, response) {
   const characterName = cleanText(request.body?.characterName, 28);
   const mode = request.body?.mode === 'debug' ? 'debug' : 'normal';
   const requestedTopic = cleanText(request.body?.topic, 16);
-  const topic = mode === 'debug' && ['growth', 'free', 'character'].includes(requestedTopic) ? requestedTopic : 'free';
+  let topic = mode === 'debug' && ['growth', 'free', 'character'].includes(requestedTopic) ? requestedTopic : 'free';
   const topicContext = request.body?.topicContext && typeof request.body.topicContext === 'object' ? request.body.topicContext : {};
   const message = cleanText(request.body?.message, 180);
+  if (mode === 'debug' && hasCharacterEditIntent(message)) topic = 'character';
   const card = sanitizeCard(request.body?.card);
   const appearance = sanitizeAppearance(request.body?.appearance);
   const sceneId = sanitizeScene(request.body?.sceneId) || 'paper-ground';
@@ -344,7 +376,7 @@ export default async function handler(request, response) {
     if (!reply) {
       const cardTopic = card.likes?.[0] || cleanText(card.mission, 36) || '今天的小发现';
       const fallback = topic === 'character'
-        ? `我明白了，你想让我${message.replace(/[。！？!?]+$/g, '')}。我会把这个变化说得更清楚。`
+        ? `我明白了，你想让我${message.replace(/[。！？!?]+$/g, '')}。好，我来试试这个变化。`
         : topic === 'growth'
           ? `我听见你说“${message.slice(0, 24)}”了。${cleanText(topicContext.nextQuestion, 100) || '谢谢你，我已经更了解你喜欢怎样一起探索了。'}`
           : `我听见你说“${message.slice(0, 24)}”了。我的角色卡很喜欢${cardTopic}，你想从这里聊起吗？`;
@@ -356,10 +388,10 @@ export default async function handler(request, response) {
       try {
         update = apiKey
           ? await editCharacterWithAI({ apiKey, characterName, card, appearance, sceneId, message, reply })
-          : fallbackEdit(card, message);
+          : fallbackEdit(card, message, appearance, sceneId);
       } catch (error) {
         console.error('Character card edit failed', error?.message || error);
-        update = fallbackEdit(card, message);
+        update = fallbackEdit(card, message, appearance, sceneId);
       }
       sendEvent(response, 'card', { card: update.card, summary: update.summary });
       if (Object.keys(update.appearancePatch || {}).length || update.sceneId) {
