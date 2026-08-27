@@ -8,6 +8,7 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
+import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-seed-realtime';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -46,6 +47,7 @@ let activeAudio = null;
 let activeAudioFinish = null;
 let activeTtsRequest = 0;
 let activeTtsController = null;
+let storyRealtimeSpeech = new SeedRealtimeSpeech();
 let speechSkipId = 0;
 let activeBubbleKind = '';
 let activeRecognition = null;
@@ -73,6 +75,12 @@ const bubblePages = {
 let dialogueSequence = null;
 let dialogueSequenceId = 0;
 let petWalkId = 0;
+
+// Keep a single audio context unlocked from the child's first deliberate tap.
+// Later streamed replies can then play without relying on a delayed HTMLAudio
+// autoplay permission.
+document.addEventListener('pointerdown', () => { void storyRealtimeSpeech.unlock(); }, { capture: true });
+document.addEventListener('keydown', () => { void storyRealtimeSpeech.unlock(); }, { capture: true });
 
 const petTapLines = [
   '我在这里。',
@@ -522,6 +530,7 @@ guideRenderer.buildRecipe(makeStoryGuideRecipe(STORY_GUIDE_TEMPLATE), { scaleMul
 
 function stopAudio() {
   activeTtsRequest += 1;
+  storyRealtimeSpeech?.stop();
   if (activeTtsController) {
     activeTtsController.abort();
     activeTtsController = null;
@@ -545,84 +554,43 @@ function stopAudio() {
 async function playTts(text, voice, { pet = false, npc = false, onTimeline = null } = {}) {
   stopAudio();
   const requestId = activeTtsRequest;
-  const controller = new AbortController();
-  activeTtsController = controller;
-  try {
-    const response = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: String(text).slice(0, 120), voice }),
-      signal: controller.signal,
-    });
-    if (activeTtsController === controller) activeTtsController = null;
-    if (!response.ok) throw new Error('voice unavailable');
-    document.documentElement.dataset.ttsSource = response.headers.get('X-TTS-Provider') || 'server';
-    const blob = await response.blob();
-    if (requestId !== activeTtsRequest) return false;
-    const objectUrl = URL.createObjectURL(blob);
-    const audio = new Audio(objectUrl);
-    activeAudio = audio;
-    await new Promise(resolve => {
-      if (audio.readyState >= 1) {
-        resolve();
-        return;
-      }
-      let settled = false;
-      const finishMetadata = () => {
-        if (settled) return;
-        settled = true;
-        resolve();
-      };
-      audio.addEventListener('loadedmetadata', finishMetadata, { once: true });
-      setTimeout(finishMetadata, 320);
-    });
-    if (requestId !== activeTtsRequest) {
-      URL.revokeObjectURL(objectUrl);
-      return false;
-    }
-    const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
-      ? Math.round(audio.duration * 1000)
-      : estimatedSpeechTime(text);
-    onTimeline?.(durationMs);
-    if (pet) petRenderer.setTalking(true);
-    else if (npc) {
-      $('npc-wrap').dataset.state = 'speaking';
-      npcRenderer.setTalking(true);
-    }
-    else guideRenderer.setTalking(true);
-    const played = await new Promise(resolve => {
-      let finished = false;
-      const finish = success => {
-        if (finished) return;
-        finished = true;
-        if (!success) audio.pause();
-        if (activeAudioFinish === finish) activeAudioFinish = null;
-        if (activeAudio === audio) activeAudio = null;
-        if (pet) petRenderer.setTalking(false);
-        else if (npc) {
-          $('npc-wrap').dataset.state = '';
-          npcRenderer.setTalking(false);
-        }
-        else guideRenderer.setTalking(false);
-        URL.revokeObjectURL(objectUrl);
-        resolve(success);
-      };
-      activeAudioFinish = finish;
-      audio.addEventListener('ended', () => finish(true), { once: true });
-      audio.addEventListener('error', () => finish(false), { once: true });
-      audio.play().catch(() => finish(false));
-    });
-    return played;
-  } catch (error) {
-    if (activeTtsController === controller) activeTtsController = null;
-    if (error?.name === 'AbortError') return false;
+  let timelineStarted = false;
+  const stopTalking = () => {
     if (pet) petRenderer.setTalking(false);
     else if (npc) {
       $('npc-wrap').dataset.state = '';
       npcRenderer.setTalking(false);
-    }
-    else guideRenderer.setTalking(false);
-    document.documentElement.dataset.ttsSource = 'visual-only';
+    } else guideRenderer.setTalking(false);
+  };
+  const startTalking = () => {
+    if (pet) petRenderer.setTalking(true);
+    else if (npc) {
+      $('npc-wrap').dataset.state = 'speaking';
+      npcRenderer.setTalking(true);
+    } else guideRenderer.setTalking(true);
+  };
+  storyRealtimeSpeech.onState = state => { if (state === 'idle') stopTalking(); };
+  storyRealtimeSpeech.onError = error => {
+    if (error?.name !== 'AbortError') document.documentElement.dataset.ttsSource = 'seed-realtime-retrying';
+  };
+  try {
+    const played = await storyRealtimeSpeech.speak(String(text).slice(0, 120), voice, {
+      onSegment: () => {
+        if (requestId !== activeTtsRequest || timelineStarted) return;
+        timelineStarted = true;
+        document.documentElement.dataset.ttsSource = 'volc-seed-realtime';
+        onTimeline?.(estimatedSpeechTime(text));
+        startTalking();
+      },
+    });
+    if (requestId !== activeTtsRequest) return false;
+    if (!timelineStarted) onTimeline?.(estimatedSpeechTime(text));
+    if (!played) document.documentElement.dataset.ttsSource = 'visual-only';
+    stopTalking();
+    return played;
+  } catch (error) {
+    if (error?.name !== 'AbortError') document.documentElement.dataset.ttsSource = 'visual-only';
+    stopTalking();
     return false;
   }
 }

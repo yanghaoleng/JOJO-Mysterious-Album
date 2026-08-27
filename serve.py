@@ -834,7 +834,79 @@ def fish_tts(text, voice):
         return result.read()
 
 
-def volc_tts(text, voice):
+def volc_seed_tts(text, voice):
+    """Use the current Seed / Doubao V3 SSE transport.
+
+    The speech console still issues an app id plus access token for older
+    applications.  V3 accepts those credentials in headers and streams small
+    audio chunks; we join them only at the private server boundary, so the
+    browser never sees a credential.  The browser itself queues sentence-sized
+    requests while a chat reply is still arriving.
+    """
+    app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
+    token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
+    resource_id = os.environ.get("VOLC_TTS_RESOURCE_ID", "volc.service_type.10029")
+    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
+    voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
+    speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
+    if not app_id or not token or not resource_id or not speaker:
+        raise RuntimeError("tts_not_configured")
+    request_id = str(uuid.uuid4())
+    speech_rate = max(-50, min(100, round((preset["volc_speed"] - 1) * 100)))
+    pitch = max(-12, min(12, round((preset["pitch"] - 1) * 100)))
+    body = json.dumps(
+        {
+            "user": {"uid": "kindergrimm-story"},
+            "req_params": {
+                "text": text,
+                "speaker": speaker,
+                "sample_rate": 24000,
+                "audio_params": {
+                    "format": "mp3",
+                    "bit_rate": 64000,
+                    "speech_rate": speech_rate,
+                    "loudness_rate": 0,
+                },
+                "additions": json.dumps({"post_process": {"pitch": pitch}}, ensure_ascii=False),
+            },
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        "https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse",
+        data=body,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+            "X-Api-App-Id": app_id,
+            "X-Api-Access-Key": token,
+            "X-Api-Resource-Id": resource_id,
+            "X-Api-Request-Id": request_id,
+        },
+    )
+    chunks = []
+    with urllib.request.urlopen(req, timeout=45) as result:
+        for raw_line in result:
+            line = raw_line.decode("utf-8", "replace").strip()
+            if not line.startswith("data:"):
+                continue
+            try:
+                payload = json.loads(line[5:].strip())
+            except json.JSONDecodeError:
+                continue
+            code = payload.get("code", 0)
+            if code not in (0, 20000000):
+                raise RuntimeError(f"tts_v3_{code}")
+            if payload.get("data"):
+                chunks.append(base64.b64decode(payload["data"]))
+    if not chunks:
+        raise RuntimeError("tts_v3_empty")
+    return b"".join(chunks)
+
+
+def volc_tts_v1(text, voice):
+    """Temporary compatibility fallback for a legacy-only voice entitlement."""
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
     preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
@@ -842,29 +914,13 @@ def volc_tts(text, voice):
     speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
     if not app_id or not token or not speaker:
         raise RuntimeError("tts_not_configured")
-    body = json.dumps(
-        {
-            "app": {"appid": app_id, "token": "access_token", "cluster": "volcano_tts"},
-            "user": {"uid": "kindergrimm-story"},
-            "audio": {
-                "voice_type": speaker,
-                "encoding": "mp3",
-                "speed_ratio": preset["volc_speed"],
-                "pitch_ratio": preset["pitch"],
-            },
-            "request": {"reqid": str(uuid.uuid4()), "text": text, "operation": "query"},
-        },
-        ensure_ascii=False,
-    ).encode("utf-8")
-    req = urllib.request.Request(
-        "https://openspeech.bytedance.com/api/v1/tts",
-        data=body,
-        method="POST",
-        headers={
-            "Authorization": f"Bearer; {token}",
-            "Content-Type": "application/json",
-        },
-    )
+    body = json.dumps({
+        "app": {"appid": app_id, "token": "access_token", "cluster": "volcano_tts"},
+        "user": {"uid": "kindergrimm-story"},
+        "audio": {"voice_type": speaker, "encoding": "mp3", "speed_ratio": preset["volc_speed"], "pitch_ratio": preset["pitch"]},
+        "request": {"reqid": str(uuid.uuid4()), "text": text, "operation": "query"},
+    }, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request("https://openspeech.bytedance.com/api/v1/tts", data=body, method="POST", headers={"Authorization": f"Bearer; {token}", "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=45) as result:
         payload = json.load(result)
     if payload.get("code") != 3000 or not payload.get("data"):
@@ -875,7 +931,10 @@ def volc_tts(text, voice):
 def tts_audio(text, voice):
     provider = os.environ.get("PET_TTS_PROVIDER", "fish").strip().lower()
     if provider == "volc":
-        return volc_tts(text, voice), "volc"
+        try:
+            return volc_seed_tts(text, voice), "volc-seed-v3"
+        except Exception:
+            return volc_tts_v1(text, voice), "volc-v1-fallback"
     return fish_tts(text, voice), "fish"
 
 

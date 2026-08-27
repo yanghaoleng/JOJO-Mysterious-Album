@@ -16,25 +16,74 @@ const VOICES = {
   caring: { referenceId: '57744207b298418194abd366d4596c8b', fishSpeed: 0.95, volcSpeed: 0.95, pitch: 1.03, speaker: 'ICL_zh_female_yilin_tob' },
 };
 
-async function volcTts(text, preset, voice) {
+async function volcSeedTts(text, preset, voice) {
+  const appId = process.env.VOLC_SPEECH_APP_ID;
+  const accessToken = process.env.VOLC_SPEECH_ACCESS_TOKEN;
+  const resourceId = process.env.VOLC_TTS_RESOURCE_ID || 'volc.service_type.10029';
+  const voiceEnv = `VOLC_TTS_SPEAKER_${voice.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+  const speaker = process.env[voiceEnv] || preset.speaker || process.env.VOLC_TTS_SPEAKER_ID;
+  if (!appId || !accessToken || !resourceId || !speaker) throw new Error('tts_not_configured');
+  const requestId = crypto.randomUUID();
+  const speechRate = Math.max(-50, Math.min(100, Math.round((preset.volcSpeed - 1) * 100)));
+  const pitch = Math.max(-12, Math.min(12, Math.round((preset.pitch - 1) * 100)));
+  const upstream = await fetch('https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream',
+      'X-Api-App-Id': appId,
+      'X-Api-Access-Key': accessToken,
+      'X-Api-Resource-Id': resourceId,
+      'X-Api-Request-Id': requestId,
+    },
+    body: JSON.stringify({
+      user: { uid: 'kindergrimm-story' },
+      req_params: {
+        text,
+        speaker,
+        sample_rate: 24000,
+        audio_params: { format: 'mp3', bit_rate: 64000, speech_rate: speechRate, loudness_rate: 0 },
+        additions: JSON.stringify({ post_process: { pitch } }),
+      },
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!upstream.ok) throw new Error(`volc_http_${upstream.status}`);
+  const reader = upstream.body?.getReader();
+  if (!reader) throw new Error('volc_stream_unavailable');
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const chunks = [];
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+    const lines = buffer.split(/\r?\n/);
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.startsWith('data:')) continue;
+      const payload = JSON.parse(line.slice(5).trim());
+      if (![0, 20000000].includes(payload.code || 0)) throw new Error(`volc_code_${payload.code || 'unknown'}`);
+      if (payload.data) chunks.push(Buffer.from(payload.data, 'base64'));
+    }
+    if (done) break;
+  }
+  if (!chunks.length) throw new Error('volc_empty');
+  return Buffer.concat(chunks);
+}
+
+async function volcTtsV1(text, preset, voice) {
   const appId = process.env.VOLC_SPEECH_APP_ID;
   const accessToken = process.env.VOLC_SPEECH_ACCESS_TOKEN;
   const voiceEnv = `VOLC_TTS_SPEAKER_${voice.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
   const speaker = process.env[voiceEnv] || preset.speaker || process.env.VOLC_TTS_SPEAKER_ID;
   if (!appId || !accessToken || !speaker) throw new Error('tts_not_configured');
   const upstream = await fetch('https://openspeech.bytedance.com/api/v1/tts', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer; ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
+    method: 'POST', headers: { 'Authorization': `Bearer; ${accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      app: { appid: appId, token: 'access_token', cluster: 'volcano_tts' },
-      user: { uid: 'kindergrimm-story' },
+      app: { appid: appId, token: 'access_token', cluster: 'volcano_tts' }, user: { uid: 'kindergrimm-story' },
       audio: { voice_type: speaker, encoding: 'mp3', speed_ratio: preset.volcSpeed, pitch_ratio: preset.pitch },
       request: { reqid: crypto.randomUUID(), text, operation: 'query' },
-    }),
-    signal: AbortSignal.timeout(45000),
+    }), signal: AbortSignal.timeout(45000),
   });
   if (!upstream.ok) throw new Error(`volc_http_${upstream.status}`);
   const payload = await upstream.json();
@@ -80,11 +129,22 @@ export default async function handler(request, response) {
   try {
     const preset = VOICES[voice];
     const provider = (process.env.PET_TTS_PROVIDER || 'fish').toLowerCase();
-    const audio = provider === 'volc' ? await volcTts(text, preset, voice) : await fishTts(text, preset);
+    let audio;
+    let actualProvider = provider;
+    if (provider === 'volc') {
+      try {
+        audio = await volcSeedTts(text, preset, voice);
+        actualProvider = 'volc-seed-v3';
+      } catch (error) {
+        console.warn('Seed V3 TTS unavailable; using legacy voice fallback', error?.message || 'unknown');
+        audio = await volcTtsV1(text, preset, voice);
+        actualProvider = 'volc-v1-fallback';
+      }
+    } else audio = await fishTts(text, preset);
     response.setHeader('Content-Type', 'audio/mpeg');
     response.setHeader('Content-Length', String(audio.length));
     response.setHeader('Cache-Control', 'no-store');
-    response.setHeader('X-TTS-Provider', provider);
+    response.setHeader('X-TTS-Provider', actualProvider);
     return response.status(200).send(audio);
   } catch (error) {
     const unavailable = error?.message === 'tts_not_configured';

@@ -23,6 +23,7 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
+import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-seed-realtime';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -566,6 +567,19 @@ class LabSpeaker {
     this.objectUrl = '';
     this.sequence = 0;
     this.finishCurrent = null;
+    this.realtime = new SeedRealtimeSpeech({
+      onState: state => {
+        if (state === 'idle') anim.talk = false;
+      },
+      onError: error => {
+        if (error?.name === 'AbortError') return;
+        document.documentElement.dataset.labAudioSource = 'seed-realtime-retrying';
+      },
+    });
+  }
+
+  unlock() {
+    return this.realtime.unlock();
   }
 
   choose(id) {
@@ -578,6 +592,7 @@ class LabSpeaker {
 
   cancel() {
     this.sequence += 1;
+    this.realtime.stop();
     clearTimeout(this.timer);
     this.controller?.abort();
     this.controller = null;
@@ -640,14 +655,12 @@ class LabSpeaker {
 
     try {
       this.controller = new AbortController();
-      const timeout = window.setTimeout(() => this.controller?.abort(), 9000);
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: clean, voice: this.activeId }),
         signal: this.controller.signal,
       });
-      window.clearTimeout(timeout);
       this.controller = null;
       if (!response.ok) throw new Error(`tts_${response.status}`);
       const blob = await response.blob();
@@ -678,9 +691,30 @@ class LabSpeaker {
     showStatus('在线角色声音暂时不可用，文字气泡仍可继续使用。');
   }
 
-  speak(text, { preview = false, offlineKey = '' } = {}) {
+  beginRealtime({ onSegment = () => {} } = {}) {
+    this.cancel();
+    const preset = VOICE_PRESETS[this.activeId] || VOICE_PRESETS.star;
+    anim.talk = true;
+    animator?.setFace('idle');
+    document.documentElement.dataset.labAudioSource = 'seed-realtime';
+    const stream = this.realtime.begin(this.activeId, {
+      onSegment: (text, durationMs) => {
+        const fallbackMs = Math.max(1200, text.length * 180 / preset.rate);
+        this.timer = window.setTimeout(() => { anim.talk = false; }, durationMs || fallbackMs);
+        onSegment(text, durationMs);
+      },
+    });
+    return stream;
+  }
+
+  speak(text, { preview = false, offlineKey = '', realtime = false } = {}) {
     const clean = String(text || '').trim().slice(0, 120);
     if (!clean) return;
+    if (realtime && !preview) {
+      const stream = this.beginRealtime();
+      stream.push(clean);
+      return stream.close();
+    }
     this.cancel();
     const token = this.sequence;
     setBubble(clean);
@@ -2108,6 +2142,7 @@ function startCharacterCall(config) {
   callState.busy = false;
   callState.template = config;
   callState.card = characterCardFor(config.id);
+  void speaker?.unlock();
   callState.messages = [];
   const firstGrowthQuestion = firstUnansweredProfileIndex(profile);
   callState.growthIndex = firstGrowthQuestion >= QUESTIONS.length ? 0 : firstGrowthQuestion;
@@ -2126,7 +2161,7 @@ function startCharacterCall(config) {
   setCharacterCallMode('normal');
   appendCharacterCallMessage('assistant', callState.card.greeting);
   animator?.setPose('play');
-  const greetingSpeech = speaker.speak(callState.card.greeting);
+  const greetingSpeech = speaker.speak(callState.card.greeting, { realtime: true });
   setCharacterCallStatus('speaking', `${config.name}正在打招呼`);
   setCharacterCallMic('speaking', '角色正在打招呼');
   Promise.resolve(greetingSpeech).finally(() => {
@@ -2191,7 +2226,7 @@ function handleCharacterCallEvent(eventName, payload, target) {
   if (eventName === 'error') throw new Error(String(payload?.error || 'character_call_failed'));
 }
 
-async function readCharacterCallStream(response, target) {
+async function readCharacterCallStream(response, target, onToken = () => {}) {
   if (!response.ok || !response.body) throw new Error(`character_call_${response.status}`);
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -2212,6 +2247,7 @@ async function readCharacterCallStream(response, target) {
       let payload = {};
       try { payload = JSON.parse(dataLines.join('\n')); } catch { payload = { text: dataLines.join('\n') }; }
       handleCharacterCallEvent(eventName, payload, target);
+      if (eventName === 'token') onToken(String(payload?.text || ''));
     }
     if (done) break;
   }
@@ -2230,6 +2266,7 @@ async function sendCharacterCall(messageText) {
   appendCharacterCallMessage('user', message);
   const history = callState.messages.slice(0, -1);
   const target = appendCharacterCallMessage('assistant', '', { pending: true });
+  const realtimeSpeech = speaker?.beginRealtime();
   setCharacterCallStatus('thinking', `${callState.template.name}正在想`);
   animator?.setFace('idle');
   animator?.setPose('sit');
@@ -2252,17 +2289,19 @@ async function sendCharacterCall(messageText) {
       }),
       signal: callState.controller.signal,
     });
-    await readCharacterCallStream(response, target);
+    await readCharacterCallStream(response, target, token => realtimeSpeech?.push(token));
     if (!target.message.content) throw new Error('character_call_empty');
+    const spoken = realtimeSpeech ? await realtimeSpeech.close() : false;
     target.node.classList.remove('pending');
     anim.talk = false;
     animator?.setPose('idle');
     setCharacterCallStatus('speaking', `${callState.template.name}正在说话`);
     setCharacterCallMic('speaking', '角色正在说话');
     if (turnTopic === 'growth') callState.growthIndex = Math.min(callState.growthIndex + 1, QUESTIONS.length - 1);
-    try { await speaker.speak(target.message.content); } catch { /* speech may be skipped while the call continues */ }
+    if (!spoken) showStatus('实时角色声音暂时没有连上，下一句会自动重新连接。');
     trackAnalytics('lab_character_call_turn', { depth: 4 });
   } catch (error) {
+    speaker?.cancel();
     if (error?.name === 'AbortError') return;
     console.error('Character call failed', error);
     target.message.content = '刚才的声音断了一下。你可以再说一次，我会继续听。';
