@@ -18,6 +18,31 @@ const C = {
 
 export const SCENE_GROUPS = ['全部', '日常', '自然', '奇遇'];
 
+const GROUND_SCENE_HORIZONS = Object.freeze({
+  'paper-ground': 530,
+  'classroom-desk': 470,
+  library: 555,
+  attic: 540,
+  'breakfast-table': 470,
+  'rainy-window': 545,
+  meadow: 510,
+  'mushroom-forest': 555,
+  seaside: 515,
+  greenhouse: 550,
+  'paper-creek': 520,
+  'snow-globe': 515,
+  'castle-window': 550,
+  moon: 530,
+  underwater: 590,
+  train: 520,
+  rooftop: 575,
+  'blanket-fort': 580,
+  'music-stage': 565,
+});
+
+const BACKDROP_WORLD_HEIGHT = 3.94;
+const BACKDROP_WORLD_TOP = .12 + BACKDROP_WORLD_HEIGHT / 2;
+
 export const LAB_SCENES = [
   { id: 'paper-ground', group: '日常', name: '纸上地面', hint: '一条铅笔地面线', floorY: -1.02, scale: 1.08, motion: 'ground', line: '我们先站在最简单的纸上地面。' },
   { id: 'classroom-desk', group: '日常', name: '教室书桌', hint: '课本、铅笔和桌面', floorY: -.72, scale: .82, motion: 'ground', line: '现在我站在教室的书桌上，旁边还有一支铅笔。' },
@@ -35,15 +60,30 @@ export const LAB_SCENES = [
   { id: 'clouds', group: '奇遇', name: '云朵里面', hint: '软云层和轻漂浮', floorY: -.7, scale: .96, motion: 'float', line: '云朵把我轻轻托起来，现在脚下软绵绵的。' },
   { id: 'space', group: '奇遇', name: '星星宇宙', hint: '失重漂浮和小行星', floorY: -.72, scale: .94, motion: 'zero-g', line: '我们到了宇宙，身体会像没有重量一样慢慢漂浮。' },
   { id: 'moon', group: '奇遇', name: '月亮表面', hint: '环形山和远处地球', floorY: -.88, scale: .92, motion: 'moon-hop', line: '月亮上的重力很轻，走一步也会像小跳跃。' },
-  { id: 'underwater', group: '奇遇', name: '海底气泡', hint: '水草、气泡和慢漂流', floorY: -.8, scale: .9, motion: 'float', line: '海底的水托着身体，我们会慢慢地漂来漂去。' },
+  { id: 'underwater', group: '奇遇', name: '海底气泡', hint: '水草、气泡和慢漂流', floorY: -.8, scale: .9, motion: 'underwater-ground', line: '海底的水草沿着地面轻轻摇，我们会慢慢走过气泡。' },
   { id: 'train', group: '奇遇', name: '慢火车车厢', hint: '窗外风景缓缓经过', floorY: -1.01, scale: .96, motion: 'train', line: '慢火车已经出发，窗外的风景正在经过。' },
   { id: 'rooftop', group: '奇遇', name: '屋顶晚风', hint: '烟囱、远屋和风', floorY: -.91, scale: .94, motion: 'breeze', line: '屋顶的晚风有一点凉，我们可以一起看远处的灯。' },
   { id: 'blanket-fort', group: '奇遇', name: '被窝城堡', hint: '毯子、枕头和小灯', floorY: -.91, scale: .9, motion: 'ground', line: '被窝城堡已经搭好了，这里只说悄悄话。' },
   { id: 'giant-pocket', group: '奇遇', name: '巨人口袋', hint: '线脚、纽扣和布纹', floorY: -.88, scale: .86, motion: 'pocket', line: '我们躲进了巨人的口袋，走路时这里会轻轻晃动。' },
   { id: 'music-stage', group: '奇遇', name: '音乐小舞台', hint: '幕布、灯光和节拍', floorY: -.98, scale: 1, motion: 'stage', line: '小舞台的灯亮了，现在轮到我们表演。' },
-];
+].map(scene => ({
+  ...scene,
+  hasGround: Number.isFinite(GROUND_SCENE_HORIZONS[scene.id]),
+  horizonY: GROUND_SCENE_HORIZONS[scene.id] ?? null,
+}));
 
 export const sceneById = id => LAB_SCENES.find(item => item.id === id) || LAB_SCENES[0];
+
+export function sceneHorizonWorldY(scene) {
+  if (!scene?.hasGround) return null;
+  return BACKDROP_WORLD_TOP - (scene.horizonY / 720) * BACKDROP_WORLD_HEIGHT;
+}
+
+export function sceneFloorY(scene) {
+  if (!scene?.hasGround) return scene?.floorY ?? -1;
+  const motionLift = scene.motion === 'moon-hop' ? .055 : scene.motion === 'snow' ? .025 : scene.motion === 'stage' ? .014 : 0;
+  return Math.min(scene.floorY, sceneHorizonWorldY(scene) - motionLift - .045);
+}
 
 function rect(s, x, y, w, h, col, alpha = .15) {
   s.washFill([[x, y], [x + w, y], [x + w, y + h], [x, y + h]], col, { layers: 2, alpha, bleed: .35, blooms: false });
@@ -67,6 +107,15 @@ function circle(s, x, y, r, col = C.ink, alpha = .32) {
 function ground(s, y = 530, col = C.leaf) {
   rect(s, 0, y, 960, 220, col, .12);
   line(s, [[0, y], [150, y - 3], [330, y + 2], [520, y - 2], [720, y + 2], [960, y]], 3, .45);
+}
+
+function reinforceHorizon(s, config) {
+  if (!config.hasGround) return;
+  const y = config.horizonY;
+  const groundColor = config.group === '日常' ? [205, 194, 171] : config.group === '自然' ? [166, 185, 143] : [174, 174, 156];
+  rect(s, 0, y + 1, 960, 719 - y, groundColor, .055);
+  rect(s, 0, y + 1, 960, 30, groundColor, .11);
+  line(s, [[0, y], [155, y - 2], [320, y + 1], [486, y - 2], [650, y + 2], [812, y - 1], [960, y]], 3.2, .56, C.ink);
 }
 
 function grass(s, y, count = 18) {
@@ -234,6 +283,7 @@ function paintScene(s, id) {
       circle(s, x, y, 10, C.ink, .35); line(s, [[x + 10, y], [x + 10, y - 55], [x + 35, y - 48]], 2, .35);
     }
   }
+  reinforceHorizon(s, sceneById(id));
 }
 
 function renderCanvas(width, height, id) {
@@ -256,6 +306,10 @@ export function createSceneBackdrop(id) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(0, .12, -1.45);
   mesh.renderOrder = -80;
+  mesh.userData.hasGround = config.hasGround;
+  mesh.userData.horizonY = config.horizonY;
+  mesh.userData.horizonWorldY = sceneHorizonWorldY(config);
+  mesh.userData.floorY = sceneFloorY(config);
   mesh.userData.dispose = () => { texture.dispose(); material.dispose(); geometry.dispose(); };
   return mesh;
 }

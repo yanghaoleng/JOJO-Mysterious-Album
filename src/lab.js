@@ -4,7 +4,15 @@ import { addPaper } from './paper.js';
 import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { LAB_SCENES, SCENE_GROUPS, sceneById, createSceneBackdrop, paintSceneThumbnail } from './lab-scenes.js';
+import {
+  LAB_SCENES,
+  SCENE_GROUPS,
+  sceneById,
+  sceneFloorY,
+  sceneHorizonWorldY,
+  createSceneBackdrop,
+  paintSceneThumbnail,
+} from './lab-scenes.js';
 import {
   createEmptyChildProfile,
   firstUnansweredProfileIndex,
@@ -15,6 +23,11 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
+import {
+  mountSpeechBubble,
+  setSpeechBubbleText,
+  skipSpeechBubble,
+} from '../vendor/calligraph-bubble.js?v=20260827-user-bubble';
 import {
   CHARACTER_CARD_FIELDS,
   baseCharacterCard,
@@ -425,6 +438,7 @@ const callState = {
   recognition: null,
   recognitionRestartTimer: 0,
   growthIndex: 0,
+  bubbleId: 0,
   returnFocus: null,
 };
 const pointerRaycaster = new THREE.Raycaster();
@@ -1076,6 +1090,9 @@ function applyCharacterPlacement(t = 0) {
     } else if (config.motion === 'pocket') {
       x = Math.sin(t * .7) * .025;
       rotation = Math.sin(t * .7) * .025;
+    } else if (config.motion === 'underwater-ground') {
+      x = Math.sin(t * .36) * .018;
+      rotation = Math.sin(t * .48) * .012;
     } else if (config.motion === 'breeze') {
       rotation = Math.sin(t * .52) * .009;
     } else if (config.motion === 'stage') {
@@ -1085,6 +1102,22 @@ function applyCharacterPlacement(t = 0) {
   face.group.position.set(characterBase.x + x, characterBase.y + y, 0);
   face.group.rotation.z = rotation;
   face.group.scale.setScalar(characterBase.scale);
+}
+
+function applySceneSpatialMetadata(config) {
+  const preview = document.querySelector('.lab-preview');
+  if (!preview) return;
+  const floorY = sceneFloorY(config);
+  preview.dataset.hasGround = String(config.hasGround);
+  preview.dataset.sceneId = config.id;
+  preview.dataset.characterFloorY = floorY.toFixed(3);
+  if (config.hasGround) {
+    preview.dataset.horizonCanvasY = String(config.horizonY);
+    preview.dataset.horizonWorldY = sceneHorizonWorldY(config).toFixed(3);
+  } else {
+    delete preview.dataset.horizonCanvasY;
+    delete preview.dataset.horizonWorldY;
+  }
 }
 
 function updateBubbleAnchor() {
@@ -1137,11 +1170,12 @@ function setEnvironment(id, { speak = true } = {}) {
   if (face) {
     characterBase = {
       x: 0,
-      y: config.floorY + face.F.B.floorY / U,
+      y: sceneFloorY(config) + face.F.B.floorY / U,
       scale: config.scale,
     };
     applyCharacterPlacement(0);
   }
+  applySceneSpatialMetadata(config);
   refreshSceneControls();
   refreshCharacterEditorAppearance();
   if (speak && speaker) speaker.speak(config.line, { offlineKey: `scene-${config.id}` });
@@ -1152,8 +1186,9 @@ function buildNow() {
   face = buildCharacter(recipe);
   scene.add(face.group);
   const config = sceneById(sceneId);
-  characterBase = { x: 0, y: config.floorY + face.F.B.floorY / U, scale: config.scale };
+  characterBase = { x: 0, y: sceneFloorY(config) + face.F.B.floorY / U, scale: config.scale };
   applyCharacterPlacement(0);
+  applySceneSpatialMetadata(config);
   updateBubbleAnchor();
   positionBubble();
   try { localStorage.setItem(RECIPE_KEY, JSON.stringify(recipe)); } catch { /* recipe remains in memory */ }
@@ -1190,7 +1225,7 @@ function setBubble(text) {
   bubble.dataset.text = clean;
   const accessible = $('lab-bubble-a11y');
   if (accessible) accessible.textContent = clean;
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-text', { detail: { key: 'lab', text: clean } }));
+  setSpeechBubbleText('lab', clean);
 }
 
 function showStatus(text) {
@@ -1425,7 +1460,7 @@ function respondToCharacterTap(event) {
 
 function skipLabSpeech() {
   speaker?.cancel();
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip', { detail: { key: 'lab' } }));
+  skipSpeechBubble('lab');
   anim.talk = false;
   animator?.setFace('idle');
   animator?.setPose('idle');
@@ -1866,10 +1901,25 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   callState.messages.push(message);
   callState.messages = callState.messages.slice(-12);
   const node = document.createElement('p');
-  node.className = `character-call-message ${role}${pending ? ' pending' : ''}`;
-  node.textContent = message.content;
-  $('character-call-transcript').replaceChildren(node);
-  return { message, node };
+  const bubbleKey = `call-${role}-${++callState.bubbleId}`;
+  const initialText = message.content || (pending ? '正在想…' : '我在认真听。');
+  node.className = `character-call-message character-bubble${role === 'user' ? ' user-input-bubble' : ''} ${role}${pending ? ' pending' : ''}`;
+  node.dataset.bubbleShell = '';
+  node.dataset.bubbleKey = bubbleKey;
+  node.dataset.bubbleMaxChars = role === 'user' ? '20' : '24';
+  node.dataset.text = initialText;
+  node.setAttribute('aria-label', initialText);
+  const content = document.createElement('span');
+  content.className = 'character-bubble__text';
+  content.dataset.calligraphBubble = '';
+  content.dataset.bubbleKey = bubbleKey;
+  content.textContent = initialText;
+  node.appendChild(content);
+  const transcript = $('character-call-transcript');
+  transcript.appendChild(node);
+  while (transcript.children.length > 2) transcript.firstElementChild?.remove();
+  mountSpeechBubble(content);
+  return { message, node, bubbleKey };
 }
 
 function characterCallAppearance() {
@@ -1950,7 +2000,11 @@ function setCharacterCallMic(state, label) {
 
 function setCharacterCallLive(text = '') {
   const live = $('character-call-live');
-  if (live) live.textContent = String(text || '').trim().slice(0, 180);
+  if (!live) return;
+  const value = String(text || '').trim().slice(0, 180);
+  const shouldEnter = live.hidden;
+  live.hidden = !value;
+  if (value) setSpeechBubbleText('call-user-live', value, { complete: true, enter: shouldEnter });
 }
 
 function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
@@ -2114,7 +2168,7 @@ function handleCharacterCallEvent(eventName, payload, target) {
     const text = String(payload?.text || '');
     if (!text) return;
     target.message.content = `${target.message.content}${text}`.slice(0, 220);
-    target.node.textContent = target.message.content;
+    setSpeechBubbleText(target.bubbleKey, target.message.content, { complete: true, enter: false });
     target.node.classList.remove('pending');
     anim.talk = true;
     setCharacterCallStatus('streaming', `${callState.template.name}正在回答`);
@@ -2212,7 +2266,7 @@ async function sendCharacterCall(messageText) {
     if (error?.name === 'AbortError') return;
     console.error('Character call failed', error);
     target.message.content = '刚才的声音断了一下。你可以再说一次，我会继续听。';
-    target.node.textContent = target.message.content;
+    setSpeechBubbleText(target.bubbleKey, target.message.content, { complete: true, enter: false });
     target.node.classList.remove('pending');
     anim.talk = false;
     animator?.setPose('idle');

@@ -8,7 +8,11 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import '../vendor/calligraph-bubble.js?v=20260827-shared-bubble';
+import {
+  mountSpeechBubble,
+  setSpeechBubbleText,
+  skipSpeechBubble,
+} from '../vendor/calligraph-bubble.js?v=20260827-user-bubble';
 
 installUISFX();
 
@@ -129,15 +133,11 @@ function animateBubbleText(element, text, { waiting = false, durationMs = 0, com
   element.setAttribute('aria-label', value);
   const shell = element.closest('[data-bubble-shell]');
   if (shell) shell.dataset.text = value;
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-text', {
-    detail: {
-      key: element.dataset.bubbleKey,
-      text: value,
-      waiting,
-      durationMs,
-      complete: complete || !value,
-    },
-  }));
+  setSpeechBubbleText(element.dataset.bubbleKey, value, {
+    waiting,
+    durationMs,
+    complete: complete || !value,
+  });
 }
 
 function renderBubblePage(kind, options = {}) {
@@ -171,7 +171,7 @@ function startBubbleTimeline(kind, text, durationMs) {
 
 function completeBubble(kind) {
   const element = bubbleElement(kind);
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip', { detail: { key: element.dataset.bubbleKey } }));
+  skipSpeechBubble(element.dataset.bubbleKey);
 }
 
 function advanceBubble() {
@@ -807,6 +807,7 @@ function setGuideVoiceUi(mode, message) {
   };
   panel.dataset.voiceState = mode;
   document.body.dataset.voiceState = mode;
+  button.dataset.state = mode;
   button.setAttribute('aria-pressed', String(mode === 'listening'));
   button.setAttribute('aria-label', labels[mode] || labels.setup);
   button.title = labels[mode] || labels.setup;
@@ -828,8 +829,28 @@ function setGuideVoiceUi(mode, message) {
 function showLiveAnswer(text = '') {
   const bubble = $('live-answer-bubble');
   const value = String(text).trim().slice(0, 80);
+  const shouldEnter = bubble.hidden;
   bubble.hidden = !value;
-  $('live-answer-text').textContent = value;
+  if (value) setSpeechBubbleText('story-user', value, { complete: true, enter: shouldEnter });
+}
+
+function createUserInputBubble(text, key) {
+  const value = String(text || '').trim();
+  const shell = document.createElement('span');
+  shell.className = 'user-input-record character-bubble user-input-bubble';
+  shell.dataset.bubbleShell = '';
+  shell.dataset.bubbleKey = key;
+  shell.dataset.bubbleMaxChars = '18';
+  shell.dataset.text = value;
+  shell.setAttribute('aria-label', value);
+  const content = document.createElement('span');
+  content.className = 'character-bubble__text';
+  content.dataset.calligraphBubble = '';
+  content.dataset.bubbleKey = key;
+  content.textContent = value;
+  shell.appendChild(content);
+  mountSpeechBubble(content);
+  return shell;
 }
 
 function detachGuideRecognition() {
@@ -1071,11 +1092,9 @@ function renderQuestion() {
 }
 
 function renderHeardNotes() {
-  $('heard-notes').replaceChildren(...state.heard.map(note => {
-    const chip = document.createElement('span');
-    chip.textContent = `记住：${note}`;
-    return chip;
-  }));
+  $('heard-notes').replaceChildren(...state.heard.map((note, index) => (
+    createUserInputBubble(`记住：${note}`, `heard-${index}`)
+  )));
 }
 
 async function beginInterview() {
@@ -1517,11 +1536,9 @@ async function finishStory() {
   showPanel('ending-panel', 'ending');
   $('ending-copy').textContent = `${state.petName}和你把灯塔种子种在最高的一页。${dominantTrait()}回声回到了原来的句子里，新的声音也得到了一条不着急的小路。`;
   $('pet-ending-line').textContent = `${state.petName}说：“我的声音不是别人发给我的礼物，是我们一路听、一路选，慢慢长出来的。”`;
-  $('ending-memory').replaceChildren(...state.heard.map(note => {
-    const chip = document.createElement('span');
-    chip.textContent = `最初说过：${note}`;
-    return chip;
-  }));
+  $('ending-memory').replaceChildren(...state.heard.map((note, index) => (
+    createUserInputBubble(`最初说过：${note}`, `ending-memory-${index}`)
+  )));
   petRenderer.react('happy');
   showPetThought('下一次，我们会去一张还没有画出来的图鉴。');
   setGuideVoiceUi('complete', '故事讲完了，麦克风已经安静关闭');

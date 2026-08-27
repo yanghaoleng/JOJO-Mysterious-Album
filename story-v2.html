@@ -14,8 +14,8 @@
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/far-mountain-range.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/cloud-bank.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/story-tree.webp">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-shared-bubble">
-  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-shared-bubble">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-user-bubble">
+  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-user-bubble">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
@@ -45,6 +45,7 @@
       <div class="far-shape far-shape-b" aria-hidden="true"></div>
       <div class="ground-wash" aria-hidden="true"></div>
       <div class="story-scenery" id="story-scenery" aria-label="当前故事场景中的物件"></div>
+      <div class="scene-horizon" id="scene-horizon" aria-hidden="true"></div>
       <div class="place-object" id="place-object" role="button" tabindex="0" aria-label="触摸场景里的物件"><span></span></div>
 
       <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
@@ -155,10 +156,11 @@
     </section>
 
     <section class="voice-dock" id="voice-dock" data-voice-state="setup" aria-label="故事语音控制">
-      <div class="live-answer-bubble" id="live-answer-bubble" hidden aria-live="polite">
-        <b id="live-answer-text"></b>
+      <div class="live-answer-bubble character-bubble user-input-bubble" id="live-answer-bubble" hidden aria-live="polite" aria-atomic="true" data-bubble-shell data-bubble-key="story-user" data-bubble-max-chars="18">
+        <b id="live-answer-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="story-user"></b>
+        <span class="character-bubble__tail" aria-hidden="true"></span>
       </div>
-      <button class="mic-button guide-mic" id="mic-button" type="button" data-uisfx="none" aria-pressed="false" aria-label="允许麦克风并开始故事">
+      <button class="mic-button guide-mic voice-input-control" id="mic-button" type="button" data-uisfx="none" data-state="setup" aria-pressed="false" aria-label="允许麦克风并开始故事">
         <svg data-icon="lucide-microphone" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
           <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -192,6 +194,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260827-shared-bubble"></script>
+  <script type="module" src="./src/story-v2.js?v=20260827-user-bubble"></script>
 </body>
 </html>

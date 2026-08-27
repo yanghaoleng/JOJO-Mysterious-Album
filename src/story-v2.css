@@ -133,6 +133,9 @@ button:active { transform: translateY(1px) scale(.985); }
 
 #story-world { position: relative; min-height: 100dvh; }
 .world-stage {
+  --story-horizon-y: 68%;
+  --story-horizon-ink: 60 76 55;
+  --story-ground-wash: 213 218 190;
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -201,7 +204,7 @@ button:active { transform: translateY(1px) scale(.985); }
 
 .story-scenery {
   position: absolute;
-  z-index: 2;
+  z-index: auto;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -241,10 +244,10 @@ button:active { transform: translateY(1px) scale(.985); }
 .scene-prop.is-ready { opacity: var(--prop-opacity); }
 .scene-prop.is-ready[data-position="ground"] { transform: translateX(-50%) translateY(0) scaleX(var(--prop-flip)) scale(1); }
 .scene-prop.is-ready[data-position="sky"] { transform: translate(-50%, -50%) scaleX(var(--prop-flip)) scale(1); }
-.scene-prop-far { z-index: 1; }
+.scene-prop-far { z-index: 2; }
 .scene-prop-sky { z-index: 2; }
-.scene-prop-mid { z-index: 3; }
-.scene-prop-focus { z-index: 4; }
+.scene-prop-mid { z-index: 4; }
+.scene-prop-focus { z-index: 6; }
 .scene-prop img {
   display: block;
   width: 100%;
@@ -270,6 +273,35 @@ button:active { transform: translateY(1px) scale(.985); }
 @keyframes scenery-sway { to { transform: rotate(.7deg) translateX(2px); } }
 @keyframes scenery-float { to { transform: translateY(-6px) rotate(.6deg); } }
 @keyframes scenery-glow { to { filter: brightness(1.045) drop-shadow(0 0 10px rgba(209, 164, 75, .12)); } }
+
+.scene-horizon {
+  position: absolute;
+  z-index: 3;
+  left: -3%;
+  right: -3%;
+  top: var(--story-horizon-y);
+  bottom: 0;
+  border-top: 2px solid rgb(var(--story-horizon-ink) / .38);
+  background:
+    linear-gradient(180deg, rgb(var(--story-ground-wash) / .76) 0, rgb(var(--story-ground-wash) / .42) 8%, rgb(var(--story-ground-wash) / .12) 30%, transparent 68%),
+    repeating-radial-gradient(ellipse at 50% 0, rgb(var(--story-horizon-ink) / .055) 0 1px, transparent 1px 10px);
+  box-shadow: inset 0 2px rgba(255, 250, 235, .34);
+  transform: rotate(-.18deg);
+  transform-origin: 50% 0;
+  pointer-events: none;
+}
+
+.scene-horizon::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 6%;
+  top: -4px;
+  height: 8px;
+  border-top: 1px solid rgb(var(--story-horizon-ink) / .22);
+  border-radius: 50%;
+  opacity: .72;
+}
 
 .world-stage.has-generated-scenery .far-shape { opacity: .08; }
 .world-stage.has-generated-scenery .place-object { opacity: 0; pointer-events: none; }
@@ -305,18 +337,18 @@ body:not([data-phase="quest"]) .scene-prop.is-interactive { pointer-events: none
 .place-object::before { inset: 12px 18px 14px; border-radius: 55% 45% 52% 48%; transform: rotate(-12deg); }
 .place-object::after { left: -9px; right: -8px; bottom: -8px; height: 12px; border-width: 2px 0 0; border-radius: 50%; transform: rotate(-4deg); }
 
-body[data-place="meadow"] .world-stage { background: linear-gradient(158deg, #dfe3ca, #f0e7ce 55%, #aabf94); }
+body[data-place="meadow"] .world-stage { --story-horizon-ink: 66 91 57; --story-ground-wash: 193 207 164; background: linear-gradient(158deg, #dfe3ca, #f0e7ce 55%, #aabf94); }
 body[data-place="meadow"] .place-object {
   right: 8vw; bottom: 21vh; border-radius: 52% 48% 36% 44%;
   background: repeating-linear-gradient(75deg, rgba(77, 111, 66, .25) 0 2px, transparent 2px 9px); border-width: 0 0 2px;
 }
-body[data-place="market"] .world-stage { background: linear-gradient(160deg, #d7d5b9, #eee3ca 54%, #b8a486); }
+body[data-place="market"] .world-stage { --story-horizon-ink: 105 79 59; --story-ground-wash: 204 190 159; background: linear-gradient(160deg, #d7d5b9, #eee3ca 54%, #b8a486); }
 body[data-place="market"] .place-object { background: rgba(139, 105, 75, .24); border-radius: 15px 12px 18px 13px; }
-body[data-place="post"] .world-stage { background: linear-gradient(160deg, #c8d5d0, #e8e4d4 50%, #8aa5a0); }
+body[data-place="post"] .world-stage { --story-horizon-ink: 57 82 80; --story-ground-wash: 180 199 190; background: linear-gradient(160deg, #c8d5d0, #e8e4d4 50%, #8aa5a0); }
 body[data-place="post"] .place-object { border-radius: 32px 32px 13px 13px; background: rgba(225, 217, 183, .24); }
-body[data-place="lighthouse"] .world-stage { background: linear-gradient(160deg, #a8b7af, #d8d7c7 52%, #5f7770); }
+body[data-place="lighthouse"] .world-stage { --story-horizon-ink: 49 72 65; --story-ground-wash: 151 171 157; background: linear-gradient(160deg, #a8b7af, #d8d7c7 52%, #5f7770); }
 body[data-place="lighthouse"] .place-object { border-radius: 32px 32px 12px 12px; background: rgba(236, 217, 170, .23); }
-body[data-place="sea"] .world-stage { background: linear-gradient(160deg, #b7c9c3, #e4dfcf 48%, #6f9292); }
+body[data-place="sea"] .world-stage { --story-horizon-ink: 52 92 92; --story-ground-wash: 164 194 186; background: linear-gradient(160deg, #b7c9c3, #e4dfcf 48%, #6f9292); }
 body[data-place="sea"] .ground-wash { background: repeating-radial-gradient(ellipse at 40% 0%, rgba(231, 239, 224, .25) 0 3px, transparent 4px 38px), rgba(84, 129, 128, .52); }
 body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 99, .28); box-shadow: 0 0 28px rgba(233, 189, 85, .25); }
 
@@ -618,31 +650,15 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 .live-answer-bubble {
   position: relative;
   z-index: 6;
-  width: min(360px, calc(100% - 24px));
+  --bubble-max-width: min(360px, calc(100vw - 24px));
+  --bubble-min-height: 42px;
+  --bubble-padding-block: 10px;
+  --bubble-padding-inline: 15px;
+  --bubble-font-size: 13px;
+  --bubble-line-height: 1.5;
   margin: 0 auto 14px;
-  padding: 10px 15px 11px;
-  border: 1px solid rgba(76, 92, 69, .26);
-  border-radius: 18px 14px 20px 13px;
-  background: rgba(235, 239, 219, .92);
-  box-shadow: 0 12px 34px rgba(54, 47, 38, .12);
-  text-align: center;
-  font-family: var(--bubble-font);
-  animation: answer-in 240ms cubic-bezier(.16, 1, .3, 1) both;
 }
-.live-answer-bubble::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 13px;
-  height: 13px;
-  border-right: 1px solid rgba(76, 92, 69, .26);
-  border-bottom: 1px solid rgba(76, 92, 69, .26);
-  background: rgba(235, 239, 219, .96);
-  transform: translateX(-50%) rotate(45deg);
-}
-@keyframes answer-in { from { opacity: 0; transform: translateY(6px) scale(.97); } }
-.live-answer-bubble b { display: block; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.live-answer-bubble[hidden] { display: none; }
 .voice-dock {
   position: fixed;
   z-index: 24;
@@ -684,11 +700,6 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   border-radius: 50%;
   box-shadow: none;
 }
-.voice-dock[data-voice-state="setup"] .guide-mic,
-.voice-dock[data-voice-state="error"] .guide-mic { box-shadow: 0 0 0 6px rgba(209, 164, 75, .15); }
-.voice-dock[data-voice-state="thinking"] .guide-mic { background: transparent; border-color: var(--water); }
-.voice-dock[data-voice-state="speaking"] .guide-mic { background: transparent; border-color: var(--sun); }
-.voice-dock[data-voice-state="paused"] .guide-mic { opacity: .72; }
 .voice-dock[data-voice-state="complete"] { opacity: .76; }
 .guide-mic:disabled { cursor: wait; opacity: .78; }
 .guide-mic > svg { width: 28px; height: 28px; }
@@ -707,7 +718,16 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 .voice-dock[data-voice-state="thinking"] .speech-status > i { background: var(--water); }
 @keyframes status-pulse { to { opacity: .35; transform: scale(1.35); } }
 .heard-notes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
-.heard-notes span, .pet-reasons span, .ending-memory span {
+.user-input-record {
+  --bubble-max-width: min(320px, calc(100vw - 28px));
+  --bubble-min-height: 34px;
+  --bubble-padding-block: 6px;
+  --bubble-padding-inline: 10px;
+  --bubble-font-size: 12px;
+  --bubble-line-height: 1.45;
+  display: block;
+}
+.pet-reasons span {
   display: inline-block;
   padding: 6px 10px;
   border: 1px solid rgba(61, 78, 57, .22);
@@ -954,6 +974,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 }
 
 @media (max-width: 560px) {
+  .world-stage { --story-horizon-y: 67%; }
   .scene-prop {
     left: var(--prop-mobile-x, var(--prop-x));
     width: var(--prop-mobile-width, var(--prop-width));

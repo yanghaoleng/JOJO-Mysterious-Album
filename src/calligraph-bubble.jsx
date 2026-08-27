@@ -5,6 +5,7 @@ import { Calligraph } from 'calligraph';
 const EVENT_NAME = 'mengmeng:bubble-text';
 const SKIP_EVENT_NAME = 'mengmeng:bubble-skip';
 const DEFAULT_TEXT = '我在认真听。';
+const mountedTargets = new WeakSet();
 const splitText = value => {
   if (typeof Intl?.Segmenter === 'function') {
     const segmenter = new Intl.Segmenter('zh-CN', { granularity: 'grapheme' });
@@ -15,6 +16,29 @@ const splitText = value => {
 
 function matchesBubble(detail, bubbleKey) {
   return detail?.key ? detail.key === bubbleKey : bubbleKey === 'lab';
+}
+
+function bubbleNodesForKey(bubbleKey) {
+  return [...document.querySelectorAll('[data-bubble-key]')]
+    .filter(node => node.dataset.bubbleKey === bubbleKey);
+}
+
+export function setSpeechBubbleText(bubbleKey, text, options = {}) {
+  const value = String(text || '').trim();
+  for (const node of bubbleNodesForKey(bubbleKey)) {
+    const shell = node.matches('[data-bubble-shell]') ? node : node.closest('[data-bubble-shell]');
+    if (shell) {
+      shell.dataset.text = value;
+      if (value) shell.setAttribute('aria-label', value);
+    }
+  }
+  window.dispatchEvent(new CustomEvent(EVENT_NAME, {
+    detail: { key: bubbleKey, text: value, ...options },
+  }));
+}
+
+export function skipSpeechBubble(bubbleKey) {
+  window.dispatchEvent(new CustomEvent(SKIP_EVENT_NAME, { detail: { key: bubbleKey } }));
 }
 
 function updateBubbleSize(shell, characters) {
@@ -56,7 +80,7 @@ function useReducedMotion() {
 }
 
 function BubbleLetters({ initialText, bubbleKey, target }) {
-  const [message, setMessage] = useState({ text: initialText, complete: true, revision: 0 });
+  const [message, setMessage] = useState({ text: initialText, complete: true, revision: 0, entranceRevision: 0 });
   const [visibleCount, setVisibleCount] = useState(() => splitText(initialText).length);
   const animationFrame = useRef(0);
   const reduced = useReducedMotion();
@@ -73,6 +97,7 @@ function BubbleLetters({ initialText, bubbleKey, target }) {
         revision: current.revision + (
           current.text !== text || event.detail?.waiting || event.detail?.complete || event.detail?.durationMs == null ? 1 : 0
         ),
+        entranceRevision: current.entranceRevision + (event.detail?.enter === false ? 0 : 1),
       }));
     };
     window.addEventListener(EVENT_NAME, receive);
@@ -90,8 +115,11 @@ function BubbleLetters({ initialText, bubbleKey, target }) {
 
   useLayoutEffect(() => {
     updateBubbleSize(shell, characters);
+  }, [characters, shell]);
+
+  useLayoutEffect(() => {
     return restartBubbleEntrance(shell, reduced);
-  }, [characters, message.revision, reduced, shell]);
+  }, [message.entranceRevision, reduced, shell]);
 
   useEffect(() => {
     cancelAnimationFrame(animationFrame.current);
@@ -132,12 +160,38 @@ function BubbleLetters({ initialText, bubbleKey, target }) {
   );
 }
 
-const targets = document.querySelectorAll('[data-calligraph-bubble]');
-for (const target of targets) {
+export function mountSpeechBubble(target) {
+  if (!(target instanceof Element) || mountedTargets.has(target)) return false;
   const shell = target.closest('[data-bubble-shell]') || target.parentElement;
   const bubbleKey = target.dataset.bubbleKey || shell?.dataset.bubbleKey || target.id;
   const initialText = String(shell?.dataset.text || target.dataset.text || target.textContent || DEFAULT_TEXT);
+  mountedTargets.add(target);
+  target.dataset.bubbleMounted = 'true';
   target.textContent = '';
   createRoot(target).render(<BubbleLetters initialText={initialText} bubbleKey={bubbleKey} target={target} />);
   document.documentElement.dataset.calligraphReady = 'true';
+  return true;
 }
+
+export function mountSpeechBubbles(root = document) {
+  if (root instanceof Element && root.matches('[data-calligraph-bubble]')) mountSpeechBubble(root);
+  root.querySelectorAll?.('[data-calligraph-bubble]').forEach(mountSpeechBubble);
+}
+
+mountSpeechBubbles();
+
+const bubbleObserver = new MutationObserver(records => {
+  for (const record of records) {
+    for (const node of record.addedNodes) {
+      if (node instanceof Element) mountSpeechBubbles(node);
+    }
+  }
+});
+bubbleObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+window.MengMengSpeechBubble = Object.freeze({
+  mount: mountSpeechBubble,
+  mountAll: mountSpeechBubbles,
+  setText: setSpeechBubbleText,
+  skip: skipSpeechBubble,
+});
