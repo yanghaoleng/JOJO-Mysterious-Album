@@ -920,7 +920,23 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .npc-companion span { max-width: 116px; overflow: visible; text-overflow: clip; }
   .npc-speech { right: 2px; --bubble-max-width: min(260px, 82vw); --bubble-font-size: 15px; }
   .world-tap-hint { bottom: 104px; }
-  .backpack-button { right: 8px; bottom: max(94px, calc(env(safe-area-inset-bottom) + 86px)); width: 136px; min-height: 52px; }
+  .backpack-button {
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 52px;
+    min-height: 52px;
+    height: 52px;
+    grid-template: 1fr / 1fr;
+    padding: 6px;
+  }
+  .backpack-mark {
+    grid-row: auto;
+    width: 36px;
+    height: 36px;
+    margin: auto;
+  }
+  .backpack-label,
+  .backpack-quick-items { display: none; }
   .reward-row { grid-template-columns: 68px 1fr; }
   .reward-row img { width: 64px; height: 64px; }
   .inventory-item { grid-template-columns: 74px 1fr; }
