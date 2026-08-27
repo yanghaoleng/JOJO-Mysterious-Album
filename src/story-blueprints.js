@@ -18,10 +18,10 @@ export const INTERVIEW_QUESTIONS = [
 ];
 
 export const ITEMS = {
-  listeningShell: { id: 'listeningShell', name: '听风贝', image: './assets/story/items/listening-shell.webp', short: '能听见很小的声音。', description: '河湾小水獭送来的贝壳。', use: '先听清别人需要什么。' },
-  starThread: { id: 'starThread', name: '星线团', image: './assets/story/items/star-thread.webp', short: '能把分开的声音连起来。', description: '林间小鹿找到的发光线团。', use: '把两段没有说完的话连起来。' },
-  unsentGreeting: { id: 'unsentGreeting', name: '问候小信', image: './assets/story/items/unsent-greeting.webp', short: '上面写着“我来陪你了”。', description: '竹叶熊猫保管的小信。', use: '送给正在等朋友的人。' },
-  lighthouseSeed: { id: 'lighthouseSeed', name: '灯塔种子', image: './assets/story/items/lighthouse-seed.webp', short: '种下去就能点亮灯塔。', description: '书桌小鸮送来的发光种子。', use: '让散开的回声找到回家的路。' },
+  listeningShell: { id: 'listeningShell', name: '听风贝', image: './assets/story/items/listening-shell.webp?v=20260828-flat-icons-v2', short: '能听见很小的声音。', description: '河湾小水獭送来的贝壳。', use: '先听清别人需要什么。' },
+  starThread: { id: 'starThread', name: '星线团', image: './assets/story/items/star-thread.webp?v=20260828-flat-icons-v2', short: '能把分开的声音连起来。', description: '林间小鹿找到的发光线团。', use: '把两段没有说完的话连起来。' },
+  unsentGreeting: { id: 'unsentGreeting', name: '问候小信', image: './assets/story/items/unsent-greeting.webp?v=20260828-flat-icons-v2', short: '上面写着“我来陪你了”。', description: '竹叶熊猫保管的小信。', use: '送给正在等朋友的人。' },
+  lighthouseSeed: { id: 'lighthouseSeed', name: '灯塔种子', image: './assets/story/items/lighthouse-seed.webp?v=20260828-flat-icons-v2', short: '种下去就能点亮灯塔。', description: '书桌小鸮送来的发光线团。', use: '让散开的回声找到回家的路。' },
 };
 
 export const CHAPTERS = [
