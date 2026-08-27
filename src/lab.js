@@ -23,7 +23,7 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
-import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-seed-realtime';
+import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-seed-realtime';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -438,6 +438,8 @@ const callState = {
   controller: null,
   recognition: null,
   recognitionRestartTimer: 0,
+  turnId: 0,
+  lastRecognizedTurn: '',
   growthIndex: 0,
   bubbleId: 0,
   returnFocus: null,
@@ -580,6 +582,10 @@ class LabSpeaker {
 
   unlock() {
     return this.realtime.unlock();
+  }
+
+  isSpeaking() {
+    return this.realtime.isActive();
   }
 
   choose(id) {
@@ -2054,13 +2060,14 @@ function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
     callState.mediaStream = null;
     callState.micEnabled = false;
     callState.micPaused = false;
+    setConversationAudioSession('auto');
     setCharacterCallMic('idle', '开启麦克风并持续聆听');
   }
 }
 
 function scheduleCharacterCallRecognition(delay = 260) {
   clearTimeout(callState.recognitionRestartTimer);
-  if (!callState.active || !callState.micEnabled || callState.micPaused || callState.busy || callState.recognition) return;
+  if (!callState.active || !callState.micEnabled || callState.micPaused || callState.recognition) return;
   callState.recognitionRestartTimer = window.setTimeout(() => {
     callState.recognitionRestartTimer = 0;
     startCharacterCallRecognition();
@@ -2101,7 +2108,7 @@ function setCharacterCallTopic(topic, { announce = true } = {}) {
     appendCharacterCallMessage('assistant', question);
     setCharacterCallStatus('speaking', `${callState.template.name}正在提问`);
     setCharacterCallMic('speaking', '角色正在提问');
-    Promise.resolve(speaker.speak(question)).finally(() => {
+    Promise.resolve(speaker.speak(question, { realtime: true })).finally(() => {
       if (!callState.active) return;
       if (callState.micEnabled && !callState.micPaused) scheduleCharacterCallRecognition(320);
       else {
@@ -2206,7 +2213,8 @@ function handleCharacterCallEvent(eventName, payload, target) {
     setSpeechBubbleText(target.bubbleKey, target.message.content, { complete: true, enter: false });
     target.node.classList.remove('pending');
     anim.talk = true;
-    setCharacterCallStatus('streaming', `${callState.template.name}正在回答`);
+    setCharacterCallStatus('streaming', callState.micEnabled && !callState.micPaused ? `${callState.template.name}正在回答，也在听` : `${callState.template.name}正在回答`);
+    if (callState.micEnabled && !callState.micPaused) setCharacterCallMic('listening', '暂停持续聆听');
     return;
   }
   if (eventName === 'card' && payload?.card) {
@@ -2253,13 +2261,17 @@ async function readCharacterCallStream(response, target, onToken = () => {}) {
   }
 }
 
-async function sendCharacterCall(messageText) {
+async function sendCharacterCall(messageText, { interrupt = false } = {}) {
   const message = String(messageText || '').trim().slice(0, 180);
-  if (!callState.active || callState.busy || !message) return;
+  if (!callState.active || !message || (callState.busy && !interrupt)) return;
+  const turnId = ++callState.turnId;
+  if (callState.busy) {
+    callState.controller?.abort();
+    speaker?.cancel();
+  }
   const turnTopic = callState.mode === 'debug' ? callState.topic : 'free';
   const topicContext = turnTopic === 'growth' ? growthTopicContext() : {};
   speaker?.cancel();
-  stopCharacterCallRecognition();
   callState.busy = true;
   setCharacterCallLive('');
   setCharacterCallMic('thinking', '角色正在思考');
@@ -2290,17 +2302,20 @@ async function sendCharacterCall(messageText) {
       signal: callState.controller.signal,
     });
     await readCharacterCallStream(response, target, token => realtimeSpeech?.push(token));
+    if (turnId !== callState.turnId) return;
     if (!target.message.content) throw new Error('character_call_empty');
     const spoken = realtimeSpeech ? await realtimeSpeech.close() : false;
+    if (turnId !== callState.turnId) return;
     target.node.classList.remove('pending');
     anim.talk = false;
     animator?.setPose('idle');
-    setCharacterCallStatus('speaking', `${callState.template.name}正在说话`);
-    setCharacterCallMic('speaking', '角色正在说话');
+    setCharacterCallStatus('speaking', callState.micEnabled && !callState.micPaused ? `${callState.template.name}正在说话，也在听` : `${callState.template.name}正在说话`);
+    setCharacterCallMic(callState.micEnabled && !callState.micPaused ? 'listening' : 'speaking', callState.micEnabled && !callState.micPaused ? '暂停持续聆听' : '角色正在说话');
     if (turnTopic === 'growth') callState.growthIndex = Math.min(callState.growthIndex + 1, QUESTIONS.length - 1);
     if (!spoken) showStatus('实时角色声音暂时没有连上，下一句会自动重新连接。');
     trackAnalytics('lab_character_call_turn', { depth: 4 });
   } catch (error) {
+    if (turnId !== callState.turnId) return;
     speaker?.cancel();
     if (error?.name === 'AbortError') return;
     console.error('Character call failed', error);
@@ -2313,6 +2328,7 @@ async function sendCharacterCall(messageText) {
     setCharacterCallMic('error', '连接中断，仍会继续聆听');
     void playUISFX('error', { volume: 0.12 });
   } finally {
+    if (turnId !== callState.turnId) return;
     callState.controller = null;
     callState.busy = false;
     if (callState.active && callState.micEnabled && !callState.micPaused) {
@@ -2327,7 +2343,7 @@ async function sendCharacterCall(messageText) {
 }
 
 function startCharacterCallRecognition() {
-  if (!callState.active || callState.busy || !callState.micEnabled || callState.micPaused || callState.recognition) return;
+  if (!callState.active || !callState.micEnabled || callState.micPaused || callState.recognition) return;
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Recognition) {
     setCharacterCallStatus('error', '当前浏览器不支持持续语音输入');
@@ -2357,9 +2373,14 @@ function startCharacterCallRecognition() {
     setCharacterCallLive((complete || interim).trim());
     if (complete.trim()) {
       const message = complete.trim();
-      stopCharacterCallRecognition();
+      if (message === callState.lastRecognizedTurn) return;
+      callState.lastRecognizedTurn = message;
       setCharacterCallLive('');
-      void sendCharacterCall(message);
+      // A completed user utterance is an intentional barge-in: stop only the
+      // character's output, then replace the outstanding response.  The mic
+      // itself remains live, so Safari does not have to churn audio sessions.
+      if (speaker?.isSpeaking()) speaker.cancel();
+      void sendCharacterCall(message, { interrupt: true });
     }
   };
   recognition.onerror = event => {
@@ -2389,7 +2410,7 @@ function startCharacterCallRecognition() {
 }
 
 async function beginCharacterCallRecognition() {
-  if (!callState.active || callState.busy) return;
+  if (!callState.active) return;
   if (callState.micEnabled) {
     if (callState.micPaused) {
       callState.micPaused = false;
@@ -2407,7 +2428,7 @@ async function beginCharacterCallRecognition() {
     return;
   }
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
+  if (!Recognition) {
     setCharacterCallStatus('error', '当前浏览器不支持持续语音输入');
     setCharacterCallMic('error', '当前浏览器不支持语音输入');
     void playUISFX('error', { volume: 0.1 });
@@ -2416,15 +2437,15 @@ async function beginCharacterCallRecognition() {
   setCharacterCallStatus('permission', '正在请求麦克风权限');
   setCharacterCallMic('thinking', '正在请求麦克风权限');
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (!callState.active) {
-      stream.getTracks().forEach(track => track.stop());
-      return;
-    }
-    speaker?.cancel();
-    callState.mediaStream = stream;
+    // Do not keep an extra getUserMedia stream alive just to preflight
+    // permission.  On iOS Safari that stream can steal the audio session and
+    // silence Seed TTS. SpeechRecognition asks for the same permission itself.
+    await speaker?.unlock();
+    if (!callState.active) return;
+    setConversationAudioSession('play-and-record');
     callState.micEnabled = true;
     callState.micPaused = false;
+    callState.lastRecognizedTurn = '';
     setCharacterCallStatus('listening', `${callState.template.name}正在听`);
     setCharacterCallMic('listening', '暂停持续聆听');
     startCharacterCallRecognition();

@@ -8,6 +8,20 @@
 const MAX_SEGMENT = 46;
 const MIN_SEGMENT = 9;
 
+export function setConversationAudioSession(type = 'auto') {
+  // Safari on iOS exposes this experimental bridge to AVAudioSession.  Using
+  // play-and-record while the mic is open keeps input and Seed TTS in one
+  // duplex session instead of letting microphone capture mute later output.
+  const session = typeof navigator === 'undefined' ? null : navigator.audioSession;
+  if (!session) return false;
+  try {
+    session.type = type;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function cleanText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
@@ -46,13 +60,30 @@ export class SeedRealtimeSpeech {
     this.onError = onError;
     this.context = null;
     this.session = null;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.context?.state === 'interrupted') void this.unlock();
+    });
   }
 
-  unlock() {
+  async unlock() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return Promise.resolve(false);
-    if (!this.context || this.context.state === 'closed') this.context = new AudioContextClass();
-    return this.context.resume().then(() => true).catch(() => false);
+    if (!AudioContextClass) return false;
+    if (!this.context || this.context.state === 'closed') this.context = new AudioContextClass({ latencyHint: 'interactive' });
+    try { await this.context.resume(); } catch { /* Safari may leave an interrupted context behind. */ }
+    if (this.context.state === 'running') return true;
+    // iOS Safari can leave Web Audio stuck in an "interrupted" state after a
+    // microphone/audio-session transition.  A fresh context is the reliable
+    // recovery path on the next deliberate tap.
+    if (this.context.state === 'interrupted') {
+      try { await this.context.close(); } catch { /* best effort */ }
+      this.context = new AudioContextClass({ latencyHint: 'interactive' });
+      try { await this.context.resume(); } catch { /* handled by the media fallback */ }
+    }
+    return this.context.state === 'running';
+  }
+
+  isActive() {
+    return Boolean(this.session && !this.session.cancelled);
   }
 
   stop() {
@@ -60,7 +91,7 @@ export class SeedRealtimeSpeech {
     if (!session) return;
     session.cancelled = true;
     session.controller?.abort();
-    session.source?.stop();
+    try { session.source?.stop(); } catch { /* source may already be finished */ }
     session.audio?.pause();
     if (session.objectUrl) URL.revokeObjectURL(session.objectUrl);
     this.session = null;
@@ -195,6 +226,8 @@ export class SeedRealtimeSpeech {
     const objectUrl = URL.createObjectURL(new Blob([data], { type: 'audio/mpeg' }));
     session.objectUrl = objectUrl;
     const audio = new Audio(objectUrl);
+    audio.playsInline = true;
+    audio.preload = 'auto';
     session.audio = audio;
     session.onSegment(text, 0);
     await new Promise((resolve, reject) => {
