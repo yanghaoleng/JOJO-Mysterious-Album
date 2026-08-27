@@ -20,11 +20,30 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
+html { background: #111613; }
 body {
   min-height: 100dvh;
   overflow-x: hidden;
   color: var(--ink);
   background: var(--paper);
+}
+body.scene-transition-closing,
+body.scene-transition-closed,
+body.scene-transition-opening {
+  overflow: hidden;
+  pointer-events: none;
+  will-change: clip-path;
+}
+body.scene-transition-closing { animation: scene-circle-close 680ms linear both; }
+body.scene-transition-closed { clip-path: circle(0 at 50% 50%); }
+body.scene-transition-opening { animation: scene-circle-open 760ms linear both; }
+@keyframes scene-circle-close {
+  from { clip-path: circle(75vmax at 50% 50%); }
+  to { clip-path: circle(0 at 50% 50%); }
+}
+@keyframes scene-circle-open {
+  from { clip-path: circle(0 at 50% 50%); }
+  to { clip-path: circle(75vmax at 50% 50%); }
 }
 button, input { font: inherit; }
 button { color: inherit; }
@@ -34,17 +53,6 @@ button:focus-visible, input:focus-visible {
 }
 button:active { transform: translateY(1px) scale(.985); }
 [hidden] { display: none !important; }
-
-#paper-grain {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  width: 100%;
-  height: 100%;
-  opacity: .16;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
 
 .story-header {
   position: fixed;
@@ -113,45 +121,21 @@ button:active { transform: translateY(1px) scale(.985); }
 
 #story-world { position: relative; min-height: 100dvh; }
 .world-stage {
-  --story-horizon-y: 68%;
+  --story-horizon-y: 64%;
   --story-horizon-ink: 60 76 55;
   --story-ground-wash: 213 218 190;
   position: fixed;
   inset: 0;
   overflow: hidden;
   isolation: isolate;
-  background:
-    radial-gradient(ellipse at 50% 16%, rgba(255, 250, 235, .78), transparent 48%),
-    linear-gradient(160deg, #dbe2ce, #efe7d2 56%, #c9d2b7);
+  background: #dfe9dc;
   transition: background 760ms ease;
 }
-.story-scene-canvas {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: .72;
-  filter: saturate(.9) contrast(.94);
-  -webkit-mask-image: radial-gradient(ellipse 48% 45% at 50% 66%, #000 38%, rgba(0,0,0,.88) 57%, transparent 84%);
-  mask-image: radial-gradient(ellipse 48% 45% at 50% 66%, #000 38%, rgba(0,0,0,.88) 57%, transparent 84%);
-  transition: opacity 420ms ease, filter 420ms ease;
-  pointer-events: none;
-}
-.world-stage.has-generated-scenery .story-scene-canvas { opacity: .56; filter: saturate(.82) contrast(.9); }
 .world-stage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-radial-gradient(ellipse at 20% 30%, rgba(76, 87, 68, .035) 0 1px, transparent 1px 8px),
-    linear-gradient(95deg, transparent, rgba(255,255,255,.12), transparent);
-  mix-blend-mode: multiply;
-  pointer-events: none;
+  content: none;
 }
 .sky-wash, .ground-wash, .far-shape, .place-object { position: absolute; z-index: 1; pointer-events: none; }
-.sky-wash, .ground-wash, .far-shape { opacity: .18; }
+.sky-wash, .ground-wash, .far-shape { display: none; }
 .sky-wash {
   inset: 3% 4% 38%;
   border-radius: 48% 52% 39% 61% / 57% 42% 58% 43%;
@@ -197,7 +181,7 @@ button:active { transform: translateY(1px) scale(.985); }
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 18px 15px 21px 16px;
+  border-radius: 0;
   background: transparent;
   color: inherit;
   line-height: 0;
@@ -226,8 +210,8 @@ button:active { transform: translateY(1px) scale(.985); }
 .scene-prop.is-ready[data-position="sky"] { transform: translate(-50%, -50%) scaleX(var(--prop-flip)) scale(1); }
 .scene-prop-far { z-index: 2; }
 .scene-prop-sky { z-index: 2; }
-.scene-prop-mid { z-index: 4; }
-.scene-prop-focus { z-index: 6; }
+.scene-prop-mid { z-index: 2; }
+.scene-prop-focus { z-index: 2; }
 .scene-prop img {
   display: block;
   width: 100%;
@@ -257,31 +241,16 @@ button:active { transform: translateY(1px) scale(.985); }
 .scene-horizon {
   position: absolute;
   z-index: 3;
-  left: -3%;
-  right: -3%;
+  left: 0;
+  right: 0;
   top: var(--story-horizon-y);
   bottom: 0;
-  border-top: 2px solid rgb(var(--story-horizon-ink) / .38);
-  background:
-    linear-gradient(180deg, rgb(var(--story-ground-wash) / .76) 0, rgb(var(--story-ground-wash) / .42) 8%, rgb(var(--story-ground-wash) / .12) 30%, transparent 68%),
-    repeating-radial-gradient(ellipse at 50% 0, rgb(var(--story-horizon-ink) / .055) 0 1px, transparent 1px 10px);
-  box-shadow: inset 0 2px rgba(255, 250, 235, .34);
-  transform: rotate(-.18deg);
-  transform-origin: 50% 0;
+  border-top: 3px solid rgb(var(--story-horizon-ink) / .58);
+  background: rgb(var(--story-ground-wash) / .96);
   pointer-events: none;
 }
 
-.scene-horizon::before {
-  content: "";
-  position: absolute;
-  left: 4%;
-  right: 6%;
-  top: -4px;
-  height: 8px;
-  border-top: 1px solid rgb(var(--story-horizon-ink) / .22);
-  border-radius: 50%;
-  opacity: .72;
-}
+.scene-horizon::before { content: none; }
 
 .world-stage.has-generated-scenery .far-shape { opacity: .08; }
 .world-stage.has-generated-scenery .place-object { opacity: 0; pointer-events: none; }
@@ -317,28 +286,28 @@ body:not([data-phase="quest"]) .scene-prop.is-interactive { pointer-events: none
 .place-object::before { inset: 12px 18px 14px; border-radius: 55% 45% 52% 48%; transform: rotate(-12deg); }
 .place-object::after { left: -9px; right: -8px; bottom: -8px; height: 12px; border-width: 2px 0 0; border-radius: 50%; transform: rotate(-4deg); }
 
-body[data-place="meadow"] .world-stage { --story-horizon-ink: 66 91 57; --story-ground-wash: 193 207 164; background: linear-gradient(158deg, #dfe3ca, #f0e7ce 55%, #aabf94); }
+body[data-place="meadow"] .world-stage { --story-horizon-ink: 66 91 57; --story-ground-wash: 193 207 164; background: #e7edcf; }
 body[data-place="meadow"] .place-object {
   right: 8vw; bottom: 21vh; border-radius: 52% 48% 36% 44%;
   background: repeating-linear-gradient(75deg, rgba(77, 111, 66, .25) 0 2px, transparent 2px 9px); border-width: 0 0 2px;
 }
-body[data-place="market"] .world-stage { --story-horizon-ink: 105 79 59; --story-ground-wash: 204 190 159; background: linear-gradient(160deg, #d7d5b9, #eee3ca 54%, #b8a486); }
+body[data-place="market"] .world-stage { --story-horizon-ink: 105 79 59; --story-ground-wash: 204 190 159; background: #e9dfc6; }
 body[data-place="market"] .place-object { background: rgba(139, 105, 75, .24); border-radius: 15px 12px 18px 13px; }
-body[data-place="post"] .world-stage { --story-horizon-ink: 57 82 80; --story-ground-wash: 180 199 190; background: linear-gradient(160deg, #c8d5d0, #e8e4d4 50%, #8aa5a0); }
+body[data-place="post"] .world-stage { --story-horizon-ink: 57 82 80; --story-ground-wash: 180 199 190; background: #d6e3df; }
 body[data-place="post"] .place-object { border-radius: 32px 32px 13px 13px; background: rgba(225, 217, 183, .24); }
-body[data-place="lighthouse"] .world-stage { --story-horizon-ink: 49 72 65; --story-ground-wash: 151 171 157; background: linear-gradient(160deg, #a8b7af, #d8d7c7 52%, #5f7770); }
+body[data-place="lighthouse"] .world-stage { --story-horizon-ink: 49 72 65; --story-ground-wash: 151 171 157; background: #bccbc5; }
 body[data-place="lighthouse"] .place-object { border-radius: 32px 32px 12px 12px; background: rgba(236, 217, 170, .23); }
-body[data-place="sea"] .world-stage { --story-horizon-ink: 52 92 92; --story-ground-wash: 164 194 186; background: linear-gradient(160deg, #b7c9c3, #e4dfcf 48%, #6f9292); }
-body[data-place="sea"] .ground-wash { background: repeating-radial-gradient(ellipse at 40% 0%, rgba(231, 239, 224, .25) 0 3px, transparent 4px 38px), rgba(84, 129, 128, .52); }
+body[data-place="sea"] .world-stage { --story-horizon-ink: 52 92 92; --story-ground-wash: 164 194 186; background: #cee0dc; }
+body[data-place="sea"] .ground-wash { background: rgba(84, 129, 128, .52); }
 body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 99, .28); box-shadow: 0 0 28px rgba(233, 189, 85, .25); }
 
 .pet-stage {
   position: absolute;
   left: clamp(20px, 7vw, 110px);
-  bottom: clamp(112px, 14vh, 155px);
-  width: clamp(120px, 13vw, 168px);
-  height: clamp(154px, 19vh, 210px);
-  z-index: 4;
+  bottom: clamp(96px, 13vh, 140px);
+  width: clamp(150px, 15vw, 188px);
+  height: clamp(190px, 22vh, 234px);
+  z-index: 7;
   opacity: 0;
   --pet-shift-x: 0px;
   --pet-shift-y: 0px;
@@ -367,19 +336,19 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 
 .npc-wrap {
   position: absolute;
-  z-index: 5;
-  right: clamp(36px, 16vw, 230px);
-  bottom: clamp(112px, 16vh, 184px);
-  width: 132px;
+  z-index: 8;
+  right: clamp(28px, 10vw, 150px);
+  bottom: clamp(96px, 13vh, 140px);
+  width: 170px;
   text-align: center;
   cursor: pointer;
 }
 .npc-speech {
   position: absolute;
   z-index: 7;
-  right: -28px;
+  right: -18px;
   bottom: calc(100% + 18px);
-  --bubble-max-width: min(268px, 76vw);
+  --bubble-max-width: min(320px, 76vw);
   --bubble-min-height: 48px;
   --bubble-padding-block: 11px;
   --bubble-padding-inline: 15px;
@@ -388,11 +357,15 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   --bubble-tail-x: calc(100% - 62px);
   cursor: pointer;
 }
+.npc-speech[data-speaker="companion"] {
+  --bubble-rest-transform: translateX(calc(-1 * clamp(120px, 38vw, 560px)));
+  --bubble-tail-x: 44px;
+}
 .npc-character {
   position: relative;
   z-index: 2;
-  width: 118px;
-  height: 148px;
+  width: 160px;
+  height: 200px;
   margin: 0 auto 8px;
   display: grid;
   place-items: center;
@@ -402,6 +375,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 }
 .npc-character canvas { width: 100%; height: 100%; display: block; }
 .npc-wrap[data-state="thinking"] .npc-character { animation: npc-think 760ms ease-in-out infinite alternate; }
+.npc-wrap.is-listening .npc-character { opacity: .82; transform: scale(.96); }
 .npc-wrap.is-tapped .npc-character { animation: npc-tap 420ms cubic-bezier(.22, 1.4, .35, 1); }
 @keyframes npc-think { to { transform: translateY(-4px) rotate(2deg); } }
 @keyframes npc-tap { 45% { transform: translateY(-9px) rotate(-4deg) scale(1.03); } }
@@ -414,6 +388,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   font-size: 12px;
 }
 .npc-portal {
+  display: none;
   position: absolute;
   z-index: 1;
   inset: -30px 3px 12px;
@@ -423,15 +398,15 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 }
 .npc-companions {
   position: absolute;
-  z-index: 4;
-  left: 31%;
-  bottom: clamp(112px, 16vh, 184px);
+  z-index: 7;
+  left: 40%;
+  bottom: clamp(96px, 13vh, 140px);
   display: flex;
   align-items: end;
   gap: clamp(18px, 4vw, 54px);
 }
 .npc-companion {
-  width: 108px;
+  width: 160px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -441,7 +416,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 }
 .npc-companion:hover, .npc-companion:focus-visible { transform: translateY(-5px); }
 .npc-companion:active, .npc-companion.is-talking { transform: translateY(-9px) rotate(-2deg); }
-.npc-companion canvas { display: block; width: 100%; height: 132px; }
+.npc-companion canvas { display: block; width: 100%; height: 200px; }
 .npc-companion span {
   display: inline-block;
   padding: 4px 8px;
@@ -857,29 +832,8 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 .ending-actions { display: flex; flex-wrap: wrap; gap: 9px; }
 
 .ink-transition {
-  position: fixed;
-  z-index: 40;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  pointer-events: none;
-  visibility: hidden;
+  display: none;
 }
-.ink-transition::before, .ink-transition::after, .ink-transition span {
-  content: "";
-  position: absolute;
-  width: 150vmax;
-  height: 150vmax;
-  border-radius: 44% 56% 48% 52%;
-  background: #314035;
-  transform: scale(0);
-}
-.ink-transition::after { background: #697b67; opacity: .72; animation-delay: 80ms !important; }
-.ink-transition span { background: #e9e3d3; opacity: .38; animation-delay: 150ms !important; }
-.ink-transition.play { visibility: visible; }
-.ink-transition.play::before, .ink-transition.play::after, .ink-transition.play span { animation: ink-wash 760ms ease-in-out both; }
-@keyframes ink-wash { 0% { transform: scale(0) rotate(0); } 48% { transform: scale(1) rotate(13deg); } 100% { transform: scale(1.12) rotate(18deg); opacity: 0; } }
 
 .toast {
   position: fixed;
@@ -911,18 +865,18 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .ritual-panel, .ending-panel { margin-top: 112px; margin-bottom: 120px; }
   .quest-panel { top: 103px; left: 12px; width: min(360px, calc(100% - 24px)); margin: 0; }
   .conversation-panel { width: min(760px, calc(100% - 20px)); padding-top: 106px; }
-  .pet-stage { left: 4vw; bottom: 13vh; width: 142px; height: 178px; opacity: .92; }
+  .pet-stage { left: 3vw; bottom: 12vh; width: 156px; height: 198px; opacity: .96; }
   body[data-phase="interview"] .pet-stage, body[data-phase="cover"] .pet-stage { opacity: 0; }
-  .npc-wrap { right: 5vw; bottom: 15vh; transform: none; }
-  .npc-companions { left: 28%; bottom: 15vh; gap: 20px; }
-  .npc-companion { width: 92px; }
-  .npc-companion canvas { height: 116px; }
+  .npc-wrap { right: 4vw; bottom: 12vh; transform: none; }
+  .npc-companions { left: 38%; bottom: 12vh; gap: 20px; }
+  .npc-companion { width: 148px; }
+  .npc-companion canvas { height: 185px; }
   .guide-mic { grid-column: 1 / -1; }
   .inventory-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  .world-stage { --story-horizon-y: 67%; }
+  .world-stage { --story-horizon-y: 65%; }
   .scene-prop {
     left: var(--prop-mobile-x, var(--prop-x));
     width: var(--prop-mobile-width, var(--prop-width));
@@ -949,14 +903,15 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .quest-panel { top: 102px; left: 10px; width: min(300px, calc(100% - 20px)); padding: 12px 14px; }
   .quest-panel .scene-heading h2 { font-size: 23px; }
   .quest-panel .scene-heading > p { display: none; }
-  .pet-stage { left: 4px; bottom: 14vh; width: 112px; height: 142px; opacity: .95; }
+  .pet-stage { left: 2px; bottom: 12vh; width: 122px; height: 156px; opacity: .98; }
   .pet-thought { left: 104%; --bubble-max-width: min(220px, 72vw); }
-  .npc-wrap { right: 3px; bottom: 17vh; transform: scale(.86); transform-origin: bottom right; }
-  .npc-companions { left: 27%; bottom: 17vh; gap: 6px; }
-  .npc-companion { width: 68px; }
-  .npc-companion canvas { height: 88px; }
-  .npc-companion span { max-width: 74px; overflow: hidden; text-overflow: ellipsis; font-size: 9px; }
-  .npc-speech { right: 4px; --bubble-max-width: min(250px, 82vw); --bubble-font-size: 15px; }
+  .npc-wrap { right: 2px; bottom: 12vh; width: 132px; transform: none; }
+  .npc-character { width: 124px; height: 156px; }
+  .npc-companions { left: 32%; bottom: 12vh; gap: 6px; }
+  .npc-companion { width: 116px; }
+  .npc-companion canvas { height: 146px; }
+  .npc-companion span { max-width: 116px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+  .npc-speech { right: 2px; --bubble-max-width: min(260px, 82vw); --bubble-font-size: 15px; }
   .world-tap-hint { bottom: 104px; }
   .backpack-button { right: 8px; bottom: max(94px, calc(env(safe-area-inset-bottom) + 86px)); width: 136px; min-height: 52px; }
   .reward-row { grid-template-columns: 68px 1fr; }

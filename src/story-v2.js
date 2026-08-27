@@ -3,7 +3,6 @@ import { setRender, U } from './part.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
-import { paintSceneThumbnail } from './lab-scenes.js';
 import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
@@ -79,6 +78,7 @@ const bubblePages = {
 
 let dialogueSequence = null;
 let dialogueSequenceId = 0;
+let activeSceneSpeaker = 'npc';
 let petWalkId = 0;
 
 // Keep a single audio context unlocked from the child's first deliberate tap.
@@ -276,61 +276,6 @@ function toast(message) {
 function setBusy(busy) {
   state.busy = busy;
   for (const button of document.querySelectorAll('#interview-panel button')) button.disabled = busy;
-}
-
-function paintPaperGrain() {
-  const canvas = $('paper-grain');
-  const context = canvas.getContext('2d');
-  const dpr = Math.min(devicePixelRatio || 1, 2);
-  canvas.width = Math.round(innerWidth * dpr);
-  canvas.height = Math.round(innerHeight * dpr);
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  const dots = Math.round(innerWidth * innerHeight / 760);
-  for (let i = 0; i < dots; i++) {
-    const alpha = .07 + Math.random() * .1;
-    context.fillStyle = `rgba(${82 + Math.random() * 38 | 0},${76 + Math.random() * 32 | 0},${63 + Math.random() * 24 | 0},${alpha})`;
-    const size = (.4 + Math.random() * .9) * dpr;
-    context.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, size, size);
-  }
-}
-
-let activeStorySceneId = SCENES[0].sceneId;
-function paintStoryScene(id = activeStorySceneId) {
-  activeStorySceneId = id;
-  const canvas = $('story-scene-canvas');
-  const rect = canvas.getBoundingClientRect();
-  const dpr = Math.min(1.5, devicePixelRatio || 1);
-  canvas.width = Math.max(320, Math.round(rect.width * dpr));
-  canvas.height = Math.max(240, Math.round(rect.height * dpr));
-  const context = canvas.getContext('2d');
-  const sceneWidth = Math.min(canvas.width * .6, canvas.height * .72);
-  const sceneHeight = sceneWidth * .75;
-  const sceneCanvas = document.createElement('canvas');
-  sceneCanvas.width = Math.max(260, Math.round(sceneWidth));
-  sceneCanvas.height = Math.max(160, Math.round(sceneHeight));
-  paintSceneThumbnail(sceneCanvas, activeStorySceneId);
-  const x = (canvas.width - sceneWidth) * .5;
-  const y = Math.max(canvas.height * .1, canvas.height - sceneHeight - canvas.height * .14);
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.globalAlpha = .86;
-  context.drawImage(sceneCanvas, x, y, sceneWidth, sceneHeight);
-  context.globalCompositeOperation = 'destination-in';
-  const fade = context.createRadialGradient(
-    x + sceneWidth * .5,
-    y + sceneHeight * .58,
-    sceneWidth * .12,
-    x + sceneWidth * .5,
-    y + sceneHeight * .58,
-    Math.max(sceneWidth * .62, sceneHeight * .78),
-  );
-  fade.addColorStop(0, 'rgba(0,0,0,1)');
-  fade.addColorStop(.62, 'rgba(0,0,0,.92)');
-  fade.addColorStop(1, 'rgba(0,0,0,0)');
-  context.globalAlpha = 1;
-  context.fillStyle = fade;
-  context.fillRect(x, y, sceneWidth, sceneHeight);
-  context.globalCompositeOperation = 'source-over';
-  context.globalAlpha = 1;
 }
 
 function setSceneryStyle(element, prop, index) {
@@ -553,25 +498,30 @@ function stopAudio() {
   petRenderer.setTalking(false);
   guideRenderer.setTalking(false);
   npcRenderer.setTalking(false);
+  companionRenderers.forEach(renderer => renderer.setTalking(false));
+  document.querySelectorAll('.npc-companion').forEach(button => button.classList.remove('is-talking'));
   $('npc-wrap').dataset.state = '';
 }
 
 async function playTts(text, voice, { pet = false, npc = false, onTimeline = null } = {}) {
   stopAudio();
   const requestId = activeTtsRequest;
+  const npcVoiceRenderer = activeSceneSpeaker === 'companion' ? companionRenderers[0] : npcRenderer;
   let timelineStarted = false;
   const stopTalking = () => {
     if (pet) petRenderer.setTalking(false);
     else if (npc) {
       $('npc-wrap').dataset.state = '';
-      npcRenderer.setTalking(false);
+      npcVoiceRenderer.setTalking(false);
+      document.querySelector('[data-companion="0"]')?.classList.remove('is-talking');
     } else guideRenderer.setTalking(false);
   };
   const startTalking = () => {
     if (pet) petRenderer.setTalking(true);
     else if (npc) {
-      $('npc-wrap').dataset.state = 'speaking';
-      npcRenderer.setTalking(true);
+      if (activeSceneSpeaker === 'npc') $('npc-wrap').dataset.state = 'speaking';
+      npcVoiceRenderer.setTalking(true);
+      if (activeSceneSpeaker === 'companion') document.querySelector('[data-companion="0"]')?.classList.add('is-talking');
     } else guideRenderer.setTalking(true);
   };
   storyRealtimeSpeech.onState = state => { if (state === 'idle') stopTalking(); };
@@ -1189,8 +1139,8 @@ async function finishInterview() {
     petRenderer.resize();
   });
   for (const seal of document.querySelectorAll('[data-seal]')) seal.classList.add('active');
-  $('ritual-title').textContent = `今天分配给你的是${template.name}`;
-  $('ritual-copy').textContent = '它来自角色模拟器的动物模板，并照着你的三个回答长出了新特征。';
+  $('ritual-title').textContent = `今天陪你出发的是${template.name}`;
+  $('ritual-copy').textContent = '它照着你的三个回答，长出了特别的样子。';
   $('ritual-status').textContent = petDescription(state.pet);
   showPanel('ritual-panel', 'assignment');
   petRenderer.react('listen');
@@ -1198,7 +1148,7 @@ async function finishInterview() {
   guideVoiceSession.speaking = true;
   presentDialogueSequence([
     { kind: 'pet', text: `我是${template.name}。我已经照着你的描述长出来啦。`, label: '新伙伴', voice: state.petVoice },
-    { kind: 'pet', text: '我准备好了。我们一起去找不见了的回声。', label: '准备出发', voice: state.petVoice },
+    { kind: 'pet', text: '我准备好了。听说回声会把我们的话再说一遍，我们去找找看吧！', label: '准备出发', voice: state.petVoice },
   ], () => {
     setBusy(false);
     guideVoiceSession.processing = false;
@@ -1257,14 +1207,18 @@ function updateChapterProgress(chapter) {
 }
 
 async function playTransition(action) {
-  const transition = $('ink-transition');
-  transition.classList.remove('play');
-  void transition.offsetWidth;
-  transition.classList.add('play');
-  await delay(320);
+  const root = document.body;
+  root.classList.remove('scene-transition-closing', 'scene-transition-closed', 'scene-transition-opening');
+  void root.offsetWidth;
+  root.classList.add('scene-transition-closing');
+  await delay(matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 680);
+  root.classList.remove('scene-transition-closing');
+  root.classList.add('scene-transition-closed');
   await action();
-  await delay(460);
-  transition.classList.remove('play');
+  root.classList.remove('scene-transition-closed');
+  root.classList.add('scene-transition-opening');
+  await delay(matchMedia('(prefers-reduced-motion: reduce)').matches ? 40 : 760);
+  root.classList.remove('scene-transition-opening');
 }
 
 function fallbackSceneTurn(scene, answer) {
@@ -1315,28 +1269,41 @@ async function startQuest() {
 }
 
 function renderSceneCast(scene) {
-  $('npc-companions').hidden = false;
+  $('npc-companions').hidden = scene.cast.length === 0;
+  document.querySelectorAll('[data-companion]').forEach(button => {
+    button.hidden = true;
+    button.classList.remove('is-talking');
+  });
   const mainTemplate = storyCharacterTemplateById(scene.npc.templateId);
-  npcRenderer.buildRecipe(makeStoryGuideRecipe(mainTemplate), { scaleMultiplier: .82, offsetY: -1.02 });
-  scene.cast.slice(0, 2).forEach((character, index) => {
+  npcRenderer.buildRecipe(makeStoryGuideRecipe(mainTemplate), { scaleMultiplier: 1.32, offsetY: -1.02 });
+  scene.cast.slice(0, 1).forEach((character, index) => {
     const button = document.querySelector(`[data-companion="${index}"]`);
     const template = storyCharacterTemplateById(character.templateId);
     button.hidden = false;
     button.dataset.line = character.line;
     button.dataset.name = character.name;
-    button.dataset.voice = index === 0 ? 'bubble' : 'sprout';
+    button.dataset.voice = character.voice || 'bubble';
     button.setAttribute('aria-label', `触摸${character.name}`);
     button.querySelector('span').textContent = character.name;
-    companionRenderers[index].buildRecipe(makeStoryGuideRecipe(template), { scaleMultiplier: .78, offsetY: -1.04 });
+    companionRenderers[index].buildRecipe(makeStoryGuideRecipe(template), { scaleMultiplier: 1.32, offsetY: -1.02 });
   });
+}
+
+function setSceneSpeaker(scene, speaker = 'npc') {
+  const companion = document.querySelector('[data-companion="0"]');
+  const useCompanion = speaker === 'cast' && scene.cast[0] && !companion.hidden;
+  activeSceneSpeaker = useCompanion ? 'companion' : 'npc';
+  $('npc-speech').dataset.speaker = activeSceneSpeaker;
+  $('npc-wrap').classList.toggle('is-listening', useCompanion);
+  companion.classList.toggle('is-talking', useCompanion);
+  const speakerName = useCompanion ? scene.cast[0].name : scene.npc.name;
+  $('npc-speech').setAttribute('aria-label', `${speakerName}正在说话，轻触可以跳过`);
 }
 
 async function renderScene(scene) {
   state.busy = true;
   document.body.dataset.place = scene.place;
-  const scenery = sceneryForScene(scene);
   renderStoryScenery(scene);
-  paintStoryScene(scene.sceneId);
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
   updateChapterProgress(scene.chapter);
@@ -1356,16 +1323,19 @@ async function renderScene(scene) {
   npc.hidden = false;
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
   guideVoiceSession.speaking = true;
-  presentDialogueSequence([
-    { kind: 'npc', text: `这里是${scene.name}。${scenery.narration || scene.objective}`, voice: scene.npc.voice || 'moss' },
-    { kind: 'npc', text: scene.entranceLine, label: scene.npc.name, voice: scene.npc.voice || 'moss' },
-    { kind: 'npc', text: scene.dialogue, label: '请直接说出你的办法', voice: scene.npc.voice || 'moss' },
-  ], () => {
+  const dialogue = scene.conversation.map(step => ({
+    kind: 'npc',
+    text: step.text,
+    voice: step.speaker === 'cast' ? scene.cast[0]?.voice || 'bubble' : scene.npc.voice || 'moss',
+    onShow: () => setSceneSpeaker(scene, step.speaker),
+  }));
+  presentDialogueSequence(dialogue, () => {
+    setSceneSpeaker(scene, 'npc');
     state.busy = false;
     guideVoiceSession.processing = false;
     guideVoiceSession.speaking = false;
     $('world-tap-hint').hidden = false;
-    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，说出你想怎么做' });
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '轮到你说啦，说出你的办法' });
   });
   const nextScene = SCENES[state.sceneIndex + 1];
   if (nextScene) preloadSceneScenery(nextScene);
@@ -1440,6 +1410,7 @@ async function submitSceneAnswer(raw) {
     return;
   }
   const scene = SCENES[state.sceneIndex];
+  setSceneSpeaker(scene, 'npc');
   setBubble('npc', `我听见了“${answer.slice(0, 18)}”`, '正在想');
   setGuideVoiceUi('thinking', `${scene.npc.name}正在理解你想做什么`);
   const result = await understandSceneAnswer(scene, answer);
@@ -1481,8 +1452,9 @@ async function resolveSceneChoice(scene, choice, reaction) {
     $('reward-row').hidden = true;
   }
   petRenderer.react(choice.trait === 'listen' ? 'listen' : choice.trait === 'bold' ? 'brave' : 'happy');
+  setSceneSpeaker(scene, 'npc');
   presentDialogueSequence([
-    { kind: 'npc', text: reaction, label: '你的办法成功了', voice: scene.npc.voice || 'moss' },
+    { kind: 'npc', text: reaction, label: '你的办法成功了', voice: scene.npc.voice || 'moss', onShow: () => setSceneSpeaker(scene, 'npc') },
     { kind: 'pet', text: scene.petLine, label: state.petName, voice: state.petVoice },
   ], () => {
     guideVoiceSession.processing = false;
@@ -1500,12 +1472,12 @@ async function resolveSceneChoice(scene, choice, reaction) {
 
 function dominantTrait() {
   const groups = {
-    listen: '你常常先听清楚，再决定怎样帮忙。',
-    together: '你喜欢让伙伴一起参与，而不是替它完成。',
-    care: '你一路都在照顾东西和话语真正属于谁。',
-    bold: '需要开口的时候，你愿意把第一句话说出来。',
-    patient: '你知道等待也可以是一种行动。',
-    make: '你喜欢把线索变成可以动手解决的问题。',
+    listen: '你会先听清楚，再想办法。',
+    together: '你喜欢叫上朋友一起帮忙。',
+    care: '你一直都在照顾身边的朋友。',
+    bold: '轮到你开口时，你愿意勇敢地说出来。',
+    patient: '你愿意慢一点，等朋友准备好。',
+    make: '你喜欢拍手、找图，把办法真的做出来。',
   };
   const counts = new Map();
   for (const choice of state.choices) counts.set(choice.trait, (counts.get(choice.trait) || 0) + 1);
@@ -1522,13 +1494,13 @@ async function finishStory() {
   $('world-tap-hint').hidden = true;
   updateChapterProgress(4);
   showPanel('ending-panel', 'ending');
-  $('ending-copy').textContent = `${state.petName}和你把灯塔种子种在最高的一页。${dominantTrait()}回声回到了原来的句子里，新的声音也得到了一条不着急的小路。`;
-  $('pet-ending-line').textContent = `${state.petName}说：“我的声音不是别人发给我的礼物，是我们一路听、一路选，慢慢长出来的。”`;
+  $('ending-copy').textContent = `${state.petName}和你让灯塔亮了起来。你们先说一句，声音碰到远处的山，又跑回来把这句话说一遍。这就是回声！${dominantTrait()}`;
+  $('pet-ending-line').textContent = `${state.petName}说：“下次我对着山喊‘你好’，也会等它回答我。”`;
   $('ending-memory').replaceChildren(...state.heard.map((note, index) => (
     createUserInputBubble(`最初说过：${note}`, `ending-memory-${index}`)
   )));
   petRenderer.react('happy');
-  showPetThought('下一次，我们会去一张还没有画出来的图鉴。');
+  showPetThought('回声回来啦！下次我们再去新的地方听一听。');
   setGuideVoiceUi('complete', '故事讲完了，麦克风已经安静关闭');
   void playUISFX('achievement');
 }
@@ -1601,11 +1573,14 @@ $('npc-companions').addEventListener('click', event => {
   const button = event.target.closest('[data-companion]');
   if (!button || state.busy) return;
   event.stopPropagation();
+  const scene = SCENES[state.sceneIndex];
+  setSceneSpeaker(scene, 'cast');
   pauseGuideListening({ mode: 'speaking', message: `${button.dataset.name}正在回应你` });
   button.classList.add('is-talking');
   void playUISFX('select', { volume: 0.12 });
   void speakBubblePage('npc', button.dataset.line, button.dataset.voice).then(() => {
     button.classList.remove('is-talking');
+    setSceneSpeaker(scene, 'npc');
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true });
   });
 });
@@ -1667,14 +1642,8 @@ mountAppNavigation($('story-navigation'), {
   onRestart: () => location.reload(),
 });
 
-paintPaperGrain();
-paintStoryScene();
 renderStoryScenery(SCENES[0]);
 preloadSceneScenery(SCENES[1]);
-addEventListener('resize', () => {
-  paintPaperGrain();
-  paintStoryScene();
-}, { passive: true });
 addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
