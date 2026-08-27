@@ -1211,30 +1211,8 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
 }
 .character-call-live[hidden] { display: none; }
 .character-call-mic {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  padding: 0;
-  border: 2px solid rgba(255, 250, 240, .78);
-  border-radius: 50%;
-  background: rgba(47, 43, 39, .26);
-  box-shadow: 0 10px 32px rgba(47, 43, 39, .22);
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  transition: transform .18s ease, border-color .18s ease, background .18s ease;
-}
-.character-call-mic:hover { transform: translateY(-2px); }
-.character-call-mic:active { transform: scale(.96); }
-.character-call-mic:focus-visible { outline: 3px solid rgba(255, 250, 240, .72); outline-offset: 3px; }
-.character-call-mic svg { width: 28px; height: 28px; color: #fffaf0; pointer-events: none; }
-.character-call-mic[data-state="listening"] { border-color: #fffaf0; background: var(--moss); animation: character-call-mic-breathe 1.45s ease-in-out infinite; }
-.character-call-mic[data-state="thinking"],
-.character-call-mic[data-state="speaking"] { background: rgba(180, 138, 66, .74); }
-.character-call-mic[data-state="paused"],
-.character-call-mic[data-state="error"] { background: rgba(119, 59, 50, .74); }
-.character-call-mic:disabled { cursor: wait; opacity: .62; }
-@keyframes character-call-mic-breathe {
-  50% { box-shadow: 0 0 0 10px rgba(255, 250, 240, .14), 0 10px 32px rgba(47, 43, 39, .22); }
+  --voice-control-surface: rgba(255, 255, 255, .96);
+  --voice-control-ink: var(--moss-deep);
 }
 .character-call-debug {
   position: absolute;
@@ -1507,8 +1485,9 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .character-call-actions { gap: 5px; }
   .character-call-modes button,
   .character-call-end { min-height: 28px; padding: 0 8px; font-size: 9px; }
-  .character-call-mic { --voice-input-size-local: 58px; }
-  .character-call-mic svg { width: 25px; height: 25px; }
+  .character-call-mic .voice-input-control__start { min-height: 44px; padding-inline: 12px; font-size: 12px; }
+  .character-call-mic .voice-input-control__wave,
+  .character-call-mic .voice-input-control__thinking { min-height: 44px; }
   .character-call-message { --bubble-max-width: 94%; --bubble-font-size: 12px; }
   .character-call-message.user { --bubble-max-width: 84%; }
 }

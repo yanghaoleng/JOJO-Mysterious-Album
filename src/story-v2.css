@@ -676,33 +676,9 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   pointer-events: none;
 }
 .voice-dock > * { pointer-events: auto; }
-.mic-button {
-  min-height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  border: 1px solid rgba(72, 94, 66, .5);
-  border-radius: 16px 12px 18px 14px;
-  background: transparent;
-  padding: 0 14px;
-  cursor: pointer;
-}
-.mic-button > svg { width: 25px; height: 25px; color: var(--moss-deep); pointer-events: none; }
-.mic-button[aria-pressed="true"] { background: transparent; border-color: var(--coral); }
-.mic-button[aria-pressed="true"] > svg { animation: mic-pulse 760ms ease-in-out infinite alternate; }
-@keyframes mic-pulse { to { transform: scale(1.14); } }
-.guide-mic { color: var(--moss-deep); font-weight: 760; }
-.guide-mic {
-  width: 66px;
-  min-height: 66px;
-  padding: 0;
-  border-radius: 50%;
-  box-shadow: none;
-}
+.guide-mic { --voice-control-ink: var(--moss-deep); }
 .voice-dock[data-voice-state="complete"] { opacity: .76; }
 .guide-mic:disabled { cursor: wait; opacity: .78; }
-.guide-mic > svg { width: 28px; height: 28px; }
 .speech-status { min-height: 20px; margin: 8px 0 0; color: var(--ink-soft); font-size: 12px; }
 .speech-status > i {
   display: inline-block;

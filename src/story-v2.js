@@ -10,6 +10,10 @@ import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
+  setVoiceInputControlLevel,
+  setVoiceInputControlState,
+} from './voice-input-control.js?v=20260828-voice-control';
+import {
   mountSpeechBubble,
   setSpeechBubbleText,
   skipSpeechBubble,
@@ -673,11 +677,16 @@ async function startContinuousPcmCapture() {
   let chunks = [];
   let bufferedSamples = 0;
   let paused = true;
+  let levelListener = () => {};
   const maxBufferedSamples = context.sampleRate * 45;
   silent.gain.value = 0;
   processor.onaudioprocess = event => {
-    if (paused) return;
     const chunk = new Float32Array(event.inputBuffer.getChannelData(0));
+    if (paused) return;
+    let sum = 0;
+    for (let index = 0; index < chunk.length; index += 8) sum += chunk[index] * chunk[index];
+    const rms = Math.sqrt(sum / Math.max(1, Math.ceil(chunk.length / 8)));
+    levelListener(Math.max(0, Math.min(1, (rms - .008) / .11)));
     chunks.push(chunk);
     bufferedSamples += chunk.length;
     while (bufferedSamples > maxBufferedSamples && chunks.length > 1) bufferedSamples -= chunks.shift().length;
@@ -695,10 +704,12 @@ async function startContinuousPcmCapture() {
     },
     pause() {
       paused = true;
+      levelListener(0);
       stream.getAudioTracks().forEach(track => { track.enabled = false; });
     },
     take() {
       paused = true;
+      levelListener(0);
       const captured = chunks;
       chunks = [];
       bufferedSamples = 0;
@@ -706,12 +717,16 @@ async function startContinuousPcmCapture() {
     },
     async close() {
       paused = true;
+      levelListener(0);
       chunks = [];
       bufferedSamples = 0;
       processor.onaudioprocess = null;
       try { source.disconnect(); processor.disconnect(); silent.disconnect(); } catch { /* already closed */ }
       stream.getTracks().forEach(track => track.stop());
       await context.close().catch(() => {});
+    },
+    setLevelListener(listener) {
+      levelListener = typeof listener === 'function' ? listener : () => {};
     },
   };
 }
@@ -775,7 +790,7 @@ function setGuideVoiceUi(mode, message) {
   };
   panel.dataset.voiceState = mode;
   document.body.dataset.voiceState = mode;
-  button.dataset.state = mode;
+  setVoiceInputControlState(button, mode);
   button.setAttribute('aria-pressed', String(mode === 'listening'));
   button.setAttribute('aria-label', labels[mode] || labels.setup);
   button.title = labels[mode] || labels.setup;
@@ -930,6 +945,7 @@ async function startGuideVoiceSession() {
   setGuideVoiceUi('requesting', '请在浏览器提示里允许使用麦克风，只需要这一次');
   try {
     guideVoiceSession.capture = await startContinuousPcmCapture();
+    guideVoiceSession.capture.setLevelListener(level => setVoiceInputControlLevel($('mic-button'), level));
   } catch {
     $('mic-button').disabled = false;
     document.documentElement.dataset.asrSource = 'permission-denied';

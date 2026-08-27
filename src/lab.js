@@ -25,6 +25,10 @@ import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
 import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
+  setVoiceInputControlLevel,
+  setVoiceInputControlState,
+} from './voice-input-control.js?v=20260828-voice-control';
+import {
   mountSpeechBubble,
   setSpeechBubbleText,
   skipSpeechBubble,
@@ -2034,7 +2038,7 @@ function applyCharacterCallTool(payload) {
 function setCharacterCallMic(state, label) {
   const button = $('character-call-mic');
   if (!button) return;
-  button.dataset.state = state;
+  setVoiceInputControlState(button, state);
   button.setAttribute('aria-label', label);
 }
 
@@ -2061,6 +2065,7 @@ function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
     callState.micEnabled = false;
     callState.micPaused = false;
     setConversationAudioSession('auto');
+    setVoiceInputControlLevel($('character-call-mic'), 0);
     setCharacterCallMic('idle', '开启麦克风并持续聆听');
   }
 }
@@ -2362,6 +2367,14 @@ function startCharacterCallRecognition() {
     setCharacterCallStatus('listening', `${callState.template.name}正在听`);
     animator?.setPose('sit');
   };
+  // iOS Safari owns its recognition microphone session.  Deliberately avoid
+  // opening a second getUserMedia stream only for a meter: that has previously
+  // stolen the speech output session. Native sound/speech callbacks still make
+  // the shared waveform visibly answer the user's voice.
+  recognition.onsoundstart = () => setVoiceInputControlLevel($('character-call-mic'), .38);
+  recognition.onsoundend = () => setVoiceInputControlLevel($('character-call-mic'), .12);
+  recognition.onspeechstart = () => setVoiceInputControlLevel($('character-call-mic'), .92);
+  recognition.onspeechend = () => setVoiceInputControlLevel($('character-call-mic'), .18);
   recognition.onresult = event => {
     let interim = '';
     let complete = '';
@@ -2371,6 +2384,7 @@ function startCharacterCallRecognition() {
       else interim += text;
     }
     setCharacterCallLive((complete || interim).trim());
+    if ((complete || interim).trim()) setVoiceInputControlLevel($('character-call-mic'), complete.trim() ? .84 : .62);
     if (complete.trim()) {
       const message = complete.trim();
       if (message === callState.lastRecognizedTurn) return;
@@ -2401,6 +2415,7 @@ function startCharacterCallRecognition() {
     if (callState.recognition !== recognition) return;
     callState.recognition = null;
     setCharacterCallLive('');
+    setVoiceInputControlLevel($('character-call-mic'), .08);
     scheduleCharacterCallRecognition(260);
   };
   try { recognition.start(); } catch {
