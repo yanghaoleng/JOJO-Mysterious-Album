@@ -1567,7 +1567,6 @@ addEventListener('keydown', e => {
     if (state.over || performance.now() - armedR < 2500) location.reload();
     else { armedR = performance.now(); say('press R again to start over'); }
   }
-  if (e.key === 'm' || e.key === 'M') say(audio.toggleMute() ? 'sound off' : 'sound on');
   if (e.key === ' ') { panHold = 0; const g = flockAt(); lookAtXZ(g.x, g.z); }
   if (e.key === 'Escape' && state.pending) discardPending();
   const n = parseInt(e.key, 10);

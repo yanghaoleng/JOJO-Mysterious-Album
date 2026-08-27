@@ -800,7 +800,6 @@ el.go.onclick = () => scorePhoto();
 addEventListener('keydown', ev => {
   if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (!el.go.disabled) scorePhoto(); }
   if (ev.key.toLowerCase() === 'r') location.reload();
-  if (ev.key.toLowerCase() === 'm') audio.toggleMute();
 });
 
 // =================================================================

@@ -175,34 +175,6 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   from { opacity: 0; transform: translateY(12px) scale(.985); }
 }
 
-#mode-switch {
-  position: absolute;
-  z-index: 90;
-  top: 50%;
-  left: max(12px, env(safe-area-inset-left));
-  right: auto;
-  bottom: auto;
-  width: 44px;
-  min-height: 44px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid rgba(47, 43, 39, .34);
-  border-radius: 14px 11px 16px 12px;
-  background: rgba(247, 241, 226, .94);
-  box-shadow: 0 8px 26px rgba(72, 58, 39, .18);
-  color: var(--moss-deep);
-  font-size: 0;
-  font-weight: 800;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  transform: translateY(-50%);
-  transition: transform .18s ease, background .18s ease;
-}
-#mode-switch > span[aria-hidden="true"] { font: 800 25px/1 var(--ui-font, sans-serif); }
-#mode-switch:hover { background: var(--moss-pale); transform: translateY(calc(-50% - 2px)); }
-#mode-switch:active { transform: translateY(calc(-50% + 1px)) scale(.98); }
-
 #debug-lab {
   position: fixed;
   inset: 0;
@@ -1432,7 +1404,6 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .lab-tabs button { min-height: 36px; }
   .scene-groups,
   .template-groups { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
-  #mode-switch { left: 10px; }
   .lab-preview.is-calling {
     inset: 0;
     width: auto;
@@ -1547,5 +1518,9 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
 
 @supports not (backdrop-filter: blur(8px)) {
   #mode-gate,
-  #mode-switch { background: var(--paper-light); }
+  .app-navigation__control { background: var(--paper-light); }
 }
+
+/* The simulator uses the same fixed-radius controls as the rest of the app. */
+#mode-gate .mode-choice,
+#debug-lab button { border-radius: var(--app-control-radius) !important; }

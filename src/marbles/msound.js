@@ -48,7 +48,6 @@
 let ctx = null;
 let master, sfxBus, musicBus;
 let NOISE = null;
-let muted = false;
 let killed = false;                      // stop() was called; wake() undoes it
 
 const MASTER = .9;
@@ -88,7 +87,7 @@ function unlock() {
   comp.attack.value = .003; comp.release.value = .18;
 
   master = ctx.createGain();
-  master.gain.value = muted ? 0 : MASTER;
+  master.gain.value = MASTER;
   master.connect(ctx.destination);
 
   sfxBus = ctx.createGain();
@@ -699,7 +698,7 @@ function repeatDuck(name, now) {
 // a chain, 2^(n/12), and the sound really goes up the scale.
 function sfx(name, opts = {}) {
   const rec = SOUNDS[name];
-  if (!ctx || muted || !rec) return;
+  if (!ctx || !rec) return;
   wake();
   const now = ctx.currentTime;
   const cool = opts.cool ?? COOL[name] ?? .008;
@@ -997,7 +996,7 @@ function wake() {
   if (!killed) return;
   killed = false;
   master.gain.cancelScheduledValues(ctx.currentTime);
-  master.gain.setTargetAtTime(muted ? 0 : MASTER, ctx.currentTime, .05);
+  master.gain.setTargetAtTime(MASTER, ctx.currentTime, .05);
 }
 
 // Everything off — the page went away. NOT the end of a run: `over` is
@@ -1016,20 +1015,13 @@ function stop() {
   killed = true;
 }
 
-function toggleMute() {
-  muted = !muted;
-  if (master) master.gain.setTargetAtTime(muted || killed ? 0 : MASTER, ctx.currentTime, .04);
-  return muted;
-}
-
 export const toybox = {
-  sfx, music, toggleMute, stop,
+  sfx, music, stop,
   // for measurement only: a test can tap the master and read what the
   // score is actually putting out, which is the only way anything in
   // this file gets checked without ears
   get ctx() { return ctx; },
   get master() { return master; },
   get musicBus() { return musicBus; },
-  get muted() { return muted; },
   get ready() { return !!ctx; },
 };

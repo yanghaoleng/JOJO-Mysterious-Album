@@ -8,6 +8,7 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
+import { mountAppNavigation } from './app-navigation.js';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
   setVoiceInputControlLevel,
@@ -1658,8 +1659,10 @@ $('backpack-dialog').addEventListener('click', event => {
   }
 });
 $('save-ending').addEventListener('click', saveEnding);
-$('play-again').addEventListener('click', () => location.reload());
-$('restart-button').addEventListener('click', () => location.reload());
+mountAppNavigation($('story-navigation'), {
+  homeHref: './',
+  onRestart: () => location.reload(),
+});
 
 paintPaperGrain();
 paintStoryScene();

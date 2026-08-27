@@ -17,7 +17,8 @@
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/far-mountain-range.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/cloud-bank.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/story-tree.webp">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260828-voice-control">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260828-app-navigation">
+  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-app-navigation">
   <link rel="stylesheet" href="./src/speech-bubble.css?v=20260828-voice-control">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
@@ -25,18 +26,15 @@
   <canvas id="paper-grain" aria-hidden="true"></canvas>
 
   <header class="story-header">
-    <a href="./" class="brand-link" aria-label="返回萌萌星的奇妙图鉴">
+    <nav id="story-navigation"></nav>
+    <div class="brand-link">
       <span class="brush-icon brush-icon-brand" aria-hidden="true"></span>
       <b>萌萌星的奇妙图鉴</b>
-    </a>
+    </div>
     <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
       <span data-chapter-dot="1">先听清声音</span>
       <span data-chapter-dot="2">把问候送到</span>
       <span data-chapter-dot="3">点亮回声灯塔</span>
-    </div>
-    <div class="story-header-actions">
-      <a class="home-button" href="./">返回主页</a>
-      <button class="quiet-button" id="restart-button" type="button">重新开始</button>
     </div>
   </header>
 
@@ -154,7 +152,6 @@
       <div class="ending-memory" id="ending-memory"></div>
       <div class="ending-actions">
         <button class="primary-action" id="save-ending" type="button">收进这台设备的图鉴</button>
-        <button class="secondary-action" id="play-again" type="button">换一位图鉴员再玩</button>
       </div>
     </section>
 
@@ -195,6 +192,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260828-voice-control"></script>
+  <script type="module" src="./src/story-v2.js?v=20260828-app-navigation"></script>
 </body>
 </html>

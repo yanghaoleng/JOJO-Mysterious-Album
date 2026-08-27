@@ -1750,7 +1750,6 @@ addEventListener('visibilitychange', () => {
 });
 
 addEventListener('keydown', ev => {
-  if (ev.key === 'm' || ev.key === 'M') toybox.toggleMute();
   if (ev.key === 'r' || ev.key === 'R') location.reload();
   if (S.phase === 'menu' && (ev.key === ' ' || ev.key === 'Enter')) start();
   if (ev.key >= '1' && ev.key <= '4') S.sel = +ev.key - 1;
@@ -1771,7 +1770,6 @@ const el = {
   boss: document.getElementById('boss'),
   bossFill: document.getElementById('bossfill'),
   bossName: document.getElementById('bossname'),
-  mute: document.getElementById('mute'),
   combo: document.getElementById('combo'),
   hand: document.getElementById('hand'),
 };
@@ -1960,11 +1958,6 @@ function showDraft(cards, heading = `level ${S.level}`) {
 }
 
 function hideDraft() { el.draft.style.display = 'none'; }
-
-el.mute.onclick = ev => {
-  ev.stopPropagation();
-  el.mute.classList.toggle('off', toybox.toggleMute());
-};
 
 function start() {
   S.phase = 'play';

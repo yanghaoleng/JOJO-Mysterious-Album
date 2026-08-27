@@ -1,0 +1,47 @@
+:root {
+  --app-control-radius: 14px;
+}
+
+.app-navigation {
+  position: fixed;
+  z-index: 90;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.app-navigation__control {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(47, 43, 39, .34);
+  border-radius: var(--app-control-radius);
+  background: rgba(247, 241, 226, .94);
+  box-shadow: 0 8px 26px rgba(72, 58, 39, .18);
+  color: var(--moss-deep, #2f5349);
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+  transition: transform .18s ease, background .18s ease;
+}
+
+.app-navigation__control:hover { background: var(--moss-pale, #d7e2d8); transform: translateY(-2px); }
+.app-navigation__control:active { transform: translateY(1px) scale(.98); }
+.app-navigation__icon { font: 800 25px/1 ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+@media (max-width: 560px) {
+  .app-navigation__control { width: 42px; min-width: 42px; height: 42px; min-height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-navigation__control { transition-duration: .001ms; }
+}

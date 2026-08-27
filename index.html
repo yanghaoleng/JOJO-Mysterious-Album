@@ -45,6 +45,7 @@
     outline: 3px solid rgba(73, 111, 98, .4);
     outline-offset: 3px;
   }
+  button, .mode-choice { border-radius: var(--app-control-radius) !important; }
 
   #stage { position: fixed; inset: 0; }
   #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -379,7 +380,8 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260828-voice-control">
+<link rel="stylesheet" href="./src/lab.css?v=20260828-app-navigation">
+<link rel="stylesheet" href="./src/app-navigation.css?v=20260828-app-navigation">
 <link rel="stylesheet" href="./src/speech-bubble.css?v=20260828-voice-control">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
@@ -424,9 +426,7 @@
 
   <section id="debug-lab" aria-labelledby="lab-title" hidden>
     <header class="lab-header">
-      <button id="mode-switch" type="button" aria-label="返回主页" title="返回主页" hidden>
-        <span aria-hidden="true">⌂</span><span class="sr-only">返回主页</span>
-      </button>
+      <nav id="mode-switch" hidden></nav>
       <h1 id="lab-title">角色模拟器</h1>
     </header>
 
@@ -750,6 +750,6 @@
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260827-character-tools">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260828-voice-control"></script>
+  <script type="module" src="./src/mode.js?v=20260828-app-navigation"></script>
 </body>
 </html>

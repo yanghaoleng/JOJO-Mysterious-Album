@@ -13,7 +13,7 @@
   --line: rgba(58, 65, 52, .28);
   --shadow: rgba(54, 47, 38, .18);
   --panel-radius: 28px 20px 32px 23px;
-  --button-radius: 18px 14px 20px 16px;
+  --button-radius: var(--app-control-radius);
   --bubble-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
@@ -62,11 +62,12 @@ button:active { transform: translateY(1px) scale(.985); }
   pointer-events: none;
 }
 
-.brand-link, .quiet-button, .home-button, .chapter-progress, .story-header-actions { pointer-events: auto; }
+.brand-link, .chapter-progress { pointer-events: auto; }
 .brand-link {
   display: inline-flex;
   align-items: center;
   gap: 9px;
+  margin-left: 54px;
   color: inherit;
   text-decoration: none;
   width: max-content;
@@ -86,14 +87,7 @@ button:active { transform: translateY(1px) scale(.985); }
 }
 .brand-link b { font-size: 13px; letter-spacing: .02em; }
 
-.story-header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.quiet-button, .home-button, .dialog-close, .secondary-action {
+.dialog-close, .secondary-action {
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--button-radius);
@@ -102,15 +96,7 @@ button:active { transform: translateY(1px) scale(.985); }
   cursor: pointer;
   transition: transform 120ms ease, background 180ms ease;
 }
-.home-button {
-  display: inline-grid;
-  place-items: center;
-  color: var(--moss-deep);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 750;
-}
-.quiet-button:hover, .home-button:hover, .dialog-close:hover, .secondary-action:hover { background: var(--paper-light); }
+.dialog-close:hover, .secondary-action:hover { background: var(--paper-light); }
 
 .chapter-progress {
   justify-self: center;
@@ -933,6 +919,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .story-header { grid-template-columns: 1fr auto; min-height: 66px; }
   .chapter-progress { position: fixed; left: 12px; right: 12px; top: 66px; width: auto; }
   .chapter-progress span { min-height: 29px; padding: 6px 3px; font-size: 10px; }
+  .brand-link { margin-left: 52px; }
   .brand-link b { display: none; }
   .paper-panel { margin-left: auto; margin-right: auto; }
   .cover-panel { margin-top: 82px; min-height: calc(100dvh - 110px); }
@@ -958,8 +945,6 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .scene-prop[data-position="ground"] { bottom: var(--prop-mobile-bottom, var(--prop-bottom)); }
   .scene-prop[data-position="sky"] { top: var(--prop-mobile-top, var(--prop-top)); }
   .story-header { padding-left: 12px; padding-right: 12px; }
-  .story-header-actions { gap: 5px; }
-  .quiet-button, .home-button { min-height: 42px; padding: 0 10px; font-size: 12px; }
   .cover-panel { display: block; padding: 24px 20px; }
   .cover-mark { width: 68px; height: 68px; margin-bottom: 16px; font-size: 38px; }
   h1 { font-size: 44px; }
@@ -994,6 +979,9 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .inventory-item { grid-template-columns: 74px 1fr; }
   .inventory-item img { width: 72px; height: 72px; }
 }
+
+/* All interactive controls use the application-wide, fixed corner radius. */
+button { border-radius: var(--app-control-radius) !important; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }

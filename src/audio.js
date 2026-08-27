@@ -28,7 +28,6 @@
 let ctx = null;
 let master, sfxBus, musicBus;
 let NOISE = null;
-let muted = false;
 let voices = 0;                          // cap so a pile-up cannot clip
 const VOICE_CAP = 24;
 const lastPlay = {};                     // name → time, for per-sound cooldowns
@@ -42,7 +41,7 @@ function unlock() {
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4;
   master = ctx.createGain();
-  master.gain.value = muted ? 0 : .9;
+  master.gain.value = .9;
   master.connect(ctx.destination);
   sfxBus = ctx.createGain();
   sfxBus.gain.value = .8;
@@ -215,7 +214,7 @@ const SOUNDS = {
 // opts: { pan: -1..1, vol: 0..1, cool: seconds } — `cool` throttles a
 // sound that fires from inside a per-frame loop (a nightmare chewing)
 function sfx(name, opts = {}) {
-  if (!ctx || muted || !SOUNDS[name]) return;
+  if (!ctx || !SOUNDS[name]) return;
   const now = ctx.currentTime;
   if (opts.cool && now - (lastPlay[name] ?? -9) < opts.cool) return;
   lastPlay[name] = now;
@@ -300,15 +299,8 @@ function setMusic(next) {
   applyMusic();
 }
 
-function toggleMute() {
-  muted = !muted;
-  if (master) master.gain.setTargetAtTime(muted ? 0 : .9, ctx.currentTime, .05);
-  return muted;
-}
-
 export const audio = {
-  sfx, setMusic, toggleMute,
-  get muted() { return muted; },
+  sfx, setMusic,
   get ready() { return !!ctx; },
   get layers() { return Object.keys(layers); },
   get music() { return musicState; },

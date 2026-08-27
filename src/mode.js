@@ -1,14 +1,17 @@
 import { installUISFX, playUISFX } from './ui-sfx.js';
+import { mountAppNavigation } from './app-navigation.js';
 
 installUISFX();
 
 const gate = document.getElementById('mode-gate');
-const switcher = document.getElementById('mode-switch');
+const navigationSlot = document.getElementById('mode-switch');
 const lab = document.getElementById('debug-lab');
 const modeNote = gate.querySelector('.mode-note');
 const originalModeNote = modeNote.textContent;
 let labModule = null;
 let labPromise = null;
+
+mountAppNavigation(navigationSlot, { onHome: () => showHome() });
 
 function ensureLab() {
   labPromise ||= Promise.all([
@@ -43,7 +46,7 @@ async function applyMode(mode, { updateUrl = true } = {}) {
   } catch (error) {
     console.error('Mode failed to load', error);
     gate.hidden = false;
-    switcher.hidden = true;
+    navigationSlot.hidden = true;
     modeNote.textContent = '这一页暂时没有打开，请检查网络后再试一次。';
     void playUISFX('error');
     return;
@@ -54,9 +57,8 @@ async function applyMode(mode, { updateUrl = true } = {}) {
 
   document.body.dataset.mode = next;
   gate.hidden = true;
-  switcher.hidden = false;
+  navigationSlot.hidden = false;
   lab.hidden = next !== 'debug';
-  switcher.setAttribute('aria-label', '返回主页并选择其他模式');
   if (updateUrl) {
     updateModeUrl(next);
     void playUISFX('forward');
@@ -75,7 +77,7 @@ function showHome({ updateUrl = true } = {}) {
   document.body.dataset.mode = 'choosing';
   lab.hidden = true;
   gate.hidden = false;
-  switcher.hidden = true;
+  navigationSlot.hidden = true;
   modeNote.textContent = originalModeNote;
   if (updateUrl) updateModeUrl(null);
   window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: 'choose' } }));
@@ -85,8 +87,6 @@ function showHome({ updateUrl = true } = {}) {
 for (const button of gate.querySelectorAll('button[data-mode-choice]')) {
   button.addEventListener('click', () => applyMode(button.dataset.modeChoice));
 }
-
-switcher.addEventListener('click', () => showHome());
 
 const query = new URLSearchParams(location.search).get('mode');
 if (query === 'debug') applyMode(query, { updateUrl: false });
