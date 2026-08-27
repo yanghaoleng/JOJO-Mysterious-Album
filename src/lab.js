@@ -23,7 +23,7 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
-import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-seed-realtime';
+import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-voice';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,

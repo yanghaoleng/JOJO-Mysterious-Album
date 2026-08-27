@@ -8,7 +8,7 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-seed-realtime';
+import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-voice';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,

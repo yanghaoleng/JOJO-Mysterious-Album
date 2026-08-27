@@ -12,7 +12,7 @@ let labPromise = null;
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260827-user-bubble'),
+    import('./lab.js?v=20260827-ios-voice'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;
