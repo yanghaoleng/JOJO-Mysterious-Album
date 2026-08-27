@@ -11,7 +11,11 @@
   <link rel="preload" as="image" type="image/webp" href="./assets/story/items/star-thread.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/story/items/unsent-greeting.webp">
   <link rel="preload" as="image" type="image/webp" href="./assets/story/items/lighthouse-seed.webp">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-generated-icons">
+  <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/far-mountain-range.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/cloud-bank.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/generated/scenery/runtime/story-tree.webp">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260827-shared-bubble">
+  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-shared-bubble">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-phase="cover" data-place="harbor" data-analytics-page="echo">
@@ -40,11 +44,13 @@
       <div class="far-shape far-shape-a" aria-hidden="true"></div>
       <div class="far-shape far-shape-b" aria-hidden="true"></div>
       <div class="ground-wash" aria-hidden="true"></div>
+      <div class="story-scenery" id="story-scenery" aria-label="当前故事场景中的物件"></div>
       <div class="place-object" id="place-object" role="button" tabindex="0" aria-label="触摸场景里的物件"><span></span></div>
 
       <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
-        <div class="npc-speech" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" hidden>
-          <b id="npc-bubble-text"></b>
+        <div class="npc-speech character-bubble" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="npc" data-bubble-max-chars="15" hidden>
+          <b id="npc-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="npc"></b>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
         </div>
         <div class="npc-portal" aria-hidden="true"></div>
         <div class="npc-character" id="npc-character" aria-hidden="true">
@@ -64,7 +70,10 @@
 
       <div class="pet-stage" id="pet-stage" role="button" tabindex="0" aria-label="触摸你的小伙伴" hidden>
         <canvas id="pet-canvas" aria-label="根据回答生成的小宠物"></canvas>
-        <div class="pet-thought" id="pet-thought" role="button" tabindex="0" aria-label="跳过当前语音" hidden></div>
+        <div class="pet-thought character-bubble" id="pet-thought" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="pet" data-bubble-max-chars="15" hidden>
+          <b id="pet-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="pet"></b>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
+        </div>
       </div>
 
       <p class="world-tap-hint" id="world-tap-hint" hidden>轻触场景，伙伴会走过去</p>
@@ -88,8 +97,9 @@
 
     <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
       <div class="guide-encounter">
-        <div class="guide-speech" id="guide-speech" role="button" tabindex="0" aria-label="跳过当前语音" data-mode="question">
-          <h2 id="interview-question">你希望小宠物最特别的地方是什么？</h2>
+        <div class="guide-speech character-bubble" id="guide-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="guide" data-bubble-max-chars="15" data-mode="question">
+          <h2 id="interview-question" class="character-bubble__text" data-calligraph-bubble data-bubble-key="guide">你希望小宠物最特别的地方是什么？</h2>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
         </div>
 
         <div class="guide-figure" id="guide-figure" role="button" tabindex="0" aria-label="触摸图鉴员小卷">
@@ -182,6 +192,6 @@
 
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260826-template-editor">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260827-webp"></script>
+  <script type="module" src="./src/story-v2.js?v=20260827-shared-bubble"></script>
 </body>
 </html>

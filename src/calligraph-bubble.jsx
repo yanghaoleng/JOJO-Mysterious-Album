@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Calligraph } from 'calligraph';
 
 const EVENT_NAME = 'mengmeng:bubble-text';
 const SKIP_EVENT_NAME = 'mengmeng:bubble-skip';
+const DEFAULT_TEXT = '我在认真听。';
 const splitText = value => {
   if (typeof Intl?.Segmenter === 'function') {
     const segmenter = new Intl.Segmenter('zh-CN', { granularity: 'grapheme' });
@@ -11,6 +12,36 @@ const splitText = value => {
   }
   return Array.from(value);
 };
+
+function matchesBubble(detail, bubbleKey) {
+  return detail?.key ? detail.key === bubbleKey : bubbleKey === 'lab';
+}
+
+function updateBubbleSize(shell, characters) {
+  if (!shell) return;
+  const style = getComputedStyle(shell);
+  const fontSize = Number.parseFloat(style.fontSize) || 16;
+  const padding = (Number.parseFloat(style.paddingLeft) || 0) + (Number.parseFloat(style.paddingRight) || 0);
+  const maxLineCharacters = Math.max(8, Number(shell.dataset.bubbleMaxChars) || 24);
+  const visibleCharacters = Math.max(3, Math.min(characters.length, maxLineCharacters));
+  const targetWidth = Math.ceil(padding + visibleCharacters * fontSize * 1.06);
+  shell.style.setProperty('--bubble-content-width', `${targetWidth}px`);
+  shell.dataset.bubbleLines = characters.length > maxLineCharacters ? '2' : '1';
+}
+
+function restartBubbleEntrance(shell, reduced) {
+  if (!shell) return () => {};
+  shell.classList.remove('is-entering');
+  if (reduced) return () => {};
+  let secondFrame = 0;
+  const firstFrame = requestAnimationFrame(() => {
+    secondFrame = requestAnimationFrame(() => shell.classList.add('is-entering'));
+  });
+  return () => {
+    cancelAnimationFrame(firstFrame);
+    cancelAnimationFrame(secondFrame);
+  };
+}
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
@@ -24,66 +55,89 @@ function useReducedMotion() {
   return reduced;
 }
 
-function BubbleLetters({ initialText }) {
-  const [fullText, setFullText] = useState(initialText);
-  const [visibleText, setVisibleText] = useState('');
-  const [instantText, setInstantText] = useState('');
+function BubbleLetters({ initialText, bubbleKey, target }) {
+  const [message, setMessage] = useState({ text: initialText, complete: true, revision: 0 });
+  const [visibleCount, setVisibleCount] = useState(() => splitText(initialText).length);
+  const animationFrame = useRef(0);
   const reduced = useReducedMotion();
-  const characters = useMemo(() => splitText(fullText), [fullText]);
+  const characters = useMemo(() => splitText(message.text), [message.text]);
+  const shell = target.closest('[data-bubble-shell]') || target.parentElement;
 
   useEffect(() => {
     const receive = event => {
-      setInstantText('');
-      setFullText(String(event.detail?.text || '我在认真听。'));
+      if (!matchesBubble(event.detail, bubbleKey)) return;
+      const text = String(event.detail?.text || DEFAULT_TEXT);
+      setMessage(current => ({
+        text,
+        complete: Boolean(event.detail?.complete),
+        revision: current.revision + (
+          current.text !== text || event.detail?.waiting || event.detail?.complete || event.detail?.durationMs == null ? 1 : 0
+        ),
+      }));
     };
     window.addEventListener(EVENT_NAME, receive);
     return () => window.removeEventListener(EVENT_NAME, receive);
-  }, []);
+  }, [bubbleKey]);
 
   useEffect(() => {
-    const skip = () => setInstantText(fullText);
+    const skip = event => {
+      if (!matchesBubble(event.detail, bubbleKey)) return;
+      setMessage(current => ({ ...current, complete: true }));
+    };
     window.addEventListener(SKIP_EVENT_NAME, skip);
     return () => window.removeEventListener(SKIP_EVENT_NAME, skip);
-  }, [fullText]);
+  }, [bubbleKey]);
+
+  useLayoutEffect(() => {
+    updateBubbleSize(shell, characters);
+    return restartBubbleEntrance(shell, reduced);
+  }, [characters, message.revision, reduced, shell]);
 
   useEffect(() => {
-    if (reduced || instantText === fullText) {
-      setVisibleText(fullText);
+    cancelAnimationFrame(animationFrame.current);
+    if (reduced || message.complete) {
+      setVisibleCount(characters.length);
       return undefined;
     }
-    let index = 0;
-    let timer = 0;
-    setVisibleText('');
-    const tick = () => {
-      index += 1;
-      setVisibleText(characters.slice(0, index).join(''));
-      if (index < characters.length) timer = window.setTimeout(tick, 34);
+    const startedAt = performance.now() + 82;
+    let previousCount = -1;
+    setVisibleCount(0);
+    const tick = now => {
+      const nextCount = Math.max(0, Math.min(characters.length, Math.floor((now - startedAt) / 36) + 1));
+      if (nextCount !== previousCount) {
+        previousCount = nextCount;
+        setVisibleCount(nextCount);
+      }
+      if (nextCount < characters.length) animationFrame.current = requestAnimationFrame(tick);
     };
-    timer = window.setTimeout(tick, 105);
-    return () => window.clearTimeout(timer);
-  }, [characters, fullText, instantText, reduced]);
+    animationFrame.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame.current);
+  }, [characters, message.complete, message.revision, reduced]);
+
+  const visibleText = characters.slice(0, visibleCount).join('');
 
   return (
     <Calligraph
       animation="smooth"
       autoSize={false}
-      drift={{ x: 2, y: 7 }}
-      trend={1}
+      drift={{ x: 1.2, y: 3.2 }}
+      trend={0.82}
       initial={false}
       aria-hidden="true"
-      className="lab-calligraph"
+      className="mengmeng-calligraph"
       style={{ display: 'inline' }}
     >
-      {visibleText}
+      {visibleText || '\u00a0'}
     </Calligraph>
   );
 }
 
-const target = document.getElementById('lab-bubble-text');
-const bubble = document.getElementById('lab-bubble');
-if (target && bubble) {
-  const initialText = String(bubble.dataset.text || target.textContent || '我在认真听。');
+const targets = document.querySelectorAll('[data-calligraph-bubble]');
+for (const target of targets) {
+  const shell = target.closest('[data-bubble-shell]') || target.parentElement;
+  const bubbleKey = target.dataset.bubbleKey || shell?.dataset.bubbleKey || target.id;
+  const initialText = String(shell?.dataset.text || target.dataset.text || target.textContent || DEFAULT_TEXT);
   target.textContent = '';
-  createRoot(target).render(<BubbleLetters initialText={initialText} />);
+  createRoot(target).render(<BubbleLetters initialText={initialText} bubbleKey={bubbleKey} target={target} />);
   document.documentElement.dataset.calligraphReady = 'true';
 }

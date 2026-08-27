@@ -1190,10 +1190,7 @@ function setBubble(text) {
   bubble.dataset.text = clean;
   const accessible = $('lab-bubble-a11y');
   if (accessible) accessible.textContent = clean;
-  bubble.classList.remove('is-entering');
-  void bubble.offsetWidth;
-  bubble.classList.add('is-entering');
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-text', { detail: { text: clean } }));
+  window.dispatchEvent(new CustomEvent('mengmeng:bubble-text', { detail: { key: 'lab', text: clean } }));
 }
 
 function showStatus(text) {
@@ -1428,7 +1425,7 @@ function respondToCharacterTap(event) {
 
 function skipLabSpeech() {
   speaker?.cancel();
-  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip'));
+  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip', { detail: { key: 'lab' } }));
   anim.talk = false;
   animator?.setFace('idle');
   animator?.setPose('idle');

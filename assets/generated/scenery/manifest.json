@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "coordinateSystem": {
+    "anchor": "normalized image coordinates, [0,0] is top-left and [1,1] is bottom-right",
+    "placement": "place the anchor at the engine world position"
+  },
+  "runtimeBase": "./runtime/",
+  "masterBase": "./masters/",
+  "assets": [
+    {
+      "id": "far-mountain-range",
+      "category": "far-background",
+      "file": "runtime/far-mountain-range.webp",
+      "master": "masters/far-mountain-range.png",
+      "width": 1600,
+      "height": 372,
+      "anchor": [0.5, 0.942],
+      "suggestedViewportWidth": 0.58,
+      "parallax": 0.12,
+      "tags": ["mountain", "horizon", "mist", "nature"]
+    },
+    {
+      "id": "story-tree",
+      "category": "midground",
+      "file": "runtime/story-tree.webp",
+      "master": "masters/story-tree.png",
+      "width": 1024,
+      "height": 1267,
+      "anchor": [0.5, 0.983],
+      "suggestedViewportWidth": 0.15,
+      "parallax": 0.55,
+      "tags": ["tree", "deciduous", "nature"]
+    },
+    {
+      "id": "tree-grove",
+      "category": "midground",
+      "file": "runtime/tree-grove.webp",
+      "master": "masters/tree-grove.png",
+      "width": 1273,
+      "height": 1000,
+      "anchor": [0.5, 0.978],
+      "suggestedViewportWidth": 0.32,
+      "parallax": 0.4,
+      "tags": ["trees", "grove", "forest", "nature"]
+    },
+    {
+      "id": "moss-cottage",
+      "category": "midground",
+      "file": "runtime/moss-cottage.webp",
+      "master": "masters/moss-cottage.png",
+      "width": 1024,
+      "height": 993,
+      "anchor": [0.5, 0.979],
+      "suggestedViewportWidth": 0.18,
+      "parallax": 0.5,
+      "tags": ["house", "cottage", "warm-window", "village"]
+    },
+    {
+      "id": "tiny-village",
+      "category": "midground",
+      "file": "runtime/tiny-village.webp",
+      "master": "masters/tiny-village.png",
+      "width": 1383,
+      "height": 899,
+      "anchor": [0.5, 0.973],
+      "suggestedViewportWidth": 0.34,
+      "parallax": 0.34,
+      "tags": ["houses", "village", "warm-window", "settlement"]
+    },
+    {
+      "id": "ringed-planet",
+      "category": "sky",
+      "file": "runtime/ringed-planet.webp",
+      "master": "masters/ringed-planet.png",
+      "width": 1024,
+      "height": 750,
+      "anchor": [0.5, 0.5],
+      "suggestedViewportWidth": 0.15,
+      "parallax": 0.08,
+      "tags": ["planet", "ring", "space", "sky"]
+    },
+    {
+      "id": "crater-moon",
+      "category": "sky",
+      "file": "runtime/crater-moon.webp",
+      "master": "masters/crater-moon.png",
+      "width": 766,
+      "height": 768,
+      "anchor": [0.5, 0.5],
+      "suggestedViewportWidth": 0.1,
+      "parallax": 0.06,
+      "tags": ["moon", "crater", "space", "sky"]
+    },
+    {
+      "id": "cloud-bank",
+      "category": "sky",
+      "file": "runtime/cloud-bank.webp",
+      "master": "masters/cloud-bank.png",
+      "width": 1400,
+      "height": 580,
+      "anchor": [0.5, 0.5],
+      "suggestedViewportWidth": 0.28,
+      "parallax": 0.18,
+      "tags": ["cloud", "mist", "sky", "weather"]
+    }
+  ]
+}

@@ -376,7 +376,8 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260827-generated-icons">
+<link rel="stylesheet" href="./src/lab.css?v=20260827-shared-bubble">
+<link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-shared-bubble">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-mode="choosing">
@@ -617,11 +618,10 @@
       </aside>
 
       <section class="lab-preview" aria-label="角色实时预览">
-        <div id="lab-bubble" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" aria-atomic="true" data-text="先选择一个角色，再开始编辑。">
-          <span class="lab-bubble-fold" aria-hidden="true"></span>
-          <span id="lab-bubble-text" aria-hidden="true">先选择一个角色，再开始编辑。</span>
+        <div id="lab-bubble" class="character-bubble" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" aria-atomic="true" data-bubble-shell data-bubble-key="lab" data-bubble-max-chars="26" data-text="先选择一个角色，再开始编辑。">
+          <span id="lab-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="lab" aria-hidden="true">先选择一个角色，再开始编辑。</span>
           <span id="lab-bubble-a11y" class="sr-only">先选择一个角色，再开始编辑。</span>
-          <span class="lab-bubble-tail" aria-hidden="true"></span>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
         </div>
         <div id="lab-stage" aria-hidden="true"></div>
         <section id="character-call" class="character-call" role="dialog" aria-modal="true" aria-label="角色视频通话" hidden>
@@ -747,6 +747,6 @@
   <link rel="stylesheet" href="./src/ui-sfx.css?v=20260827-character-tools">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260827-seed-voices"></script>
+  <script type="module" src="./src/mode.js?v=20260827-shared-bubble"></script>
 </body>
 </html>

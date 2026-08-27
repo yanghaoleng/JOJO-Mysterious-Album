@@ -4,9 +4,11 @@ import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
 import { paintSceneThumbnail } from './lab-scenes.js';
+import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
+import '../vendor/calligraph-bubble.js?v=20260827-shared-bubble';
 
 installUISFX();
 
@@ -118,34 +120,24 @@ function estimatedSpeechTime(text) {
 
 function bubbleElement(kind) {
   if (kind === 'guide') return $('interview-question');
-  if (kind === 'pet') return $('pet-thought');
+  if (kind === 'pet') return $('pet-bubble-text');
   return $('npc-bubble-text');
 }
 
 function animateBubbleText(element, text, { waiting = false, durationMs = 0, complete = false } = {}) {
   const value = String(text || '');
   element.setAttribute('aria-label', value);
-  element.classList.remove('voice-waiting', 'voice-revealing', 'voice-complete');
-  const fragment = document.createDocumentFragment();
-  Array.from(value).forEach((character, index) => {
-    const span = document.createElement('span');
-    span.className = 'bubble-char';
-    span.setAttribute('aria-hidden', 'true');
-    span.style.setProperty('--char-index', index);
-    span.textContent = character;
-    fragment.append(span);
-  });
-  element.replaceChildren(fragment);
-  if (complete || !value) {
-    element.classList.add('voice-complete');
-    return;
-  }
-  if (waiting) element.classList.add('voice-waiting');
-  if (durationMs > 0) {
-    const stagger = Math.max(38, (durationMs - 180) / Math.max(1, Array.from(value).length - 1));
-    element.style.setProperty('--voice-char-stagger', `${stagger.toFixed(1)}ms`);
-    requestAnimationFrame(() => element.classList.add('voice-revealing'));
-  }
+  const shell = element.closest('[data-bubble-shell]');
+  if (shell) shell.dataset.text = value;
+  window.dispatchEvent(new CustomEvent('mengmeng:bubble-text', {
+    detail: {
+      key: element.dataset.bubbleKey,
+      text: value,
+      waiting,
+      durationMs,
+      complete: complete || !value,
+    },
+  }));
 }
 
 function renderBubblePage(kind, options = {}) {
@@ -153,9 +145,6 @@ function renderBubblePage(kind, options = {}) {
   const text = model.pages[model.index] || '';
   if (kind === 'guide') {
     animateBubbleText($('interview-question'), text, options);
-    $('guide-speech').classList.remove('bubble-refresh');
-    void $('guide-speech').offsetWidth;
-    $('guide-speech').classList.add('bubble-refresh');
     return;
   }
   if (kind === 'pet') {
@@ -182,8 +171,7 @@ function startBubbleTimeline(kind, text, durationMs) {
 
 function completeBubble(kind) {
   const element = bubbleElement(kind);
-  element.classList.remove('voice-waiting', 'voice-revealing');
-  element.classList.add('voice-complete');
+  window.dispatchEvent(new CustomEvent('mengmeng:bubble-skip', { detail: { key: element.dataset.bubbleKey } }));
 }
 
 function advanceBubble() {
@@ -313,7 +301,75 @@ function paintStoryScene(id = activeStorySceneId) {
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.globalAlpha = .86;
   context.drawImage(sceneCanvas, x, y, sceneWidth, sceneHeight);
+  context.globalCompositeOperation = 'destination-in';
+  const fade = context.createRadialGradient(
+    x + sceneWidth * .5,
+    y + sceneHeight * .58,
+    sceneWidth * .12,
+    x + sceneWidth * .5,
+    y + sceneHeight * .58,
+    Math.max(sceneWidth * .62, sceneHeight * .78),
+  );
+  fade.addColorStop(0, 'rgba(0,0,0,1)');
+  fade.addColorStop(.62, 'rgba(0,0,0,.92)');
+  fade.addColorStop(1, 'rgba(0,0,0,0)');
   context.globalAlpha = 1;
+  context.fillStyle = fade;
+  context.fillRect(x, y, sceneWidth, sceneHeight);
+  context.globalCompositeOperation = 'source-over';
+  context.globalAlpha = 1;
+}
+
+function setSceneryStyle(element, prop, index) {
+  element.style.setProperty('--prop-x', `${prop.x}%`);
+  element.style.setProperty('--prop-width', prop.width);
+  element.style.setProperty('--prop-opacity', String(prop.opacity ?? 1));
+  element.style.setProperty('--prop-flip', String(prop.flip ?? 1));
+  element.style.setProperty('--prop-delay', `${Math.min(index * 90, 270)}ms`);
+  if (prop.top != null) element.style.setProperty('--prop-top', `${prop.top}%`);
+  if (prop.bottom != null) element.style.setProperty('--prop-bottom', `${prop.bottom}%`);
+  if (prop.mobileX != null) element.style.setProperty('--prop-mobile-x', `${prop.mobileX}%`);
+  if (prop.mobileTop != null) element.style.setProperty('--prop-mobile-top', `${prop.mobileTop}%`);
+  if (prop.mobileBottom != null) element.style.setProperty('--prop-mobile-bottom', `${prop.mobileBottom}%`);
+  if (prop.mobileWidth) element.style.setProperty('--prop-mobile-width', prop.mobileWidth);
+}
+
+function renderStoryScenery(scene) {
+  const stage = $('world-stage');
+  const layer = $('story-scenery');
+  const scenery = sceneryForScene(scene);
+  document.body.dataset.scene = scene.id;
+  stage.classList.toggle('has-generated-scenery', scenery.props.length > 0);
+  $('place-object').hidden = scenery.props.length > 0;
+
+  const nodes = scenery.props.map((prop, index) => {
+    const element = document.createElement(prop.line ? 'button' : 'div');
+    element.className = `scene-prop scene-prop-${prop.layer || 'mid'}${prop.line ? ' is-interactive' : ''}`;
+    element.dataset.position = prop.top != null ? 'sky' : 'ground';
+    if (prop.motion) element.dataset.motion = prop.motion;
+    setSceneryStyle(element, prop, index);
+
+    if (prop.line) {
+      element.type = 'button';
+      element.dataset.sceneryLine = prop.line;
+      element.setAttribute('aria-label', prop.ariaLabel || '触摸场景物件');
+    } else {
+      element.setAttribute('aria-hidden', 'true');
+    }
+
+    const image = document.createElement('img');
+    image.alt = '';
+    image.decoding = 'async';
+    image.draggable = false;
+    image.addEventListener('load', () => requestAnimationFrame(() => element.classList.add('is-ready')), { once: true });
+    image.addEventListener('error', () => element.remove(), { once: true });
+    image.src = sceneryAssetUrl(prop.asset);
+    element.append(image);
+    if (image.complete && image.naturalWidth) requestAnimationFrame(() => element.classList.add('is-ready'));
+    return element;
+  });
+
+  layer.replaceChildren(...nodes);
 }
 
 class PetRenderer {
@@ -1271,6 +1327,8 @@ function renderSceneCast(scene) {
 async function renderScene(scene) {
   state.busy = true;
   document.body.dataset.place = scene.place;
+  const scenery = sceneryForScene(scene);
+  renderStoryScenery(scene);
   paintStoryScene(scene.sceneId);
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
@@ -1292,7 +1350,7 @@ async function renderScene(scene) {
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
   guideVoiceSession.speaking = true;
   presentDialogueSequence([
-    { kind: 'npc', text: `这里是${scene.name}。${scene.objective}`, voice: scene.npc.voice || 'moss' },
+    { kind: 'npc', text: `这里是${scene.name}。${scenery.narration || scene.objective}`, voice: scene.npc.voice || 'moss' },
     { kind: 'npc', text: scene.entranceLine, label: scene.npc.name, voice: scene.npc.voice || 'moss' },
     { kind: 'npc', text: scene.dialogue, label: '请直接说出你的办法', voice: scene.npc.voice || 'moss' },
   ], () => {
@@ -1302,6 +1360,8 @@ async function renderScene(scene) {
     $('world-tap-hint').hidden = false;
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '正在听，说出你想怎么做' });
   });
+  const nextScene = SCENES[state.sceneIndex + 1];
+  if (nextScene) preloadSceneScenery(nextScene);
 }
 
 function inventoryEntry(id) {
@@ -1550,6 +1610,26 @@ $('pet-stage').addEventListener('keydown', event => {
     $('pet-stage').click();
   }
 });
+$('story-scenery').addEventListener('click', event => {
+  const prop = event.target.closest('[data-scenery-line]');
+  if (!prop || state.busy || document.body.dataset.phase !== 'quest' || prop.disabled) return;
+  event.stopPropagation();
+  prop.disabled = true;
+  prop.classList.remove('is-tapped');
+  void prop.offsetWidth;
+  prop.classList.add('is-tapped');
+  pauseGuideListening({ mode: 'speaking', message: '小伙伴正在回应场景' });
+  guideVoiceSession.speaking = true;
+  petRenderer.react('listen');
+  void playUISFX('open', { volume: 0.12 });
+  void speakBubblePage('pet', prop.dataset.sceneryLine, state.petVoice).then(() => {
+    guideVoiceSession.speaking = false;
+    prop.disabled = false;
+    clearTimeout(showPetThought.timer);
+    showPetThought.timer = setTimeout(() => { $('pet-thought').hidden = true; }, 1800);
+    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true });
+  });
+});
 $('place-object').addEventListener('click', event => {
   event.stopPropagation();
   const object = $('place-object');
@@ -1582,6 +1662,8 @@ $('restart-button').addEventListener('click', () => location.reload());
 
 paintPaperGrain();
 paintStoryScene();
+renderStoryScenery(SCENES[0]);
+preloadSceneScenery(SCENES[1]);
 addEventListener('resize', () => {
   paintPaperGrain();
   paintStoryScene();
