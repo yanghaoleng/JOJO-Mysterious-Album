@@ -1,5 +1,5 @@
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import { mountAppNavigation } from './app-navigation.js';
+import { mountAppNavigation } from './app-navigation.js?v=20260828-product-icons';
 
 installUISFX();
 
@@ -15,7 +15,7 @@ mountAppNavigation(navigationSlot, { onHome: () => showHome() });
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260828-voice-control'),
+    import('./lab.js?v=20260828-icon-motion'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;

@@ -67,11 +67,6 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 .mode-mark {
   display: grid;
   place-items: center;
-  border: 2px solid var(--ink);
-  border-radius: 46% 54% 50% 43%;
-  color: var(--moss-deep);
-  font-family: "STKaiti", "KaiTi", serif;
-  font-weight: 800;
   transform: rotate(-4deg);
 }
 
@@ -798,12 +793,6 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(47, 43, 39, .46);
-  border-radius: 48% 42% 50% 44%;
-  color: var(--moss-deep);
-  font-family: "STKaiti", "KaiTi", serif;
-  font-size: 16px;
-  font-weight: 850;
   transform: rotate(-3deg);
 }
 .action-grid button:nth-child(even) > span { transform: rotate(3deg); }
@@ -1259,12 +1248,6 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 2px solid var(--ink);
-  border-radius: 48% 43% 52% 46%;
-  color: var(--moss-deep);
-  font-family: "STKaiti", "KaiTi", serif;
-  font-size: 21px;
-  font-weight: 800;
   transform: rotate(4deg);
 }
 .notebook-heading p { color: var(--ink-soft); font-size: 10px; letter-spacing: .06em; }

@@ -117,8 +117,9 @@
 }
 
 .voice-input-control__start svg {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.75;
   color: currentColor;
   pointer-events: none;
 }
@@ -126,7 +127,7 @@
 .voice-input-control__wave,
 .voice-input-control__thinking {
   display: none;
-  width: 68px;
+  width: 72px;
   align-items: center;
   justify-content: center;
   gap: 5px;
@@ -136,27 +137,34 @@
 
 .voice-input-control__wave i {
   display: block;
-  width: 5px;
-  height: 29px;
+  width: 6px;
+  height: 31px;
   border-radius: 999px;
   background: currentColor;
   opacity: .9;
   transform: scaleY(var(--voice-bar-scale, .34));
   transform-origin: center;
-  transition: transform 82ms linear;
+  transition: transform 44ms cubic-bezier(.2, .85, .35, 1);
 }
 
-.voice-input-control__thinking { gap: 7px; }
+.voice-input-control__thinking {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
 .voice-input-control__thinking i {
-  display: block;
+  position: absolute;
+  top: 3px;
+  left: calc(50% - 3.5px);
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: currentColor;
-  animation: voice-input-thinking 900ms ease-in-out infinite;
+  transform: rotate(var(--voice-dot-turn, 0deg));
+  transform-origin: 3.5px 21px;
+  animation: voice-input-thinking 1.5s ease-in-out infinite;
+  animation-delay: var(--voice-dot-delay, 0ms);
 }
-.voice-input-control__thinking i:nth-child(2) { animation-delay: 140ms; }
-.voice-input-control__thinking i:nth-child(3) { animation-delay: 280ms; }
 
 .voice-input-control[data-voice-visual="wave"] .voice-input-control__start,
 .voice-input-control[data-voice-visual="thinking"] .voice-input-control__start { display: none; }
@@ -171,8 +179,8 @@
 .voice-input-control:disabled { cursor: wait; opacity: .68; }
 
 @keyframes voice-input-thinking {
-  0%, 55%, 100% { transform: translateY(0); opacity: .45; }
-  28% { transform: translateY(-5px); opacity: 1; }
+  0%, 100% { opacity: 1; transform: rotate(var(--voice-dot-turn, 0deg)) scale(1); }
+  50% { opacity: .3; transform: rotate(var(--voice-dot-turn, 0deg)) scale(.5); }
 }
 
 .character-bubble__tail {

@@ -1,6 +1,8 @@
+import { mountProductIcons } from '../vendor/ui-icons.js?v=20260828-product-icons';
+
 const ICONS = Object.freeze({
-  home: '⌂',
-  restart: '↻',
+  home: 'house',
+  restart: 'rotate-ccw',
 });
 
 function createControl({ kind, label, href, onActivate }) {
@@ -15,11 +17,12 @@ function createControl({ kind, label, href, onActivate }) {
     control.addEventListener('click', onActivate);
   }
 
-  const icon = document.createElement('span');
+  const icon = document.createElement('i');
   icon.className = 'app-navigation__icon';
   icon.setAttribute('aria-hidden', 'true');
-  icon.textContent = ICONS[kind];
+  icon.dataset.lucide = ICONS[kind];
   control.append(icon);
+  mountProductIcons(control);
   return control;
 }
 

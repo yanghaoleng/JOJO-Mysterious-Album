@@ -1,3 +1,5 @@
+import { mountProductIcons } from '../vendor/ui-icons.js?v=20260828-product-icons';
+
 const VISUAL_BY_STATE = {
   listening: 'wave',
   requesting: 'thinking',
@@ -12,8 +14,10 @@ export function mountVoiceInputControl(button) {
   if (!button || button.dataset.voiceControlMounted === 'true') return button;
   button.dataset.voiceControlMounted = 'true';
   if (!button.querySelector('.voice-input-control__start')) return button;
-  button.querySelectorAll('.voice-input-control__wave i').forEach((bar, index) => {
-    bar.style.setProperty('--voice-bar-scale', String([.32, .46, .36][index]));
+  mountProductIcons(button);
+  button.querySelectorAll('.voice-input-control__thinking i').forEach((dot, index) => {
+    dot.style.setProperty('--voice-dot-turn', `${index * 45}deg`);
+    dot.style.setProperty('--voice-dot-delay', `${index * 150}ms`);
   });
   return button;
 }
@@ -31,12 +35,11 @@ export function setVoiceInputControlLevel(button, level) {
   mountVoiceInputControl(button);
   const value = clamp(level);
   button.style.setProperty('--voice-level', value.toFixed(3));
-  const scales = [
-    .28 + value * .56,
-    .40 + value * .60,
-    .32 + value * .72,
-  ];
+  const now = performance.now();
+  const profiles = [.58, .82, 1, .82, .58];
   button.querySelectorAll('.voice-input-control__wave i').forEach((bar, index) => {
-    bar.style.setProperty('--voice-bar-scale', scales[index].toFixed(3));
+    const cascade = .72 + ((Math.sin(now / 106 + index * 1.12) + 1) * .14);
+    const scale = .22 + value * profiles[index] * cascade;
+    bar.style.setProperty('--voice-bar-scale', scale.toFixed(3));
   });
 }

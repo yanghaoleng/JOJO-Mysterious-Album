@@ -36,7 +36,7 @@
 
 .app-navigation__control:hover { background: var(--moss-pale, #d7e2d8); transform: translateY(-2px); }
 .app-navigation__control:active { transform: translateY(1px) scale(.98); }
-.app-navigation__icon { font: 800 25px/1 ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.app-navigation__icon { width: 24px; height: 24px; stroke-width: 2.75; }
 
 @media (max-width: 560px) {
   .app-navigation__control { width: 42px; min-width: 42px; height: 42px; min-height: 42px; }

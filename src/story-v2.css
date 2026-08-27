@@ -72,17 +72,11 @@ button:active { transform: translateY(1px) scale(.985); }
   text-decoration: none;
   width: max-content;
 }
-.brand-link > span {
+.brand-link > .brush-icon {
   width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(62, 74, 57, .56);
-  border-radius: 11px 8px 12px 9px;
-  color: var(--moss-deep);
-  background: rgba(247, 241, 228, .82);
-  font-family: KaiTi, "Kaiti SC", serif;
-  font-size: 20px;
   transform: rotate(-2deg);
 }
 .brand-link b { font-size: 13px; letter-spacing: .02em; }
@@ -502,11 +496,6 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   height: 104px;
   display: grid;
   place-items: center;
-  border: 2px solid rgba(74, 91, 66, .55);
-  border-radius: 48% 52% 44% 36% / 34% 42% 58% 66%;
-  background: rgba(112, 144, 103, .22);
-  color: var(--moss-deep);
-  font: 700 62px/1 KaiTi, "Kaiti SC", serif;
   transform: rotate(-4deg);
 }
 .section-label {
@@ -809,10 +798,6 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   height: 30px;
   display: grid;
   place-items: center;
-  border-radius: 11px 9px 12px 10px;
-  background: var(--moss);
-  color: #f7f1e4;
-  font: 700 15px/1 var(--bubble-font);
 }
 .backpack-label { align-self: end; color: var(--moss-deep); font-size: 10px; font-weight: 780; text-align: left; }
 .backpack-quick-items { display: flex; align-items: center; gap: 4px; min-width: 0; }
@@ -821,8 +806,8 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   width: 26px;
   height: 26px;
   flex: 0 0 26px;
-  border: 1px solid rgba(63, 80, 57, .2);
-  border-radius: 8px 7px 9px 7px;
+  border: 0;
+  border-radius: 0;
   background: rgba(226, 218, 198, .42);
   object-fit: contain;
 }

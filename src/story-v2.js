@@ -8,12 +8,12 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import { mountAppNavigation } from './app-navigation.js';
+import { mountAppNavigation } from './app-navigation.js?v=20260828-product-icons';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
   setVoiceInputControlLevel,
   setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-voice-control';
+} from './voice-input-control.js?v=20260828-icon-motion';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -673,7 +673,7 @@ async function startContinuousPcmCapture() {
   const context = new AudioContextClass();
   await context.resume();
   const source = context.createMediaStreamSource(stream);
-  const processor = context.createScriptProcessor(4096, 1, 1);
+  const processor = context.createScriptProcessor(1024, 1, 1);
   const silent = context.createGain();
   let chunks = [];
   let bufferedSamples = 0;
@@ -687,7 +687,10 @@ async function startContinuousPcmCapture() {
     let sum = 0;
     for (let index = 0; index < chunk.length; index += 8) sum += chunk[index] * chunk[index];
     const rms = Math.sqrt(sum / Math.max(1, Math.ceil(chunk.length / 8)));
-    levelListener(Math.max(0, Math.min(1, (rms - .008) / .11)));
+    // A short buffer gives the meter a ~23ms cadence. The gentle floor and
+    // curve make quiet speech visible without making background noise look loud.
+    const normalized = Math.max(0, Math.min(1, (rms - .004) / .06));
+    levelListener(Math.pow(normalized, .72));
     chunks.push(chunk);
     bufferedSamples += chunk.length;
     while (bufferedSamples > maxBufferedSamples && chunks.length > 1) bufferedSamples -= chunks.shift().length;
