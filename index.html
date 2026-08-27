@@ -7,8 +7,8 @@
 <meta name="description" content="萌萌星的奇妙图鉴：让孩子创造一只奇妙生物，再进入它的第一个箱庭世界。">
 <title>萌萌星的奇妙图鉴</title>
 <link rel="icon" href="./favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260827-tight-cut">
-<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260827-tight-cut">
+<link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260827-tight-cut-2px">
+<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260827-tight-cut-2px">
 <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260827-generated-icons">
 <style>
   :root {
@@ -379,8 +379,8 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260827-user-bubble">
-<link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-user-bubble">
+<link rel="stylesheet" href="./src/lab.css?v=20260827-mobile-bubble">
+<link rel="stylesheet" href="./src/speech-bubble.css?v=20260827-mobile-bubble">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260827-generated-icons">
 </head>
 <body data-mode="choosing">
@@ -415,10 +415,6 @@
     </div>
   </section>
 
-  <button id="mode-switch" type="button" aria-label="返回主页" title="返回主页" hidden>
-    <span aria-hidden="true">⌂</span><span class="sr-only">返回主页</span>
-  </button>
-
   <header id="topbar">
     <div class="brand">
       <strong>萌萌星的奇妙图鉴</strong>
@@ -428,6 +424,9 @@
 
   <section id="debug-lab" aria-labelledby="lab-title" hidden>
     <header class="lab-header">
+      <button id="mode-switch" type="button" aria-label="返回主页" title="返回主页" hidden>
+        <span aria-hidden="true">⌂</span><span class="sr-only">返回主页</span>
+      </button>
       <h1 id="lab-title">角色模拟器</h1>
     </header>
 

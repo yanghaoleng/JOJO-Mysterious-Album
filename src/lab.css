@@ -176,14 +176,16 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 }
 
 #mode-switch {
-  position: fixed;
+  position: absolute;
   z-index: 90;
-  top: max(12px, env(safe-area-inset-top));
+  top: 50%;
   left: max(12px, env(safe-area-inset-left));
   right: auto;
   bottom: auto;
   width: 44px;
   min-height: 44px;
+  display: grid;
+  place-items: center;
   padding: 0;
   border: 1px solid rgba(47, 43, 39, .34);
   border-radius: 14px 11px 16px 12px;
@@ -194,11 +196,12 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   font-weight: 800;
   cursor: pointer;
   backdrop-filter: blur(8px);
+  transform: translateY(-50%);
   transition: transform .18s ease, background .18s ease;
 }
 #mode-switch > span[aria-hidden="true"] { font: 800 25px/1 var(--ui-font, sans-serif); }
-#mode-switch:hover { background: var(--moss-pale); }
-#mode-switch:active { transform: translateY(1px) scale(.98); }
+#mode-switch:hover { background: var(--moss-pale); transform: translateY(calc(-50% - 2px)); }
+#mode-switch:active { transform: translateY(calc(-50% + 1px)) scale(.98); }
 
 #debug-lab {
   position: fixed;
@@ -1012,7 +1015,7 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
   --bubble-min-height: 58px;
   --bubble-padding-block: 14px;
   --bubble-padding-inline: 21px;
-  --bubble-font-size: clamp(14px, 1.5vw, 17px);
+  --bubble-font-size: clamp(14px, 1.5vw, 16px);
   --bubble-line-height: 1.48;
   pointer-events: auto;
   cursor: pointer;
@@ -1444,17 +1447,14 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .lab-preview { order: 0; flex: none; position: sticky; z-index: 2; top: 0; height: 38dvh; min-height: 245px; }
   .lab-workbench { order: 1; flex: none; overflow: visible; border-right: 0; border-top: 1px solid var(--line); }
   .lab-notebook { order: 2; flex: none; display: block; overflow: visible; border-left: 0; border-top: 1px solid var(--line); padding-bottom: 70px; }
-  #lab-bubble { --bubble-max-width: 350px; --bubble-min-height: 58px; --bubble-padding-block: 11px; --bubble-padding-inline: 14px; --bubble-font-size: 13px; }
+  #lab-bubble { --bubble-max-width: 350px; --bubble-min-height: 48px; --bubble-padding-block: 11px; --bubble-padding-inline: 15px; --bubble-font-size: 13px; }
   .lab-random-icon { right: 9px; bottom: 9px; width: 34px; height: 34px; }
   .lab-panel { padding: 17px 16px 60px; }
   .lab-tabs { position: static; padding: 8px 10px; }
   .lab-tabs button { min-height: 36px; }
   .scene-groups,
   .template-groups { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
-  body[data-mode="debug"] #mode-switch {
-    top: calc(var(--safe-top) + 10px);
-    left: 10px;
-  }
+  #mode-switch { left: 10px; }
   .lab-preview.is-calling {
     inset: 0;
     width: auto;
@@ -1543,7 +1543,6 @@ body.character-call-active #ui-sfx-toggle { visibility: hidden; }
   .lab-notebook { order: 2; flex: none; display: block; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
   #lab-bubble { --bubble-max-width: calc(100vw - 20px); --bubble-min-height: 46px; --bubble-padding-block: 9px; --bubble-padding-inline: 12px; --bubble-font-size: 11px; }
   .lab-panel { padding: 14px 15px 52px; }
-  body[data-mode="debug"] #mode-switch { top: calc(var(--safe-top) + 6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

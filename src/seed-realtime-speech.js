@@ -7,11 +7,12 @@
 
 const MAX_SEGMENT = 46;
 const MIN_SEGMENT = 9;
+const SEGMENT_EDGE_FADE_SECONDS = 0.018;
 
 export function setConversationAudioSession(type = 'auto') {
-  // Safari on iOS exposes this experimental bridge to AVAudioSession.  Using
-  // play-and-record while the mic is open keeps input and Seed TTS in one
-  // duplex session instead of letting microphone capture mute later output.
+  // Safari on iOS exposes this experimental bridge to AVAudioSession.  Keep
+  // the choice at the call site: mic capture and media playback need different
+  // policies depending on the interaction surface.
   const session = typeof navigator === 'undefined' ? null : navigator.audioSession;
   if (!session) return false;
   try {
@@ -69,6 +70,9 @@ export class SeedRealtimeSpeech {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return false;
     if (!this.context || this.context.state === 'closed') this.context = new AudioContextClass({ latencyHint: 'interactive' });
+    // Repeated resume() calls on an already-running iOS context can briefly
+    // reconfigure the hardware output between streamed sentences.
+    if (this.context.state === 'running') return true;
     try { await this.context.resume(); } catch { /* Safari may leave an interrupted context behind. */ }
     if (this.context.state === 'running') return true;
     // iOS Safari can leave Web Audio stuck in an "interrupted" state after a
@@ -208,11 +212,26 @@ export class SeedRealtimeSpeech {
         session.onSegment(text, Math.round(buffer.duration * 1000));
         await new Promise((resolve, reject) => {
           const source = this.context.createBufferSource();
+          const gain = this.context.createGain();
+          const startAt = this.context.currentTime + 0.004;
+          const endAt = startAt + buffer.duration;
+          // Seed returns independent MP3 clips for a streaming reply.  Even
+          // when a clip is nearly silent at its edge, joining raw sources can
+          // expose a one-sample discontinuity as a click on iOS speakers.
+          const fade = Math.min(SEGMENT_EDGE_FADE_SECONDS, Math.max(0.004, buffer.duration / 4));
           session.source = source;
           source.buffer = buffer;
-          source.connect(this.context.destination);
-          source.onended = () => resolve();
-          try { source.start(); } catch (error) { reject(error); }
+          source.connect(gain);
+          gain.connect(this.context.destination);
+          gain.gain.setValueAtTime(0, startAt);
+          gain.gain.linearRampToValueAtTime(1, startAt + fade);
+          gain.gain.setValueAtTime(1, Math.max(startAt + fade, endAt - fade));
+          gain.gain.linearRampToValueAtTime(0, endAt);
+          source.onended = () => {
+            try { source.disconnect(); gain.disconnect(); } catch { /* already detached */ }
+            resolve();
+          };
+          try { source.start(startAt); } catch (error) { reject(error); }
         });
         session.source = null;
         session.played += 1;

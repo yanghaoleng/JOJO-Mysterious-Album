@@ -22,6 +22,8 @@
   font-weight: 750;
   line-height: var(--bubble-line-height);
   text-align: center;
+  display: grid;
+  place-items: center;
   transform: var(--bubble-rest-transform);
   transform-origin: var(--bubble-tail-x) 100%;
   transition:
@@ -49,6 +51,7 @@
   font: inherit;
   letter-spacing: 0;
   text-align: center;
+  align-self: center;
 }
 
 .mengmeng-calligraph,

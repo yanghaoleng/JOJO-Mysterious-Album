@@ -23,7 +23,7 @@ import {
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js';
-import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-voice';
+import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -2442,7 +2442,10 @@ async function beginCharacterCallRecognition() {
     // silence Seed TTS. SpeechRecognition asks for the same permission itself.
     await speaker?.unlock();
     if (!callState.active) return;
-    setConversationAudioSession('play-and-record');
+    // SpeechRecognition owns microphone capture itself.  Leaving the browser
+    // in automatic mode preserves the normal media output path instead of
+    // forcing later TTS clips through iOS's low-quality call-audio route.
+    setConversationAudioSession('auto');
     callState.micEnabled = true;
     callState.micPaused = false;
     callState.lastRecognizedTurn = '';
