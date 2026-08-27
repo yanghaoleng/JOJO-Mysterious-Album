@@ -14,8 +14,10 @@
   --shadow: rgba(54, 47, 38, .18);
   --panel-radius: 28px 20px 32px 23px;
   --button-radius: var(--app-control-radius);
-  --bubble-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --story-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --character-name-size: 13px;
+  --bubble-font: var(--story-font-sans);
+  font-family: var(--story-font-sans);
 }
 
 * { box-sizing: border-box; }
@@ -53,6 +55,17 @@ button:focus-visible, input:focus-visible {
 }
 button:active { transform: translateY(1px) scale(.985); }
 [hidden] { display: none !important; }
+
+body[data-phase] .app-navigation__control,
+body[data-phase] .ui-sfx-toggle,
+body[data-phase] .voice-input-control,
+body[data-phase] .voice-input-control__start,
+body[data-phase] .brand-link,
+body[data-phase] .cover-mark,
+body[data-phase] .backpack-button,
+body[data-phase] .backpack-mark {
+  overflow: visible;
+}
 
 .story-header {
   position: fixed;
@@ -111,6 +124,7 @@ button:active { transform: translateY(1px) scale(.985); }
   min-height: 32px;
   padding: 7px 8px;
   border-bottom: 2px solid rgba(64, 75, 59, .18);
+  background: transparent;
   color: rgba(59, 68, 55, .62);
   text-align: center;
   font-size: 11px;
@@ -366,7 +380,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   z-index: 2;
   width: 160px;
   height: 200px;
-  margin: 0 auto 8px;
+  margin: 0 auto -2px;
   display: grid;
   place-items: center;
   border: 0;
@@ -379,13 +393,21 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 .npc-wrap.is-tapped .npc-character { animation: npc-tap 420ms cubic-bezier(.22, 1.4, .35, 1); }
 @keyframes npc-think { to { transform: translateY(-4px) rotate(2deg); } }
 @keyframes npc-tap { 45% { transform: translateY(-9px) rotate(-4deg) scale(1.03); } }
+.npc-wrap > b,
+.npc-companion span,
+.guide-nameplate b {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--story-font-sans);
+  font-size: var(--character-name-size);
+  font-weight: 750;
+  line-height: 1.2;
+}
 .npc-wrap > b {
+  position: relative;
+  top: -18px;
   display: inline-block;
-  padding: 5px 10px;
-  border: 1px solid rgba(58, 65, 52, .2);
-  border-radius: 11px 8px 12px 9px;
-  background: rgba(247, 241, 228, .78);
-  font-size: 12px;
 }
 .npc-portal {
   display: none;
@@ -418,12 +440,10 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 .npc-companion:active, .npc-companion.is-talking { transform: translateY(-9px) rotate(-2deg); }
 .npc-companion canvas { display: block; width: 100%; height: 200px; }
 .npc-companion span {
-  display: inline-block;
-  padding: 4px 8px;
-  border: 1px solid rgba(58, 65, 52, .18);
-  border-radius: 10px;
-  background: rgba(247, 241, 228, .78);
-  font-size: 11px;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin: -25px auto 0;
   white-space: nowrap;
 }
 .npc-wrap.enter-door .npc-character { animation: from-door 720ms cubic-bezier(.16, 1, .3, 1) both; }
@@ -480,7 +500,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   font-weight: 750;
   letter-spacing: .1em;
 }
-h1, h2, h3 { margin: 0; font-family: KaiTi, "Kaiti SC", STKaiti, serif; }
+h1, h2, h3 { margin: 0; font-family: var(--story-font-sans); }
 h1 { font-size: clamp(42px, 6.4vw, 72px); line-height: 1.08; }
 h2 { font-size: clamp(27px, 4vw, 40px); line-height: 1.22; }
 .cover-copy, .assignment-panel > p, .ritual-panel > p, .ending-copy {
@@ -555,7 +575,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   margin: 0 auto 9px;
   max-width: 54ch;
   color: var(--moss-deep);
-  font: 700 17px/1.6 KaiTi, "Kaiti SC", serif;
+  font: 700 17px/1.6 var(--story-font-sans);
 }
 .guide-speech[data-mode="reaction"] .guide-reaction { animation: reaction-in 320ms cubic-bezier(.16, 1, .3, 1) both; }
 @keyframes reaction-in { from { opacity: 0; transform: translateY(5px); } }
@@ -588,7 +608,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   text-align: center;
   transform: translateX(-50%);
 }
-.guide-nameplate b { display: block; font: 700 18px/1.2 KaiTi, "Kaiti SC", serif; }
+.guide-nameplate b { display: block; }
 .guide-nameplate span { display: block; margin-top: 4px; color: var(--ink-soft); font-size: 11px; line-height: 1.45; }
 .voice-listen-zone {
   position: relative;
@@ -662,7 +682,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   border-radius: 50% 45% 52% 44%;
   background: rgba(226, 218, 198, .6);
   color: rgba(64, 71, 59, .42);
-  font: 700 25px/1 KaiTi, "Kaiti SC", serif;
+  font: 700 25px/1 var(--story-font-sans);
   transform: rotate(var(--seal-rotation, -3deg));
   transition: transform 420ms cubic-bezier(.16, 1, .3, 1), color 240ms ease, background 240ms ease, box-shadow 240ms ease;
 }
@@ -701,9 +721,11 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   width: min(390px, calc(100% - 28px));
   margin: 0;
   padding: 16px 18px;
-  border-radius: 20px 16px 23px 17px;
-  background: rgba(247, 241, 228, .76);
-  box-shadow: 0 14px 42px rgba(54, 47, 38, .1), inset 0 1px rgba(255,255,255,.58);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
   pointer-events: none;
 }
 .quest-panel .scene-heading { display: block; }
@@ -810,7 +832,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   padding: 16px 18px;
   border-left: 3px solid var(--sun);
   background: rgba(226, 214, 171, .2);
-  font-family: KaiTi, "Kaiti SC", serif;
+  font-family: var(--story-font-sans);
   font-size: 19px;
   line-height: 1.7;
 }
@@ -895,7 +917,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .npc-companions { left: 32%; bottom: 12vh; gap: 6px; }
   .npc-companion { width: 116px; }
   .npc-companion canvas { height: 146px; }
-  .npc-companion span { max-width: 116px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+  .npc-companion span { max-width: 116px; overflow: visible; text-overflow: clip; }
   .npc-speech { right: 2px; --bubble-max-width: min(260px, 82vw); --bubble-font-size: 15px; }
   .world-tap-hint { bottom: 104px; }
   .backpack-button { right: 8px; bottom: max(94px, calc(env(safe-area-inset-bottom) + 86px)); width: 136px; min-height: 52px; }

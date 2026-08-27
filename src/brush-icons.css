@@ -2,7 +2,7 @@
   display: inline-block;
   flex: 0 0 auto;
   aspect-ratio: 1;
-  overflow: hidden;
+  overflow: visible;
   background-image: url('../assets/icons/brush-icons.webp?v=20260828-picturebook-alpha') !important;
   background-repeat: no-repeat !important;
   background-size: 400% 300% !important;
