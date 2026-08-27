@@ -27,7 +27,7 @@ import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime
 import {
   setVoiceInputControlLevel,
   setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-icon-motion';
+} from './voice-input-control.js?v=20260828-waveform-loader';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,

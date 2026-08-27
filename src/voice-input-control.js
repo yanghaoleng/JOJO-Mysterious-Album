@@ -15,6 +15,9 @@ export function mountVoiceInputControl(button) {
   button.dataset.voiceControlMounted = 'true';
   if (!button.querySelector('.voice-input-control__start')) return button;
   mountProductIcons(button);
+  button.querySelectorAll('.voice-input-control__wave i').forEach((bar, index) => {
+    bar.style.setProperty('--voice-wave-delay', `${Math.sin(index) * .5}s`);
+  });
   button.querySelectorAll('.voice-input-control__thinking i').forEach((dot, index) => {
     dot.style.setProperty('--voice-dot-turn', `${index * 45}deg`);
     dot.style.setProperty('--voice-dot-delay', `${index * 150}ms`);
@@ -36,10 +39,10 @@ export function setVoiceInputControlLevel(button, level) {
   const value = clamp(level);
   button.style.setProperty('--voice-level', value.toFixed(3));
   const now = performance.now();
-  const profiles = [.58, .82, 1, .82, .58];
+  const profiles = [.42, .58, .78, .94, 1, .84, .62, .46];
   button.querySelectorAll('.voice-input-control__wave i').forEach((bar, index) => {
-    const cascade = .72 + ((Math.sin(now / 106 + index * 1.12) + 1) * .14);
-    const scale = .22 + value * profiles[index] * cascade;
+    const cascade = .76 + ((Math.sin(now / 106 + index * 1.12) + 1) * .12);
+    const scale = .58 + value * profiles[index] * cascade;
     bar.style.setProperty('--voice-bar-scale', scale.toFixed(3));
   });
 }

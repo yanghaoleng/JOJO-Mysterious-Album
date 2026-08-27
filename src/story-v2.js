@@ -13,7 +13,7 @@ import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-cle
 import {
   setVoiceInputControlLevel,
   setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-icon-motion';
+} from './voice-input-control.js?v=20260828-waveform-loader';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
