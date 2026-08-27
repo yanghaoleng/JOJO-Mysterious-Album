@@ -694,6 +694,7 @@ function bytesToBase64(bytes) {
 }
 
 function writeSpeechStatus(status, message) {
+  if (!status) return;
   if (status.id !== 'speech-status') {
     status.textContent = message;
     return;
@@ -705,7 +706,7 @@ function writeSpeechStatus(status, message) {
 
 async function doubaoTranscript(pcm, status, fallbackText = '', maxLength = MAX_INTERVIEW_ANSWER) {
   if (!pcm || pcm.length < 1600) return '';
-  const interviewMode = status.id === 'speech-status';
+  const interviewMode = status?.id === 'speech-status';
   writeSpeechStatus(status, '豆包正在确认刚才听到的这句话');
   try {
     const response = await fetch('/api/asr', {

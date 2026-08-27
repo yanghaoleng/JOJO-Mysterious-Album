@@ -166,7 +166,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: currentColor;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, .9), 0 0 13px rgba(255, 255, 255, .4);
   transform: rotate(var(--voice-dot-turn, 0deg));
   transform-origin: 3.5px 21px;
   animation: voice-input-thinking 1.5s ease-in-out infinite;

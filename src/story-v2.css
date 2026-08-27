@@ -629,20 +629,6 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 .guide-mic { --voice-control-ink: var(--moss-deep); }
 .voice-dock[data-voice-state="complete"] { opacity: .76; }
 .guide-mic:disabled { cursor: wait; opacity: .78; }
-.speech-status { min-height: 20px; margin: 8px 0 0; color: var(--ink-soft); font-size: 12px; }
-.speech-status > i {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 7px;
-  border-radius: 50%;
-  background: rgba(105, 112, 100, .54);
-  vertical-align: 1px;
-}
-.voice-dock[data-voice-state="listening"] .speech-status > i { background: var(--coral); animation: status-pulse 720ms ease-in-out infinite alternate; }
-.voice-dock[data-voice-state="speaking"] .speech-status > i { background: var(--sun); }
-.voice-dock[data-voice-state="thinking"] .speech-status > i { background: var(--water); }
-@keyframes status-pulse { to { opacity: .35; transform: scale(1.35); } }
 .heard-notes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
 .user-input-record {
   --bubble-max-width: min(320px, calc(100vw - 28px));
@@ -899,7 +885,6 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .live-answer-bubble { width: min(320px, calc(100% - 16px)); }
   .heard-notes { justify-content: center; margin: -7px auto 105px; max-width: calc(100% - 20px); }
   .voice-dock { width: calc(100% - 18px); bottom: max(7px, env(safe-area-inset-bottom)); padding-bottom: 7px; }
-  .speech-status { max-width: 94vw; text-align: center; }
   .quest-panel { top: 102px; left: 10px; width: min(300px, calc(100% - 20px)); padding: 12px 14px; }
   .quest-panel .scene-heading h2 { font-size: 23px; }
   .quest-panel .scene-heading > p { display: none; }
