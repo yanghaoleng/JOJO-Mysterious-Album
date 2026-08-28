@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { PAPER } from './sketch.js';
+import { PAPER, Sketch } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor';
+import { loadAppliedRenderStyle } from './render-style-config.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import {
@@ -40,8 +41,11 @@ import {
   sanitizeCharacterCard,
 } from './character-cards.js';
 
+const activeRenderStyle = loadAppliedRenderStyle();
 setRender({ u: 176, frames: 2 });
-setHand((width, height) => new SoftStorySketch(width, height));
+setHand((width, height) => activeRenderStyle.engine === 'original'
+  ? new Sketch(width, height)
+  : new SoftStorySketch(width, height, activeRenderStyle));
 
 const $ = id => document.getElementById(id);
 const RECIPE_KEY = 'mengmeng-lab-recipe-v1';
@@ -321,7 +325,7 @@ function readRecipe() {
     const saved = JSON.parse(localStorage.getItem(RECIPE_KEY) || 'null');
     if (!saved || typeof saved !== 'object' || !saved.parts) return null;
     ensureParams(saved);
-    saved.media = 'storybook';
+    saved.media = activeRenderStyle.media;
     return saved;
   } catch {
     return null;
@@ -476,7 +480,7 @@ function put(part, key, value) {
 function applySafeDefaults(target = recipe) {
   target.species = 'human';
   target.base ||= 'biped';
-  target.media = 'storybook';
+  target.media = activeRenderStyle.media;
   target.color = 'color';
   ensureParams(target);
   const P = target.parts;
@@ -524,14 +528,14 @@ function makeTemplateRecipe(config) {
   if (stored) {
     const saved = cloneRecipe(stored);
     saved.templateId = config.id;
-    saved.media = 'storybook';
+    saved.media = activeRenderStyle.media;
     if (!VOICE_PRESETS[saved.voiceId]) saved.voiceId = VOICE_PRESETS[config.voice] ? config.voice : DEFAULT_VOICE;
     return saved;
   }
   const next = newRecipe(config.seed);
   next.species = config.species;
   next.base = config.base;
-  next.media = 'storybook';
+  next.media = activeRenderStyle.media;
   next.color = 'color';
   ensureParams(next);
   Object.assign(next.parts.extras.params, {
@@ -1077,7 +1081,7 @@ function initScene() {
   camera.lookAt(0, -.18, 0);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  renderer.setPixelRatio(displayPixelRatio);
+  renderer.setPixelRatio(Math.min(activeRenderStyle.render.quality, displayPixelRatio));
   renderer.domElement.style.imageRendering = 'auto';
   document.documentElement.dataset.labTextureScale = String(U);
   document.documentElement.dataset.labPixelRatio = String(displayPixelRatio);
@@ -1243,9 +1247,10 @@ function buildNow() {
   shadowCanvas.width = 256;
   shadowCanvas.height = 256;
   const shadowContext = shadowCanvas.getContext('2d');
+  const castShadow = activeRenderStyle.castShadow;
   const shadowGradient = shadowContext.createRadialGradient(116, 112, 10, 128, 128, 118);
-  shadowGradient.addColorStop(0, 'rgba(48,76,59,.38)');
-  shadowGradient.addColorStop(.54, 'rgba(48,76,59,.2)');
+  shadowGradient.addColorStop(0, `rgba(48,76,59,${Math.min(.72, castShadow.opacity * 1.58)})`);
+  shadowGradient.addColorStop(.54, `rgba(48,76,59,${Math.min(.42, castShadow.opacity * .83)})`);
   shadowGradient.addColorStop(1, 'rgba(48,76,59,0)');
   shadowContext.fillStyle = shadowGradient;
   shadowContext.fillRect(0, 0, shadowCanvas.width, shadowCanvas.height);
@@ -1254,11 +1259,19 @@ function buildNow() {
     map: shadowTexture,
     transparent: true,
     depthWrite: false,
-    opacity: .9,
+    opacity: castShadow.opacity > 0 ? .9 : 0,
   });
   const softShadow = new THREE.Sprite(shadowMaterial);
-  softShadow.position.set(center.x + size.x * .17, center.y - size.y * .13, -.4);
-  softShadow.scale.set(Math.max(.6, size.x * 1.06), Math.max(.8, size.y * 1.02), 1);
+  softShadow.position.set(
+    center.x + size.x * (castShadow.offsetX / 76),
+    center.y - size.y * (castShadow.offsetY / 123),
+    -.4,
+  );
+  softShadow.scale.set(
+    Math.max(.6, size.x * castShadow.scale),
+    Math.max(.8, size.y * (1 + (castShadow.scale - 1) / 3)),
+    1,
+  );
   softShadow.renderOrder = -12;
   softShadow.userData.dispose = () => {
     shadowTexture.dispose();

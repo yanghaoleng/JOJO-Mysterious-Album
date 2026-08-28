@@ -1,8 +1,8 @@
-import { House, Mic, RotateCcw, createIcons } from 'lucide';
+import { House, Mic, Paintbrush, RotateCcw, createIcons } from 'lucide';
 
 // Keep the icon set deliberately small: the browser bundle only contains the
 // symbols used by the product chrome, while Lucide provides consistent SVG.
-const productIcons = { House, Mic, RotateCcw };
+const productIcons = { House, Mic, Paintbrush, RotateCcw };
 
 export function mountProductIcons(root = document) {
   createIcons({

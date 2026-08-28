@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f1ead8">
+  <title>画面风格编辑器 · 萌萌星的奇妙图鉴</title>
+  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
+  <link rel="stylesheet" href="./src/style-editor.css?v=20260828-style-editor">
+</head>
+<body data-analytics-page="style-editor">
+  <nav id="style-navigation"></nav>
+
+  <header class="editor-header">
+    <p class="eyebrow">角色模拟器工具</p>
+    <h1>画面风格编辑器</h1>
+    <p>把角色的线条、色块、高光、体积阴影和投影调成你想要的样子。每次调整都会直接显示在右边。</p>
+  </header>
+
+  <main>
+    <section class="editor-workbench" aria-label="画面风格调节区">
+      <aside class="control-panel" aria-labelledby="control-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">基础画面元素</p>
+            <h2 id="control-title">手动调整</h2>
+          </div>
+          <button id="reset-current" class="quiet-button" type="button">重置当前</button>
+        </div>
+        <div id="style-controls" class="style-controls"></div>
+      </aside>
+
+      <section class="preview-panel" aria-labelledby="preview-title">
+        <div class="preview-heading">
+          <div>
+            <p class="section-kicker">实时预览</p>
+            <h2 id="preview-title">豆豆小狗</h2>
+          </div>
+          <span id="working-version" class="version-pill">当前柔绘版</span>
+        </div>
+        <div class="preview-stage">
+          <div class="preview-horizon" aria-hidden="true"></div>
+          <canvas id="style-preview" aria-label="角色画面风格实时预览"></canvas>
+          <p id="preview-loading" class="preview-loading">正在画出角色</p>
+        </div>
+        <p class="preview-note">拖动参数时会自动转成可编辑版本。应用后，角色模拟器会使用这一套画面风格。</p>
+        <div class="preview-actions">
+          <button id="open-save" class="secondary-button" type="button">保存为社区版本</button>
+          <button id="apply-style" class="primary-button" type="button">应用到角色模拟器</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="version-section" aria-labelledby="version-title">
+      <div class="version-heading">
+        <div>
+          <p class="section-kicker">服务器版本库</p>
+          <h2 id="version-title">选择一个版本继续调整</h2>
+        </div>
+        <div class="version-tabs" role="tablist" aria-label="版本分类">
+          <button class="version-tab is-active" type="button" role="tab" aria-selected="true" data-version-filter="official">官方预设</button>
+          <button class="version-tab" type="button" role="tab" aria-selected="false" data-version-filter="community">社区版本</button>
+        </div>
+      </div>
+      <div id="version-library" class="version-library" aria-live="polite">
+        <div class="library-state">正在从服务器读取版本</div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="save-dialog" class="save-dialog">
+    <form id="save-form" method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="section-kicker">存进服务器</p>
+          <h2>保存为社区版本</h2>
+        </div>
+        <button id="close-save" class="icon-close" type="button" aria-label="关闭保存窗口">×</button>
+      </div>
+      <label>
+        <span>版本名称</span>
+        <input id="style-name" name="name" required minlength="2" maxlength="28" placeholder="例如：圆润蜡笔版">
+      </label>
+      <label>
+        <span>创作者</span>
+        <input id="style-author" name="author" maxlength="20" placeholder="不填则显示匿名创作者">
+      </label>
+      <label>
+        <span>一句说明</span>
+        <textarea id="style-description" name="description" maxlength="100" rows="3" placeholder="这套风格最特别的地方"></textarea>
+      </label>
+      <p id="save-status" class="save-status" role="status"></p>
+      <button id="submit-style" class="primary-button" type="submit">保存到社区版本</button>
+    </form>
+  </dialog>
+
+  <div id="editor-toast" class="editor-toast" role="status" aria-live="polite"></div>
+
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+  <script type="module" src="./src/analytics.js"></script>
+  <script type="module" src="./src/style-editor.js?v=20260828-style-editor"></script>
+</body>
+</html>

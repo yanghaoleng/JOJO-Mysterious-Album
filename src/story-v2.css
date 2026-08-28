@@ -336,7 +336,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(11px 15px 9px rgba(42, 61, 48, .24));
+  filter: drop-shadow(var(--character-shadow-x, 11px) var(--character-shadow-y, 15px) var(--character-shadow-blur, 9px) var(--character-shadow-color, rgba(42, 61, 48, .24)));
 }
 .pet-thought {
   position: absolute;
@@ -396,7 +396,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(12px 15px 9px rgba(42, 61, 48, .24));
+  filter: drop-shadow(var(--character-shadow-x, 12px) var(--character-shadow-y, 15px) var(--character-shadow-blur, 9px) var(--character-shadow-color, rgba(42, 61, 48, .24)));
 }
 .npc-wrap[data-state="thinking"] .npc-character { animation: npc-think 760ms ease-in-out infinite alternate; }
 .npc-wrap.is-listening .npc-character { opacity: .82; transform: scale(.96); }
@@ -452,7 +452,7 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   display: block;
   width: 100%;
   height: 200px;
-  filter: drop-shadow(10px 13px 8px rgba(42, 61, 48, .22));
+  filter: drop-shadow(var(--character-shadow-x, 10px) var(--character-shadow-y, 13px) var(--character-shadow-blur, 8px) var(--character-shadow-color, rgba(42, 61, 48, .22)));
 }
 .npc-companion span {
   display: block;
@@ -616,7 +616,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   width: 100%;
   height: 270px;
   display: block;
-  filter: drop-shadow(13px 16px 10px rgba(42, 61, 48, .24));
+  filter: drop-shadow(var(--character-shadow-x, 13px) var(--character-shadow-y, 16px) var(--character-shadow-blur, 10px) var(--character-shadow-color, rgba(42, 61, 48, .24)));
 }
 .guide-nameplate {
   position: absolute;

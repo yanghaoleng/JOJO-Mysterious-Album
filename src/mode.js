@@ -1,5 +1,5 @@
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import { mountAppNavigation } from './app-navigation.js?v=20260828-product-icons';
+import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 
 installUISFX();
 
@@ -11,11 +11,14 @@ const originalModeNote = modeNote.textContent;
 let labModule = null;
 let labPromise = null;
 
-mountAppNavigation(navigationSlot, { onHome: () => showHome() });
+mountAppNavigation(navigationSlot, {
+  onHome: () => showHome(),
+  styleHref: './style-editor',
+});
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260828-soft-character'),
+    import('./lab.js?v=20260828-style-editor'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;

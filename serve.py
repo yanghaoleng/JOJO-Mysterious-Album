@@ -120,6 +120,39 @@ CHARACTER_SCENE_KEYWORDS = (
     (r"被窝|毯子|帐篷", "blanket-fort"), (r"口袋", "giant-pocket"), (r"舞台|表演|音乐", "music-stage"),
     (r"纸上|空白场景|简单场景", "paper-ground"),
 )
+RENDER_STYLE_DEFAULTS = {
+    "schemaVersion": 1,
+    "engine": "soft",
+    "media": "storybook",
+    "stroke": {"smoothness": .72, "wobble": .36, "width": 1, "opacity": .82, "softWidth": 1.5, "softOpacity": .18, "grain": 0},
+    "fill": {"opacity": 1, "saturation": 1, "brightness": 1},
+    "highlight": {"strength": .3, "size": .88, "x": .34, "y": .12, "spread": .48, "gloss": .18},
+    "formShadow": {"strength": .2, "start": .38, "darkness": .68},
+    "castShadow": {"opacity": .24, "offsetX": 13, "offsetY": 16, "blur": 10, "scale": 1.06},
+    "render": {"quality": 2},
+}
+ORIGINAL_RENDER_STYLE = {
+    "schemaVersion": 1,
+    "engine": "original",
+    "media": "watercolor",
+    "stroke": {"smoothness": 0, "wobble": 1, "width": .8, "opacity": .62, "softWidth": 1, "softOpacity": 0, "grain": .72},
+    "fill": {"opacity": .72, "saturation": .9, "brightness": 1},
+    "highlight": {"strength": 0, "size": .88, "x": .34, "y": .12, "spread": .48, "gloss": 0},
+    "formShadow": {"strength": 0, "start": .38, "darkness": .68},
+    "castShadow": {"opacity": 0, "offsetX": 0, "offsetY": 0, "blur": 0, "scale": 1},
+    "render": {"quality": 1.5},
+}
+RENDER_STYLE_LIMITS = {
+    "stroke.smoothness": (0, 1), "stroke.wobble": (0, 1), "stroke.width": (.55, 1.8),
+    "stroke.opacity": (.25, 1), "stroke.softWidth": (1, 2.6), "stroke.softOpacity": (0, .5),
+    "stroke.grain": (0, 1), "fill.opacity": (.4, 1), "fill.saturation": (.45, 1.45),
+    "fill.brightness": (.72, 1.3), "highlight.strength": (0, .65), "highlight.size": (.25, 1.4),
+    "highlight.x": (0, 1), "highlight.y": (0, 1), "highlight.spread": (.1, .85),
+    "highlight.gloss": (0, .45), "formShadow.strength": (0, .55), "formShadow.start": (0, .8),
+    "formShadow.darkness": (.35, .95), "castShadow.opacity": (0, .5), "castShadow.offsetX": (-24, 30),
+    "castShadow.offsetY": (-12, 34), "castShadow.blur": (0, 24), "castShadow.scale": (.82, 1.3),
+    "render.quality": (1, 2.5),
+}
 TTS_VOICES = {
     "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.94, "pitch": 1.04, "speaker": "ICL_zh_female_keainvsheng_tob"},
     "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.08, "speaker": "ICL_zh_female_tiaopigongzhu_tob"},
@@ -179,8 +212,142 @@ def init_analytics():
             );
             CREATE INDEX IF NOT EXISTS idx_events_occurred ON interaction_events(occurred_at);
             CREATE INDEX IF NOT EXISTS idx_events_page_occurred ON interaction_events(page, occurred_at);
+            CREATE TABLE IF NOT EXISTS render_style_versions (
+                style_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                author TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                config_json TEXT NOT NULL,
+                category TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                creator_key TEXT NOT NULL DEFAULT ''
+            );
+            CREATE INDEX IF NOT EXISTS idx_render_styles_category_created
+                ON render_style_versions(category, created_at DESC);
             """
         )
+        official_versions = (
+            (
+                "original", "最初手绘版", "萌萌星", "保留最初的水彩、颗粒和不规则笔触。",
+                json.dumps(ORIGINAL_RENDER_STYLE, ensure_ascii=False, separators=(",", ":")), 1,
+            ),
+            (
+                "current-soft", "当前柔绘版", "萌萌星", "圆润线条、柔和高光、体积阴影和朝后投影。",
+                json.dumps(RENDER_STYLE_DEFAULTS, ensure_ascii=False, separators=(",", ":")), 2,
+            ),
+        )
+        connection.executemany(
+            """
+            INSERT INTO render_style_versions (
+                style_id, name, author, description, config_json, category, created_at, creator_key
+            ) VALUES (?, ?, ?, ?, ?, 'official', ?, '')
+            ON CONFLICT(style_id) DO UPDATE SET
+                name = excluded.name,
+                author = excluded.author,
+                description = excluded.description,
+                config_json = excluded.config_json,
+                category = 'official'
+            """,
+            official_versions,
+        )
+
+
+def nested_value(value, path):
+    current = value
+    for key in path.split("."):
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
+def set_nested_value(value, path, next_value):
+    keys = path.split(".")
+    current = value
+    for key in keys[:-1]:
+        current = current[key]
+    current[keys[-1]] = next_value
+
+
+def sanitize_render_style_config(value):
+    if not isinstance(value, dict):
+        raise ValueError("invalid_style_config")
+    normalized = json.loads(json.dumps(RENDER_STYLE_DEFAULTS))
+    normalized["engine"] = "original" if value.get("engine") == "original" else "soft"
+    normalized["media"] = "watercolor" if normalized["engine"] == "original" else "storybook"
+    for path, (minimum, maximum) in RENDER_STYLE_LIMITS.items():
+        candidate = nested_value(value, path)
+        if isinstance(candidate, bool) or not isinstance(candidate, (int, float)):
+            candidate = nested_value(RENDER_STYLE_DEFAULTS, path)
+        candidate = float(candidate)
+        if candidate != candidate or abs(candidate) == float("inf"):
+            candidate = nested_value(RENDER_STYLE_DEFAULTS, path)
+        set_nested_value(normalized, path, max(minimum, min(maximum, candidate)))
+    return normalized
+
+
+def clean_style_text(value, maximum):
+    return re.sub(r"[\x00-\x1f\x7f<>]", "", str(value or "")).strip()[:maximum]
+
+
+def render_style_record(row):
+    return {
+        "id": row["style_id"],
+        "name": row["name"],
+        "author": row["author"],
+        "description": row["description"],
+        "category": row["category"],
+        "createdAt": row["created_at"],
+        "config": sanitize_render_style_config(json.loads(row["config_json"])),
+    }
+
+
+def list_render_style_versions():
+    with analytics_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT style_id, name, author, description, config_json, category, created_at
+            FROM render_style_versions
+            ORDER BY CASE category WHEN 'official' THEN 0 ELSE 1 END, created_at DESC
+            """
+        ).fetchall()
+    return [render_style_record(row) for row in rows]
+
+
+def create_render_style_version(payload, client):
+    if not isinstance(payload, dict):
+        raise ValueError("invalid_style_payload")
+    name = clean_style_text(payload.get("name"), 28)
+    author = clean_style_text(payload.get("author"), 20) or "匿名创作者"
+    description = clean_style_text(payload.get("description"), 100)
+    if len(name) < 2:
+        raise ValueError("style_name_required")
+    config = sanitize_render_style_config(payload.get("config"))
+    creator_key = hashlib.sha256(str(client).encode("utf-8")).hexdigest()
+    now_ms = int(time.time() * 1000)
+    style_id = f"community-{uuid.uuid4().hex[:12]}"
+    config_json = json.dumps(config, ensure_ascii=False, separators=(",", ":"))
+    with analytics_connection() as connection:
+        recent = connection.execute(
+            "SELECT COUNT(*) FROM render_style_versions WHERE creator_key = ? AND created_at >= ?",
+            (creator_key, now_ms - 60 * 60 * 1000),
+        ).fetchone()[0]
+        if recent >= 8:
+            raise ValueError("style_rate_limited")
+        connection.execute(
+            """
+            INSERT INTO render_style_versions (
+                style_id, name, author, description, config_json, category, created_at, creator_key
+            ) VALUES (?, ?, ?, ?, ?, 'community', ?, ?)
+            """,
+            (style_id, name, author, description, config_json, now_ms, creator_key),
+        )
+        row = connection.execute(
+            """SELECT style_id, name, author, description, config_json, category, created_at
+               FROM render_style_versions WHERE style_id = ?""",
+            (style_id,),
+        ).fetchone()
+    return render_style_record(row)
 
 
 def collect_analytics(payload):
@@ -1087,6 +1254,9 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 range_value = "7d"
             self.respond_json(200, analytics_summary(range_value))
             return
+        if path == "/api/render-styles":
+            self.respond_json(200, {"styles": list_render_style_versions()})
+            return
         super().do_GET()
 
     def do_POST(self):
@@ -1121,6 +1291,16 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/data/logout":
             self.respond_data_session("")
+            return
+        if path == "/api/render-styles":
+            try:
+                style = create_render_style_version(self.read_json(16_384), self.client_key())
+                self.respond_json(201, {"style": style})
+            except (json.JSONDecodeError, TypeError):
+                self.respond_json(400, {"error": "invalid_style_payload"})
+            except ValueError as error:
+                code = str(error)
+                self.respond_json(429 if code == "style_rate_limited" else 400, {"error": code})
             return
         if path not in {"/api/director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call"}:
             self.respond_json(404, {"error": "not_found"})

@@ -37,9 +37,21 @@
 .app-navigation__control:hover { background: var(--moss-pale, #d7e2d8); transform: translateY(-2px); }
 .app-navigation__control:active { transform: translateY(1px) scale(.98); }
 .app-navigation__icon { width: 24px; height: 24px; stroke-width: 2.75; }
+.app-navigation__actions { display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.app-navigation__actions > * { pointer-events: auto; }
+.app-navigation__control--style {
+  width: auto;
+  padding: 0 14px;
+  grid-template-columns: auto auto;
+  gap: 7px;
+  font: 800 14px/1 system-ui, sans-serif;
+  letter-spacing: .02em;
+}
+.app-navigation__label { white-space: nowrap; }
 
 @media (max-width: 560px) {
   .app-navigation__control { width: 42px; min-width: 42px; height: 42px; min-height: 42px; }
+  .app-navigation__control--style { width: auto; padding-inline: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

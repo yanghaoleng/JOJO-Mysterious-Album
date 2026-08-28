@@ -1,6 +1,8 @@
 import * as THREE from 'three';
+import { Sketch } from './sketch.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor';
+import { applyRenderStyleCssVars, loadAppliedRenderStyle } from './render-style-config.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
@@ -8,7 +10,7 @@ import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-s
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js';
-import { mountAppNavigation } from './app-navigation.js?v=20260828-product-icons';
+import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
   setVoiceInputControlLevel,
@@ -22,8 +24,12 @@ import {
 
 installUISFX();
 
+const activeRenderStyle = loadAppliedRenderStyle();
 setRender({ u: 176, frames: 2 });
-setHand((width, height) => new SoftStorySketch(width, height));
+setHand((width, height) => activeRenderStyle.engine === 'original'
+  ? new Sketch(width, height)
+  : new SoftStorySketch(width, height, activeRenderStyle));
+applyRenderStyleCssVars(document.documentElement, activeRenderStyle);
 THREE.ColorManagement.enabled = false;
 
 const $ = id => document.getElementById(id);
@@ -336,7 +342,7 @@ class PetRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(2.2, Math.max(1.5, devicePixelRatio || 1)));
+    this.renderer.setPixelRatio(Math.min(activeRenderStyle.render.quality, Math.max(1, devicePixelRatio || 1)));
     this.renderer.setClearColor(0x000000, 0);
     this.scene = new THREE.Scene();
     this.camera = new THREE.OrthographicCamera(-2.2, 2.2, 2.5, -1.7, .1, 30);
@@ -451,7 +457,7 @@ function makeStoryGuideRecipe(config) {
   const recipe = newRecipe(config.seed);
   recipe.species = config.species;
   recipe.base = config.base;
-  recipe.media = 'storybook';
+  recipe.media = activeRenderStyle.media;
   recipe.color = 'color';
   ensureParams(recipe);
   Object.assign(recipe.parts.extras.params, {
