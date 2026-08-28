@@ -128,10 +128,34 @@ const MATERIALS = {
   },
 };
 
+const STORYBOOK = {
+  id: 'storybook', label: 'soft storybook', underdraw: false,
+  tone(s, pts, o = {}) {
+    const style = o.style ?? 'light';
+    const color = o.col ?? (style === 'black'
+      ? [55, 62, 54]
+      : style === 'light'
+        ? [229, 226, 211]
+        : [126, 139, 127]);
+    const strength = style === 'black'
+      ? { alpha: .98, highlight: .12, shadow: .24 }
+      : { alpha: .94, highlight: .24, shadow: .18 };
+    if (s.softFill) s.softFill(pts, color, strength);
+    else s.washFill(pts, color, { layers: 2, alpha: .28, bleed: .2, blooms: false, rim: false });
+  },
+  skin(s, pts, col) {
+    if (s.softFill) s.softFill(pts, col, { alpha: .94, highlight: .3, shadow: .2 });
+    else s.washFill(pts, col, { layers: 2, alpha: .25, bleed: .2, blooms: false, rim: false });
+  },
+  edge(s, pts, w, o = {}) {
+    s.stroke(pts, w * 1.02, { alpha: .82, ...o });
+  },
+};
+
 export const MEDIA_IDS = Object.keys(MATERIALS);   // the six materials
 export { STYLE_IDS };                              // the nine styles
 export const ALL_MEDIA_IDS = [...MEDIA_IDS, ...STYLE_IDS];
-export const MEDIA = { ...MATERIALS, ...STYLES };
+export const MEDIA = { ...MATERIALS, storybook: STORYBOOK, ...STYLES };
 
 function boxOf(pts) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;

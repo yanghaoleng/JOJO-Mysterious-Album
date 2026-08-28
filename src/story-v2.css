@@ -332,7 +332,12 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 }
 .pet-stage.show { opacity: 1; transform: translate3d(var(--pet-shift-x), var(--pet-shift-y), 0); }
 .pet-stage.is-walking { transition-duration: 245ms; transition-timing-function: linear; }
-#pet-canvas { width: 100%; height: 100%; display: block; }
+#pet-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(11px 15px 9px rgba(42, 61, 48, .24));
+}
 .pet-thought {
   position: absolute;
   left: 50%;
@@ -387,7 +392,12 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
   background: transparent;
   box-shadow: none;
 }
-.npc-character canvas { width: 100%; height: 100%; display: block; }
+.npc-character canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(12px 15px 9px rgba(42, 61, 48, .24));
+}
 .npc-wrap[data-state="thinking"] .npc-character { animation: npc-think 760ms ease-in-out infinite alternate; }
 .npc-wrap.is-listening .npc-character { opacity: .82; transform: scale(.96); }
 .npc-wrap.is-tapped .npc-character { animation: npc-tap 420ms cubic-bezier(.22, 1.4, .35, 1); }
@@ -438,7 +448,12 @@ body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 9
 }
 .npc-companion:hover, .npc-companion:focus-visible { transform: translateY(-5px); }
 .npc-companion:active, .npc-companion.is-talking { transform: translateY(-9px) rotate(-2deg); }
-.npc-companion canvas { display: block; width: 100%; height: 200px; }
+.npc-companion canvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+  filter: drop-shadow(10px 13px 8px rgba(42, 61, 48, .22));
+}
 .npc-companion span {
   display: block;
   width: max-content;
@@ -595,10 +610,14 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   width: min(320px, 72vw);
   height: 304px;
   margin: 18px auto 0;
-  filter: drop-shadow(0 18px 20px rgba(51, 56, 45, .13));
   cursor: pointer;
 }
-#guide-canvas { width: 100%; height: 270px; display: block; }
+#guide-canvas {
+  width: 100%;
+  height: 270px;
+  display: block;
+  filter: drop-shadow(13px 16px 10px rgba(42, 61, 48, .24));
+}
 .guide-nameplate {
   position: absolute;
   z-index: 4;

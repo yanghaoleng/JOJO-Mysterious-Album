@@ -66,15 +66,21 @@
 }
 
 .user-input-bubble {
-  border-color: rgba(62, 92, 69, .34);
-  background: rgba(235, 239, 219, .97);
-  color: #33483a;
-  box-shadow: 0 14px 34px rgba(54, 72, 56, .14), inset 0 1px rgba(255, 255, 255, .72);
+  border-color: rgba(255, 255, 255, .98);
+  background: rgba(255, 255, 255, .98);
+  color: #315447;
+  text-shadow: 0 1px rgba(255, 255, 255, .95);
+  box-shadow:
+    0 0 0 1px rgba(48, 84, 71, .12),
+    0 0 18px rgba(255, 255, 255, .96),
+    0 10px 30px rgba(42, 74, 61, .16),
+    inset 0 1px rgba(255, 255, 255, 1);
 }
 
 .user-input-bubble .character-bubble__tail {
-  border-color: rgba(62, 92, 69, .34);
-  background: rgba(235, 239, 219, .97);
+  border-color: rgba(255, 255, 255, .98);
+  background: #fff;
+  box-shadow: 3px 3px 8px rgba(50, 78, 65, .08);
 }
 
 .voice-input-control {

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { setRender, U } from './part.js';
+import { setHand, setRender, U } from './part.js';
+import { SoftStorySketch } from './soft-story-sketch.js';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
@@ -22,6 +23,7 @@ import {
 installUISFX();
 
 setRender({ u: 176, frames: 2 });
+setHand((width, height) => new SoftStorySketch(width, height));
 THREE.ColorManagement.enabled = false;
 
 const $ = id => document.getElementById(id);
@@ -449,7 +451,7 @@ function makeStoryGuideRecipe(config) {
   const recipe = newRecipe(config.seed);
   recipe.species = config.species;
   recipe.base = config.base;
-  recipe.media = 'watercolor';
+  recipe.media = 'storybook';
   recipe.color = 'color';
   ensureParams(recipe);
   Object.assign(recipe.parts.extras.params, {
@@ -465,6 +467,17 @@ function makeStoryGuideRecipe(config) {
   for (const [part, values] of Object.entries(config.parts || {})) {
     if (recipe.parts[part]?.params) Object.assign(recipe.parts[part].params, values);
   }
+  const eyes = recipe.parts.eyes.params;
+  if (['hollow', 'void', 'sunken', 'xcross', 'spiral', 'wide'].includes(eyes.type)) eyes.type = 'sparkle';
+  eyes.scale = Math.min(1.16, eyes.scale || 1);
+  eyes.sx = Math.min(.58, eyes.sx || .5);
+  eyes.glint = true;
+  Object.assign(recipe.parts.skull.params, {
+    construction: false,
+    fur: false,
+    skinScrib: false,
+    hollows: false,
+  });
   recipe.templateId = config.id;
   return recipe;
 }

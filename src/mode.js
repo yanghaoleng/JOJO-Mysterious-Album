@@ -15,7 +15,7 @@ mountAppNavigation(navigationSlot, { onHome: () => showHome() });
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260828-icon-motion'),
+    import('./lab.js?v=20260828-soft-character'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;
