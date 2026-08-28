@@ -2,10 +2,15 @@ import * as THREE from 'three';
 import { PAPER, Sketch } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor';
-import { loadAppliedRenderStyle } from './render-style-config.js';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor-v2';
+import { loadAppliedRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
+import {
+  configureRendererForCharacterSystem,
+  createGlossCharacter,
+  glossPlacement,
+} from './gloss-character-renderer.js?v=20260828-style-editor-v2';
 import {
   LAB_SCENES,
   SCENE_GROUPS,
@@ -14,7 +19,7 @@ import {
   sceneHorizonWorldY,
   createSceneBackdrop,
   paintSceneThumbnail,
-} from './lab-scenes.js';
+} from './lab-scenes.js?v=20260828-style-editor-v2';
 import {
   createEmptyChildProfile,
   firstUnansweredProfileIndex,
@@ -43,9 +48,9 @@ import {
 
 const activeRenderStyle = loadAppliedRenderStyle();
 setRender({ u: 176, frames: 2 });
-setHand((width, height) => activeRenderStyle.engine === 'original'
+setHand((width, height) => activeRenderStyle.character.engine === 'original'
   ? new Sketch(width, height)
-  : new SoftStorySketch(width, height, activeRenderStyle));
+  : new SoftStorySketch(width, height, activeRenderStyle.character));
 
 const $ = id => document.getElementById(id);
 const RECIPE_KEY = 'mengmeng-lab-recipe-v1';
@@ -325,7 +330,7 @@ function readRecipe() {
     const saved = JSON.parse(localStorage.getItem(RECIPE_KEY) || 'null');
     if (!saved || typeof saved !== 'object' || !saved.parts) return null;
     ensureParams(saved);
-    saved.media = activeRenderStyle.media;
+    saved.media = activeRenderStyle.character.media;
     return saved;
   } catch {
     return null;
@@ -480,7 +485,7 @@ function put(part, key, value) {
 function applySafeDefaults(target = recipe) {
   target.species = 'human';
   target.base ||= 'biped';
-  target.media = activeRenderStyle.media;
+  target.media = activeRenderStyle.character.media;
   target.color = 'color';
   ensureParams(target);
   const P = target.parts;
@@ -528,14 +533,14 @@ function makeTemplateRecipe(config) {
   if (stored) {
     const saved = cloneRecipe(stored);
     saved.templateId = config.id;
-    saved.media = activeRenderStyle.media;
+    saved.media = activeRenderStyle.character.media;
     if (!VOICE_PRESETS[saved.voiceId]) saved.voiceId = VOICE_PRESETS[config.voice] ? config.voice : DEFAULT_VOICE;
     return saved;
   }
   const next = newRecipe(config.seed);
   next.species = config.species;
   next.base = config.base;
-  next.media = activeRenderStyle.media;
+  next.media = activeRenderStyle.character.media;
   next.color = 'color';
   ensureParams(next);
   Object.assign(next.parts.extras.params, {
@@ -1081,18 +1086,17 @@ function initScene() {
   camera.lookAt(0, -.18, 0);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  renderer.setPixelRatio(Math.min(activeRenderStyle.render.quality, displayPixelRatio));
+  renderer.setPixelRatio(Math.min(activeRenderStyle.character.render.quality, displayPixelRatio));
   renderer.domElement.style.imageRendering = 'auto';
   document.documentElement.dataset.labTextureScale = String(U);
   document.documentElement.dataset.labPixelRatio = String(displayPixelRatio);
   stage.appendChild(renderer.domElement);
   addPaper(scene, 1.5);
-  environment = createSceneBackdrop(sceneId);
+  environment = createSceneBackdrop(sceneId, activeRenderStyle.background);
   scene.add(environment);
 
   recipe = readRecipe() || makeInitialRecipe();
   activeTemplateId = allCharacterTemplates().some(item => item.id === recipe.templateId) ? recipe.templateId : '';
-  animator = createAnimator(() => face, anim);
   buildNow();
 
   const resize = () => {
@@ -1152,8 +1156,13 @@ function applyCharacterPlacement(t = 0) {
     }
   }
   face.group.position.set(characterBase.x + x, characterBase.y + y, 0);
-  face.group.rotation.z = rotation;
+  face.group.rotation.set(0, face.kind === 'gloss' ? activeRenderStyle.character.gloss.turn : 0, rotation);
   face.group.scale.setScalar(characterBase.scale);
+}
+
+function placementFor(config) {
+  if (face?.kind === 'gloss') return glossPlacement(face, sceneFloorY(config), config.scale);
+  return { y: sceneFloorY(config) + face.F.B.floorY / U, scale: config.scale };
 }
 
 function applySceneSpatialMetadata(config) {
@@ -1216,15 +1225,11 @@ function setEnvironment(id, { speak = true } = {}) {
       scene.remove(environment);
       environment.userData.dispose?.();
     }
-    environment = createSceneBackdrop(sceneId);
+    environment = createSceneBackdrop(sceneId, activeRenderStyle.background);
     scene.add(environment);
   }
   if (face) {
-    characterBase = {
-      x: 0,
-      y: sceneFloorY(config) + face.F.B.floorY / U,
-      scale: config.scale,
-    };
+    characterBase = { x: 0, ...placementFor(config) };
     applyCharacterPlacement(0);
   }
   applySceneSpatialMetadata(config);
@@ -1239,7 +1244,15 @@ function buildNow() {
     scene.remove(face.group);
     face.dispose();
   }
-  face = buildCharacter(recipe);
+  configureRendererForCharacterSystem(renderer, activeRenderStyle.character.system);
+  if (activeRenderStyle.character.system === 'gloss') {
+    const gloss = createGlossCharacter(renderer, recipe, activeRenderStyle.character.gloss);
+    face = gloss.face;
+    animator = gloss.animator;
+  } else {
+    face = buildCharacter(recipe);
+    animator = createAnimator(() => face, anim);
+  }
   const bounds = new THREE.Box3().setFromObject(face.group);
   const size = bounds.getSize(new THREE.Vector3());
   const center = bounds.getCenter(new THREE.Vector3());
@@ -1247,7 +1260,7 @@ function buildNow() {
   shadowCanvas.width = 256;
   shadowCanvas.height = 256;
   const shadowContext = shadowCanvas.getContext('2d');
-  const castShadow = activeRenderStyle.castShadow;
+  const castShadow = activeRenderStyle.character.castShadow;
   const shadowGradient = shadowContext.createRadialGradient(116, 112, 10, 128, 128, 118);
   shadowGradient.addColorStop(0, `rgba(48,76,59,${Math.min(.72, castShadow.opacity * 1.58)})`);
   shadowGradient.addColorStop(.54, `rgba(48,76,59,${Math.min(.42, castShadow.opacity * .83)})`);
@@ -1277,11 +1290,15 @@ function buildNow() {
     shadowTexture.dispose();
     shadowMaterial.dispose();
   };
-  face.group.userData.softShadow = softShadow;
-  face.group.add(softShadow);
+  if (face.kind === 'gloss') {
+    softShadow.userData.dispose();
+  } else {
+    face.group.userData.softShadow = softShadow;
+    face.group.add(softShadow);
+  }
   scene.add(face.group);
   const config = sceneById(sceneId);
-  characterBase = { x: 0, y: sceneFloorY(config) + face.F.B.floorY / U, scale: config.scale };
+  characterBase = { x: 0, ...placementFor(config) };
   applyCharacterPlacement(0);
   applySceneSpatialMetadata(config);
   updateBubbleAnchor();
@@ -1412,7 +1429,7 @@ function renderSceneCards() {
     button.append(canvas, title, hint);
     button.addEventListener('click', () => setEnvironment(config.id));
     grid.appendChild(button);
-    paintSceneThumbnail(canvas, config.id);
+    paintSceneThumbnail(canvas, config.id, activeRenderStyle.background);
   }
   refreshSceneControls();
 }
@@ -1452,9 +1469,22 @@ function paintTemplateThumbnail(canvas, config) {
   const previewCamera = new THREE.OrthographicCamera(-.8 * aspect, .8 * aspect, .8, -.8, .1, 100);
   previewCamera.position.set(0, -.05, 10);
   previewCamera.lookAt(0, -.05, 0);
-  const previewFace = buildCharacter(makeTemplateRecipe(config));
-  previewFace.group.position.set(0, -.59 + previewFace.F.B.floorY / U, 0);
-  previewFace.group.scale.setScalar(config.base === 'quad' ? 1.02 : .95);
+  configureRendererForCharacterSystem(templateThumbnailRenderer, activeRenderStyle.character.system);
+  const previewFace = activeRenderStyle.character.system === 'gloss'
+    ? createGlossCharacter(
+      templateThumbnailRenderer,
+      { ...config, templateId: config.id },
+      activeRenderStyle.character.gloss,
+    ).face
+    : buildCharacter(makeTemplateRecipe(config));
+  if (previewFace.kind === 'gloss') {
+    const placement = glossPlacement(previewFace, -.59, config.base === 'quad' ? .88 : .82);
+    previewFace.group.position.set(0, placement.y, 0);
+    previewFace.group.scale.setScalar(placement.scale);
+  } else {
+    previewFace.group.position.set(0, -.59 + previewFace.F.B.floorY / U, 0);
+    previewFace.group.scale.setScalar(config.base === 'quad' ? 1.02 : .95);
+  }
   previewScene.add(previewFace.group);
   templateThumbnailRenderer.render(previewScene, previewCamera);
 

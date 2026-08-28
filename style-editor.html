@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f1ead8">
   <title>画面风格编辑器 · 萌萌星的奇妙图鉴</title>
-  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
-  <link rel="stylesheet" href="./src/style-editor.css?v=20260828-style-editor">
+  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor-v2">
+  <link rel="stylesheet" href="./src/style-editor.css?v=20260828-style-editor-v2">
 </head>
 <body data-analytics-page="style-editor">
   <nav id="style-navigation"></nav>
@@ -14,41 +14,53 @@
   <header class="editor-header">
     <p class="eyebrow">角色模拟器工具</p>
     <h1>画面风格编辑器</h1>
-    <p>把角色的线条、色块、高光、体积阴影和投影调成你想要的样子。每次调整都会直接显示在右边。</p>
+    <p>人物与背景分开调整。你可以先用整排角色检查线条、光影和投影，再单独控制背景的色彩、颗粒与远近感。</p>
   </header>
 
   <main>
-    <section class="editor-workbench" aria-label="画面风格调节区">
-      <aside class="control-panel" aria-labelledby="control-title">
-        <div class="panel-heading">
-          <div>
-            <p class="section-kicker">基础画面元素</p>
-            <h2 id="control-title">手动调整</h2>
-          </div>
-          <button id="reset-current" class="quiet-button" type="button">重置当前</button>
+    <section class="preview-panel" aria-labelledby="preview-title">
+      <div class="preview-heading">
+        <div>
+          <p class="section-kicker">多人实时预览</p>
+          <h2 id="preview-title">一整排角色</h2>
         </div>
-        <div id="style-controls" class="style-controls"></div>
-      </aside>
+        <span id="working-version" class="version-pill">当前柔绘版</span>
+      </div>
+      <div id="preview-scroll" class="preview-scroll" tabindex="0" aria-label="可左右拖动的角色风格预览">
+        <div id="preview-track" class="preview-track">
+          <canvas id="style-preview-background" aria-hidden="true"></canvas>
+          <canvas id="style-preview" aria-label="六个角色的画面风格实时预览"></canvas>
+          <div class="preview-labels" aria-hidden="true">
+            <span>豆豆小狗</span>
+            <span>月牙小猫</span>
+            <span>雪团小兔</span>
+            <span>蜜糖小熊</span>
+            <span>卷尾小狐狸</span>
+            <span>河湾小水獭</span>
+          </div>
+          <p id="preview-loading" class="preview-loading">正在画出整排角色</p>
+        </div>
+      </div>
+      <p class="preview-note">在角色上横向拖动，或使用滚轮查看整排角色。人物参数只重画人物，背景参数只调整背景。</p>
+      <div class="preview-actions">
+        <button id="open-save" class="secondary-button" type="button">保存为我的版本</button>
+        <button id="apply-style" class="primary-button" type="button">应用到角色模拟器</button>
+      </div>
+    </section>
 
-      <section class="preview-panel" aria-labelledby="preview-title">
-        <div class="preview-heading">
-          <div>
-            <p class="section-kicker">实时预览</p>
-            <h2 id="preview-title">豆豆小狗</h2>
-          </div>
-          <span id="working-version" class="version-pill">当前柔绘版</span>
+    <section class="control-panel" aria-labelledby="control-title">
+      <div class="panel-heading">
+        <div>
+          <p class="section-kicker">基础画面元素</p>
+          <h2 id="control-title">手动调整</h2>
         </div>
-        <div class="preview-stage">
-          <div class="preview-horizon" aria-hidden="true"></div>
-          <canvas id="style-preview" aria-label="角色画面风格实时预览"></canvas>
-          <p id="preview-loading" class="preview-loading">正在画出角色</p>
-        </div>
-        <p class="preview-note">拖动参数时会自动转成可编辑版本。应用后，角色模拟器会使用这一套画面风格。</p>
-        <div class="preview-actions">
-          <button id="open-save" class="secondary-button" type="button">保存为社区版本</button>
-          <button id="apply-style" class="primary-button" type="button">应用到角色模拟器</button>
-        </div>
-      </section>
+        <button id="reset-current" class="quiet-button" type="button">重置当前</button>
+      </div>
+      <div class="scope-tabs" role="tablist" aria-label="调整对象">
+        <button class="scope-tab is-active" type="button" role="tab" aria-selected="true" data-style-scope="character">人物风格</button>
+        <button class="scope-tab" type="button" role="tab" aria-selected="false" data-style-scope="background">背景风格</button>
+      </div>
+      <div id="style-controls" class="style-controls"></div>
     </section>
 
     <section class="version-section" aria-labelledby="version-title">
@@ -59,7 +71,8 @@
         </div>
         <div class="version-tabs" role="tablist" aria-label="版本分类">
           <button class="version-tab is-active" type="button" role="tab" aria-selected="true" data-version-filter="official">官方预设</button>
-          <button class="version-tab" type="button" role="tab" aria-selected="false" data-version-filter="community">社区版本</button>
+          <button class="version-tab" type="button" role="tab" aria-selected="false" data-version-filter="github">GitHub 社区</button>
+          <button class="version-tab" type="button" role="tab" aria-selected="false" data-version-filter="custom">我的版本</button>
         </div>
       </div>
       <div id="version-library" class="version-library" aria-live="polite">
@@ -73,7 +86,7 @@
       <div class="dialog-heading">
         <div>
           <p class="section-kicker">存进服务器</p>
-          <h2>保存为社区版本</h2>
+          <h2>保存为我的版本</h2>
         </div>
         <button id="close-save" class="icon-close" type="button" aria-label="关闭保存窗口">×</button>
       </div>
@@ -90,7 +103,7 @@
         <textarea id="style-description" name="description" maxlength="100" rows="3" placeholder="这套风格最特别的地方"></textarea>
       </label>
       <p id="save-status" class="save-status" role="status"></p>
-      <button id="submit-style" class="primary-button" type="submit">保存到社区版本</button>
+      <button id="submit-style" class="primary-button" type="submit">保存到我的版本</button>
     </form>
   </dialog>
 
@@ -98,6 +111,6 @@
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/style-editor.js?v=20260828-style-editor"></script>
+  <script type="module" src="./src/style-editor.js?v=20260828-style-editor-v2"></script>
 </body>
 </html>

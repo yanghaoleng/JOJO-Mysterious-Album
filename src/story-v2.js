@@ -1,10 +1,15 @@
 import * as THREE from 'three';
 import { Sketch } from './sketch.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor';
-import { applyRenderStyleCssVars, loadAppliedRenderStyle } from './render-style-config.js';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor-v2';
+import { applyRenderStyleCssVars, loadAppliedRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
+import {
+  configureRendererForCharacterSystem,
+  createGlossCharacter,
+  glossPlacement,
+} from './gloss-character-renderer.js?v=20260828-style-editor-v2';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
 import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
@@ -26,9 +31,9 @@ installUISFX();
 
 const activeRenderStyle = loadAppliedRenderStyle();
 setRender({ u: 176, frames: 2 });
-setHand((width, height) => activeRenderStyle.engine === 'original'
+setHand((width, height) => activeRenderStyle.character.engine === 'original'
   ? new Sketch(width, height)
-  : new SoftStorySketch(width, height, activeRenderStyle));
+  : new SoftStorySketch(width, height, activeRenderStyle.character));
 applyRenderStyleCssVars(document.documentElement, activeRenderStyle);
 THREE.ColorManagement.enabled = false;
 
@@ -342,7 +347,7 @@ class PetRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(activeRenderStyle.render.quality, Math.max(1, devicePixelRatio || 1)));
+    this.renderer.setPixelRatio(Math.min(activeRenderStyle.character.render.quality, Math.max(1, devicePixelRatio || 1)));
     this.renderer.setClearColor(0x000000, 0);
     this.scene = new THREE.Scene();
     this.camera = new THREE.OrthographicCamera(-2.2, 2.2, 2.5, -1.7, .1, 30);
@@ -413,15 +418,30 @@ class PetRenderer {
     if (this.face) this.face.dispose();
     if (this.holder) this.scene.remove(this.holder);
 
-    this.face = buildCharacter(recipe);
+    configureRendererForCharacterSystem(this.renderer, activeRenderStyle.character.system);
+    if (activeRenderStyle.character.system === 'gloss') {
+      const gloss = createGlossCharacter(this.renderer, recipe, activeRenderStyle.character.gloss);
+      this.face = gloss.face;
+      this.animator = gloss.animator;
+    } else {
+      this.face = buildCharacter(recipe);
+    }
     this.holder = new THREE.Group();
-    this.face.group.position.y = this.face.F.B.floorY / U;
+    if (this.face.kind === 'gloss') {
+      const placement = glossPlacement(this.face, 0, scaleMultiplier * .82);
+      this.face.group.position.y = placement.y;
+      this.face.group.scale.setScalar(placement.scale);
+    } else {
+      this.face.group.position.y = this.face.F.B.floorY / U;
+    }
     this.holder.add(this.face.group);
-    const scale = (2.15 / 1.4) * (.58 / (this.face.F.s / U));
-    this.holder.scale.setScalar(scale * scaleMultiplier);
+    if (this.face.kind !== 'gloss') {
+      const scale = (2.15 / 1.4) * (.58 / (this.face.F.s / U));
+      this.holder.scale.setScalar(scale * scaleMultiplier);
+    }
     this.holder.position.set(0, offsetY, 0);
     this.scene.add(this.holder);
-    this.animator = createAnimator(() => this.face, this.options);
+    if (this.face.kind !== 'gloss') this.animator = createAnimator(() => this.face, this.options);
     this.animator.setPose('idle');
     this.resize();
   }
@@ -455,9 +475,11 @@ class PetRenderer {
 
 function makeStoryGuideRecipe(config) {
   const recipe = newRecipe(config.seed);
+  recipe.templateId = config.id;
+  recipe.group = config.group;
   recipe.species = config.species;
   recipe.base = config.base;
-  recipe.media = activeRenderStyle.media;
+  recipe.media = activeRenderStyle.character.media;
   recipe.color = 'color';
   ensureParams(recipe);
   Object.assign(recipe.parts.extras.params, {

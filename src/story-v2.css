@@ -148,6 +148,18 @@ body[data-phase] .backpack-mark {
 .world-stage::before {
   content: none;
 }
+.world-stage::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--background-tint-overlay, transparent), var(--background-tint-overlay, transparent)),
+    linear-gradient(rgb(241 234 216 / var(--background-haze, 0)), rgb(241 234 216 / var(--background-haze, 0))),
+    radial-gradient(circle, rgb(57 61 51 / calc(var(--background-grain, 0) * .16)) .65px, transparent .75px);
+  background-size: 7px 7px;
+}
 .sky-wash, .ground-wash, .far-shape, .place-object { position: absolute; z-index: 1; pointer-events: none; }
 .sky-wash, .ground-wash, .far-shape { display: none; }
 .sky-wash {
@@ -186,6 +198,14 @@ body[data-phase] .backpack-mark {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  --story-phase-blur: 0px;
+  filter:
+    saturate(var(--background-saturation, 1))
+    brightness(var(--background-brightness, 1))
+    contrast(var(--background-contrast, 1))
+    hue-rotate(var(--background-hue, 0deg))
+    blur(calc(var(--background-blur, 0px) + var(--story-phase-blur)))
+    opacity(var(--background-opacity, 1));
   transition: opacity 420ms ease, filter 420ms ease;
 }
 .scene-prop {
@@ -261,6 +281,13 @@ body[data-phase] .backpack-mark {
   bottom: 0;
   border-top: 3px solid rgb(var(--story-horizon-ink) / .58);
   background: rgb(var(--story-ground-wash) / .96);
+  filter:
+    saturate(var(--background-saturation, 1))
+    brightness(var(--background-brightness, 1))
+    contrast(var(--background-contrast, 1))
+    hue-rotate(var(--background-hue, 0deg))
+    blur(var(--background-blur, 0px))
+    opacity(var(--background-opacity, 1));
   pointer-events: none;
 }
 
@@ -270,7 +297,7 @@ body[data-phase] .backpack-mark {
 .world-stage.has-generated-scenery .place-object { opacity: 0; pointer-events: none; }
 body[data-phase="cover"] .story-scenery { opacity: .74; }
 body[data-phase="interview"] .story-scenery,
-body[data-phase="assignment"] .story-scenery { opacity: .58; filter: blur(.7px); }
+body[data-phase="assignment"] .story-scenery { opacity: .58; --story-phase-blur: .7px; }
 body:not([data-phase="quest"]) .scene-prop.is-interactive { pointer-events: none; }
 
 .place-object {

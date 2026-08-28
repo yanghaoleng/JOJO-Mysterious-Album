@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applyBackgroundCanvasStyle } from './background-style.js?v=20260828-style-editor-v2';
 import { PAPER, PR, Sketch } from './sketch.js';
 import { hashStr } from './rng.js';
 
@@ -296,9 +297,10 @@ function renderCanvas(width, height, id) {
   return s.canvas;
 }
 
-export function createSceneBackdrop(id) {
+export function createSceneBackdrop(id, backgroundStyle) {
   const config = sceneById(id);
   const canvas = renderCanvas(1024, 768, config.id);
+  applyBackgroundCanvasStyle(canvas, backgroundStyle);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false });
@@ -314,8 +316,9 @@ export function createSceneBackdrop(id) {
   return mesh;
 }
 
-export function paintSceneThumbnail(canvas, id) {
+export function paintSceneThumbnail(canvas, id, backgroundStyle) {
   const rendered = renderCanvas(Math.max(260, canvas.width || 260), Math.max(160, canvas.height || 160), id);
+  applyBackgroundCanvasStyle(rendered, backgroundStyle);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(rendered, 0, 0, canvas.width, canvas.height);

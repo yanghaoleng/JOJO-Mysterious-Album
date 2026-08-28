@@ -120,39 +120,132 @@ CHARACTER_SCENE_KEYWORDS = (
     (r"被窝|毯子|帐篷", "blanket-fort"), (r"口袋", "giant-pocket"), (r"舞台|表演|音乐", "music-stage"),
     (r"纸上|空白场景|简单场景", "paper-ground"),
 )
-RENDER_STYLE_DEFAULTS = {
-    "schemaVersion": 1,
-    "engine": "soft",
-    "media": "storybook",
+CURRENT_CHARACTER_STYLE = {
+    "system": "drawn", "engine": "soft", "media": "storybook",
     "stroke": {"smoothness": .72, "wobble": .36, "width": 1, "opacity": .82, "softWidth": 1.5, "softOpacity": .18, "grain": 0},
     "fill": {"opacity": 1, "saturation": 1, "brightness": 1},
     "highlight": {"strength": .3, "size": .88, "x": .34, "y": .12, "spread": .48, "gloss": .18},
     "formShadow": {"strength": .2, "start": .38, "darkness": .68},
     "castShadow": {"opacity": .24, "offsetX": 13, "offsetY": 16, "blur": 10, "scale": 1.06},
     "render": {"quality": 2},
+    "gloss": {"material": "glossy", "palette": "meadow", "detail": .5, "turn": 0},
 }
-ORIGINAL_RENDER_STYLE = {
-    "schemaVersion": 1,
-    "engine": "original",
-    "media": "watercolor",
+ORIGINAL_CHARACTER_STYLE = {
+    "system": "drawn", "engine": "original", "media": "watercolor",
     "stroke": {"smoothness": 0, "wobble": 1, "width": .8, "opacity": .62, "softWidth": 1, "softOpacity": 0, "grain": .72},
     "fill": {"opacity": .72, "saturation": .9, "brightness": 1},
     "highlight": {"strength": 0, "size": .88, "x": .34, "y": .12, "spread": .48, "gloss": 0},
     "formShadow": {"strength": 0, "start": .38, "darkness": .68},
     "castShadow": {"opacity": 0, "offsetX": 0, "offsetY": 0, "blur": 0, "scale": 1},
     "render": {"quality": 1.5},
+    "gloss": {"material": "glossy", "palette": "meadow", "detail": .5, "turn": 0},
 }
+CURRENT_BACKGROUND_STYLE = {
+    "color": {"saturation": .94, "brightness": 1.02, "contrast": .96, "hue": 0, "tint": "#f1ead8", "tintStrength": 0},
+    "paint": {"opacity": 1, "grain": .08},
+    "depth": {"haze": .035, "blur": 0},
+}
+ORIGINAL_BACKGROUND_STYLE = {
+    "color": {"saturation": 1, "brightness": 1, "contrast": 1, "hue": 0, "tint": "#f1ead8", "tintStrength": 0},
+    "paint": {"opacity": 1, "grain": 0},
+    "depth": {"haze": 0, "blur": 0},
+}
+RENDER_STYLE_DEFAULTS = {
+    "schemaVersion": 3,
+    "character": CURRENT_CHARACTER_STYLE,
+    "background": CURRENT_BACKGROUND_STYLE,
+}
+ORIGINAL_RENDER_STYLE = {
+    "schemaVersion": 3,
+    "character": ORIGINAL_CHARACTER_STYLE,
+    "background": ORIGINAL_BACKGROUND_STYLE,
+}
+DRAWN_MEDIA_IDS = {
+    "storybook", "watercolor", "graphite", "ink", "oil", "chalk", "marker",
+    "gothic", "renaissance", "baroque", "ukiyoe", "impressionism",
+    "expressionism", "cubism", "dadaism", "surrealism",
+}
+GLOSS_MATERIAL_IDS = {"glossy", "rubber", "ceramic", "pearl", "flocked", "wood", "wool", "resin", "chrome", "crazed", "skin"}
+GLOSS_PALETTE_IDS = {"dusk", "meadow", "harbour", "denim", "mist", "bloom", "orchard", "lagoon", "melon", "ember", "moss", "apricot", "skin"}
 RENDER_STYLE_LIMITS = {
-    "stroke.smoothness": (0, 1), "stroke.wobble": (0, 1), "stroke.width": (.55, 1.8),
-    "stroke.opacity": (.25, 1), "stroke.softWidth": (1, 2.6), "stroke.softOpacity": (0, .5),
-    "stroke.grain": (0, 1), "fill.opacity": (.4, 1), "fill.saturation": (.45, 1.45),
-    "fill.brightness": (.72, 1.3), "highlight.strength": (0, .65), "highlight.size": (.25, 1.4),
-    "highlight.x": (0, 1), "highlight.y": (0, 1), "highlight.spread": (.1, .85),
-    "highlight.gloss": (0, .45), "formShadow.strength": (0, .55), "formShadow.start": (0, .8),
-    "formShadow.darkness": (.35, .95), "castShadow.opacity": (0, .5), "castShadow.offsetX": (-24, 30),
-    "castShadow.offsetY": (-12, 34), "castShadow.blur": (0, 24), "castShadow.scale": (.82, 1.3),
-    "render.quality": (1, 2.5),
+    "character.stroke.smoothness": (0, 1), "character.stroke.wobble": (0, 1), "character.stroke.width": (.55, 1.8),
+    "character.stroke.opacity": (.25, 1), "character.stroke.softWidth": (1, 2.6), "character.stroke.softOpacity": (0, .5),
+    "character.stroke.grain": (0, 1), "character.fill.opacity": (.4, 1), "character.fill.saturation": (.45, 1.45),
+    "character.fill.brightness": (.72, 1.3), "character.highlight.strength": (0, .65), "character.highlight.size": (.25, 1.4),
+    "character.highlight.x": (0, 1), "character.highlight.y": (0, 1), "character.highlight.spread": (.1, .85),
+    "character.highlight.gloss": (0, .45), "character.formShadow.strength": (0, .55), "character.formShadow.start": (0, .8),
+    "character.formShadow.darkness": (.35, .95), "character.castShadow.opacity": (0, .5), "character.castShadow.offsetX": (-24, 30),
+    "character.castShadow.offsetY": (-12, 34), "character.castShadow.blur": (0, 24), "character.castShadow.scale": (.82, 1.3),
+    "character.render.quality": (1, 2.5), "character.gloss.detail": (.25, .75), "character.gloss.turn": (-.45, .45),
+    "background.color.saturation": (.4, 1.5), "background.color.brightness": (.75, 1.3),
+    "background.color.contrast": (.65, 1.4), "background.color.hue": (-30, 30),
+    "background.color.tintStrength": (0, .72), "background.paint.opacity": (.45, 1),
+    "background.paint.grain": (0, .6), "background.depth.haze": (0, .45), "background.depth.blur": (0, 3),
 }
+STYLE_SOURCE_COMMIT = "5857b1e1cae2713d6714ad7dd7f89626bb242f0f"
+STYLE_SOURCE_ROOT = "https://github.com/albertobeiz/kindergrimm"
+SOURCE_STYLE_AUDIT = {
+    "sourceRepo": "albertobeiz/kindergrimm",
+    "sourceUrl": f"{STYLE_SOURCE_ROOT}/tree/{STYLE_SOURCE_COMMIT}/src/styles",
+    "stylesPage": "https://kindergrimm.vercel.app/styles",
+    "glossPage": "https://kindergrimm.vercel.app/gloss",
+    "checkedAt": "2026-08-28",
+    "presetCount": 10,
+    "message": "已从上游 /styles 收录 9 套 2D 风格，并从 /gloss 收录 1 套独立 3D 风格。",
+}
+
+STYLE_MOVEMENTS = (
+    ("gothic", "哥特画板", "1310", "#faf8f1", .14, .78, 1.04, 1.12, .08, 0, 0, "明亮石膏底、宝石色与清楚轮廓。"),
+    ("renaissance", "文艺复兴", "1500", "#ba9e76", .24, .84, .93, 1.10, .18, .03, 0, "赭色底、古典体积与温暖明暗。"),
+    ("baroque", "巴洛克暗光", "1620", "#764c3a", .45, .72, .82, 1.28, .12, .02, .12, "深色画底和强烈聚光形成戏剧感。"),
+    ("ukiyoe", "浮世绘", "1830", "#f0e7cd", .25, .88, 1.02, .95, .14, 0, 0, "和纸底、平涂色块与木版线条。"),
+    ("impressionism", "印象派日光", "1874", "#fcfaf4", .10, 1.18, 1.08, .92, .08, .02, 0, "高明度、断续色触与带颜色的阴影。"),
+    ("expressionism", "表现主义木刻", "1910", "#e9e2d2", .20, 1.15, .96, 1.25, .22, .02, .06, "粗砺木刻痕迹和更强烈的情绪色彩。"),
+    ("cubism", "立体主义", "1911", "#bab9a7", .25, .62, .96, 1.16, .16, .02, 0, "低饱和画布与几何切面。"),
+    ("dadaism", "达达拼贴", "1918", "#e7dab7", .26, .75, .98, 1.18, .32, .02, .04, "旧纸张、拼贴痕迹与偶然构成。"),
+    ("surrealism", "超现实主义", "1929", "#e2e3dd", .15, .92, 1.02, 1.08, .10, .10, .20, "平滑画底、冷静体积与梦境空气。"),
+)
+
+
+def copied_style(value):
+    return json.loads(json.dumps(value))
+
+
+def movement_style_config(row):
+    style_id, _, _, tint, tint_strength, saturation, brightness, contrast, grain, haze, blur, _ = row
+    config = copied_style(ORIGINAL_RENDER_STYLE)
+    config["character"]["system"] = "drawn"
+    config["character"]["engine"] = "original"
+    config["character"]["media"] = style_id
+    config["background"]["color"].update({
+        "tint": tint, "tintStrength": tint_strength, "saturation": saturation,
+        "brightness": brightness, "contrast": contrast,
+    })
+    config["background"]["paint"]["grain"] = grain
+    config["background"]["depth"].update({"haze": haze, "blur": blur})
+    return config
+
+
+GITHUB_RENDER_STYLE_PRESETS = []
+for movement in STYLE_MOVEMENTS:
+    style_id, name, era, *_, description = movement
+    GITHUB_RENDER_STYLE_PRESETS.append({
+        "id": f"github-{style_id}", "name": name, "author": "albertobeiz",
+        "description": f"{era} · {description}", "config": movement_style_config(movement),
+        "source_repo": "albertobeiz/kindergrimm",
+        "source_url": f"{STYLE_SOURCE_ROOT}/blob/{STYLE_SOURCE_COMMIT}/src/styles/{style_id}.js",
+        "source_commit": STYLE_SOURCE_COMMIT, "source_files": f"src/styles/{style_id}.js",
+    })
+gloss_style = copied_style(RENDER_STYLE_DEFAULTS)
+gloss_style["character"]["system"] = "gloss"
+gloss_style["background"]["color"].update({"saturation": .96, "contrast": 1.04})
+GITHUB_RENDER_STYLE_PRESETS.append({
+    "id": "github-gloss-3d", "name": "Gloss 3D 塑形版", "author": "albertobeiz",
+    "description": "独立的 3D 几何、材质与表情体系。启用后，角色模拟器和故事角色会一起切换。",
+    "config": gloss_style, "source_repo": "albertobeiz/kindergrimm",
+    "source_url": f"{STYLE_SOURCE_ROOT}/tree/{STYLE_SOURCE_COMMIT}/src/gloss",
+    "source_commit": STYLE_SOURCE_COMMIT, "source_files": "src/gloss",
+})
 TTS_VOICES = {
     "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.94, "pitch": 1.04, "speaker": "ICL_zh_female_keainvsheng_tob"},
     "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.08, "speaker": "ICL_zh_female_tiaopigongzhu_tob"},
@@ -220,12 +313,25 @@ def init_analytics():
                 config_json TEXT NOT NULL,
                 category TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
-                creator_key TEXT NOT NULL DEFAULT ''
+                creator_key TEXT NOT NULL DEFAULT '',
+                source_repo TEXT NOT NULL DEFAULT '',
+                source_url TEXT NOT NULL DEFAULT '',
+                source_commit TEXT NOT NULL DEFAULT '',
+                source_files TEXT NOT NULL DEFAULT ''
             );
             CREATE INDEX IF NOT EXISTS idx_render_styles_category_created
                 ON render_style_versions(category, created_at DESC);
             """
         )
+        existing_style_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(render_style_versions)")
+        }
+        for column in ("source_repo", "source_url", "source_commit", "source_files"):
+            if column not in existing_style_columns:
+                connection.execute(
+                    f"ALTER TABLE render_style_versions ADD COLUMN {column} TEXT NOT NULL DEFAULT ''"
+                )
+        connection.execute("UPDATE render_style_versions SET category = 'custom' WHERE category = 'community'")
         official_versions = (
             (
                 "original", "最初手绘版", "萌萌星", "保留最初的水彩、颗粒和不规则笔触。",
@@ -250,6 +356,31 @@ def init_analytics():
             """,
             official_versions,
         )
+        github_versions = [(
+            preset["id"], preset["name"], preset["author"], preset["description"],
+            json.dumps(preset["config"], ensure_ascii=False, separators=(",", ":")),
+            100 + index, preset["source_repo"], preset["source_url"],
+            preset["source_commit"], preset["source_files"],
+        ) for index, preset in enumerate(GITHUB_RENDER_STYLE_PRESETS)]
+        connection.executemany(
+            """
+            INSERT INTO render_style_versions (
+                style_id, name, author, description, config_json, category, created_at,
+                creator_key, source_repo, source_url, source_commit, source_files
+            ) VALUES (?, ?, ?, ?, ?, 'github', ?, '', ?, ?, ?, ?)
+            ON CONFLICT(style_id) DO UPDATE SET
+                name = excluded.name,
+                author = excluded.author,
+                description = excluded.description,
+                config_json = excluded.config_json,
+                category = 'github',
+                source_repo = excluded.source_repo,
+                source_url = excluded.source_url,
+                source_commit = excluded.source_commit,
+                source_files = excluded.source_files
+            """,
+            github_versions,
+        )
 
 
 def nested_value(value, path):
@@ -272,11 +403,32 @@ def set_nested_value(value, path, next_value):
 def sanitize_render_style_config(value):
     if not isinstance(value, dict):
         raise ValueError("invalid_style_config")
-    normalized = json.loads(json.dumps(RENDER_STYLE_DEFAULTS))
-    normalized["engine"] = "original" if value.get("engine") == "original" else "soft"
-    normalized["media"] = "watercolor" if normalized["engine"] == "original" else "storybook"
+    if isinstance(value.get("character"), dict) and isinstance(value.get("background"), dict):
+        source = value
+    else:
+        source = {
+            "character": value,
+            "background": ORIGINAL_BACKGROUND_STYLE if value.get("engine") == "original" else CURRENT_BACKGROUND_STYLE,
+        }
+    normalized = copied_style(RENDER_STYLE_DEFAULTS)
+    character = source.get("character", {})
+    background = source.get("background", {})
+    normalized["character"]["system"] = "gloss" if character.get("system") == "gloss" else "drawn"
+    normalized["character"]["engine"] = "original" if character.get("engine") == "original" else "soft"
+    requested_media = str(character.get("media", ""))
+    normalized["character"]["media"] = requested_media if requested_media in DRAWN_MEDIA_IDS else (
+        "watercolor" if normalized["character"]["engine"] == "original" else "storybook"
+    )
+    gloss = character.get("gloss") if isinstance(character.get("gloss"), dict) else {}
+    material = str(gloss.get("material", ""))
+    palette = str(gloss.get("palette", ""))
+    normalized["character"]["gloss"]["material"] = material if material in GLOSS_MATERIAL_IDS else "glossy"
+    normalized["character"]["gloss"]["palette"] = palette if palette in GLOSS_PALETTE_IDS else "meadow"
+    color = background.get("color") if isinstance(background.get("color"), dict) else {}
+    tint = str(color.get("tint", "")).lower()
+    normalized["background"]["color"]["tint"] = tint if re.fullmatch(r"#[0-9a-f]{6}", tint) else "#f1ead8"
     for path, (minimum, maximum) in RENDER_STYLE_LIMITS.items():
-        candidate = nested_value(value, path)
+        candidate = nested_value(source, path)
         if isinstance(candidate, bool) or not isinstance(candidate, (int, float)):
             candidate = nested_value(RENDER_STYLE_DEFAULTS, path)
         candidate = float(candidate)
@@ -291,7 +443,7 @@ def clean_style_text(value, maximum):
 
 
 def render_style_record(row):
-    return {
+    record = {
         "id": row["style_id"],
         "name": row["name"],
         "author": row["author"],
@@ -300,15 +452,26 @@ def render_style_record(row):
         "createdAt": row["created_at"],
         "config": sanitize_render_style_config(json.loads(row["config_json"])),
     }
+    if row["source_url"]:
+        record["source"] = {
+            "repo": row["source_repo"],
+            "url": row["source_url"],
+            "commit": row["source_commit"],
+            "files": row["source_files"],
+        }
+    return record
 
 
 def list_render_style_versions():
     with analytics_connection() as connection:
         rows = connection.execute(
             """
-            SELECT style_id, name, author, description, config_json, category, created_at
+            SELECT style_id, name, author, description, config_json, category, created_at,
+                   source_repo, source_url, source_commit, source_files
             FROM render_style_versions
-            ORDER BY CASE category WHEN 'official' THEN 0 ELSE 1 END, created_at DESC
+            ORDER BY CASE category WHEN 'official' THEN 0 WHEN 'github' THEN 1 ELSE 2 END,
+                     CASE WHEN category = 'github' THEN created_at END ASC,
+                     CASE WHEN category != 'github' THEN created_at END DESC
             """
         ).fetchall()
     return [render_style_record(row) for row in rows]
@@ -325,7 +488,7 @@ def create_render_style_version(payload, client):
     config = sanitize_render_style_config(payload.get("config"))
     creator_key = hashlib.sha256(str(client).encode("utf-8")).hexdigest()
     now_ms = int(time.time() * 1000)
-    style_id = f"community-{uuid.uuid4().hex[:12]}"
+    style_id = f"custom-{uuid.uuid4().hex[:12]}"
     config_json = json.dumps(config, ensure_ascii=False, separators=(",", ":"))
     with analytics_connection() as connection:
         recent = connection.execute(
@@ -338,12 +501,13 @@ def create_render_style_version(payload, client):
             """
             INSERT INTO render_style_versions (
                 style_id, name, author, description, config_json, category, created_at, creator_key
-            ) VALUES (?, ?, ?, ?, ?, 'community', ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, 'custom', ?, ?)
             """,
             (style_id, name, author, description, config_json, now_ms, creator_key),
         )
         row = connection.execute(
-            """SELECT style_id, name, author, description, config_json, category, created_at
+            """SELECT style_id, name, author, description, config_json, category, created_at,
+                      source_repo, source_url, source_commit, source_files
                FROM render_style_versions WHERE style_id = ?""",
             (style_id,),
         ).fetchone()
@@ -1255,7 +1419,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             self.respond_json(200, analytics_summary(range_value))
             return
         if path == "/api/render-styles":
-            self.respond_json(200, {"styles": list_render_style_versions()})
+            self.respond_json(200, {"styles": list_render_style_versions(), "sourceAudit": SOURCE_STYLE_AUDIT})
             return
         super().do_GET()
 

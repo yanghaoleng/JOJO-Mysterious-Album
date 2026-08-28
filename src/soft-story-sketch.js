@@ -1,12 +1,12 @@
 import { Sketch, chaikin } from './sketch.js';
-import { CURRENT_RENDER_STYLE, normalizeRenderStyle } from './render-style-config.js';
+import { CURRENT_RENDER_STYLE, normalizeRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
 
 const clamp = value => Math.max(0, Math.min(255, Math.round(value)));
 
 export class SoftStorySketch extends Sketch {
   constructor(width, height, renderStyle = CURRENT_RENDER_STYLE) {
     super(width, height);
-    this.renderStyle = normalizeRenderStyle(renderStyle);
+    this.renderStyle = normalizeRenderStyle(renderStyle).character;
   }
 
   blobPts(cx, cy, rx, ry, rot, wob = 1) {
