@@ -599,7 +599,7 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
 .guide-encounter {
   position: relative;
   width: 100%;
-  min-height: 465px;
+  min-height: 0;
   display: flow-root;
 }
 .guide-speech {
@@ -633,22 +633,25 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   line-height: 1.6;
 }
 .guide-figure {
-  position: relative;
-  width: min(320px, 72vw);
-  height: 304px;
-  margin: 18px auto 0;
+  position: fixed;
+  z-index: 8;
+  top: calc(64dvh + 6px);
+  left: clamp(18px, 13vw, 160px);
+  width: min(260px, 28vw);
+  height: min(220px, calc(36dvh - 12px));
+  margin: 0;
   cursor: pointer;
 }
 #guide-canvas {
   width: 100%;
-  height: 270px;
+  height: calc(100% - 28px);
   display: block;
   filter: drop-shadow(var(--character-shadow-x, 13px) var(--character-shadow-y, 16px) var(--character-shadow-blur, 10px) var(--character-shadow-color, rgba(42, 61, 48, .24)));
 }
 .guide-nameplate {
   position: absolute;
   z-index: 4;
-  top: 258px;
+  top: calc(100% - 30px);
   left: 50%;
   width: min(310px, 82vw);
   text-align: center;
@@ -692,10 +695,32 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   pointer-events: none;
 }
 .voice-dock > * { pointer-events: auto; }
+body[data-phase="interview"] .voice-dock {
+  left: 0;
+  right: 0;
+  width: auto;
+  justify-items: end;
+  padding-right: clamp(14px, 10vw, 136px);
+  transform: none;
+}
+body[data-phase="interview"] .live-answer-bubble {
+  position: fixed;
+  top: min(42dvh, 292px);
+  left: 50%;
+  margin: 0;
+  translate: -50% 0;
+}
 .guide-mic { --voice-control-ink: var(--moss-deep); }
 .voice-dock[data-voice-state="complete"] { opacity: .76; }
 .guide-mic:disabled { cursor: wait; opacity: .78; }
-.heard-notes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+.heard-notes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  max-width: 620px;
+  margin: 13px auto 0;
+}
 .user-input-record {
   --bubble-max-width: min(320px, calc(100vw - 28px));
   --bubble-min-height: 34px;
@@ -945,14 +970,24 @@ body[data-phase="interview"] .far-shape { opacity: .28; }
   .paper-panel { width: calc(100% - 20px); padding: 21px 18px; border-radius: 23px 18px 26px 19px; }
   .cover-copy, .assignment-panel > p, .ritual-panel > p, .ending-copy { font-size: 14px; }
   .conversation-panel { width: 100%; padding: 100px 10px max(40px, env(safe-area-inset-bottom)); }
-  .guide-encounter { min-height: 385px; }
+  .guide-encounter { min-height: 0; }
   .guide-speech { --bubble-max-width: calc(100vw - 32px); --bubble-min-height: 58px; --bubble-padding-block: 16px; --bubble-padding-inline: 16px; --bubble-font-size: 20px; }
-  .guide-figure { width: 250px; height: 242px; margin-top: 8px; }
-  #guide-canvas { height: 216px; }
-  .guide-nameplate { top: 207px; }
+  .guide-figure {
+    top: calc(65dvh + 6px);
+    left: 8px;
+    width: min(220px, 55vw);
+    height: min(246px, calc(35dvh - 12px));
+  }
+  #guide-canvas { height: calc(100% - 28px); }
+  .guide-nameplate { top: calc(100% - 30px); }
   .live-answer-bubble { width: min(320px, calc(100% - 16px)); }
-  .heard-notes { justify-content: center; margin: -7px auto 105px; max-width: calc(100% - 20px); }
+  .heard-notes { margin: 10px auto 0; max-width: calc(100% - 20px); }
   .voice-dock { width: calc(100% - 18px); bottom: max(7px, env(safe-area-inset-bottom)); padding-bottom: 7px; }
+  body[data-phase="interview"] .voice-dock { right: 8px; width: auto; padding-right: 0; }
+  body[data-phase="interview"] .live-answer-bubble {
+    top: min(39dvh, 300px);
+    width: min(320px, calc(100vw - 32px));
+  }
   .quest-panel { top: 102px; left: 10px; width: min(300px, calc(100% - 20px)); padding: 12px 14px; }
   .quest-panel .scene-heading h2 { font-size: 23px; }
   .quest-panel .scene-heading > p { display: none; }
