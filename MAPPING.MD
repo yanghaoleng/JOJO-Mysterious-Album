@@ -18,7 +18,7 @@
 | 成长报告、图鉴页、结算页 | 冒险结果 | `#ending` | 总结创作、数感、推理和情绪概念 |
 | 收进图鉴 | 本机保存 | `#save-card`、`mengmeng-atlas` | 只写入当前浏览器 `localStorage` |
 | 自由想法、AI 输入 | 世界导演入口 | `#custom-idea-form`、`/api/director` | 只有此处把能力描述发给服务端配置的世界导演模型 |
-| 右上角音效、音效开关 | 非语言界面音效总开关 | `#ui-sfx-toggle`、`uiSFX`、`jojo-mysterious-album:ui-sfx` | 只控制 UISFX，不关闭豆包/Fish 角色语音；偏好跨页面保存 |
+| 默认界面音效 | 非语言界面音效 | `uiSFX`、`playUISFX()` | 默认常开，不提供关闭开关；不影响豆包/Fish 角色语音 |
 | Organic 音效、交互声音 | 全站语义音效系统 | `src/ui-sfx.js`、`vendor/uisfx.js`、`playUISFX()` | 不做悬停音；选择、导航、开合、奖励、完成和错误按语义触发 |
 | 音效标记、这个按钮用什么声音 | 声明式音效覆盖 | `data-uisfx`、`inferCue()` | `data-uisfx="none"` 表示刻意静音；复制、保存等异步结果由成功后显式触发 |
 | 开始听、暂停听的提示音 | 语音会话边界提示 | `startGuideVoiceSession()`、`toggleGuideVoice()`、`start/stop` | 只在人为开始或暂停时响一次，连续收音和 AI 理解期间保持安静 |

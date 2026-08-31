@@ -1,17 +1,17 @@
 import * as THREE from 'three';
 import { Sketch } from './sketch.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor-v2';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260831-default-drawn';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { paintSceneThumbnail } from './lab-scenes.js?v=20260828-style-editor-v2';
+import { paintSceneThumbnail } from './lab-scenes.js?v=20260831-default-drawn';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor-v2';
 import { trackAnalytics } from './analytics.js';
 import {
   configureRendererForCharacterSystem,
   createGlossCharacter,
-} from './gloss-character-renderer.js?v=20260828-style-editor-v2';
+} from './gloss-character-renderer.js?v=20260831-default-drawn';
 import {
   CURRENT_RENDER_STYLE,
   ORIGINAL_RENDER_STYLE,
@@ -21,10 +21,10 @@ import {
   loadAppliedRenderStyle,
   normalizeRenderStyle,
   saveAppliedRenderStyle,
-} from './render-style-config.js?v=20260828-style-editor-v2';
+} from './render-style-config.js?v=20260831-default-drawn';
 
 const $ = id => document.getElementById(id);
-const META_STORAGE_KEY = 'mengmeng-render-style-meta-v1';
+const META_STORAGE_KEY = 'mengmeng-render-style-meta-v2';
 const SOURCE_COMMIT = '5857b1e1cae2713d6714ad7dd7f89626bb242f0f';
 const SOURCE_ROOT = 'https://github.com/albertobeiz/kindergrimm';
 const PREVIEW_TEMPLATES = ['bean-dog', 'moon-cat', 'snow-rabbit', 'honey-bear', 'curl-fox', 'river-otter'];
@@ -187,9 +187,9 @@ function githubFallbackVersions() {
 function appliedVersionName() {
   try {
     const value = JSON.parse(localStorage.getItem(META_STORAGE_KEY) || 'null');
-    return String(value?.name || '').trim().slice(0, 28) || '当前柔绘版';
+    return String(value?.name || '').trim().slice(0, 28) || '默认手绘版';
   } catch {
-    return '当前柔绘版';
+    return '默认手绘版';
   }
 }
 
@@ -656,7 +656,7 @@ async function loadVersions() {
     sourceAudit = payload.sourceAudit || payload.githubAudit || null;
   } catch {
     versions = [
-      { id: 'original', name: '最初手绘版', author: '萌萌星', description: '保留最初的水彩、颗粒和不规则笔触。', category: 'official', config: ORIGINAL_RENDER_STYLE },
+      { id: 'original', name: '默认手绘版', author: '萌萌星', description: '保留水彩、颗粒和不规则笔触。', category: 'official', config: ORIGINAL_RENDER_STYLE },
       { id: 'current-soft', name: '当前柔绘版', author: '萌萌星', description: '圆润线条、柔和高光、体积阴影和朝后投影。', category: 'official', config: CURRENT_RENDER_STYLE },
       ...githubFallbackVersions(),
     ];
@@ -763,10 +763,11 @@ $('reset-current').addEventListener('click', () => {
 
 $('apply-style').addEventListener('click', () => {
   saveAppliedRenderStyle(draftStyle);
-  try { localStorage.setItem(META_STORAGE_KEY, JSON.stringify({ name: sourceName, appliedAt: Date.now() })); } catch { /* no metadata */ }
+  const appliedAt = Date.now();
+  try { localStorage.setItem(META_STORAGE_KEY, JSON.stringify({ name: sourceName, appliedAt })); } catch { /* no metadata */ }
   trackAnalytics('style_apply_to_lab', { depth: 5 });
-  showToast('已经应用，正在返回角色模拟器');
-  setTimeout(() => { location.href = './?mode=debug'; }, 420);
+  showToast('已应用到角色模拟器和故事');
+  setTimeout(() => { location.href = `./?mode=debug&style=${appliedAt}`; }, 420);
 });
 
 $('open-save').addEventListener('click', () => {

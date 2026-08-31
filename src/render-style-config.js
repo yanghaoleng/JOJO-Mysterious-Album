@@ -1,4 +1,4 @@
-export const RENDER_STYLE_STORAGE_KEY = 'mengmeng-render-style-v1';
+export const RENDER_STYLE_STORAGE_KEY = 'mengmeng-render-style-v2';
 
 export const DRAWN_MEDIA_IDS = Object.freeze([
   'storybook', 'watercolor', 'graphite', 'ink', 'oil', 'chalk', 'marker',
@@ -66,6 +66,8 @@ export const CURRENT_RENDER_STYLE = Object.freeze({
   background: CURRENT_BACKGROUND_STYLE,
 });
 
+export const DEFAULT_RENDER_STYLE = ORIGINAL_RENDER_STYLE;
+
 const LIMITS = Object.freeze({
   'character.stroke.smoothness': [0, 1],
   'character.stroke.wobble': [0, 1],
@@ -115,7 +117,7 @@ const setPath = (object, path, value) => {
 };
 
 function sourceFor(value) {
-  const source = value && typeof value === 'object' ? value : CURRENT_RENDER_STYLE;
+  const source = value && typeof value === 'object' ? value : DEFAULT_RENDER_STYLE;
   if (source.character && source.background) return source;
   return {
     schemaVersion: 1,
@@ -131,7 +133,7 @@ function normalizedHex(value, fallback) {
 
 export function normalizeRenderStyle(value) {
   const source = sourceFor(value);
-  const normalized = copy(CURRENT_RENDER_STYLE);
+  const normalized = copy(DEFAULT_RENDER_STYLE);
   const character = source.character || {};
   normalized.character.system = character.system === 'gloss' ? 'gloss' : 'drawn';
   normalized.character.engine = character.engine === 'original' ? 'original' : 'soft';
@@ -143,10 +145,10 @@ export function normalizeRenderStyle(value) {
   const requestedPalette = String(character.gloss?.palette || '');
   normalized.character.gloss.material = GLOSS_MATERIAL_IDS.includes(requestedMaterial) ? requestedMaterial : 'glossy';
   normalized.character.gloss.palette = GLOSS_PALETTE_IDS.includes(requestedPalette) ? requestedPalette : 'meadow';
-  normalized.background.color.tint = normalizedHex(source.background?.color?.tint, CURRENT_BACKGROUND_STYLE.color.tint);
+  normalized.background.color.tint = normalizedHex(source.background?.color?.tint, DEFAULT_RENDER_STYLE.background.color.tint);
   for (const [path, [minimum, maximum]] of Object.entries(LIMITS)) {
     const candidate = Number(getPath(source, path));
-    const fallback = getPath(CURRENT_RENDER_STYLE, path);
+    const fallback = getPath(DEFAULT_RENDER_STYLE, path);
     setPath(normalized, path, Math.max(minimum, Math.min(maximum, Number.isFinite(candidate) ? candidate : fallback)));
   }
   return normalized;
@@ -155,9 +157,9 @@ export function normalizeRenderStyle(value) {
 export function loadAppliedRenderStyle(storage = globalThis.localStorage) {
   try {
     const value = storage?.getItem(RENDER_STYLE_STORAGE_KEY);
-    return value ? normalizeRenderStyle(JSON.parse(value)) : normalizeRenderStyle(CURRENT_RENDER_STYLE);
+    return value ? normalizeRenderStyle(JSON.parse(value)) : normalizeRenderStyle(DEFAULT_RENDER_STYLE);
   } catch {
-    return normalizeRenderStyle(CURRENT_RENDER_STYLE);
+    return normalizeRenderStyle(DEFAULT_RENDER_STYLE);
   }
 }
 
@@ -194,7 +196,7 @@ export function applyRenderStyleCssVars(root, value) {
   root.style.setProperty('--background-blur', `${background.depth.blur}px`);
 }
 
-export function cloneRenderStyle(value = CURRENT_RENDER_STYLE) {
+export function cloneRenderStyle(value = DEFAULT_RENDER_STYLE) {
   return normalizeRenderStyle(value);
 }
 

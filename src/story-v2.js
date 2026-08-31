@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { Sketch } from './sketch.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor-v2';
-import { applyRenderStyleCssVars, loadAppliedRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260831-default-drawn';
+import { applyRenderStyleCssVars, loadAppliedRenderStyle, RENDER_STYLE_STORAGE_KEY } from './render-style-config.js?v=20260831-default-drawn';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import {
@@ -14,7 +14,7 @@ import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPL
 import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
-import { installUISFX, playUISFX } from './ui-sfx.js';
+import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
@@ -30,6 +30,9 @@ import {
 installUISFX();
 
 const activeRenderStyle = loadAppliedRenderStyle();
+document.documentElement.dataset.renderSystem = activeRenderStyle.character.system;
+document.documentElement.dataset.renderEngine = activeRenderStyle.character.engine;
+document.documentElement.dataset.renderMedia = activeRenderStyle.character.media;
 setRender({ u: 176, frames: 2 });
 setHand((width, height) => activeRenderStyle.character.engine === 'original'
   ? new Sketch(width, height)
@@ -1690,7 +1693,6 @@ $('backpack-dialog').addEventListener('click', event => {
 $('save-ending').addEventListener('click', saveEnding);
 mountAppNavigation($('story-navigation'), {
   homeHref: './',
-  onRestart: () => location.reload(),
 });
 
 renderStoryScenery(SCENES[0]);
@@ -1699,11 +1701,14 @@ addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
 });
+addEventListener('storage', event => {
+  if (event.key === RENDER_STYLE_STORAGE_KEY) location.reload();
+});
 updateBackpack();
 setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
-  state, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
+  state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
   beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
 };

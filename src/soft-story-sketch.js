@@ -1,5 +1,5 @@
 import { Sketch, chaikin } from './sketch.js';
-import { CURRENT_RENDER_STYLE, normalizeRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
+import { CURRENT_RENDER_STYLE, normalizeRenderStyle } from './render-style-config.js?v=20260831-default-drawn';
 
 const clamp = value => Math.max(0, Math.min(255, Math.round(value)));
 

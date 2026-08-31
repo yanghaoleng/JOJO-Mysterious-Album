@@ -1,4 +1,4 @@
-import { installUISFX, playUISFX } from './ui-sfx.js';
+import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 
 installUISFX();
@@ -18,7 +18,7 @@ mountAppNavigation(navigationSlot, {
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260828-style-editor-v2'),
+    import('./lab.js?v=20260831-default-drawn'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;
