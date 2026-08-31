@@ -1,5 +1,5 @@
 const QUESTION_FIELDS = new Set(['appearance', 'color', 'companion']);
-const SCENE_IDS = new Set(['paper-harbor', 'whisper-slope', 'backward-market', 'moon-post', 'silent-lighthouse', 'page-sea']);
+const SCENE_IDS = new Set(['paper-ground', 'firefly-meadow', 'moon-surface', 'underwater-bubbles', 'giant-pocket', 'inside-clouds']);
 const SPECIES = new Set(['cat', 'dog', 'human']);
 const PALETTES = new Set(['moss', 'sky', 'coral', 'moon']);
 const FEATURES = new Set(['listening-ears', 'bright-eyes', 'soft-tail', 'star-freckles']);

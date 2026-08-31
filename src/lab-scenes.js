@@ -60,7 +60,7 @@ export const LAB_SCENES = [
   { id: 'castle-window', group: '奇遇', name: '城堡窗台', hint: '石头拱窗和远山', floorY: -.9, scale: .92, motion: 'breeze', line: '我站在城堡的窗台上，可以看见很远的地方。' },
   { id: 'clouds', group: '奇遇', name: '云朵里面', hint: '软云层和轻漂浮', floorY: -.7, scale: .96, motion: 'float', line: '云朵把我轻轻托起来，现在脚下软绵绵的。' },
   { id: 'space', group: '奇遇', name: '星星宇宙', hint: '失重漂浮和小行星', floorY: -.72, scale: .94, motion: 'zero-g', line: '我们到了宇宙，身体会像没有重量一样慢慢漂浮。' },
-  { id: 'moon', group: '奇遇', name: '月亮表面', hint: '环形山和远处地球', floorY: -.88, scale: .92, motion: 'moon-hop', line: '月亮上的重力很轻，走一步也会像小跳跃。' },
+  { id: 'moon', group: '奇遇', name: '月球表面', hint: '环形山和远处地球', floorY: -.88, scale: .92, motion: 'moon-hop', line: '月球上的重力很轻，走一步也会像小跳跃。' },
   { id: 'underwater', group: '奇遇', name: '海底气泡', hint: '水草、气泡和慢漂流', floorY: -.8, scale: .9, motion: 'underwater-ground', line: '海底的水草沿着地面轻轻摇，我们会慢慢走过气泡。' },
   { id: 'train', group: '奇遇', name: '慢火车车厢', hint: '窗外风景缓缓经过', floorY: -1.01, scale: .96, motion: 'train', line: '慢火车已经出发，窗外的风景正在经过。' },
   { id: 'rooftop', group: '奇遇', name: '屋顶晚风', hint: '烟囱、远屋和风', floorY: -.91, scale: .94, motion: 'breeze', line: '屋顶的晚风有一点凉，我们可以一起看远处的灯。' },
@@ -316,10 +316,14 @@ export function createSceneBackdrop(id, backgroundStyle) {
   return mesh;
 }
 
-export function paintSceneThumbnail(canvas, id, backgroundStyle) {
+export function paintSceneCanvas(canvas, id, backgroundStyle) {
   const rendered = renderCanvas(Math.max(260, canvas.width || 260), Math.max(160, canvas.height || 160), id);
   applyBackgroundCanvasStyle(rendered, backgroundStyle);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(rendered, 0, 0, canvas.width, canvas.height);
+}
+
+export function paintSceneThumbnail(canvas, id, backgroundStyle) {
+  paintSceneCanvas(canvas, id, backgroundStyle);
 }

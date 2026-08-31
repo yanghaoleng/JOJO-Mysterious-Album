@@ -116,30 +116,29 @@ body[data-phase] .backpack-mark {
 
 #story-world { position: relative; min-height: 100dvh; }
 .world-stage {
-  --story-horizon-y: 64%;
-  --story-horizon-ink: 60 76 55;
-  --story-ground-wash: 213 218 190;
   position: fixed;
   inset: 0;
   overflow: hidden;
   isolation: isolate;
-  background: #dfe9dc;
+  background: var(--paper);
   transition: background 760ms ease;
 }
 .world-stage::before {
   content: none;
 }
 .world-stage::after {
-  content: "";
+  content: none;
+}
+.story-scene-backdrop {
   position: absolute;
-  z-index: 6;
+  z-index: 0;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 50%;
   pointer-events: none;
-  background-image:
-    linear-gradient(var(--background-tint-overlay, transparent), var(--background-tint-overlay, transparent)),
-    linear-gradient(rgb(241 234 216 / var(--background-haze, 0)), rgb(241 234 216 / var(--background-haze, 0))),
-    radial-gradient(circle, rgb(57 61 51 / calc(var(--background-grain, 0) * .16)) .65px, transparent .75px);
-  background-size: 7px 7px;
 }
 .sky-wash, .ground-wash, .far-shape, .place-object { position: absolute; z-index: 1; pointer-events: none; }
 .sky-wash, .ground-wash, .far-shape { display: none; }
@@ -322,6 +321,12 @@ body[data-place="lighthouse"] .place-object { border-radius: 32px 32px 12px 12px
 body[data-place="sea"] .world-stage { --story-horizon-ink: 52 92 92; --story-ground-wash: 164 194 186; background: #cee0dc; }
 body[data-place="sea"] .ground-wash { background: rgba(84, 129, 128, .52); }
 body[data-place="sea"] .place-object { right: 12vw; background: rgba(237, 199, 99, .28); box-shadow: 0 0 28px rgba(233, 189, 85, .25); }
+body[data-place="moon"] .quest-panel .section-label,
+body[data-place="moon"] .quest-panel h2,
+body[data-place="moon"] .quest-panel .scene-heading > p {
+  color: #f7f1e4;
+  text-shadow: 0 1px 3px rgba(24, 28, 45, .5);
+}
 
 .pet-stage {
   position: absolute;

@@ -106,7 +106,7 @@ CHARACTER_SCENES = {
     "meadow": "萤火草地", "mushroom-forest": "蘑菇森林", "seaside": "贝壳海边",
     "greenhouse": "温室花房", "paper-creek": "纸船小溪", "snow-globe": "雪花玻璃球",
     "castle-window": "城堡窗台", "clouds": "云朵里面", "space": "星星宇宙",
-    "moon": "月亮表面", "underwater": "海底气泡", "train": "慢火车车厢",
+    "moon": "月球表面", "underwater": "海底气泡", "train": "慢火车车厢",
     "rooftop": "屋顶晚风", "blanket-fort": "被窝城堡", "giant-pocket": "巨人口袋",
     "music-stage": "音乐小舞台",
 }
@@ -1507,7 +1507,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 if mode == "scene":
                     scene_id = str(payload.get("sceneId", "")).strip()[:32]
                     question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
-                    scene_ids = {"paper-harbor", "whisper-slope", "backward-market", "moon-post", "silent-lighthouse", "page-sea"}
+                    scene_ids = {"paper-ground", "firefly-meadow", "moon-surface", "underwater-bubbles", "giant-pocket", "inside-clouds"}
                     choices = sanitize_scene_choices(payload.get("choices"))
                     if scene_id not in scene_ids or len(choices) < 2:
                         self.respond_json(400, {"error": "unknown_scene"})

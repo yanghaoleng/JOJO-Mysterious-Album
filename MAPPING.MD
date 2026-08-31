@@ -78,10 +78,10 @@
 | 形色陪三个印章 | 宠物配方摘要 | `.voice-seals`、`finishInterview()` | 只展示三个回答如何进入配方，不再向孩子追加取名或问候问题 |
 | 场景里的小角色 | 当前场景 NPC 群 | `#npc-wrap`、`#npc-companions`、`scene.cast` | 1 位主 NPC 和 2 位可点击 NPC，全部复用模拟器角色配方 |
 | 角落小包、道具包 | 连续故事背包 | `#backpack-button`、`#backpack-quick-items`、`state.inventory` | 小框直接展示最近三件道具，已送出物品降低不透明度，点开仍可查看说明 |
-| 贝壳、听声音的贝 | 听风贝 | `ITEMS.listeningShell`、`listening-shell.webp` | 放大小声音，不替别人说话 |
-| 红线团、星星毛线 | 星线团 | `ITEMS.starThread`、`star-thread.webp` | 连接没有说完的话 |
-| 叶子信、没寄出的信 | 没寄出的问候 | `ITEMS.unsentGreeting`、`unsent-greeting.webp` | 第二章暂存并送给慢钟先生 |
-| 发光种子、灯种 | 灯塔种子 | `ITEMS.lighthouseSeed`、`lighthouse-seed.webp` | 第三章种在灯塔顶部并消耗 |
+| 贝壳、听声音的贝 | 听听贝 | `ITEMS.listeningShell`、`listening-shell.webp` | 在纸上地面听清小回声的方向 |
+| 红线团、星星毛线 | 萤火线团 | `ITEMS.starThread`、`star-thread.webp` | 从萤火草地一路指向巨人口袋 |
+| 信封、远方来信 | 远方小信 | `ITEMS.unsentGreeting`、`unsent-greeting.webp` | 在月球表面提示海底气泡的路线 |
+| 发光种子、灯种 | 发光种子 | `ITEMS.lighthouseSeed`、`lighthouse-seed.webp` | 在云朵里面照亮小回声的回家路 |
 | 豆包在理解、AI 自己决定回应 | 儿童安全偏好理解与回应门控 | `/api/story-turn`、`story_turn_result()`、`shouldRespond`、`forceRespond` | 未完成表达继续收音；完整回答才回应并推进，点选答案强制立即回应，失败走确定性映射 |
 | 火山语音识别、豆包听写 | 句末豆包 ASR 校准 | `/api/asr`、`volc_asr.py`、`doubaoTranscript()` | 浏览器先显示中间文本，持续媒体轨道按每句切片，PCM 经同源服务端送豆包，最终结果回填并交给 AI 判断是否回应；Access Token 不下发 |
 | 故事语音应用、流式语音应用 | 火山豆包语音专用应用 | `kindergrimm_story_voice`、AppID `6570862201` | ASR/TTS 2.0 与大模型兼容能力使用试用包；真实 Token 仅在服务端环境 |
