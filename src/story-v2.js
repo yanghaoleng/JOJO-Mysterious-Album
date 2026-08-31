@@ -154,11 +154,18 @@ function bubbleElement(kind) {
   return $('npc-bubble-text');
 }
 
+function hasVisibleBubbleContent(text) {
+  return String(text || '').replace(/[\s\p{P}]/gu, '').length > 0;
+}
+
 function animateBubbleText(element, text, { waiting = false, durationMs = 0, complete = false } = {}) {
-  const value = String(text || '');
+  const value = String(text || '').trim();
   element.setAttribute('aria-label', value);
   const shell = element.closest('[data-bubble-shell]');
-  if (shell) shell.dataset.text = value;
+  if (shell) {
+    shell.dataset.text = value;
+    shell.hidden = !hasVisibleBubbleContent(value);
+  }
   setSpeechBubbleText(element.dataset.bubbleKey, value, {
     waiting,
     durationMs,
@@ -809,8 +816,9 @@ function showLiveAnswer(text = '') {
   const bubble = $('live-answer-bubble');
   const value = String(text).trim().slice(0, 80);
   const shouldEnter = bubble.hidden;
-  bubble.hidden = !value;
-  if (value) setSpeechBubbleText('story-user', value, { complete: true, enter: shouldEnter });
+  const shouldShow = hasVisibleBubbleContent(value);
+  bubble.hidden = !shouldShow;
+  if (shouldShow) setSpeechBubbleText('story-user', value, { complete: true, enter: shouldEnter });
 }
 
 function createUserInputBubble(text, key) {
@@ -822,6 +830,7 @@ function createUserInputBubble(text, key) {
   shell.dataset.bubbleMaxChars = '18';
   shell.dataset.text = value;
   shell.setAttribute('aria-label', value);
+  shell.hidden = !hasVisibleBubbleContent(value);
   const content = document.createElement('span');
   content.className = 'character-bubble__text';
   content.dataset.calligraphBubble = '';
