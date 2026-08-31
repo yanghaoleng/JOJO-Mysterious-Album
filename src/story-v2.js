@@ -10,7 +10,7 @@ import {
   createGlossCharacter,
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260827-webp';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260831-echo-guide-otter';
 import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
@@ -1054,7 +1054,7 @@ async function understandAnswer(question, answer, { forceRespond = false } = {})
 function renderGuide() {
   $('guide-name').textContent = state.guide.name;
   $('guide-figure').dataset.guide = state.guide.id;
-  $('guide-canvas').setAttribute('aria-label', `角色模拟器里的卷尾小狐狸，图鉴员${state.guide.name}`);
+  $('guide-canvas').setAttribute('aria-label', `角色模拟器里的${STORY_GUIDE_TEMPLATE.name}，图鉴员${state.guide.name}`);
   requestAnimationFrame(() => {
     guideRenderer.resize();
     guideRenderer.react('happy');

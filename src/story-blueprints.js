@@ -1,13 +1,13 @@
 import { storyCharacterTemplateById } from './story-character-templates.js';
 
 export const STORY_ID = 'lost-echo';
-export const STORY_GUIDE_TEMPLATE = storyCharacterTemplateById('curl-fox');
+export const STORY_GUIDE_TEMPLATE = storyCharacterTemplateById('river-otter');
 
 export const GUIDES = [
   {
-    id: 'curl-fox', name: '小卷', mark: '狐', voice: 'sprout',
+    id: 'river-otter', name: '河湾小水獭', mark: '獭', voice: 'moss',
     manner: '会等你说完，再把你说的样子画到小伙伴身上',
-    hello: '你好，我是小卷。先回答三个小问题，我就能画出今天陪你冒险的小伙伴。',
+    hello: '你好，我是河湾小水獭。先回答三个小问题，我就能画出今天陪你冒险的小伙伴。',
   },
 ];
 
