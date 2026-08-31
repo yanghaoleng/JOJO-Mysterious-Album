@@ -19,7 +19,7 @@ import {
   sceneHorizonWorldY,
   createSceneBackdrop,
   paintSceneThumbnail,
-} from './lab-scenes.js?v=20260828-style-editor-v2';
+} from './lab-scenes.js?v=20260831-simulator-scenes';
 import {
   createEmptyChildProfile,
   firstUnansweredProfileIndex,

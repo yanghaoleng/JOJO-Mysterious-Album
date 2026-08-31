@@ -44,7 +44,7 @@ const SCENES = {
   'breakfast-table': '早餐餐桌', 'rainy-window': '雨天窗台', meadow: '萤火草地',
   'mushroom-forest': '蘑菇森林', seaside: '贝壳海边', greenhouse: '温室花房',
   'paper-creek': '纸船小溪', 'snow-globe': '雪花玻璃球', 'castle-window': '城堡窗台',
-  clouds: '云朵里面', space: '星星宇宙', moon: '月亮表面', underwater: '海底气泡', train: '慢火车车厢',
+  clouds: '云朵里面', space: '星星宇宙', moon: '月球表面', underwater: '海底气泡', train: '慢火车车厢',
   rooftop: '屋顶晚风', 'blanket-fort': '被窝城堡', 'giant-pocket': '巨人口袋', 'music-stage': '音乐小舞台',
 };
 const SCENE_KEYWORDS = [

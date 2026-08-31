@@ -18,7 +18,7 @@ mountAppNavigation(navigationSlot, {
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260831-default-drawn'),
+    import('./lab.js?v=20260831-simulator-scenes'),
     import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
   ]).then(([module]) => {
     labModule = module;

@@ -3,13 +3,11 @@ import { storyCharacterTemplateById } from './story-character-templates.js';
 export const STORY_ID = 'lost-echo';
 export const STORY_GUIDE_TEMPLATE = storyCharacterTemplateById('river-otter');
 
-export const GUIDES = [
-  {
-    id: 'river-otter', name: '河湾小水獭', mark: '獭', voice: 'moss',
-    manner: '会等你说完，再把你说的样子画到小伙伴身上',
-    hello: '你好，我是河湾小水獭。先回答三个小问题，我就能画出今天陪你冒险的小伙伴。',
-  },
-];
+export const GUIDES = [{
+  id: 'river-otter', name: '河湾小水獭', mark: '獭', voice: 'moss',
+  manner: '会等你说完，再把你说的样子画到小伙伴身上',
+  hello: '你好，我是河湾小水獭。先回答三个小问题，我就能画出今天陪你冒险的小伙伴。',
+}];
 
 export const INTERVIEW_QUESTIONS = [
   { id: 'appearance', question: '你想让小伙伴长什么样？', hint: '可以说大耳朵、亮眼睛、软尾巴，或者别的样子。' },
@@ -18,137 +16,125 @@ export const INTERVIEW_QUESTIONS = [
 ];
 
 export const ITEMS = {
-  listeningShell: { id: 'listeningShell', name: '听听贝', image: './assets/story/items/listening-shell.webp?v=20260828-picturebook-alpha', short: '能把很小的声音变清楚。', description: '河湾小水獭送给你的贝壳。', use: '听清远处传来的小声音。' },
-  starThread: { id: 'starThread', name: '发光小绳', image: './assets/story/items/star-thread.webp?v=20260828-picturebook-alpha', short: '会朝着声音来的方向发亮。', description: '林间小鹿在草地里找到的小绳。', use: '跟着亮光寻找回声。' },
-  unsentGreeting: { id: 'unsentGreeting', name: '灯塔小信', image: './assets/story/items/unsent-greeting.webp?v=20260828-picturebook-alpha', short: '上面画着一座黑黑的灯塔。', description: '竹叶熊猫在木箱里找到的小信。', use: '请屋顶的小鸮帮忙认路。' },
-  lighthouseSeed: { id: 'lighthouseSeed', name: '发光种子', image: './assets/story/items/lighthouse-seed.webp?v=20260828-picturebook-alpha', short: '种下去就能让灯塔亮起来。', description: '书桌小鸮送给你的种子。', use: '和月牙小猫一起点亮灯塔。' },
+  listeningShell: { id: 'listeningShell', name: '听听贝', image: './assets/story/items/listening-shell.webp?v=20260828-picturebook-alpha', short: '能把很小的声音变清楚。', description: '河湾小水獭在纸上地面送给你的贝壳。', use: '听清小回声从哪里传来。' },
+  starThread: { id: 'starThread', name: '萤火线团', image: './assets/story/items/star-thread.webp?v=20260828-picturebook-alpha', short: '会朝着小回声去过的方向发亮。', description: '林间小鹿在萤火草地找到的线团。', use: '跟着亮光走过陌生的地方。' },
+  unsentGreeting: { id: 'unsentGreeting', name: '远方小信', image: './assets/story/items/unsent-greeting.webp?v=20260828-picturebook-alpha', short: '上面画着海浪、灯塔和一串气泡。', description: '月牙小猫在月坑边捡到的小信。', use: '提醒大家去海底气泡继续寻找。' },
+  lighthouseSeed: { id: 'lighthouseSeed', name: '发光种子', image: './assets/story/items/lighthouse-seed.webp?v=20260828-picturebook-alpha', short: '会给黑暗里的小声音照路。', description: '竹叶熊猫在巨人口袋里找到的种子。', use: '在云朵里面照亮回家的路。' },
 };
 
 export const CHAPTERS = [
-  { id: 'meet-the-echo', number: 1, title: '认识回声', promise: '喊一声，听听远处会不会把声音送回来。' },
-  { id: 'follow-the-sound', number: 2, title: '跟着声音走', promise: '沿着亮光找到是谁在灯塔里等我们。' },
-  { id: 'light-the-tower', number: 3, title: '让灯塔亮起来', promise: '一起说一句话，把回声叫回来。' },
+  { id: 'hear-the-echo', number: 1, title: '听见小回声', promise: '先发出声音，再听听它从哪里回来。' },
+  { id: 'follow-the-echo', number: 2, title: '跟着回声走', promise: '沿着月坑和气泡，找到小回声留下的声音。' },
+  { id: 'bring-echo-home', number: 3, title: '陪回声回家', promise: '在口袋里找到它，再陪它走进云朵。' },
 ];
 
 export const SCENES = [
   {
-    id: 'paper-harbor', chapter: 1, name: '纸船小溪', place: 'harbor', sceneId: 'paper-creek', objective: '对着远山说一句，听听声音会不会回来。',
+    id: 'paper-ground', chapter: 1, name: '纸上地面', place: 'paper-ground', sceneId: 'paper-ground', objective: '先发出一个声音，帮听听贝找方向。',
     npc: { name: '河湾小水獭', templateId: 'river-otter', entrance: 'door', voice: 'moss' },
-    cast: [
-      { name: '池塘小蛙', templateId: 'pond-frog', voice: 'bubble', line: '小水獭正在对着远山喊“你好”。' },
-    ],
+    cast: [{ name: '池塘小蛙', templateId: 'pond-frog', voice: 'bubble', line: '小水獭一直在听纸外面的声音。' }],
     conversation: [
-      { speaker: 'cast', text: '小水獭，你刚才在喊谁呀？' },
-      { speaker: 'npc', text: '我对着远山喊“你好”。平常远山也会回我“你好”，今天却没有。' },
-      { speaker: 'cast', text: '远山送回来的声音，就叫回声。我们再试一次吧！' },
-      { speaker: 'npc', text: '轮到你啦。你想先对着远山说什么？' },
+      { speaker: 'cast', text: '小水獭，你一直在听什么？' },
+      { speaker: 'npc', text: '我在找小回声。平时我对山洞说“你好”，它也会说“你好”。' },
+      { speaker: 'cast', text: '声音碰到远处的墙，又跑回耳朵里，就叫回声。' },
+      { speaker: 'npc', text: '今天它没有回来。你愿意发出一个声音，帮我找找吗？' },
     ],
-    dialogue: '你想先对着远山说什么？',
+    dialogue: '你想先发出什么声音？',
     choices: [
-      { id: 'hello', label: '说“你好”', voiceHints: ['你好', '说你好', '喊你好', '山你好'], result: '你喊了一声“你好”。过了一会儿，远山也传来一声“你好”。这就是回声！', trait: 'bold' },
-      { id: 'here', label: '说“我来啦”', voiceHints: ['我来啦', '我来了', '说我来啦', '喊我来了'], result: '你喊“我来啦”。远处也轻轻回答“我来啦”。回声真的回来了！', trait: 'bold' },
-      { id: 'clap', label: '拍拍手', voiceHints: ['拍手', '拍拍手', '拍两下', '鼓掌'], result: '你拍了两下手。远处也传来两下轻轻的拍手声。回声会学声音！', trait: 'make' },
+      { id: 'hello', label: '说“你好”', voiceHints: ['你好', '说你好', '喊你好'], result: '你说了一声“你好”。听听贝里传来很轻的“你……”，声音在草地那边。', trait: 'bold' },
+      { id: 'here', label: '说“我在这里”', voiceHints: ['我在这里', '我在这', '说我在这里'], result: '你说“我在这里”。听听贝亮了一下，草地那边也有一个小声音。', trait: 'care' },
+      { id: 'clap', label: '拍两下手', voiceHints: ['拍手', '拍拍手', '拍两下', '鼓掌'], result: '你拍了两下手。听听贝也响了两下，它指向萤火草地。', trait: 'make' },
     ],
-    reward: 'listeningShell', petLine: '我听懂了。我们发出声音，远处再送回来，这就是回声！',
+    reward: 'listeningShell', petLine: '听听贝找到方向了。小回声一定去过萤火草地！',
   },
   {
-    id: 'whisper-slope', chapter: 1, name: '萤火草地', place: 'meadow', sceneId: 'meadow', objective: '让风里的小回声听清一句短短的话。',
+    id: 'firefly-meadow', chapter: 1, name: '萤火草地', place: 'meadow', sceneId: 'meadow', objective: '说一句短短的话，让萤火虫帮忙传过去。',
     npc: { name: '林间小鹿', templateId: 'forest-deer', entrance: 'grass', voice: 'sprout' },
-    cast: [
-      { name: '落叶小刺猬', templateId: 'leaf-hedgehog', voice: 'bubble', line: '风里有一个只说了一半的小回声。' },
-    ],
+    cast: [{ name: '落叶小刺猬', templateId: 'leaf-hedgehog', voice: 'bubble', line: '萤火虫听见声音就会闪一下。' }],
     conversation: [
-      { speaker: 'cast', text: '听！草地那边有个小声音在说：“来……啦……”' },
-      { speaker: 'npc', text: '它只说回来一半，可能是大风让它没有听清。' },
-      { speaker: 'cast', text: '我们说短一点、慢一点，小回声就能听明白。' },
-      { speaker: 'npc', text: '你想用什么办法，让小回声听清楚？' },
+      { speaker: 'cast', text: '听！草叶里有个小声音在说：“你……”' },
+      { speaker: 'npc', text: '小回声只留下一个字。萤火虫正在帮它指路。' },
+      { speaker: 'cast', text: '我们说短一点、慢一点，亮光就会接着往前跑。' },
+      { speaker: 'npc', text: '你想说什么，让萤火虫听清楚？' },
     ],
-    dialogue: '你想用什么办法，让小回声听清楚？',
+    dialogue: '你想对萤火虫说什么？',
     choices: [
-      { id: 'slow', label: '慢慢说“你好”', voiceHints: ['慢慢说', '说你好', '慢一点', '你好'], result: '你慢慢说“你、好”。草地那边清楚地回答：“你、好！”', trait: 'patient' },
-      { id: 'together', label: '大家一起说', voiceHints: ['一起说', '大家说', '一块说', '一起喊'], result: '大家一起说“我来啦”。风里马上送回一声清楚的“我来啦”。', trait: 'together' },
-      { id: 'clap', label: '先拍两下手', voiceHints: ['拍手', '拍两下', '先拍手', '鼓掌'], result: '你先拍两下手。小回声跟着拍了两下，终于找到了我们。', trait: 'make' },
+      { id: 'slow', label: '慢慢说“你好”', voiceHints: ['慢慢说', '说你好', '慢一点', '你好'], result: '你慢慢说“你、好”。萤火虫一盏一盏亮起来，飞向月球。', trait: 'patient' },
+      { id: 'together', label: '大家一起说', voiceHints: ['一起说', '大家说', '一块说', '一起喊'], result: '大家一起说“我们来啦”。一条亮光越过草地，飞向月球。', trait: 'together' },
+      { id: 'clap', label: '按节奏拍手', voiceHints: ['拍手', '拍两下', '按节奏', '鼓掌'], result: '你一下一下地拍手。萤火虫跟着闪光，排成一条去月球的路。', trait: 'make' },
     ],
-    reward: 'starThread', petLine: '发光小绳亮起来了。它在告诉我们，小回声往玩具阁楼去了！',
+    reward: 'starThread', petLine: '萤火线团也亮了。下一站是月球表面！',
   },
   {
-    id: 'backward-market', chapter: 2, name: '玩具阁楼', place: 'market', sceneId: 'attic', objective: '看懂灯塔小信，找到下一段路。',
+    id: 'moon-surface', chapter: 2, name: '月球表面', place: 'moon', sceneId: 'moon', objective: '对着月坑说一句，听听声音从哪里回来。',
+    npc: { name: '月牙小猫', templateId: 'moon-cat', entrance: 'reflection', voice: 'star' },
+    cast: [{ name: '书桌小鸮', templateId: 'book-owl', voice: 'moss', line: '这个故事里的月坑边，像一圈远远的墙。' }],
+    conversation: [
+      { speaker: 'cast', text: '这个故事里的月坑边，像一圈硬硬的墙。' },
+      { speaker: 'npc', text: '我刚才说“你好”，月坑里也传回了一声“好”。' },
+      { speaker: 'cast', text: '声音碰到月坑边，又跑回来了。小回声一定来过这里！' },
+      { speaker: 'npc', text: '你愿意再说一句，把它叫出来吗？' },
+    ],
+    dialogue: '你想对着月坑说什么？',
+    choices: [
+      { id: 'hello', label: '说“你好”', voiceHints: ['你好', '说你好', '喊你好'], result: '你说“你好”。月坑那边送回一声“你好”，还飘起一个蓝色泡泡。', trait: 'bold' },
+      { id: 'found-you', label: '说“我找到你啦”', voiceHints: ['找到你', '我找到你啦', '找到啦'], result: '你说“我找到你啦”。月坑也回答“找到你啦”，蓝色泡泡飞向海底。', trait: 'care' },
+      { id: 'clap', label: '拍三下手', voiceHints: ['拍手', '拍三下', '三下', '鼓掌'], result: '你拍了三下手。月坑送回三下轻响，一个蓝色泡泡从石头后面飘出来。', trait: 'make' },
+    ],
+    reward: 'unsentGreeting', petLine: '远方小信上也画着一串气泡。我们去海底看看！',
+  },
+  {
+    id: 'underwater-bubbles', chapter: 2, name: '海底气泡', place: 'underwater', sceneId: 'underwater', objective: '打开装着声音的泡泡，听清里面的话。',
+    npc: { name: '池塘小蛙', templateId: 'pond-frog', entrance: 'grass', voice: 'bubble' },
+    cast: [{ name: '豆豆小狗', templateId: 'bean-dog', voice: 'sprout', line: '这个故事里的大泡泡能装住一小段声音。' }],
+    conversation: [
+      { speaker: 'cast', text: '看！这个故事里的大泡泡，能装住一小段声音。' },
+      { speaker: 'npc', text: '最大的泡泡里一直在说：“好……好……”' },
+      { speaker: 'cast', text: '这一定是小回声留下的“你好”。我们帮它出来吧。' },
+      { speaker: 'npc', text: '你想用什么办法打开声音泡泡？' },
+    ],
+    dialogue: '你想怎样打开声音泡泡？',
+    choices: [
+      { id: 'tap', label: '轻轻碰一下', voiceHints: ['碰一下', '轻轻碰', '摸泡泡', '点一下'], result: '你轻轻一碰，泡泡“啵”地打开了，里面跑出一声完整的“你好”。', trait: 'patient' },
+      { id: 'answer', label: '对泡泡说“你好”', voiceHints: ['对泡泡说', '说你好', '你好'], result: '你对泡泡说“你好”。泡泡也回答“你好”，然后慢慢升向水面。', trait: 'care' },
+      { id: 'shell', label: '用听听贝听一听', voiceHints: ['听听贝', '用贝壳', '听一听', '贝壳'], result: '听听贝把声音变清楚了：“我在一个软软的大口袋里。”', trait: 'listen' },
+    ],
+    consume: 'unsentGreeting', reward: null, petLine: '水面上有一个大大的影子。小回声可能进了巨人口袋！',
+  },
+  {
+    id: 'giant-pocket', chapter: 3, name: '巨人口袋', place: 'giant-pocket', sceneId: 'giant-pocket', objective: '在厚厚的布里，叫小回声放心出来。',
     npc: { name: '竹叶熊猫', templateId: 'bamboo-panda', entrance: 'box', voice: 'bubble' },
-    cast: [
-      { name: '豆豆小狗', templateId: 'bean-dog', voice: 'sprout', line: '发光小绳在木箱旁边亮起来了。' },
-    ],
+    cast: [{ name: '卷尾小狐狸', templateId: 'curl-fox', voice: 'sprout', line: '口袋的布很厚，声音到这里就变小了。' }],
     conversation: [
-      { speaker: 'cast', text: '汪！发光小绳在这个木箱旁边亮起来了。' },
-      { speaker: 'npc', text: '箱子里有一封小信。信上写着：“请来灯塔找我。”' },
-      { speaker: 'cast', text: '信上还画着一座黑黑的灯塔，可是没有写名字。' },
-      { speaker: 'npc', text: '你想先用什么办法，找到写信的朋友？' },
+      { speaker: 'cast', text: '口袋的布很厚，声音到了这里就变得小小的。' },
+      { speaker: 'npc', text: '萤火线团在纽扣旁边亮了。小回声就躲在毛线后面。' },
+      { speaker: 'cast', text: '它不是不想回来。它只是怕自己的声音太小，我们听不见。' },
+      { speaker: 'npc', text: '你想对小回声说什么，让它放心出来？' },
     ],
-    dialogue: '你想先用什么办法，找到写信的朋友？',
+    dialogue: '你想对小回声说什么？',
     choices: [
-      { id: 'ask-owl', label: '去问屋顶的小鸮', voiceHints: ['问小鸮', '找小鸮', '去屋顶', '问猫头鹰'], result: '你拿着信去问小鸮。小鸮一眼就认出了信上的灯塔。', trait: 'care' },
-      { id: 'look-picture', label: '仔细看信上的图', voiceHints: ['看图', '看看画', '仔细看', '看灯塔'], result: '你仔细看了看，发现灯塔旁边画着小鸮家的屋顶。', trait: 'listen' },
-      { id: 'call-friend', label: '大声问“是谁呀”', voiceHints: ['是谁', '问一问', '大声问', '谁写的'], result: '你问“是谁写的信呀？”屋顶上传来小鸮的回答：“我知道！”', trait: 'bold' },
+      { id: 'not-afraid', label: '说“别怕”', voiceHints: ['别怕', '不要怕', '不用怕'], result: '你轻轻说“别怕”。小回声从毛线后面探出头，认真听着你。', trait: 'care' },
+      { id: 'listening', label: '说“我在听”', voiceHints: ['我在听', '听得到', '我听见了'], result: '你说“我在听”。小回声马上回答：“听……”，它终于愿意出来了。', trait: 'listen' },
+      { id: 'home', label: '说“一起回家”', voiceHints: ['一起回家', '回家吧', '带你回家'], result: '你说“一起回家”。大家拉住萤火线团，把小回声从软布里接了出来。', trait: 'together' },
     ],
-    reward: 'unsentGreeting', petLine: '信上画着灯塔。屋顶的小鸮一定知道该往哪里走。',
+    consume: 'starThread', reward: 'lighthouseSeed', petLine: '小回声找到啦！发光种子会照亮云朵里面的回家路。',
   },
   {
-    id: 'moon-post', chapter: 2, name: '屋顶晚风', place: 'post', sceneId: 'rooftop', objective: '告诉灯塔里的朋友，我们马上就到。',
-    npc: { name: '书桌小鸮', templateId: 'book-owl', entrance: 'reflection', voice: 'moss' },
-    cast: [
-      { name: '卷尾小狐狸', templateId: 'curl-fox', voice: 'sprout', line: '我们找到写信的朋友了吗？' },
-    ],
-    conversation: [
-      { speaker: 'cast', text: '小鸮，我们找到一封画着灯塔的小信。' },
-      { speaker: 'npc', text: '这是月牙小猫写的！她在黑黑的灯塔里等我们。' },
-      { speaker: 'cast', text: '我们快去找她吧。别让她一个人等太久。' },
-      { speaker: 'npc', text: '出发前，你想怎样告诉小猫，我们马上就到？' },
-    ],
-    dialogue: '你想怎样告诉小猫，我们马上就到？',
-    choices: [
-      { id: 'call', label: '大声说“我们来啦”', voiceHints: ['我们来啦', '我们来了', '大声说', '喊她'], result: '你对着灯塔喊“我们来啦”。远处传回一声小小的“来啦”。', trait: 'bold' },
-      { id: 'wave', label: '请小伙伴挥挥手', voiceHints: ['挥手', '招手', '伙伴挥手', '让它挥手'], result: '小伙伴站到高处用力挥手。灯塔的窗边也出现一只挥动的小爪子。', trait: 'together' },
-      { id: 'lamp', label: '带一盏小灯过去', voiceHints: ['小灯', '带灯', '点灯', '拿一盏灯'], result: '你点亮一盏小灯。灯塔的窗户也闪了一下，像是在回答你。', trait: 'care' },
-    ],
-    consume: 'unsentGreeting', reward: 'lighthouseSeed', petLine: '小鸮送给我们一颗发光种子。灯塔就在前面，我们出发吧！',
-  },
-  {
-    id: 'silent-lighthouse', chapter: 3, name: '灯塔窗台', place: 'lighthouse', sceneId: 'castle-window', objective: '陪月牙小猫走到开灯的按钮旁。',
-    npc: { name: '月牙小猫', templateId: 'moon-cat', entrance: 'curtain', voice: 'star' },
-    cast: [
-      { name: '书桌小鸮', templateId: 'book-owl', voice: 'moss', line: '小猫，我们来陪你开灯了。' },
-    ],
-    conversation: [
-      { speaker: 'cast', text: '小猫，我们来了。灯塔怎么还是黑黑的？' },
-      { speaker: 'npc', text: '外面的风太大了。我有点害怕，不敢一个人去按开灯的按钮。' },
-      { speaker: 'cast', text: '没关系，我们会陪着你。你不用一个人去。' },
-      { speaker: 'npc', text: '你想先怎样帮我走到按钮旁边？' },
-    ],
-    dialogue: '你想先怎样帮小猫走到按钮旁边？',
-    choices: [
-      { id: 'hold-hands', label: '拉着手一起走', voiceHints: ['拉手', '牵手', '一起走', '陪她走'], result: '你拉着小猫的手，一步一步走到按钮旁边。小猫不再发抖了。', trait: 'care' },
-      { id: 'small-light', label: '先开一盏小灯', voiceHints: ['开小灯', '先点灯', '小灯', '照亮'], result: '你先打开一盏小灯。房间亮了一点，小猫看清了前面的路。', trait: 'patient' },
-      { id: 'count', label: '一起数“一二三”', voiceHints: ['一二三', '数数', '一起数', '数到三'], result: '大家一起数“一、二、三！”小猫鼓起勇气，按下了开灯按钮。', trait: 'together' },
-    ],
-    reward: null, petLine: '小猫不害怕了。现在只要把发光种子种到海边，灯塔就能亮起来！',
-  },
-  {
-    id: 'page-sea', chapter: 3, name: '贝壳海边', place: 'sea', sceneId: 'seaside', objective: '说一句话，让灯塔把声音送远再送回来。',
+    id: 'inside-clouds', chapter: 3, name: '云朵里面', place: 'clouds', sceneId: 'clouds', objective: '一起说一句，让小回声跟着声音回家。',
     npc: { name: '云朵羊驼', templateId: 'cloud-alpaca', entrance: 'lantern', voice: 'bubble' },
-    cast: [
-      { name: '月牙小猫', templateId: 'moon-cat', voice: 'star', line: '发光种子已经种好啦。' },
-    ],
+    cast: [{ name: '河湾小水獭', templateId: 'river-otter', voice: 'moss', line: '小回声已经跟我们走到云朵里面了。' }],
     conversation: [
-      { speaker: 'cast', text: '发光种子已经种好啦！还差一句声音，灯塔才会亮。' },
-      { speaker: 'npc', text: '你说一句，灯塔会把它送到远处，再送回到我们耳边。' },
-      { speaker: 'cast', text: '送回来的声音，就叫回声。我终于明白啦！' },
-      { speaker: 'npc', text: '最后一句交给你。你想让大家一起喊什么？' },
+      { speaker: 'cast', text: '小回声已经跟我们走到云朵里面了。' },
+      { speaker: 'npc', text: '这里有一条圆圆的云洞。尽头像一面软软的墙。' },
+      { speaker: 'cast', text: '我们说一句，声音碰到远处，再跑回来，小回声就知道怎样回家。' },
+      { speaker: 'npc', text: '最后一句交给你。你想和大家一起说什么？' },
     ],
-    dialogue: '你想让大家一起喊什么？',
+    dialogue: '你想和大家一起说什么？',
     choices: [
-      { id: 'hello', label: '一起喊“你好”', voiceHints: ['你好', '喊你好', '说你好', '大家好'], result: '大家一起喊“你好！”灯塔亮了，远山也清楚地回答：“你好！”', trait: 'together' },
-      { id: 'here', label: '一起喊“我们来啦”', voiceHints: ['我们来啦', '我们来了', '喊我们来了', '来啦'], result: '大家一起喊“我们来啦！”海面和远山都送回一声“我们来啦！”', trait: 'bold' },
-      { id: 'thanks', label: '一起喊“谢谢你”', voiceHints: ['谢谢', '谢谢你', '说谢谢', '感谢'], result: '大家一起喊“谢谢你！”灯塔转了一圈，远处也回答：“谢谢你！”', trait: 'care' },
+      { id: 'hello', label: '一起说“你好”', voiceHints: ['你好', '喊你好', '说你好', '大家好'], result: '大家一起说“你好！”云洞那边也传回“你好！”小回声开心地跟了回来。', trait: 'together' },
+      { id: 'found-you', label: '一起说“找到你啦”', voiceHints: ['找到你啦', '找到你', '找到了'], result: '大家一起说“找到你啦！”远处也回答“找到你啦！”小回声回家了。', trait: 'bold' },
+      { id: 'welcome', label: '一起说“欢迎回来”', voiceHints: ['欢迎回来', '回来啦', '欢迎你'], result: '大家一起说“欢迎回来！”云洞送回同一句话，小回声亮得像一颗星。', trait: 'care' },
     ],
-    consume: 'lighthouseSeed', reward: null, petLine: '你听，远处也在学我们说话。回声回来啦！', final: true,
+    consume: 'lighthouseSeed', reward: null, petLine: '你听，声音碰到远处又回来，这就是回声。小回声回家啦！', final: true,
   },
 ];

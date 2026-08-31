@@ -10,8 +10,8 @@ import {
   createGlossCharacter,
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
-import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260831-echo-guide-otter';
-import { preloadSceneScenery, sceneryAssetUrl, sceneryForScene } from './story-scenery.js?v=20260827-scenery-art';
+import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260831-simulator-scenes';
+import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260831-simulator-scenes';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
@@ -301,56 +301,14 @@ function setBusy(busy) {
   for (const button of document.querySelectorAll('#interview-panel button')) button.disabled = busy;
 }
 
-function setSceneryStyle(element, prop, index) {
-  element.style.setProperty('--prop-x', `${prop.x}%`);
-  element.style.setProperty('--prop-width', prop.width);
-  element.style.setProperty('--prop-opacity', String(prop.opacity ?? 1));
-  element.style.setProperty('--prop-flip', String(prop.flip ?? 1));
-  element.style.setProperty('--prop-delay', `${Math.min(index * 90, 270)}ms`);
-  if (prop.top != null) element.style.setProperty('--prop-top', `${prop.top}%`);
-  if (prop.bottom != null) element.style.setProperty('--prop-bottom', `${prop.bottom}%`);
-  if (prop.mobileX != null) element.style.setProperty('--prop-mobile-x', `${prop.mobileX}%`);
-  if (prop.mobileTop != null) element.style.setProperty('--prop-mobile-top', `${prop.mobileTop}%`);
-  if (prop.mobileBottom != null) element.style.setProperty('--prop-mobile-bottom', `${prop.mobileBottom}%`);
-  if (prop.mobileWidth) element.style.setProperty('--prop-mobile-width', prop.mobileWidth);
-}
-
-function renderStoryScenery(scene) {
-  const stage = $('world-stage');
-  const layer = $('story-scenery');
-  const scenery = sceneryForScene(scene);
+function renderStoryBackdrop(scene) {
+  const canvas = $('story-scene-backdrop');
+  const config = sceneById(scene.sceneId);
   document.body.dataset.scene = scene.id;
-  stage.classList.toggle('has-generated-scenery', scenery.props.length > 0);
-  $('place-object').hidden = scenery.props.length > 0;
-
-  const nodes = scenery.props.map((prop, index) => {
-    const element = document.createElement(prop.line ? 'button' : 'div');
-    element.className = `scene-prop scene-prop-${prop.layer || 'mid'}${prop.line ? ' is-interactive' : ''}`;
-    element.dataset.position = prop.top != null ? 'sky' : 'ground';
-    if (prop.motion) element.dataset.motion = prop.motion;
-    setSceneryStyle(element, prop, index);
-
-    if (prop.line) {
-      element.type = 'button';
-      element.dataset.sceneryLine = prop.line;
-      element.setAttribute('aria-label', prop.ariaLabel || '触摸场景物件');
-    } else {
-      element.setAttribute('aria-hidden', 'true');
-    }
-
-    const image = document.createElement('img');
-    image.alt = '';
-    image.decoding = 'async';
-    image.draggable = false;
-    image.addEventListener('load', () => requestAnimationFrame(() => element.classList.add('is-ready')), { once: true });
-    image.addEventListener('error', () => element.remove(), { once: true });
-    image.src = sceneryAssetUrl(prop.asset);
-    element.append(image);
-    if (image.complete && image.naturalWidth) requestAnimationFrame(() => element.classList.add('is-ready'));
-    return element;
-  });
-
-  layer.replaceChildren(...nodes);
+  document.body.dataset.place = config.id;
+  document.body.dataset.sceneBackdrop = config.id;
+  canvas.dataset.sceneId = config.id;
+  paintSceneCanvas(canvas, config.id, activeRenderStyle.background);
 }
 
 class PetRenderer {
@@ -1356,8 +1314,7 @@ function setSceneSpeaker(scene, speaker = 'npc') {
 
 async function renderScene(scene) {
   state.busy = true;
-  document.body.dataset.place = scene.place;
-  renderStoryScenery(scene);
+  renderStoryBackdrop(scene);
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
   updateChapterProgress(scene.chapter);
@@ -1391,8 +1348,6 @@ async function renderScene(scene) {
     $('world-tap-hint').hidden = false;
     if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ message: '轮到你说啦，说出你的办法' });
   });
-  const nextScene = SCENES[state.sceneIndex + 1];
-  if (nextScene) preloadSceneScenery(nextScene);
 }
 
 function inventoryEntry(id) {
@@ -1548,8 +1503,8 @@ async function finishStory() {
   $('world-tap-hint').hidden = true;
   updateChapterProgress(4);
   showPanel('ending-panel', 'ending');
-  $('ending-copy').textContent = `${state.petName}和你让灯塔亮了起来。你们先说一句，声音碰到远处的山，又跑回来把这句话说一遍。这就是回声！${dominantTrait()}`;
-  $('pet-ending-line').textContent = `${state.petName}说：“下次我对着山喊‘你好’，也会等它回答我。”`;
+  $('ending-copy').textContent = `${state.petName}和你陪小回声走过草地、月球、海底、口袋和云朵。最后大家说了一句，声音碰到远处又跑回来。这就是回声！${dominantTrait()}`;
+  $('pet-ending-line').textContent = `${state.petName}说：“下次我听见声音回来，就知道那是回声啦。”`;
   $('ending-memory').replaceChildren(...state.heard.map((note, index) => (
     createUserInputBubble(`最初说过：${note}`, `ending-memory-${index}`)
   )));
@@ -1579,7 +1534,7 @@ function saveEnding() {
     toast('这次冒险只保存在当前设备。');
     void playUISFX('success');
   } catch {
-    toast('这次没能保存，但灯塔已经在故事里亮起来了。');
+    toast('这次没能保存，但小回声已经在故事里回家了。');
     void playUISFX('error');
   }
 }
@@ -1644,41 +1599,6 @@ $('pet-stage').addEventListener('keydown', event => {
     $('pet-stage').click();
   }
 });
-$('story-scenery').addEventListener('click', event => {
-  const prop = event.target.closest('[data-scenery-line]');
-  if (!prop || state.busy || document.body.dataset.phase !== 'quest' || prop.disabled) return;
-  event.stopPropagation();
-  prop.disabled = true;
-  prop.classList.remove('is-tapped');
-  void prop.offsetWidth;
-  prop.classList.add('is-tapped');
-  pauseGuideListening({ mode: 'speaking', message: '小伙伴正在回应场景' });
-  guideVoiceSession.speaking = true;
-  petRenderer.react('listen');
-  void playUISFX('open', { volume: 0.12 });
-  void speakBubblePage('pet', prop.dataset.sceneryLine, state.petVoice).then(() => {
-    guideVoiceSession.speaking = false;
-    prop.disabled = false;
-    clearTimeout(showPetThought.timer);
-    showPetThought.timer = setTimeout(() => { $('pet-thought').hidden = true; }, 1800);
-    if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true });
-  });
-});
-$('place-object').addEventListener('click', event => {
-  event.stopPropagation();
-  const object = $('place-object');
-  object.classList.remove('is-tapped');
-  void object.offsetWidth;
-  object.classList.add('is-tapped');
-  toast('场景轻轻回应了一下。');
-  void playUISFX('open', { volume: 0.12 });
-});
-$('place-object').addEventListener('keydown', event => {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    $('place-object').click();
-  }
-});
 $('world-stage').addEventListener('click', event => {
   if (!$('pet-stage').hidden && !state.busy) void movePetTo(event.clientX, event.clientY);
 });
@@ -1695,8 +1615,7 @@ mountAppNavigation($('story-navigation'), {
   homeHref: './',
 });
 
-renderStoryScenery(SCENES[0]);
-preloadSceneScenery(SCENES[1]);
+renderStoryBackdrop(SCENES[0]);
 addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
@@ -1708,7 +1627,7 @@ updateBackpack();
 setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
-  state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, collectItem, finishStory,
+  state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, renderStoryBackdrop, collectItem, finishStory,
   beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
 };

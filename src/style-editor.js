@@ -4,7 +4,7 @@ import { setHand, setRender, U } from './part.js';
 import { SoftStorySketch } from './soft-story-sketch.js?v=20260831-default-drawn';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
-import { paintSceneThumbnail } from './lab-scenes.js?v=20260831-default-drawn';
+import { paintSceneThumbnail } from './lab-scenes.js?v=20260831-simulator-scenes';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor-v2';
 import { trackAnalytics } from './analytics.js';
