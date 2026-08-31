@@ -1010,8 +1010,7 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 }
 
 body.character-call-active { overflow: hidden; }
-body.character-call-active #mode-switch,
-body.character-call-active #ui-sfx-toggle { visibility: hidden; }
+body.character-call-active #mode-switch { visibility: hidden; }
 .lab-preview.is-calling {
   position: fixed;
   z-index: 80;

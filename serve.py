@@ -150,7 +150,7 @@ ORIGINAL_BACKGROUND_STYLE = {
     "paint": {"opacity": 1, "grain": 0},
     "depth": {"haze": 0, "blur": 0},
 }
-RENDER_STYLE_DEFAULTS = {
+CURRENT_RENDER_STYLE = {
     "schemaVersion": 3,
     "character": CURRENT_CHARACTER_STYLE,
     "background": CURRENT_BACKGROUND_STYLE,
@@ -160,6 +160,7 @@ ORIGINAL_RENDER_STYLE = {
     "character": ORIGINAL_CHARACTER_STYLE,
     "background": ORIGINAL_BACKGROUND_STYLE,
 }
+RENDER_STYLE_DEFAULTS = ORIGINAL_RENDER_STYLE
 DRAWN_MEDIA_IDS = {
     "storybook", "watercolor", "graphite", "ink", "oil", "chalk", "marker",
     "gothic", "renaissance", "baroque", "ukiyoe", "impressionism",
@@ -236,7 +237,7 @@ for movement in STYLE_MOVEMENTS:
         "source_url": f"{STYLE_SOURCE_ROOT}/blob/{STYLE_SOURCE_COMMIT}/src/styles/{style_id}.js",
         "source_commit": STYLE_SOURCE_COMMIT, "source_files": f"src/styles/{style_id}.js",
     })
-gloss_style = copied_style(RENDER_STYLE_DEFAULTS)
+gloss_style = copied_style(CURRENT_RENDER_STYLE)
 gloss_style["character"]["system"] = "gloss"
 gloss_style["background"]["color"].update({"saturation": .96, "contrast": 1.04})
 GITHUB_RENDER_STYLE_PRESETS.append({
@@ -334,12 +335,12 @@ def init_analytics():
         connection.execute("UPDATE render_style_versions SET category = 'custom' WHERE category = 'community'")
         official_versions = (
             (
-                "original", "最初手绘版", "萌萌星", "保留最初的水彩、颗粒和不规则笔触。",
-                json.dumps(ORIGINAL_RENDER_STYLE, ensure_ascii=False, separators=(",", ":")), 1,
+                "original", "默认手绘版", "萌萌星", "保留水彩、颗粒和不规则笔触。",
+                json.dumps(ORIGINAL_RENDER_STYLE, ensure_ascii=False, separators=(",", ":")), 2,
             ),
             (
                 "current-soft", "当前柔绘版", "萌萌星", "圆润线条、柔和高光、体积阴影和朝后投影。",
-                json.dumps(RENDER_STYLE_DEFAULTS, ensure_ascii=False, separators=(",", ":")), 2,
+                json.dumps(CURRENT_RENDER_STYLE, ensure_ascii=False, separators=(",", ":")), 1,
             ),
         )
         connection.executemany(
@@ -352,7 +353,8 @@ def init_analytics():
                 author = excluded.author,
                 description = excluded.description,
                 config_json = excluded.config_json,
-                category = 'official'
+                category = 'official',
+                created_at = excluded.created_at
             """,
             official_versions,
         )

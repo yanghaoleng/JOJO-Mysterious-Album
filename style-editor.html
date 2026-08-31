@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260829-soft-corner">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
   <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor-v2">
-  <link rel="stylesheet" href="./src/style-editor.css?v=20260828-style-editor-v2">
+  <link rel="stylesheet" href="./src/style-editor.css?v=20260831-default-drawn">
 </head>
 <body data-analytics-page="style-editor">
   <nav id="style-navigation"></nav>
@@ -27,7 +27,7 @@
           <p class="section-kicker">多人实时预览</p>
           <h2 id="preview-title">一整排角色</h2>
         </div>
-        <span id="working-version" class="version-pill">当前柔绘版</span>
+        <span id="working-version" class="version-pill">默认手绘版</span>
       </div>
       <div id="preview-scroll" class="preview-scroll" tabindex="0" aria-label="可左右拖动的角色风格预览">
         <div id="preview-track" class="preview-track">
@@ -47,7 +47,7 @@
       <p class="preview-note">在角色上横向拖动，或使用滚轮查看整排角色。人物参数只重画人物，背景参数只调整背景。</p>
       <div class="preview-actions">
         <button id="open-save" class="secondary-button" type="button">保存为我的版本</button>
-        <button id="apply-style" class="primary-button" type="button">应用到角色模拟器</button>
+        <button id="apply-style" class="primary-button" type="button">应用到所有页面</button>
       </div>
     </section>
 
@@ -114,6 +114,6 @@
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/style-editor.js?v=20260828-style-editor-v2"></script>
+  <script type="module" src="./src/style-editor.js?v=20260831-default-drawn"></script>
 </body>
 </html>

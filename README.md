@@ -134,7 +134,7 @@ python3 scripts/generate_star_offline.py
 - `index.html`：产品结构、响应式 UI、设计变量和无障碍信息。
 - `src/mode.js`：双入口主页、模拟器按需加载、统一返回主页和浏览器前进后退同步。
 - `src/analytics.js`：匿名访客号、有效停留、模式页面、交互事件和深度采集。
-- `src/ui-sfx.js`、`src/ui-sfx.css`、`vendor/uisfx.js`：全站 Organic 语义音效、首次交互解锁、持久静音偏好和可访问开关。
+- `src/ui-sfx.js`、`vendor/uisfx.js`：全站 Organic 语义音效和首次交互解锁；默认常开，不提供关闭入口。
 - `data.html`、`src/data.js`、`src/data.css`：六位口令门与自托管访问数据后台。
 - `src/lab.js`、`src/lab.css`：角色实验室、15 个完整角色模板、6 种动作、5 套连续脚本、17 问画像塑形、音色和三端布局。
 - `src/child-profile.js`：第三版本机儿童画像、旧档案迁移、17 维完成度、分组摘要和关卡启发映射。

@@ -2,15 +2,15 @@ import * as THREE from 'three';
 import { PAPER, Sketch } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setHand, setRender, U } from './part.js';
-import { SoftStorySketch } from './soft-story-sketch.js?v=20260828-style-editor-v2';
-import { loadAppliedRenderStyle } from './render-style-config.js?v=20260828-style-editor-v2';
+import { SoftStorySketch } from './soft-story-sketch.js?v=20260831-default-drawn';
+import { loadAppliedRenderStyle, RENDER_STYLE_STORAGE_KEY } from './render-style-config.js?v=20260831-default-drawn';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import {
   configureRendererForCharacterSystem,
   createGlossCharacter,
   glossPlacement,
-} from './gloss-character-renderer.js?v=20260828-style-editor-v2';
+} from './gloss-character-renderer.js?v=20260831-default-drawn';
 import {
   LAB_SCENES,
   SCENE_GROUPS,
@@ -29,7 +29,7 @@ import {
   summarizeProfileGroups,
 } from './child-profile.js';
 import { trackAnalytics } from './analytics.js';
-import { playUISFX } from './ui-sfx.js';
+import { playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
 import {
   setVoiceInputControlLevel,
@@ -47,6 +47,9 @@ import {
 } from './character-cards.js';
 
 const activeRenderStyle = loadAppliedRenderStyle();
+addEventListener('storage', event => {
+  if (event.key === RENDER_STYLE_STORAGE_KEY) location.reload();
+});
 setRender({ u: 176, frames: 2 });
 setHand((width, height) => activeRenderStyle.character.engine === 'original'
   ? new Sketch(width, height)

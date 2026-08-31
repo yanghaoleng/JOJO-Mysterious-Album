@@ -1,4 +1,4 @@
-import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js';
+import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js?v=20260831-always-on';
 
 installUISFX();
 
