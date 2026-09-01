@@ -4,28 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#e9e3d3">
-  <title>不见了的回声 | 萌萌星的奇妙图鉴</title>
-  <meta name="description" content="和小伙伴一起喊一声、听一听，用孩子能听懂的故事认识回声。">
+  <title>送豆豆回家 | 萌萌星的奇妙图鉴</title>
+  <meta name="description" content="照顾迷路的豆豆，听清线索，陪它一步一步找到家。">
   <link rel="icon" href="./favicon.ico?v=20260829-soft-corner" sizes="any">
   <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260829-soft-corner">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
   <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260828-picturebook-alpha">
-  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/listening-shell.webp?v=20260828-picturebook-alpha">
-  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/star-thread.webp?v=20260828-picturebook-alpha">
-  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/unsent-greeting.webp?v=20260828-picturebook-alpha">
-  <link rel="preload" as="image" type="image/webp" href="./assets/story/items/lighthouse-seed.webp?v=20260828-picturebook-alpha">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260831-simulator-scenes">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/covers/doudou-home.webp?v=20260901-doudou">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260901-two-stories">
   <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
   <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-no-icon-clipping">
 </head>
-<body data-phase="cover" data-place="paper-ground" data-analytics-page="echo">
+<body data-phase="cover" data-place="meadow" data-analytics-page="doudou">
   <header class="story-header">
     <nav id="story-navigation"></nav>
     <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
-      <span data-chapter-dot="1">听见小回声</span>
-      <span data-chapter-dot="2">跟着回声走</span>
-      <span data-chapter-dot="3">陪回声回家</span>
+      <span data-chapter-dot="1">遇见豆豆</span>
+      <span data-chapter-dot="2">陪它走</span>
+      <span data-chapter-dot="3">平安到家</span>
     </div>
   </header>
 
@@ -33,11 +30,12 @@
     <section class="world-stage" id="world-stage" aria-label="横版故事舞台，轻触空白处可以让伙伴走过去">
       <canvas class="story-scene-backdrop" id="story-scene-backdrop" width="1024" height="768" aria-hidden="true"></canvas>
 
+      <div class="npc-speech stage-speech character-bubble" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="npc" data-bubble-max-chars="15" hidden>
+        <b id="npc-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="npc"></b>
+        <span class="character-bubble__tail" aria-hidden="true"></span>
+      </div>
+
       <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
-        <div class="npc-speech character-bubble" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="npc" data-bubble-max-chars="15" hidden>
-          <b id="npc-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="npc"></b>
-          <span class="character-bubble__tail" aria-hidden="true"></span>
-        </div>
         <div class="npc-portal" aria-hidden="true"></div>
         <div class="npc-character" id="npc-character" aria-hidden="true">
           <canvas id="npc-canvas"></canvas>
@@ -62,29 +60,25 @@
         </div>
       </div>
 
-      <p class="world-tap-hint" id="world-tap-hint" hidden>轮到你啦，对着麦克风说出办法</p>
+      <figure class="story-invention" id="story-invention" hidden aria-label="根据你的办法画出的发明">
+        <canvas id="story-invention-canvas" width="640" height="520" aria-hidden="true"></canvas>
+        <figcaption id="story-invention-name"></figcaption>
+      </figure>
     </section>
 
     <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
-      <div class="cover-mark brush-icon brush-icon-voice" aria-hidden="true"></div>
-      <div>
-        <p class="section-label">听一听，说一说，找回小回声</p>
-        <h1 id="cover-title">不见了的回声</h1>
-        <p class="cover-copy">你说一句，声音碰到远处又跑回来，这就是回声。今天，小回声迷路了。我们从纸上地面出发，陪它回家吧！</p>
-        <ul class="cover-promises">
-          <li>先回答三个小问题，画出你的冒险伙伴</li>
-          <li>每一关先听两个朋友说话，再轮到你说</li>
-          <li>直接说出自己的办法，故事就会继续</li>
-        </ul>
-        <p class="cover-mic-callout">点一下麦克风，我们就出发</p>
-        <p class="privacy-note">语音只在获得麦克风授权后开始，经本项目服务端送给豆包识别且不保存。不会询问姓名、学校、住址或精确生日。</p>
+      <img class="cover-illustration" id="cover-illustration" src="./assets/story/covers/doudou-home.webp?v=20260901-doudou" alt="红苹果树、小路、小桥和远处红屋顶房子的简笔画，草丛里有一个模糊的小动物轮廓">
+      <div class="cover-text">
+        <h1 id="cover-title">送豆豆回家</h1>
+        <p class="cover-copy" id="cover-copy">一只迷路的小狗躲在草丛里，等着有人陪它回家。</p>
       </div>
     </section>
+    <p class="sr-only" id="story-privacy">语音只在获得麦克风授权后开始，经本项目服务端识别且不保存。故事不会询问姓名、学校、住址或精确生日。</p>
 
     <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
       <div class="guide-encounter">
         <div class="guide-speech character-bubble" id="guide-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="guide" data-bubble-max-chars="15" data-mode="question">
-          <h2 id="interview-question" class="character-bubble__text" data-calligraph-bubble data-bubble-key="guide">你希望小宠物最特别的地方是什么？</h2>
+          <h2 id="interview-question" class="character-bubble__text" data-calligraph-bubble data-bubble-key="guide">你希望伙伴更像哪种动物？像小兔子、小狗，还是小猫？</h2>
           <span class="character-bubble__tail" aria-hidden="true"></span>
         </div>
 
@@ -100,9 +94,9 @@
     </section>
 
     <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
-      <p class="section-label">你的冒险伙伴画好啦</p>
+      <p class="section-label">一起照顾豆豆的小伙伴画好啦</p>
       <h2 id="ritual-title">这是今天陪你出发的小伙伴</h2>
-      <p id="ritual-copy">它照着你的三个回答，长出了特别的样子。</p>
+      <p id="ritual-copy">它照着你的三个具体选择，长出了特别的样子。</p>
       <div class="voice-seals" aria-label="宠物配方的三个部分">
         <span data-seal="name">形</span>
         <span data-seal="listen">色</span>
@@ -114,10 +108,10 @@
     <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
       <div class="scene-heading">
         <div>
-          <p class="section-label" id="chapter-label">第一章 听见小回声</p>
-          <h2 id="scene-title">纸上地面</h2>
+          <p class="section-label" id="chapter-label">第一章 遇见豆豆</p>
+          <h2 id="scene-title">红苹果园</h2>
         </div>
-        <p id="scene-objective">先发出一个声音，帮听听贝找方向。</p>
+        <p id="scene-objective">先照顾好躲在草丛里的豆豆。</p>
       </div>
       <div class="choice-result" id="choice-result" hidden aria-live="polite">
         <p id="result-copy"></p>
@@ -129,8 +123,8 @@
     </section>
 
     <section class="paper-panel ending-panel" id="ending-panel" hidden aria-labelledby="ending-title">
-      <p class="section-label">你陪小回声回家啦</p>
-      <h2 id="ending-title">回声回来啦</h2>
+      <p class="section-label" id="ending-label">你把豆豆平安送回家啦</p>
+      <h2 id="ending-title">豆豆到家了</h2>
       <p class="ending-copy" id="ending-copy"></p>
       <blockquote id="pet-ending-line"></blockquote>
       <div class="ending-memory" id="ending-memory"></div>
@@ -173,6 +167,6 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260901-grounded-guide"></script>
+  <script type="module" src="./src/story-v2.js?v=20260901-two-stories"></script>
 </body>
 </html>

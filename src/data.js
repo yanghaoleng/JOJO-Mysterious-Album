@@ -3,16 +3,28 @@ import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js?v=20260831-
 installUISFX();
 
 const $ = id => document.getElementById(id);
-const PAGE_LABELS = { choose: '双入口主页', story: '已下线故事', echo: '不见了的回声', debug: '角色模拟器' };
+const PAGE_LABELS = { choose: '故事与角色主页', story: '已下线故事', echo: '旧回声故事', doudou: '送豆豆回家', moon: '登月计划', debug: '角色模拟器' };
 const EVENT_LABELS = {
   choose_mode_story: '选择雾灯花园',
   choose_mode_echo: '选择不见了的回声',
+  choose_mode_doudou: '选择送豆豆回家',
+  choose_mode_moon: '选择登月计划',
   choose_mode_debug: '选择角色模拟器',
   echo_start: '开始不见了的回声',
   echo_interview_answer: '回答图鉴员问题',
   echo_pet_wake: '让专属小伙伴开口',
   echo_scene_choice: '推进回声故事场景',
   echo_complete: '完成不见了的回声',
+  doudou_voice_enabled: '送豆豆回家开启语音',
+  doudou_start: '开始送豆豆回家',
+  doudou_interview_answer: '回答伙伴塑形问题',
+  doudou_listen_continue: '继续听伙伴塑形回答',
+  doudou_scene_choice: '推进豆豆回家场景',
+  doudou_complete: '完成送豆豆回家',
+  moon_voice_enabled: '登月计划开启语音',
+  moon_start: '开始登月计划',
+  moon_invention: '生成登月发明',
+  moon_complete: '完成登月计划',
   story_start: '开始第一张图鉴',
   story_world_enter: '进入雾灯花园',
   story_seed_1: '找到第 1 颗萤火种',

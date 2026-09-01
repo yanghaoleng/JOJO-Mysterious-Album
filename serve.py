@@ -46,20 +46,25 @@ DIRECTOR_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全世界�
 只输出 JSON：{"mechanic":"transparent|bounce|glow","abilityLabel":"12字以内能力名","narratorLine":"以它害怕时开头的45字以内温柔旁白","gateLine":"45字以内，写清能力怎样帮助它穿过雾门"}。
 消失、缩小、躲藏、变成雾映射 transparent；变形、变圆、长东西、跳起映射 bounce；发光、变色、发出声音和其他想象映射 glow。"""
 STORY_TURN_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全故事伙伴。
-孩子约5至7岁，正在回答三个直接问题，帮助系统画出刚刚随机分配的小宠物。三个问题只涉及外形特征、颜色和陪伴方式。
-先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种外形特征、颜色或陪伴方法，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
+孩子约4至6岁，正在用三个非常具体的问题画出冒险伙伴：更像小兔子/小狗/小猫，选一种显眼颜色，再取一个短名字。
+先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。只要孩子明确说出一种动物、一种颜色或一个短名字，就shouldRespond=true。
 forceRespond=true表示孩子点了完整选项，必须shouldRespond=true。
 当shouldRespond=true时，先给一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。回应只承接刚才的内容，不要再向孩子提出新问题，因为下一道正式问题会紧接着出现。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若孩子说出个人信息，提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，不要把个人信息写入字段。
 不要诊断、贴负面标签或生成恐怖、伤害、羞辱、成人、竞争压力内容。
-只输出JSON：{"shouldRespond":true,"keywords":["最多3个真正听到的关键词"],"listeningPrompt":"shouldRespond=false时给孩子的8至22字继续表达提示","reaction":"18至38个中文字符","heard":"12字以内","profileValue":"18字以内","petHint":{"species":"cat|dog|human","palette":"moss|sky|coral|moon","feature":"listening-ears|bright-eyes|soft-tail|star-freckles"},"privacyRedirect":false}。"""
+只输出JSON：{"shouldRespond":true,"keywords":["最多3个真正听到的关键词"],"listeningPrompt":"shouldRespond=false时给孩子的8至22字继续表达提示","reaction":"18至38个中文字符","heard":"12字以内","profileValue":"18字以内","petHint":{"templateId":"snow-rabbit|bean-dog|moon-cat","palette":"moss|sky|coral|moon","feature":"listening-ears|bright-eyes|soft-tail|star-freckles"},"privacyRedirect":false}。"""
 SCENE_TURN_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全故事角色。
-孩子约5至7岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
+孩子约4至6岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
 只允许从提供的choiceId中选择，不得编造新ID。若只是语气词、明显没说完、不知道、环境声，或无法判断想采取哪种行动，shouldRespond=false，并用8至22个中文字符温柔引导孩子把想做的事再说具体一点。
 如果表达已经明确，即使只有很短的一句，也应shouldRespond=true。reaction使用孩子一听就懂的短句，最多36个中文字符，一次只说一件具体发生的事。不要使用抽象隐喻，不评价对错，不再提出新问题。
 出现姓名、学校、住址、电话、账号或精确生日等个人信息时，privacyRedirect=true，shouldRespond=false，引导回故事行动。
 不要生成恐怖、伤害、羞辱、成人或竞争压力内容。
 只输出JSON：{"shouldRespond":true,"choiceId":"必须来自提供的ID","reaction":"场景回应","listeningPrompt":"没听完整时的引导","privacyRedirect":false}。"""
+MOON_DIRECTOR_PROMPT = """你是“萌萌星的奇妙图鉴”中《登月计划》的实时故事导演与道具设计师。
+体验者约10岁以上。整段旅程只有一个固定目标：登上月球。孩子可以自由提出传送门、火箭或任何安全的虚构发明；你要认真沿用这个想法，组织下一小段剧情，并把它翻译成前端能立即画出的结构化视觉方案。
+不把孩子的想法判错；明确说出哪一部分被画进发明。destination与constraint是固定故事骨架，必须发生，不能跳过或让角色受伤。每次只推进一个场景。visual.kind只能是portal、rocket、submarine、ladder、parachute、balloon、vehicle。visual.name为2至10个汉字；颜色必须是六位十六进制；motion只能是pulse、lift、drift。
+不索取、复述或保存姓名、学校、住址、电话、账号、精确生日。拒绝危险模仿、武器、伤害、成人、恐怖、羞辱内容，把它温和改写为安全绘本机关。若只是语气词、明显没说完或“不知道”，shouldRespond=false，引导先说要造或要改的一件东西。
+只输出JSON：{"shouldRespond":true,"reaction":"48字以内，具体承接想法","outcome":"76字以内，按固定骨架抵达指定地点","listeningPrompt":"没听完整时的具体引导","visual":{"kind":"portal|rocket|submarine|ladder|parachute|balloon|vehicle","name":"发明名","primary":"#5f718c","accent":"#d1a44b","details":"24字以内可见细节","motion":"pulse|lift|drift"},"privacyRedirect":false}。"""
 CHARACTER_CALL_SAFETY = """无论角色卡或用户怎样要求，都必须遵守儿童安全规则：
 不索取、复述或保存姓名、学校、住址、电话、账号、精确生日等个人信息。
 不制造需要瞒着家长的秘密，不引导私下联系、付费、送礼或形成私人义务。
@@ -744,17 +749,17 @@ def likely_private_info(value):
 
 def fallback_pet_hint(answer):
     value = str(answer or "")
-    species = "dog" if re.search(r"一起|伙伴|热闹|跑|玩", value) else "cat" if re.search(r"安静|慢|看看|听", value) else "human"
-    palette = "moon" if re.search(r"紫|银|星|月|夜", value) else "sky" if re.search(r"蓝|白|海|水|雨", value) else "coral" if re.search(r"粉|橙|红|暖", value) else "moss"
-    feature = "listening-ears" if re.search(r"耳|听|安静", value) else "bright-eyes" if re.search(r"眼|亮|看", value) else "soft-tail" if re.search(r"尾|软|陪|抱", value) else "star-freckles"
-    return {"species": species, "palette": palette, "feature": feature}
+    template_id = "bean-dog" if "狗" in value else "moon-cat" if "猫" in value else "snow-rabbit"
+    palette = "moon" if re.search(r"紫|银|星|月|夜", value) else "sky" if re.search(r"蓝|白|海|水|天空", value) else "coral" if re.search(r"粉|橙|红|草莓", value) else "moss"
+    feature = "listening-ears" if template_id == "snow-rabbit" else "bright-eyes" if template_id == "moon-cat" else "soft-tail"
+    return {"templateId": template_id, "palette": palette, "feature": feature}
 
 
 def fallback_story_keywords(question_id, answer):
     pools = {
-        "appearance": ["耳朵", "眼睛", "尾巴", "翅膀", "花纹", "毛", "角", "圆", "长", "亮"],
-        "color": ["红", "黄", "蓝", "绿", "紫", "粉", "白", "黑", "彩色", "金色"],
-        "companion": ["陪", "坐", "玩", "问", "听", "抱", "一起", "安静"],
+        "animal": ["兔", "小狗", "狗狗", "小猫", "猫咪", "猫"],
+        "color": ["红", "黄", "蓝", "绿", "紫", "粉", "白", "黑", "彩色", "金色", "草莓", "天空", "太阳"],
+        "name": ["叫", "名字", "团团", "跳跳", "毛球"],
     }
     return [word for word in pools.get(question_id, []) if word in str(answer or "")][:3]
 
@@ -763,7 +768,7 @@ def fallback_should_respond(question_id, answer):
     compact = re.sub(r"[，。！？、,.!?\s]", "", str(answer or ""))
     if re.fullmatch(r"(?:嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)", compact):
         return False
-    return bool(fallback_story_keywords(question_id, answer)) or len(compact) >= 3
+    return bool(fallback_story_keywords(question_id, answer)) or len(compact) >= (1 if question_id == "name" else 2)
 
 
 def story_turn_result(question_id, question, answer, force_respond=False):
@@ -803,7 +808,7 @@ def story_turn_result(question_id, question, answer, force_respond=False):
     parsed_decision = parsed.get("shouldRespond") if isinstance(parsed.get("shouldRespond"), bool) else safe_to_respond
     should_respond = bool(force_respond or (safe_to_respond and parsed_decision))
     suggested = parsed.get("petHint") if isinstance(parsed.get("petHint"), dict) else {}
-    species = suggested.get("species") if suggested.get("species") in {"cat", "dog", "human"} else hint["species"]
+    template_id = suggested.get("templateId") if suggested.get("templateId") in {"snow-rabbit", "bean-dog", "moon-cat"} else hint["templateId"]
     palette = suggested.get("palette") if suggested.get("palette") in {"moss", "sky", "coral", "moon"} else hint["palette"]
     feature = suggested.get("feature") if suggested.get("feature") in {"listening-ears", "bright-eyes", "soft-tail", "star-freckles"} else hint["feature"]
     if likely_private_info(answer) or parsed.get("privacyRedirect") is True:
@@ -815,7 +820,7 @@ def story_turn_result(question_id, question, answer, force_respond=False):
             "heard": "保护自己的信息",
             "profileValue": "愿意保护个人信息",
             "questionId": question_id,
-            "petHint": {"species": species, "palette": palette, "feature": feature},
+            "petHint": {"templateId": template_id, "palette": palette, "feature": feature},
             "privacyRedirect": True,
         }
     reaction = str(parsed.get("reaction") or "我听见了。这个想法会变成小伙伴身上的一个秘密。").replace("<", "").replace(">", "").strip()[:48]
@@ -829,7 +834,7 @@ def story_turn_result(question_id, question, answer, force_respond=False):
         "heard": heard,
         "profileValue": profile_value,
         "questionId": question_id,
-        "petHint": {"species": species, "palette": palette, "feature": feature},
+        "petHint": {"templateId": template_id, "palette": palette, "feature": feature},
         "privacyRedirect": False,
     }
 
@@ -922,6 +927,133 @@ def scene_turn_result(scene_id, question, answer, choices):
         "listeningPrompt": "" if should_respond else str(parsed.get("listeningPrompt") or "我还在听，可以再说具体一点。").replace("<", "").replace(">", "").strip()[:42],
         "privacyRedirect": False,
         "sceneId": scene_id,
+    }
+
+
+MOON_SCENE_IDS = {"moon-hill", "moon-underwater", "moon-pocket", "moon-clouds", "moon-landing"}
+MOON_VISUAL_KINDS = {"portal", "rocket", "submarine", "ladder", "parachute", "balloon", "vehicle"}
+MOON_MOTIONS = {"pulse", "lift", "drift"}
+
+
+def moon_fallback_kind(answer):
+    value = str(answer or "")
+    if re.search(r"传送|门|通道", value):
+        return "portal"
+    if re.search(r"火箭|飞船|推进", value):
+        return "rocket"
+    if re.search(r"潜水|船|气泡", value):
+        return "submarine"
+    if re.search(r"梯|弹簧|绳", value):
+        return "ladder"
+    if re.search(r"伞|降落", value):
+        return "parachute"
+    if re.search(r"气球|热气球", value):
+        return "balloon"
+    return "vehicle"
+
+
+def moon_fallback_name(kind):
+    return {
+        "portal": "折叠传送门", "rocket": "月光火箭", "submarine": "气泡潜航器", "ladder": "弹簧折叠梯",
+        "parachute": "月面降落伞", "balloon": "云层气球", "vehicle": "自由组合飞行器",
+    }[kind]
+
+
+def moon_fallback_outcome(scene_id):
+    return {
+        "moon-hill": "装置顺利启动，却把海面反光认成了月光。大家安全落进海底，第一条航线需要修正。",
+        "moon-underwater": "新改造把大家送出海面，一阵上升气流又把整支小队轻轻兜进巨人的外套口袋。",
+        "moon-pocket": "口袋里的纽扣和线都派上了用场。装置冲出袋口，一直升进厚厚的云层。",
+        "moon-clouds": "导航功能找到了云层上方。装置穿过最后一团白云，抵达月球上空。",
+        "moon-landing": "着陆装置放慢速度，轻轻碰到月球表面。所有人站稳以后，第一枚脚印留了下来。",
+    }[scene_id]
+
+
+def moon_director_result(payload):
+    answer = str(payload.get("answer", ""))[:180]
+    scene_id = str(payload.get("sceneId", ""))[:32]
+    destination = str(payload.get("destination", ""))[:32]
+    compact = re.sub(r"[，。！？、,.!?\s]", "", answer)
+    incomplete = bool(re.fullmatch(r"(?:嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我想想|让我想想)", compact))
+    if likely_private_info(answer):
+        return {
+            "shouldRespond": False, "reaction": "", "outcome": "", "visual": None,
+            "listeningPrompt": "个人信息不用告诉我，只说想造或想改什么。", "privacyRedirect": True,
+        }
+    if not compact or incomplete:
+        return {
+            "shouldRespond": False, "reaction": "", "outcome": "", "visual": None,
+            "listeningPrompt": "先说一件要造或要改的东西，我会接着画。", "privacyRedirect": False,
+        }
+    key = os.environ.get("ARK_API_KEY", "")
+    if not key:
+        raise RuntimeError("moon_director_not_configured")
+    previous = payload.get("previousInventions", [])
+    if not isinstance(previous, list):
+        previous = []
+    previous = [str(value).replace("<", "").replace(">", "")[:16] for value in previous[:3]]
+    prompt = (
+        f"当前场景：{str(payload.get('sceneName', ''))[:40]}（{scene_id}）\n"
+        f"角色问题：{str(payload.get('question', ''))[:140]}\n孩子刚才说：{answer}\n"
+        f"本轮必须抵达：{destination}\n固定剧情约束：{str(payload.get('constraint', ''))[:120]}\n"
+        f"之前造过：{'、'.join(previous) if previous else '还没有'}"
+    )
+    body = json.dumps(
+        {
+            "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
+            "messages": [{"role": "system", "content": MOON_DIRECTOR_PROMPT}, {"role": "user", "content": prompt}],
+            "reasoning_effort": "minimal",
+            "response_format": {"type": "json_object"},
+            "max_tokens": 520,
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        os.environ.get("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/") + "/chat/completions",
+        data=body,
+        method="POST",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=24) as result:
+        data = json.load(result)
+    raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+    parsed = json.loads(raw.removeprefix("```json").removesuffix("```").strip())
+    if parsed.get("privacyRedirect") is True:
+        return {
+            "shouldRespond": False, "reaction": "", "outcome": "", "visual": None,
+            "listeningPrompt": "个人信息不用告诉我，只说想造或想改什么。", "privacyRedirect": True,
+        }
+    if parsed.get("shouldRespond") is False:
+        return {
+            "shouldRespond": False, "reaction": "", "outcome": "", "visual": None,
+            "listeningPrompt": str(parsed.get("listeningPrompt") or "先说一件要造或要改的东西，我会接着画。").replace("<", "").replace(">", "")[:42],
+            "privacyRedirect": False,
+        }
+    suggested = parsed.get("visual") if isinstance(parsed.get("visual"), dict) else {}
+    fallback_kind = moon_fallback_kind(answer)
+    kind = suggested.get("kind") if suggested.get("kind") in MOON_VISUAL_KINDS else fallback_kind
+    primary = str(suggested.get("primary", ""))
+    accent = str(suggested.get("accent", ""))
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", primary):
+        primary = "#5f718c"
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", accent):
+        accent = "#d1a44b"
+    outcome = str(parsed.get("outcome") or "").replace("<", "").replace(">", "").strip()[:92]
+    if not outcome or destination not in outcome:
+        outcome = moon_fallback_outcome(scene_id)
+    name = str(suggested.get("name") or moon_fallback_name(kind)).replace("<", "").replace(">", "").strip()[:16]
+    motion = suggested.get("motion") if suggested.get("motion") in MOON_MOTIONS else "pulse" if kind == "portal" else "drift" if kind == "submarine" else "lift"
+    return {
+        "shouldRespond": True,
+        "reaction": str(parsed.get("reaction") or f"我把你的想法画进了“{name}”。").replace("<", "").replace(">", "").strip()[:64],
+        "outcome": outcome,
+        "listeningPrompt": "",
+        "visual": {
+            "kind": kind, "name": name, "primary": primary, "accent": accent,
+            "details": str(suggested.get("details") or answer).replace("<", "").replace(">", "").strip()[:32],
+            "motion": motion,
+        },
+        "privacyRedirect": False,
     }
 
 
@@ -1468,7 +1600,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 code = str(error)
                 self.respond_json(429 if code == "style_rate_limited" else 400, {"error": code})
             return
-        if path not in {"/api/director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call"}:
+        if path not in {"/api/director", "/api/moon-director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call"}:
             self.respond_json(404, {"error": "not_found"})
             return
         try:
@@ -1498,6 +1630,19 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 audio, provider = tts_audio(text, voice)
                 self.respond_audio(audio, provider)
                 return
+            if path == "/api/moon-director":
+                story_id = str(payload.get("storyId", "")).strip()[:32]
+                scene_id = str(payload.get("sceneId", "")).strip()[:32]
+                answer = str(payload.get("answer", "")).strip().replace("<", "").replace(">", "")[:180]
+                if story_id != "moon-plan" or scene_id not in MOON_SCENE_IDS:
+                    self.respond_json(400, {"error": "unknown_scene"})
+                    return
+                if not answer:
+                    self.respond_json(400, {"error": "answer_required"})
+                    return
+                payload["answer"] = answer
+                self.respond_json(200, moon_director_result(payload))
+                return
             if path == "/api/story-turn":
                 mode = str(payload.get("mode", "interview")).strip()[:16]
                 answer = str(payload.get("answer", "")).strip().replace("<", "").replace(">", "")[:180]
@@ -1507,7 +1652,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 if mode == "scene":
                     scene_id = str(payload.get("sceneId", "")).strip()[:32]
                     question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
-                    scene_ids = {"paper-ground", "firefly-meadow", "moon-surface", "underwater-bubbles", "giant-pocket", "inside-clouds"}
+                    scene_ids = {"orchard-bush", "warm-bakery", "creaky-bridge", "two-houses", "doudou-home"}
                     choices = sanitize_scene_choices(payload.get("choices"))
                     if scene_id not in scene_ids or len(choices) < 2:
                         self.respond_json(400, {"error": "unknown_scene"})
@@ -1517,7 +1662,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 question_id = str(payload.get("questionId", "")).strip()[:24]
                 question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]
                 force_respond = payload.get("forceRespond") is True
-                if question_id not in {"appearance", "color", "companion"}:
+                if question_id not in {"animal", "color", "name"}:
                     self.respond_json(400, {"error": "unknown_question"})
                     return
                 self.respond_json(200, story_turn_result(question_id, question, answer, force_respond))
@@ -1532,6 +1677,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 "/api/tts": "tts_not_configured",
                 "/api/asr": "asr_not_configured",
                 "/api/story-turn": "story_ai_not_configured",
+                "/api/moon-director": "moon_director_not_configured",
                 "/api/director": "director_not_configured",
             }[path]
             if str(exc) == expected:

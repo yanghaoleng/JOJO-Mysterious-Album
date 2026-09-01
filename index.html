@@ -380,7 +380,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260828-icon-motion">
+<link rel="stylesheet" href="./src/lab.css?v=20260901-two-stories">
 <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
 <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
@@ -400,11 +400,19 @@
         </div>
       </div>
       <div class="mode-choices">
-        <a class="mode-choice echo" href="./story-v2" data-mode-choice="echo">
-          <span class="mode-mark brush-icon brush-icon-voice" aria-hidden="true"></span>
-          <b>不见了的回声</b>
-          <span>先聊天认识你，再和专属小伙伴完成三章语音冒险。</span>
-          <i>进入新故事</i>
+        <a class="mode-choice story-choice doudou" href="./story-v2?story=doudou" data-mode-choice="doudou">
+          <img class="mode-story-art" src="./assets/story/covers/doudou-home.webp?v=20260901-doudou" alt="红苹果树、小路和远处红屋顶房子的简笔画">
+          <span class="mode-story-age">4～6 岁</span>
+          <b>送豆豆回家</b>
+          <span>先照顾迷路的豆豆，再听线索、过小桥，陪它找到家。</span>
+          <i>开始照顾豆豆</i>
+        </a>
+        <a class="mode-choice story-choice moon" href="./story-v2?story=moon" data-mode-choice="moon">
+          <img class="mode-story-art" src="./assets/story/covers/moon-plan.webp?v=20260901-moon" alt="山丘望远镜、月亮和模糊发明轮廓的简笔画">
+          <span class="mode-story-age">10 岁以上</span>
+          <b>登月计划</b>
+          <span>只给一个目标。你说出传送门、火箭或别的方案，模型导演就把它画进旅程。</span>
+          <i>启动登月计划</i>
         </a>
         <button class="mode-choice debug" type="button" data-mode-choice="debug">
           <span class="mode-mark brush-icon brush-icon-create" aria-hidden="true"></span>

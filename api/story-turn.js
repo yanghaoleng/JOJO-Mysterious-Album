@@ -1,12 +1,12 @@
-const QUESTION_FIELDS = new Set(['appearance', 'color', 'companion']);
-const SCENE_IDS = new Set(['paper-ground', 'firefly-meadow', 'moon-surface', 'underwater-bubbles', 'giant-pocket', 'inside-clouds']);
-const SPECIES = new Set(['cat', 'dog', 'human']);
+const QUESTION_FIELDS = new Set(['animal', 'color', 'name']);
+const SCENE_IDS = new Set(['orchard-bush', 'warm-bakery', 'creaky-bridge', 'two-houses', 'doudou-home']);
+const TEMPLATE_IDS = new Set(['snow-rabbit', 'bean-dog', 'moon-cat']);
 const PALETTES = new Set(['moss', 'sky', 'coral', 'moon']);
 const FEATURES = new Set(['listening-ears', 'bright-eyes', 'soft-tail', 'star-freckles']);
 
 const SYSTEM_PROMPT = `你是“萌萌星的奇妙图鉴”的儿童安全故事伙伴。
-当前孩子正在回答三个直接问题，帮助系统画出刚刚随机分配的小宠物。三个问题只涉及外形特征、颜色和陪伴方式。孩子约 5 至 7 岁。
-你的任务先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。若已表达一种外形特征、颜色或陪伴方法，shouldRespond=true。不要机械等待固定词，儿童的简短但明确回答也算完整。
+当前孩子约 4 至 6 岁，正在用三个非常具体的问题画出冒险伙伴：更像小兔子/小狗/小猫，选一种显眼颜色，再取一个短名字。
+你的任务先判断这句话是否已经包含足够内容，值得角色现在回应。若只是“嗯、啊、等一下、不知道”、明显没说完的半句话或无关环境声，shouldRespond=false，让角色继续听。只要孩子明确说出一种动物、一种颜色或一个短名字，就 shouldRespond=true。
 forceRespond=true 表示孩子点了完整选项，必须 shouldRespond=true。
 当 shouldRespond=true 时，像朋友一样给出一句自然、具体、不评判对错的回应，再抽取一个低敏感度偏好。回应只承接刚才的内容，不要再向孩子提出新问题，因为下一道正式问题会紧接着出现。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若回答里出现这些内容，用温柔的话提醒“不用告诉我这些，我们只聊你喜欢怎样冒险”，并且不要把个人信息写入任何字段。
@@ -20,7 +20,7 @@ forceRespond=true 表示孩子点了完整选项，必须 shouldRespond=true。
   "heard": "不超过12个中文字符的偏好摘要",
   "profileValue": "不超过18个中文字符",
   "petHint": {
-    "species": "cat|dog|human",
+    "templateId": "snow-rabbit|bean-dog|moon-cat",
     "palette": "moss|sky|coral|moon",
     "feature": "listening-ears|bright-eyes|soft-tail|star-freckles"
   },
@@ -29,7 +29,7 @@ forceRespond=true 表示孩子点了完整选项，必须 shouldRespond=true。
 不要输出 Markdown。`;
 
 const SCENE_SYSTEM_PROMPT = `你是“萌萌星的奇妙图鉴”的儿童安全故事角色。
-孩子约 5 至 7 岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
+孩子约 4 至 6 岁，正用自然语音回答故事情境。界面不显示选项，你要把孩子自己的说法理解成当前场景里最接近的一种行动。
 只允许从提供的 choiceId 中选择，不得编造新 ID。若只是语气词、明显没说完、不知道、环境声，或无法判断想采取哪种行动，shouldRespond=false，并用 8 至 22 个中文字符温柔引导孩子把想做的事再说具体一点。
 如果表达已经明确，即使只有很短的一句，也应 shouldRespond=true。reaction 用孩子一听就懂的短句承接，最多 36 个中文字符，一次只说一件具体发生的事。不要使用抽象隐喻，不评价对错，不再提出新问题。
 不要索取或重复姓名、学校、住址、电话、账号、精确生日等个人信息。若出现个人信息，privacyRedirect=true，shouldRespond=false，引导回故事行动。
@@ -55,17 +55,17 @@ function hasLikelyPrivateInfo(value) {
 
 function fallbackHint(answer) {
   const value = String(answer || '');
-  const species = /一起|伙伴|热闹|跑|玩/.test(value) ? 'dog' : /安静|慢|看看|听/.test(value) ? 'cat' : 'human';
-  const palette = /紫|银|星|月|夜/.test(value) ? 'moon' : /蓝|白|海|水|雨/.test(value) ? 'sky' : /粉|橙|红|暖/.test(value) ? 'coral' : 'moss';
-  const feature = /耳|听|安静/.test(value) ? 'listening-ears' : /眼|亮|看/.test(value) ? 'bright-eyes' : /尾|软|陪|抱/.test(value) ? 'soft-tail' : 'star-freckles';
-  return { species, palette, feature };
+  const templateId = /狗/.test(value) ? 'bean-dog' : /猫/.test(value) ? 'moon-cat' : 'snow-rabbit';
+  const palette = /紫|银|星|月|夜/.test(value) ? 'moon' : /蓝|白|海|水|天空/.test(value) ? 'sky' : /粉|橙|红|草莓/.test(value) ? 'coral' : 'moss';
+  const feature = templateId === 'snow-rabbit' ? 'listening-ears' : templateId === 'moon-cat' ? 'bright-eyes' : 'soft-tail';
+  return { templateId, palette, feature };
 }
 
 function fallbackKeywords(questionId, answer) {
   const pools = {
-    appearance: ['耳朵', '眼睛', '尾巴', '翅膀', '花纹', '毛', '角', '圆', '长', '亮'],
-    color: ['红', '黄', '蓝', '绿', '紫', '粉', '白', '黑', '彩色', '金色'],
-    companion: ['陪', '坐', '玩', '问', '听', '抱', '一起', '安静'],
+    animal: ['兔', '小狗', '狗狗', '小猫', '猫咪', '猫'],
+    color: ['红', '黄', '蓝', '绿', '紫', '粉', '白', '黑', '彩色', '金色', '草莓', '天空', '太阳'],
+    name: ['叫', '名字', '团团', '跳跳', '毛球'],
   };
   return (pools[questionId] || []).filter(keyword => String(answer).includes(keyword)).slice(0, 3);
 }
@@ -73,7 +73,7 @@ function fallbackKeywords(questionId, answer) {
 function fallbackShouldRespond(questionId, answer) {
   const compact = String(answer).replace(/[，。！？、,.!?\s]/g, '');
   if (/^(嗯+|啊+|哦+|呃+|不知道|没想好|等一下|再想想|我?还?想一想|我想想|让我想想|听不清)$/.test(compact)) return false;
-  return fallbackKeywords(questionId, answer).length > 0 || compact.length >= 3;
+  return fallbackKeywords(questionId, answer).length > 0 || (questionId === 'name' ? compact.length >= 1 : compact.length >= 2);
 }
 
 function sanitizeSceneChoices(raw) {
@@ -149,7 +149,7 @@ function clean(raw, answer, questionId, forceRespond = false) {
   const shouldRespond = forceRespond || safeToRespond && (typeof parsed.shouldRespond === 'boolean' ? parsed.shouldRespond : safeToRespond);
   const suggested = parsed.petHint && typeof parsed.petHint === 'object' ? parsed.petHint : {};
   const petHint = {
-    species: SPECIES.has(suggested.species) ? suggested.species : hint.species,
+    templateId: TEMPLATE_IDS.has(suggested.templateId) ? suggested.templateId : hint.templateId,
     palette: PALETTES.has(suggested.palette) ? suggested.palette : hint.palette,
     feature: FEATURES.has(suggested.feature) ? suggested.feature : hint.feature,
   };
