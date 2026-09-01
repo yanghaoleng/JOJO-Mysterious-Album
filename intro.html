@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
   <link rel="preload" href="./assets/intro/paper-watercolor.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="preload" href="./assets/intro/fox-guide.webp" as="image" type="image/webp" fetchpriority="high">
-  <link rel="stylesheet" href="./src/intro.css?v=20260901-intro">
+  <link rel="stylesheet" href="./src/intro.css?v=20260901-making-notes">
   <title>萌萌星的奇妙图鉴｜儿童 AI 原生创造游戏</title>
 </head>
 <body data-analytics-page="intro">
@@ -136,6 +136,62 @@
           <img src="./assets/intro/lighthouse-seed.webp" alt="灯塔种子" width="512" height="512" loading="lazy" decoding="async">
           <figcaption><strong>灯塔种子</strong><span>在需要的时候点亮方向</span></figcaption>
         </figure>
+      </div>
+    </section>
+
+    <section class="making section-shell" id="technology" aria-labelledby="making-title">
+      <div class="making-heading reveal">
+        <h2 id="making-title">故事背后，怎样一起工作？</h2>
+        <p>语音、角色、画面和隐私保护各做一件明确的事，让孩子只需要自然地说和选择。</p>
+      </div>
+
+      <div class="making-board">
+        <article class="making-api reveal">
+          <p class="making-label">API 能力</p>
+          <h3>听见一句话，判断要不要回应，再让角色说出来。</h3>
+          <dl class="api-list">
+            <div>
+              <dt><code>/api/asr</code><span>语音转文字</span></dt>
+              <dd>豆包大模型语音识别处理单次发言，访问密钥只保留在服务端。</dd>
+            </div>
+            <div>
+              <dt><code>/api/story-turn</code><span>理解这一轮</span></dt>
+              <dd>豆包 Seed 2.0 Mini 判断孩子是否说完，并把自然表达匹配到当前故事行动。</dd>
+            </div>
+            <div>
+              <dt><code>/api/tts</code><span>角色开口</span></dt>
+              <dd>豆包 Seed TTS 生成角色动态语音，也可切换 Fish Audio；失败时字幕、口型和动作仍会继续。</dd>
+            </div>
+          </dl>
+        </article>
+
+        <div class="making-side">
+          <article class="making-note making-third-party reveal">
+            <h3>第三方组件</h3>
+            <ul>
+              <li><strong>Kindergrimm</strong><span>程序化角色、骨骼与动画基础</span></li>
+              <li><strong>Three.js r160</strong><span>角色骨骼、Canvas 纹理与场景渲染</span></li>
+              <li><strong>Calligraph 1.4.1</strong><span>逐字出现的对话气泡</span></li>
+              <li><strong>UISFX 0.4.0</strong><span>在浏览器本地合成自然质感音效</span></li>
+            </ul>
+          </article>
+
+          <article class="making-note making-github reveal">
+            <h3>GitHub 项目</h3>
+            <p>主分支保留版本历史，源码、构建脚本、许可和第三方声明都能查看。正式站按独立版本发布，并保留回滚点。</p>
+            <a href="https://github.com/yanghaoleng/JOJO-Mysterious-Album" target="_blank" rel="noreferrer" data-intro-event="open_github">查看源码与许可</a>
+          </article>
+        </div>
+
+        <div class="design-features reveal" aria-labelledby="design-features-title">
+          <h3 id="design-features-title">设计特色</h3>
+          <div class="design-feature-list">
+            <article><strong>语音优先</strong><p>NPC 对话把话题自然交给孩子。</p></article>
+            <article><strong>反馈可见</strong><p>收音、思考、字幕、口型和动作同步。</p></article>
+            <article><strong>角色可重建</strong><p>同一份种子与配方能还原同一个伙伴。</p></article>
+            <article><strong>隐私最小化</strong><p>不建立儿童账号，成长记录保存在当前设备。</p></article>
+          </div>
+        </div>
       </div>
     </section>
 
