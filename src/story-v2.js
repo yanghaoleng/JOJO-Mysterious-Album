@@ -11,7 +11,7 @@ import {
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
 import { CHAPTERS, GUIDES, INTERVIEW_QUESTIONS, ITEMS, SCENES, STORY_GUIDE_TEMPLATE, STORY_ID } from './story-blueprints.js?v=20260831-simulator-scenes';
-import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260831-simulator-scenes';
+import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260901-grounded-guide';
 import { randomStoryAnimalTemplate, storyCharacterTemplateById } from './story-character-templates.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
