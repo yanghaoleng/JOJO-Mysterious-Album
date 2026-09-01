@@ -20,7 +20,7 @@ const C = {
 export const SCENE_GROUPS = ['全部', '日常', '自然', '奇遇'];
 
 const GROUND_SCENE_HORIZONS = Object.freeze({
-  'paper-ground': 530,
+  'paper-ground': 450,
   'classroom-desk': 470,
   library: 555,
   attic: 540,
@@ -149,7 +149,8 @@ function paintScene(s, id) {
   ctx.fillRect(0, 0, 960, 720);
 
   if (id === 'paper-ground') {
-    ground(s, 530, [219, 210, 187]); grass(s, 530, 13);
+    ground(s, GROUND_SCENE_HORIZONS['paper-ground'], [219, 210, 187]);
+    grass(s, GROUND_SCENE_HORIZONS['paper-ground'], 13);
   } else if (id === 'classroom-desk') {
     rect(s, 0, 0, 960, 430, [225, 218, 199], .1);
     line(s, [[110, 115], [110, 370], [390, 370], [390, 115], [110, 115]], 3, .28);

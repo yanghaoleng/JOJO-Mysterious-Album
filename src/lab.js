@@ -19,7 +19,7 @@ import {
   sceneHorizonWorldY,
   createSceneBackdrop,
   paintSceneThumbnail,
-} from './lab-scenes.js?v=20260831-simulator-scenes';
+} from './lab-scenes.js?v=20260901-grounded-guide';
 import {
   createEmptyChildProfile,
   firstUnansweredProfileIndex,
