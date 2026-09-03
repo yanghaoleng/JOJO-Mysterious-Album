@@ -7,6 +7,7 @@ export default function handler(request, response) {
     ai: Boolean(process.env.ARK_API_KEY),
     fish: Boolean(process.env.FISH_AUDIO_API_KEY),
     storyAi: Boolean(process.env.ARK_API_KEY),
+    debate: true,
     characterCall: true,
     speechRecognition: Boolean(
       process.env.VOLC_SPEECH_APP_ID

@@ -172,6 +172,7 @@ body[data-mode="debug"] #paper-grain { z-index: 12; opacity: .11; }
 }
 .mode-choice.story-choice.doudou { transform: rotate(-.2deg); }
 .mode-choice.story-choice.moon { animation-delay: .06s; transform: rotate(.18deg); }
+.mode-choice.story-choice.debate { animation-delay: .1s; transform: rotate(-.12deg); }
 .mode-choice.story-choice:hover { transform: translateY(-3px) rotate(0); }
 .mode-story-art {
   grid-column: 1 / -1;
