@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="让两个萌萌星角色从不同方向讨论孩子提出的问题。">
+  <title>观点小剧场 | 萌萌星的奇妙图鉴</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./src/debate.css?v=20260903-debate">
+  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
+  <link rel="stylesheet" href="./src/ui-sfx.css?v=20260831-always-on">
+</head>
+<body data-analytics-page="debate">
+  <nav id="debate-navigation"></nav>
+  <main>
+    <header class="debate-title"><span>萌萌星观点小剧场</span><h1>同一个问题，可以从两边想</h1><p>角色不会争输赢，只会把不同理由讲清楚。</p></header>
+
+    <section id="setup" class="paper-panel">
+      <form id="debate-form">
+        <label class="question-label" for="question">你想让它们讨论什么？</label>
+        <div class="question-row"><input id="question" maxlength="80" required autocomplete="off" placeholder="例如：小朋友每天都应该看动画片吗？"><button id="question-mic" type="button" aria-label="用语音说出问题">🎙️</button></div>
+        <p id="speech-help">可以打字，也可以点麦克风说。问题不会存进访问统计。</p>
+        <div class="suggested-questions" aria-labelledby="suggested-questions-title">
+          <span id="suggested-questions-title">也可以选一个问题</span>
+          <div>
+            <button type="button" data-question="周末应该先写作业，还是先出去玩？">先写作业，还是先出去玩？</button>
+            <button type="button" data-question="小朋友每天都应该看动画片吗？">每天都应该看动画片吗？</button>
+            <button type="button" data-question="养宠物会带来更多快乐，还是更多责任？">养宠物是快乐多，还是责任多？</button>
+            <button type="button" data-question="遇到不会的事情，应该自己多想一会儿，还是马上请别人帮忙？">自己想，还是马上请人帮忙？</button>
+            <button type="button" data-question="旅行前应该把一切计划好，还是留一些自由探索的时间？">旅行要计划好，还是自由探索？</button>
+          </div>
+        </div>
+        <fieldset><legend>选两个角色</legend><div id="character-picker" class="character-picker"></div></fieldset>
+        <button class="primary" id="start-debate" type="submit">开始观点小剧场</button>
+      </form>
+    </section>
+
+    <section id="theatre" class="theatre" hidden>
+      <div class="topic"><span id="round-label">准备中</span><h2 id="topic-text"></h2></div>
+      <div class="stage">
+        <article id="speaker-a" class="speaker"><div class="avatar" aria-hidden="true"><canvas></canvas></div><b></b><small>先看看好处</small></article>
+        <div class="speech-card"><span id="speech-name"></span><p id="speech-text" aria-live="polite"></p></div>
+        <article id="speaker-b" class="speaker"><div class="avatar" aria-hidden="true"><canvas></canvas></div><b></b><small>提醒另一面</small></article>
+      </div>
+      <div class="progress" id="turn-progress" aria-label="讨论进度"></div>
+      <div class="play-actions"><button id="toggle-play" type="button">暂停</button><button id="skip-turn" type="button">下一句话</button><button id="end-debate" type="button">结束讨论</button></div>
+    </section>
+
+    <section id="reflection" class="paper-panel reflection" hidden>
+      <span>轮到你想一想</span><h2 id="closing-question"></h2>
+      <form id="reflection-form"><textarea id="child-opinion" maxlength="120" placeholder="可以写下你的想法，也可以先不回答。"></textarea><button class="primary" type="submit">听听共同点</button></form>
+    </section>
+
+    <section id="ending" class="paper-panel ending" hidden>
+      <span>这次没有胜负</span><h2>两边都带来了一块拼图</h2><p id="common-ground"></p><p id="opinion-response"></p>
+      <div><button id="restart" class="primary" type="button">再问一个问题</button><a href="./">回到图鉴首页</a></div>
+    </section>
+    <p id="status" role="status"></p>
+  </main>
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+  <script type="module" src="./src/analytics.js"></script>
+  <script type="module" src="./src/debate.js?v=20260903-debate"></script>
+</body>
+</html>
