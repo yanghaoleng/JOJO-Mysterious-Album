@@ -1,0 +1,82 @@
+{
+  "title": "小小陶土剧场 · 原创体积角色",
+  "author": "Codex, created for 萌萌星的奇妙图鉴",
+  "version": 1,
+  "source": "dev/models.js",
+  "format": "Three.js Object3D JSON",
+  "threeRevision": "160",
+  "usesSkeleton": false,
+  "externalTextures": false,
+  "characters": [
+    {
+      "id": "dog",
+      "name": "豆豆",
+      "description": "垂耳朵的小狗，带着一只邮差包。",
+      "color": "#c99561",
+      "file": "characters/dog.json",
+      "triangles": 19296,
+      "meshes": 50,
+      "restHeight": 2.2
+    },
+    {
+      "id": "rabbit",
+      "name": "雪团",
+      "description": "长耳朵的小兔，戴着一条蓝围巾。",
+      "color": "#eee3d5",
+      "file": "characters/rabbit.json",
+      "triangles": 19488,
+      "meshes": 50,
+      "restHeight": 2.2
+    },
+    {
+      "id": "otter",
+      "name": "阿獭",
+      "description": "圆鼻子的小水獭，口袋里藏着小贝壳。",
+      "color": "#99735b",
+      "file": "characters/otter.json",
+      "triangles": 20254,
+      "meshes": 59,
+      "restHeight": 2.2
+    },
+    {
+      "id": "owl",
+      "name": "咕咕",
+      "description": "心形脸的小猫头鹰，背着一本小书。",
+      "color": "#b19a7f",
+      "file": "characters/owl.json",
+      "triangles": 22092,
+      "meshes": 60,
+      "restHeight": 2.2
+    },
+    {
+      "id": "cat",
+      "name": "月牙",
+      "description": "尖耳朵的小猫，卷尾巴上有一道奶油色。",
+      "color": "#bf9980",
+      "file": "characters/cat.json",
+      "triangles": 19100,
+      "meshes": 54,
+      "restHeight": 2.2
+    },
+    {
+      "id": "bear",
+      "name": "蜜糖",
+      "description": "圆耳朵的小熊，围着蜂蜜色小领巾。",
+      "color": "#c39666",
+      "file": "characters/bear.json",
+      "triangles": 18736,
+      "meshes": 48,
+      "restHeight": 2.2
+    },
+    {
+      "id": "frog",
+      "name": "小荷",
+      "description": "圆眼睛的小青蛙，戴着一片荷叶。",
+      "color": "#93af83",
+      "file": "characters/frog.json",
+      "triangles": 17316,
+      "meshes": 44,
+      "restHeight": 2.2
+    }
+  ]
+}

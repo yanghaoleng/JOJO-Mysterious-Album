@@ -1,0 +1,1000 @@
+{
+  "base": "http://127.0.0.1:8913/dev/",
+  "session": "dev-moon-direct-audit",
+  "checkedAt": "2026-09-05T13:46:56.300Z",
+  "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
+  "log": [
+    {
+      "event": "direct-start",
+      "story": "moon",
+      "setupQuestions": 0,
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "ace",
+            "companion"
+          ],
+          "calls": 132,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 70,
+          "invention": false,
+          "triangles": 51046,
+          "upgrades": [],
+          "world": "observatory"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "阿策",
+          "text": "今晚的目标只有一个：登上月球。"
+        },
+        {
+          "speaker": "小航",
+          "text": "没有现成飞船，但我们有一张设计纸。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "什么样的发明，都可以先做个小模型。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "你想造什么，带大家去月球？"
+        }
+      ],
+      "skips": 4
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 0,
+      "title": "一张空白设计纸",
+      "question": "你想造什么，带大家去月球？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "ace",
+            "companion"
+          ],
+          "calls": 132,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 70,
+          "invention": false,
+          "triangles": 51046,
+          "upgrades": [],
+          "world": "observatory"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "阿策",
+          "text": "今晚的目标只有一个：登上月球。"
+        },
+        {
+          "speaker": "小航",
+          "text": "没有现成飞船，但我们有一张设计纸。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "什么样的发明，都可以先做个小模型。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "你想造什么，带大家去月球？"
+        }
+      ],
+      "skips": 4
+    },
+    {
+      "event": "custom-invention",
+      "story": "moon",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket"
+        ],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 1,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "paopao",
+            "ace",
+            "companion"
+          ],
+          "calls": 186,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 83,
+          "invention": true,
+          "triangles": 77156,
+          "upgrades": [
+            "navigation",
+            "float"
+          ],
+          "world": "reef"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 1,
+      "title": "海底维修站",
+      "question": "给刚才的发明加什么，能离开海底？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket"
+        ],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 1,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "paopao",
+            "ace",
+            "companion"
+          ],
+          "calls": 186,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 83,
+          "invention": true,
+          "triangles": 77156,
+          "upgrades": [
+            "navigation",
+            "float"
+          ],
+          "world": "reef"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "阿策",
+          "text": "模型动起来了！它偏向海边，稳稳进入气泡站。"
+        },
+        {
+          "speaker": "小航",
+          "text": "大家都好好的，发明也跟着来了。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "我们记住这次偏航，下一站再改一点。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "欢迎！气泡站有空气，也有修理工具。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "我们的发明还在，只是方向不太对。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "先让它上浮吧，我来帮你固定零件。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "给刚才的发明加什么，能离开海底？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "moon",
+      "scene": 1,
+      "selection": {
+        "id": "paddles",
+        "label": "加一对划水桨",
+        "visible": true
+      },
+      "method": "typed visible answer"
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 2,
+      "title": "纽扣那么大的窗",
+      "question": "怎样改造它，把大家带出口袋？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "zhuzhu",
+            "ace",
+            "companion"
+          ],
+          "calls": 191,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 91,
+          "invention": true,
+          "triangles": 78780,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles"
+          ],
+          "world": "pocket"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "泡泡",
+          "text": "新改造让我们上浮了，巨人的软口袋接住了小队。"
+        },
+        {
+          "speaker": "小航",
+          "text": "先是海底，现在是一个超大的口袋。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "上浮成功了，下一步是找到袋口。"
+        },
+        {
+          "speaker": "竹竹",
+          "text": "我是口袋修补员，袋口就在上面。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "这里有纽扣、线，还有一点风。"
+        },
+        {
+          "speaker": "竹竹",
+          "text": "你来想办法，我帮你把材料接牢。"
+        },
+        {
+          "speaker": "竹竹",
+          "text": "怎样改造它，把大家带出口袋？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "refresh-continue",
+      "story": "moon",
+      "before": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "zhuzhu",
+            "ace",
+            "companion"
+          ],
+          "calls": 191,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 91,
+          "invention": true,
+          "triangles": 78780,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles"
+          ],
+          "world": "pocket"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "restored": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt"
+        ],
+        "phase": "ready",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "zhuzhu",
+            "ace",
+            "companion"
+          ],
+          "calls": 190,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 91,
+          "invention": true,
+          "triangles": 78492,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles"
+          ],
+          "world": "pocket"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "resumeLabel": "继续故事",
+      "resumed": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "zhuzhu",
+            "ace",
+            "companion"
+          ],
+          "calls": 191,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 91,
+          "invention": true,
+          "triangles": 78780,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles"
+          ],
+          "world": "pocket"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    },
+    {
+      "event": "scene-answer",
+      "story": "moon",
+      "scene": 2,
+      "selection": {
+        "id": "ladder",
+        "label": "装一架折叠梯",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 3,
+      "title": "白云里的方向",
+      "question": "你想加什么，让它知道往哪儿走？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt",
+          "pocket-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 3,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "yunyou",
+            "ace",
+            "companion"
+          ],
+          "calls": 201,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 100,
+          "invention": true,
+          "triangles": 90248,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles",
+            "ladder"
+          ],
+          "world": "cloud"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "竹竹",
+          "text": "梯子展开，大家到达袋口，轻风把我们托进云层。"
+        },
+        {
+          "speaker": "小航",
+          "text": "袋口变小了，我们真的出来了！"
+        },
+        {
+          "speaker": "阿策",
+          "text": "前面全是白云，该给发明找方向了。"
+        },
+        {
+          "speaker": "云游",
+          "text": "我是云层领航员，月亮在云的上面。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "看不清时，我们先停下来辨认方向。"
+        },
+        {
+          "speaker": "云游",
+          "text": "我有月亮的位置，可以交给你的发明。"
+        },
+        {
+          "speaker": "云游",
+          "text": "你想加什么，让它知道往哪儿走？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "moon",
+      "scene": 3,
+      "selection": {
+        "id": "light-line",
+        "label": "拉出一条发光航线",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 4,
+      "title": "最后一点距离",
+      "question": "最后怎样改造，让大家慢慢落地？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt",
+          "pocket-thread",
+          "cloud-bearing"
+        ],
+        "phase": "question",
+        "sceneIndex": 4,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "yueya",
+            "ace",
+            "companion"
+          ],
+          "calls": 194,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 107,
+          "invention": true,
+          "triangles": 76888,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles",
+            "ladder",
+            "rope"
+          ],
+          "world": "moon"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "云游",
+          "text": "航线从白云里亮起来，带着我们找到前方的月球。"
+        },
+        {
+          "speaker": "小航",
+          "text": "一路改过的零件，都跟着我们来了。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "还有最后一步：让大家稳稳落地。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "这里是月面接引站，我在通讯器里等你们。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "月球没有空气，降落伞在这里用不上。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "让发明慢下来，就能稳稳接近地面。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "最后怎样改造，让大家慢慢落地？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "moon",
+      "scene": 4,
+      "selection": {
+        "id": "gentle-thruster",
+        "label": "用小推进器减速",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "moon",
+      "scene": 5,
+      "title": "月球，抵达",
+      "question": "最后想留下什么纪念？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt",
+          "pocket-thread",
+          "cloud-bearing"
+        ],
+        "phase": "question",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "ace",
+            "yueya",
+            "companion"
+          ],
+          "calls": 198,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 111,
+          "invention": true,
+          "triangles": 77112,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles",
+            "ladder",
+            "rope",
+            "thruster"
+          ],
+          "world": "moon"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "月牙",
+          "text": "小推进器轻轻工作，发明和大家稳稳落到月面。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "着陆完成，我们真的到月球了。"
+        },
+        {
+          "speaker": "小航",
+          "text": "想给这次旅行，留下一样小纪念吗？"
+        },
+        {
+          "speaker": "阿策",
+          "text": "从海底到口袋，再从白云到这里。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "每次绕路，你们都给发明加了一点办法。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "我想把这段路，画在最初的设计纸上。"
+        },
+        {
+          "speaker": "阿策",
+          "text": "最后想留下什么纪念？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "moon",
+      "scene": 5,
+      "selection": {
+        "id": "group-photo",
+        "label": "和发明拍一张合影",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "complete-and-save",
+      "story": "moon",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt",
+          "pocket-thread",
+          "cloud-bearing"
+        ],
+        "phase": "complete",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "ace",
+            "yueya",
+            "companion"
+          ],
+          "calls": 215,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 112,
+          "invention": true,
+          "triangles": 77592,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles",
+            "ladder",
+            "rope",
+            "thruster"
+          ],
+          "world": "moon"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "bag": {
+        "count": "8",
+        "items": [
+          "深海蓝螺栓泡泡帮我们固定零件的螺栓，下一站还能用。",
+          "巨人口袋线又轻又结实的一卷线，用来连接你的下一件新零件。",
+          "月球方向卡云游标出的方向：保留这张卡，让发明知道下一站。",
+          "月光火箭一张空白设计纸：我想造一艘带导航灯和防水气泡的火箭。",
+          "月光火箭海底维修站：加一对划水桨",
+          "月光火箭纽扣那么大的窗：装一架折叠梯",
+          "月光火箭白云里的方向：拉出一条发光航线",
+          "月光火箭最后一点距离：用小推进器减速"
+        ],
+        "open": true
+      },
+      "saved": {
+        "button": "已经收好啦",
+        "disabled": true,
+        "memories": [
+          {
+            "inventions": 5,
+            "inventory": 3,
+            "story": "moon"
+          }
+        ]
+      }
+    },
+    {
+      "event": "completed-refresh",
+      "story": "moon",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket",
+          "rocket"
+        ],
+        "inventory": [
+          "sea-bolt",
+          "pocket-thread",
+          "cloud-bearing"
+        ],
+        "phase": "ready",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "ace",
+            "yueya",
+            "companion"
+          ],
+          "calls": 197,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 111,
+          "invention": true,
+          "triangles": 76824,
+          "upgrades": [
+            "navigation",
+            "float",
+            "paddles",
+            "ladder",
+            "rope",
+            "thruster"
+          ],
+          "world": "moon"
+        },
+        "storyId": "moon",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    }
+  ]
+}

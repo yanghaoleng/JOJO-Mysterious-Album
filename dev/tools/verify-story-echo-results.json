@@ -1,0 +1,922 @@
+{
+  "base": "http://127.0.0.1:8913/dev/",
+  "session": "dev-story-qa",
+  "checkedAt": "2026-09-05T13:25:40.030Z",
+  "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
+  "log": [
+    {
+      "event": "partner-question",
+      "story": "echo",
+      "step": 0,
+      "question": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "options": [
+        {
+          "id": "rabbit",
+          "label": "长耳朵小兔",
+          "visible": true
+        },
+        {
+          "id": "dog",
+          "label": "垂耳朵小狗",
+          "visible": true
+        },
+        {
+          "id": "cat",
+          "label": "卷尾巴小猫",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "rabbit",
+        "label": "长耳朵小兔",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "河湾",
+          "text": "选个伙伴吧。小兔、小狗，还是小猫？"
+        }
+      ],
+      "skips": 1
+    },
+    {
+      "event": "partner-question",
+      "story": "echo",
+      "step": 1,
+      "question": "你想让伙伴穿上什么颜色？",
+      "options": [
+        {
+          "id": "cream",
+          "label": "奶油白",
+          "visible": true
+        },
+        {
+          "id": "honey",
+          "label": "蜂蜜金",
+          "visible": true
+        },
+        {
+          "id": "moss",
+          "label": "嫩叶绿",
+          "visible": true
+        },
+        {
+          "id": "sky",
+          "label": "晴空蓝",
+          "visible": true
+        },
+        {
+          "id": "rose",
+          "label": "桃花粉",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "moss",
+        "label": "嫩叶绿",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "好，长耳朵小兔来陪你。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "你想让伙伴穿上什么颜色？"
+        }
+      ],
+      "skips": 2
+    },
+    {
+      "event": "partner-question",
+      "story": "echo",
+      "step": 2,
+      "question": "你喜欢它安静陪着，还是一起蹦蹦跳跳？",
+      "options": [
+        {
+          "id": "calm",
+          "label": "安静陪着我",
+          "visible": true
+        },
+        {
+          "id": "lively",
+          "label": "一起蹦蹦跳跳",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "calm",
+        "label": "安静陪着我",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "穿上嫩叶绿，一眼就认出它。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "你喜欢它安静陪着，还是一起蹦蹦跳跳？"
+        }
+      ],
+      "skips": 2
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 0,
+      "title": "一句没说完的话",
+      "question": "想让听听贝先听见什么？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 0,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "hewan",
+            "guoguo",
+            "companion"
+          ],
+          "calls": 172,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 71,
+          "invention": false,
+          "triangles": 76024,
+          "world": "cove"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "我会慢慢陪着你，听你说完。"
+        },
+        {
+          "speaker": "果果",
+          "text": "河湾，小回声刚说到“你好”，就不见了。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "我们轻轻叫一声，再安静听听。"
+        },
+        {
+          "speaker": "果果",
+          "text": "回来的声音，会告诉我们它往哪儿走。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "想让听听贝先听见什么？"
+        }
+      ],
+      "skips": 5
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 0,
+      "selection": {
+        "id": "hello",
+        "label": "轻轻说一声你好",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 1,
+      "title": "一盏接一盏",
+      "question": "想用什么信号和萤火虫打招呼？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell"
+        ],
+        "phase": "question",
+        "sceneIndex": 1,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "guoguo",
+            "hewan",
+            "companion"
+          ],
+          "calls": 196,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 78,
+          "invention": false,
+          "triangles": 98728,
+          "world": "meadow"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "河湾",
+          "text": "“你好”轻轻回来了，听听贝朝草地亮了一下。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "声音碰到远处再回来，就是回声。"
+        },
+        {
+          "speaker": "小团",
+          "text": "我们带上听听贝，去草地找它。"
+        },
+        {
+          "speaker": "果果",
+          "text": "小回声经过时，萤火虫都亮过一下。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "看，它们正沿着草尖慢慢排队。"
+        },
+        {
+          "speaker": "果果",
+          "text": "我们给它们一个信号，让整条路亮起来。"
+        },
+        {
+          "speaker": "果果",
+          "text": "想用什么信号和萤火虫打招呼？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 1,
+      "selection": {
+        "id": "wave",
+        "label": "慢慢挥一挥手",
+        "visible": true
+      },
+      "method": "typed visible answer"
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 2,
+      "title": "月坑边的听听贝",
+      "question": "我们怎么听清贝壳里的话？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "yueya",
+            "hewan",
+            "companion"
+          ],
+          "calls": 168,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 82,
+          "invention": false,
+          "triangles": 69056,
+          "world": "moon"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "河湾",
+          "text": "萤火虫跟着手势亮起来，光线一直伸向月亮。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "收好萤火线团，它能帮我们记住路。"
+        },
+        {
+          "speaker": "小团",
+          "text": "这本图鉴里，发光的路能通向下一页。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "我在月坑旁找到了这枚发亮的贝壳。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "月球没有空气，我们靠通讯器说话。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "故事里的贝壳，存着小回声留下的声音。"
+        },
+        {
+          "speaker": "月牙",
+          "text": "我们怎么听清贝壳里的话？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "refresh-continue",
+      "story": "echo",
+      "before": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "yueya",
+            "hewan",
+            "companion"
+          ],
+          "calls": 168,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 82,
+          "invention": false,
+          "triangles": 69056,
+          "world": "moon"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "restored": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "ready",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "yueya",
+            "hewan",
+            "companion"
+          ],
+          "calls": 167,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 82,
+          "invention": false,
+          "triangles": 68768,
+          "world": "moon"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "resumeLabel": "继续故事",
+      "resumed": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "yueya",
+            "hewan",
+            "companion"
+          ],
+          "calls": 168,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 82,
+          "invention": false,
+          "triangles": 69056,
+          "world": "moon"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 2,
+      "selection": {
+        "id": "listen-shell",
+        "label": "让听听贝接着听",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 3,
+      "title": "气泡里的半句话",
+      "question": "你想怎样听见那半句话？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 3,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "paopao",
+            "hewan",
+            "companion"
+          ],
+          "calls": 171,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 70,
+          "invention": false,
+          "triangles": 70180,
+          "world": "reef"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "月牙",
+          "text": "贝壳里说：“我去海底，看看蓝色的气泡。”"
+        },
+        {
+          "speaker": "河湾",
+          "text": "不用着急，没听清就可以再听一次。"
+        },
+        {
+          "speaker": "小团",
+          "text": "去下一页，找那个蓝色气泡。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "看，气泡里还藏着小回声的半句话。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "它太小了，我们靠近一点。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "轻轻碰气泡，或者用听听贝接住它。"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "你想怎样听见那半句话？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 3,
+      "selection": {
+        "id": "catch-sound",
+        "label": "用听听贝接声音",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 4,
+      "title": "等你慢慢说",
+      "question": "怎么让小回声知道你在这里？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread"
+        ],
+        "phase": "question",
+        "sceneIndex": 4,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "xiaohui",
+            "hewan",
+            "companion"
+          ],
+          "calls": 175,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 78,
+          "invention": false,
+          "triangles": 72276,
+          "world": "pocket"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "河湾",
+          "text": "听听贝接住了那句：“巨人的口袋，好暖和……”"
+        },
+        {
+          "speaker": "泡泡",
+          "text": "我知道那个口袋，里面铺着软毛线。"
+        },
+        {
+          "speaker": "小团",
+          "text": "我们找到了新方向，一起去看看。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "小回声，我们找到你了。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "我说得很小，你们会等我说完吗？"
+        },
+        {
+          "speaker": "河湾",
+          "text": "会的，你可以慢慢说，也可以先歇一会儿。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "怎么让小回声知道你在这里？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 4,
+      "selection": {
+        "id": "im-listening",
+        "label": "告诉它我在听",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "scene-question",
+      "story": "echo",
+      "scene": 5,
+      "title": "云洞里的回答",
+      "question": "我们用什么照亮小回声的家？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread",
+          "glow-seed"
+        ],
+        "phase": "question",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "xiaohui",
+            "hewan",
+            "companion"
+          ],
+          "calls": 170,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 76,
+          "invention": false,
+          "triangles": 79648,
+          "world": "cloud"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "小回声",
+          "text": "我听见了，谢谢你愿意等我。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "我的家在云洞里，我想和你们一起回去。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "好，带上你的发光种子，我们陪你走。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "这里就是我的家，洞口有一点暗。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "种子和萤火线团，都能照亮一小段路。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "我想看着你们，慢慢走进去。"
+        },
+        {
+          "speaker": "小回声",
+          "text": "我们用什么照亮小回声的家？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "event": "scene-answer",
+      "story": "echo",
+      "scene": 5,
+      "selection": {
+        "id": "lay-thread",
+        "label": "用萤火线团铺一条路",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "event": "complete-and-save",
+      "story": "echo",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread",
+          "glow-seed"
+        ],
+        "phase": "complete",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "xiaohui",
+            "hewan",
+            "companion"
+          ],
+          "calls": 193,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 77,
+          "invention": false,
+          "triangles": 83312,
+          "world": "cloud"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "bag": {
+        "count": "3",
+        "items": [
+          "听听贝安静听一会儿，贝壳会朝声音回来的方向亮一下。",
+          "萤火线团记住萤火虫排出的路，也能照亮一小段黑暗。",
+          "发光种子小回声带来的种子，到了云洞里会照亮回家的门。"
+        ],
+        "open": true
+      },
+      "saved": {
+        "button": "已经收好啦",
+        "disabled": true,
+        "memories": [
+          {
+            "inventions": 0,
+            "inventory": 2,
+            "story": "doudou"
+          },
+          {
+            "inventions": 0,
+            "inventory": 3,
+            "story": "echo"
+          }
+        ]
+      }
+    },
+    {
+      "event": "completed-refresh",
+      "story": "echo",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [],
+        "inventory": [
+          "listening-shell",
+          "light-thread",
+          "glow-seed"
+        ],
+        "phase": "ready",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "xiaohui",
+            "hewan",
+            "companion"
+          ],
+          "calls": 169,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 76,
+          "invention": false,
+          "triangles": 79360,
+          "world": "cloud"
+        },
+        "storyId": "echo",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    }
+  ]
+}

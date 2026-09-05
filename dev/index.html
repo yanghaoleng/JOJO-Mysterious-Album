@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#eeede6">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="在萌萌星的立体小世界里，和新伙伴一起听故事、想办法。">
+  <title>萌萌星 · 立体故事工坊</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="./app.css?v=20260905a">
+</head>
+<body data-view="home">
+  <header class="topbar">
+    <a href="./" id="home-link" class="icon-control" aria-label="返回故事工坊"><i data-lucide="house"></i></a>
+    <a class="wordmark" href="./">萌萌星<span>立体故事工坊</span></a>
+    <button id="restart" class="icon-control" aria-label="重新开始当前故事" hidden><i data-lucide="rotate-ccw"></i></button>
+    <a class="original-link" id="original-link" href="../">原版图鉴</a>
+  </header>
+
+  <main id="experience">
+    <div class="world-viewport" id="world-viewport">
+      <div id="stage" class="stage"></div>
+      <div class="stage-loading" id="stage-loading"><span></span><p>小世界正在展开</p></div>
+      <div class="scene-caption" id="scene-caption" hidden><span id="chapter-name"></span><h1 id="scene-title"></h1></div>
+      <button class="camera-reset" id="camera-reset" aria-label="恢复正面视角">回到正面</button>
+      <p class="stage-hint" id="stage-hint">拖动看看另一面 · 轻碰伙伴打招呼</p>
+    </div>
+
+    <section id="home-panel" class="home-panel">
+      <p class="eyebrow">把故事，捧在手心</p>
+      <h1>今天，<br>一起去哪里？</h1>
+      <p class="home-intro">选一个小世界，和你的伙伴慢慢出发。</p>
+      <nav class="story-list" id="story-list" aria-label="选择故事"></nav>
+      <a href="?mode=studio" class="studio-entry"><span>角色模拟器</span><small>捏一个新朋友</small><b aria-hidden="true">↗</b></a>
+    </section>
+
+    <section class="story-panel" id="story-panel" hidden>
+      <div class="story-topline"><p id="objective"></p><button id="bag-button" class="quiet-button" aria-haspopup="dialog">背包 <span id="bag-count">0</span></button></div>
+      <button type="button" class="speech-card" id="speech-card" aria-label="听角色说话，轻点可跳过这一句">
+        <span class="speaker" id="speaker"></span>
+        <span class="speech-text" id="speech-text" aria-live="polite"></span>
+        <span class="speaking-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <div class="story-start" id="story-start"><button class="primary" id="start-story">开始对话</button><p id="resume-note"></p></div>
+      <div class="answer-dock" id="answer-dock" hidden>
+        <p class="heard" id="heard" hidden></p>
+        <div class="answer-controls">
+          <button class="mic-control" id="mic-button" data-state="off" aria-label="打开麦克风回答" aria-pressed="false"><i data-lucide="mic"></i><span id="mic-label">和它说说</span><span class="voice-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>
+          <button class="quiet-button" id="show-choices" aria-expanded="false">看看办法</button>
+          <button class="quiet-button" id="show-text" aria-expanded="false">写下来</button>
+        </div>
+        <div class="choices" id="choices" hidden></div>
+        <form id="text-form" class="text-form" hidden><label for="answer-input" class="sr-only">你的想法</label><input id="answer-input" maxlength="180" placeholder="把你的想法写在这里" autocomplete="off"><button class="primary" type="submit">告诉它</button></form>
+      </div>
+      <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a href="./" class="quiet-button">再去一个小世界</a></div>
+    </section>
+
+    <section class="studio-panel" id="studio-panel" hidden>
+      <h1>角色模拟器</h1><p class="panel-intro">转一转，捏一捏，看看它怎样表达。</p>
+      <div class="studio-tabs" role="tablist" aria-label="角色编辑"><button role="tab" id="tab-character" data-tab="character" aria-selected="true" aria-controls="character-controls">伙伴</button><button role="tab" id="tab-performance" data-tab="performance" aria-selected="false" aria-controls="performance-controls">表演</button><button role="tab" id="tab-world" data-tab="world" aria-selected="false" aria-controls="world-controls">场景</button></div>
+      <div id="character-controls" role="tabpanel" aria-labelledby="tab-character">
+        <div id="character-types" class="type-grid"></div>
+        <label class="field-label" for="character-name">伙伴昵称</label><input id="character-name" maxlength="10" value="小团" autocomplete="off">
+        <fieldset class="color-field"><legend>换一身颜色</legend><div id="color-swatches" class="color-swatches"></div></fieldset>
+        <label class="slider-label" for="character-size">高矮 <output id="size-output">100%</output></label><input id="character-size" type="range" min="75" max="125" value="100">
+      </div>
+      <div id="performance-controls" role="tabpanel" aria-labelledby="tab-performance" hidden><p class="field-label">此刻的表情</p><div class="control-grid" id="expressions"></div><p class="field-label">让它动起来</p><div class="control-grid" id="actions"></div><button class="secondary full" id="preview-voice">听它打个招呼</button></div>
+      <div id="world-controls" role="tabpanel" aria-labelledby="tab-world" hidden><div id="world-options" class="world-options"></div></div>
+      <div class="studio-actions"><button id="save-character" class="primary">保存伙伴</button><button id="download-character" class="secondary">导出模型</button></div>
+      <div id="saved-characters" class="saved-characters"></div>
+    </section>
+  </main>
+
+  <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <div id="transition" class="transition" aria-hidden="true"></div>
+  <script type="module" src="./app.bundle.js?v=20260905a"></script>
+</body>
+</html>

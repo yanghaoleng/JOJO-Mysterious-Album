@@ -1,0 +1,911 @@
+{
+  "base": "http://127.0.0.1:8913/dev/",
+  "session": "dev-story-qa",
+  "checkedAt": "2026-09-05T13:24:52.559Z",
+  "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
+  "log": [
+    {
+      "step": 0,
+      "story": "doudou",
+      "question": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "options": [
+        {
+          "id": "rabbit",
+          "label": "长耳朵小兔",
+          "visible": true
+        },
+        {
+          "id": "dog",
+          "label": "垂耳朵小狗",
+          "visible": true
+        },
+        {
+          "id": "cat",
+          "label": "卷尾巴小猫",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "rabbit",
+        "label": "长耳朵小兔",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "河湾",
+          "text": "选个伙伴吧。小兔、小狗，还是小猫？"
+        }
+      ],
+      "skips": 1
+    },
+    {
+      "step": 1,
+      "story": "doudou",
+      "question": "你想让伙伴穿上什么颜色？",
+      "options": [
+        {
+          "id": "cream",
+          "label": "奶油白",
+          "visible": true
+        },
+        {
+          "id": "honey",
+          "label": "蜂蜜金",
+          "visible": true
+        },
+        {
+          "id": "moss",
+          "label": "嫩叶绿",
+          "visible": true
+        },
+        {
+          "id": "sky",
+          "label": "晴空蓝",
+          "visible": true
+        },
+        {
+          "id": "rose",
+          "label": "桃花粉",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "moss",
+        "label": "嫩叶绿",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "好，长耳朵小兔来陪你。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "你想让伙伴穿上什么颜色？"
+        }
+      ],
+      "skips": 2
+    },
+    {
+      "step": 2,
+      "story": "doudou",
+      "question": "你喜欢它安静陪着，还是一起蹦蹦跳跳？",
+      "options": [
+        {
+          "id": "calm",
+          "label": "安静陪着我",
+          "visible": true
+        },
+        {
+          "id": "lively",
+          "label": "一起蹦蹦跳跳",
+          "visible": true
+        }
+      ],
+      "selection": {
+        "id": "calm",
+        "label": "安静陪着我",
+        "visible": true
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "穿上嫩叶绿，一眼就认出它。"
+        },
+        {
+          "speaker": "河湾",
+          "text": "你喜欢它安静陪着，还是一起蹦蹦跳跳？"
+        }
+      ],
+      "skips": 2
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 0,
+      "title": "苹果树下的小狗",
+      "question": "我们先给豆豆什么？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 0,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "doudou",
+            "guoguo",
+            "companion"
+          ],
+          "calls": 163,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 79,
+          "invention": false,
+          "triangles": 96558,
+          "world": "orchard"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "小团",
+          "text": "我会慢慢陪着你，听你说完。"
+        },
+        {
+          "speaker": "果果",
+          "text": "豆豆，你怎么躲在苹果树下面？"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我追着苹果跑远了，找不到家。"
+        },
+        {
+          "speaker": "果果",
+          "text": "你先坐下，我这里有水和苹果。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "谢谢，我的肚子也咕咕叫了。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我们先给豆豆什么？"
+        }
+      ],
+      "skips": 6
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 0,
+      "selection": {
+        "id": "apple",
+        "label": "分它半个苹果",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 1,
+      "title": "香香的线索图",
+      "question": "我们先画哪一条线索？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "question",
+        "sceneIndex": 1,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "anuan",
+            "doudou",
+            "companion"
+          ],
+          "calls": 178,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 89,
+          "invention": false,
+          "triangles": 73650,
+          "world": "bakery"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "豆豆",
+          "text": "苹果甜甜的，我有力气了。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我想起来了，我家有红屋顶。"
+        },
+        {
+          "speaker": "果果",
+          "text": "阿暖熊认识附近的家，我们去问问。"
+        },
+        {
+          "speaker": "阿暖",
+          "text": "豆豆，我认得你家的骨头门牌。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "对！回家还要过一座小木桥。"
+        },
+        {
+          "speaker": "阿暖",
+          "text": "红屋顶、骨头门牌、小木桥。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我怕又忘了，可以画下来吗？"
+        },
+        {
+          "speaker": "阿暖",
+          "text": "我们先画哪一条线索？"
+        }
+      ],
+      "skips": 8
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 1,
+      "selection": {
+        "id": "sign",
+        "label": "先画骨头门牌",
+        "visible": true
+      },
+      "method": "typed visible answer"
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 2,
+      "title": "在河边等一等",
+      "question": "等一会儿的时候，怎么陪豆豆？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "doudou",
+            "diandian",
+            "companion"
+          ],
+          "calls": 173,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 60,
+          "invention": false,
+          "triangles": 69890,
+          "world": "bridge"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "阿暖",
+          "text": "骨头门牌画好了，再添上屋顶和小桥。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "这就是我家！线索图我拿好了。"
+        },
+        {
+          "speaker": "阿暖",
+          "text": "沿着门外的小路，就能看到木桥。"
+        },
+        {
+          "speaker": "点点",
+          "text": "豆豆，桥板结实，小船也在岸边。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我知道，可我的腿还是有点抖。"
+        },
+        {
+          "speaker": "点点",
+          "text": "那我们先在岸上等一会儿。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "有人陪着，我会安心一点。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "等一会儿的时候，怎么陪豆豆？"
+        }
+      ],
+      "skips": 8
+    },
+    {
+      "step": "refresh-continue",
+      "story": "doudou",
+      "before": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 3,
+        "stage": {
+          "actors": [
+            "doudou",
+            "diandian",
+            "companion"
+          ],
+          "calls": 173,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 60,
+          "invention": false,
+          "triangles": 69890,
+          "world": "bridge"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "restored": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch"
+        ],
+        "phase": "ready",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "doudou",
+            "diandian",
+            "companion"
+          ],
+          "calls": 172,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 60,
+          "invention": false,
+          "triangles": 69602,
+          "world": "bridge"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "resumeLabel": "继续故事",
+      "resumed": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch"
+        ],
+        "phase": "question",
+        "sceneIndex": 2,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "doudou",
+            "diandian",
+            "companion"
+          ],
+          "calls": 173,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 60,
+          "invention": false,
+          "triangles": 69890,
+          "world": "bridge"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 2,
+      "selection": {
+        "id": "sit",
+        "label": "坐在它身边",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 3,
+      "title": "一起到对岸",
+      "question": "我们陪豆豆怎么过河？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch"
+        ],
+        "phase": "question",
+        "sceneIndex": 3,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "diandian",
+            "doudou",
+            "companion"
+          ],
+          "calls": 179,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 60,
+          "invention": false,
+          "triangles": 73010,
+          "world": "bridge"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "豆豆",
+          "text": "你坐在这里，我就不着急了。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我准备好了，不过还想慢慢来。"
+        },
+        {
+          "speaker": "点点",
+          "text": "好，我们一起选一条过河的路。"
+        },
+        {
+          "speaker": "点点",
+          "text": "走桥可以扶栏杆，坐船要先坐稳。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "哪条路都好，我们别分开。"
+        },
+        {
+          "speaker": "点点",
+          "text": "我们陪豆豆怎么过河？"
+        }
+      ],
+      "skips": 6
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 3,
+      "selection": {
+        "id": "boat",
+        "label": "坐点点的小船",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 4,
+      "title": "哪一扇门",
+      "question": "你想先对照什么？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch",
+          "river-stamp"
+        ],
+        "phase": "question",
+        "sceneIndex": 4,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "yueya",
+            "doudou",
+            "companion"
+          ],
+          "calls": 172,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 92,
+          "invention": false,
+          "triangles": 89494,
+          "world": "home"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "点点",
+          "text": "大家坐稳，小船轻轻靠到对岸了！"
+        },
+        {
+          "speaker": "点点",
+          "text": "这枚水滴章，送给一起过河的你们。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "看，前面有两座小房子！"
+        },
+        {
+          "speaker": "邮差月牙",
+          "text": "左边是蓝屋顶，右边是红屋顶。"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我的图上画着红屋顶和骨头门牌。"
+        },
+        {
+          "speaker": "邮差月牙",
+          "text": "骨头门牌也在右边，我们靠近看看。"
+        },
+        {
+          "speaker": "邮差月牙",
+          "text": "你想先对照什么？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 4,
+      "selection": {
+        "id": "check-roof",
+        "label": "看看红屋顶",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "step": "scene-question",
+      "story": "doudou",
+      "scene": 5,
+      "title": "门开了",
+      "question": "先告诉豆豆妈妈哪一件事？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [
+          "home-sketch",
+          "river-stamp"
+        ],
+        "phase": "question",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "mama",
+            "doudou",
+            "companion"
+          ],
+          "calls": 168,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 86,
+          "invention": false,
+          "triangles": 89690,
+          "world": "home"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "narration": [
+        {
+          "speaker": "豆豆",
+          "text": "红屋顶对上了，门口还有骨头牌！"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "我认出来了，就是这里！"
+        },
+        {
+          "speaker": "邮差月牙",
+          "text": "我们轻轻敲门，等妈妈来开。"
+        },
+        {
+          "speaker": "豆豆妈妈",
+          "text": "豆豆，你回来了！有没有受伤？"
+        },
+        {
+          "speaker": "豆豆",
+          "text": "没有，他们一路都陪着我。"
+        },
+        {
+          "speaker": "豆豆妈妈",
+          "text": "谢谢你们，可以讲讲路上的事吗？"
+        },
+        {
+          "speaker": "豆豆妈妈",
+          "text": "先告诉豆豆妈妈哪一件事？"
+        }
+      ],
+      "skips": 7
+    },
+    {
+      "step": "scene-answer",
+      "story": "doudou",
+      "scene": 5,
+      "selection": {
+        "id": "together",
+        "label": "我们一直陪着它",
+        "visible": true
+      },
+      "method": "visible choice click"
+    },
+    {
+      "step": "complete-and-save",
+      "story": "doudou",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [],
+        "inventory": [
+          "home-sketch",
+          "river-stamp"
+        ],
+        "phase": "complete",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "mama",
+            "doudou",
+            "companion"
+          ],
+          "calls": 188,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 88,
+          "invention": false,
+          "triangles": 91290,
+          "world": "home"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      },
+      "bag": {
+        "count": "2",
+        "items": [
+          "回家线索图红屋顶、骨头门牌、小木桥。到岔路口时，一样一样对照。",
+          "小水滴印章点点送的小纪念：紧张时，可以慢下来，也可以换个办法。"
+        ],
+        "open": true
+      },
+      "saved": {
+        "button": "已经收好啦",
+        "disabled": true,
+        "memories": [
+          {
+            "inventions": 0,
+            "inventory": 2,
+            "story": "doudou"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completed-refresh",
+      "story": "doudou",
+      "state": {
+        "busy": false,
+        "completed": true,
+        "inventions": [],
+        "inventory": [
+          "home-sketch",
+          "river-stamp"
+        ],
+        "phase": "ready",
+        "sceneIndex": 5,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "mama",
+            "doudou",
+            "companion"
+          ],
+          "calls": 167,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 86,
+          "invention": false,
+          "triangles": 89402,
+          "world": "home"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "enabled": false,
+          "recording": false
+        }
+      }
+    }
+  ]
+}

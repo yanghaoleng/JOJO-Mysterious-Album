@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-09-05T13:40:14.508Z",
+  "file": "/tmp/dev-studio-qa-export-final.json",
+  "meshes": 59,
+  "bones": 0,
+  "userData": {
+    "author": "Codex · 小小陶土剧场",
+    "source": "dev/models.js",
+    "modelVersion": 1,
+    "species": "otter",
+    "usesSkeleton": false,
+    "color": "#90b6c5",
+    "restHeight": 2.2,
+    "triangles": 20254,
+    "meshes": 59,
+    "action": "listen",
+    "expression": "curious",
+    "actorId": "studio",
+    "actorName": "巡游小獭",
+    "creator": "萌萌星立体故事工坊",
+    "recipe": {
+      "type": "otter",
+      "color": "#90b6c5",
+      "name": "巡游小獭",
+      "size": 117,
+      "expression": "curious",
+      "action": "listen",
+      "world": "cove"
+    }
+  },
+  "bundleSHA256": "31515258a89b46337bb2d92320a004a5c12a78a6f495a44ec27e5e51a141325d"
+}
