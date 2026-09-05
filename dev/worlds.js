@@ -672,16 +672,25 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   }
   if (['bridge', 'cove', 'reef'].includes(id)) {
     const positions = []; const normals = []; const indices = [];
-    for (let i = 0; i <= 112; i++) {
-      const longitude = i / 112 * Math.PI * 2;
+    const lengthSegments = 112, widthSegments = 4, rowSize = widthSegments + 1;
+    for (let i = 0; i <= lengthSegments; i++) {
+      const longitude = i / lengthSegments * Math.PI * 2;
       const latitude = 1.7 + Math.sin(longitude * 2 + 0.8) * 0.24 + Math.sin(longitude * 3) * 0.09;
-      for (const side of [-1, 1]) {
+      // Cross-river subdivisions follow the sphere instead of cutting a chord
+      // underneath it, keeping even the wider reef ribbon continuously visible.
+      for (let j = 0; j <= widthSegments; j++) {
+        const side = j / widthSegments * 2 - 1;
         const polar = latitude + side * (id === 'reef' ? 0.12 : 0.065);
         const n = new THREE.Vector3(Math.sin(polar) * Math.cos(longitude), Math.cos(polar), Math.sin(polar) * Math.sin(longitude));
         positions.push(n.x * (radius + 0.014), n.y * (radius + 0.014) - radius, n.z * (radius + 0.014));
         normals.push(n.x, n.y, n.z);
       }
-      if (i < 112) { const a = i * 2, b = a + 2; indices.push(a, b, a + 1, b, b + 1, a + 1); }
+      if (i < lengthSegments) {
+        for (let j = 0; j < widthSegments; j++) {
+          const a = i * rowSize + j, b = a + rowSize;
+          indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
     }
     const riverGeometry = new THREE.BufferGeometry();
     riverGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
