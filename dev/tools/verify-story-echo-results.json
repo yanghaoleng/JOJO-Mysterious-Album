@@ -1,7 +1,7 @@
 {
-  "base": "http://127.0.0.1:8913/dev/",
-  "session": "dev-story-qa",
-  "checkedAt": "2026-09-05T13:25:40.030Z",
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "dev-live-stories",
+  "checkedAt": "2026-09-05T14:10:04.447Z",
   "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
   "log": [
     {
@@ -151,6 +151,7 @@
           "geometries": 71,
           "invention": false,
           "triangles": 76024,
+          "upgrades": [],
           "world": "cove"
         },
         "storyId": "echo",
@@ -164,8 +165,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -225,7 +230,7 @@
             "hewan",
             "companion"
           ],
-          "calls": 196,
+          "calls": 197,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -233,7 +238,8 @@
           ],
           "geometries": 78,
           "invention": false,
-          "triangles": 98728,
+          "triangles": 99016,
+          "upgrades": [],
           "world": "meadow"
         },
         "storyId": "echo",
@@ -247,8 +253,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -326,6 +336,7 @@
           "geometries": 82,
           "invention": false,
           "triangles": 69056,
+          "upgrades": [],
           "world": "moon"
         },
         "storyId": "echo",
@@ -339,8 +350,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -404,6 +419,7 @@
           "geometries": 82,
           "invention": false,
           "triangles": 69056,
+          "upgrades": [],
           "world": "moon"
         },
         "storyId": "echo",
@@ -417,8 +433,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "restored": {
@@ -447,6 +467,7 @@
           "geometries": 82,
           "invention": false,
           "triangles": 68768,
+          "upgrades": [],
           "world": "moon"
         },
         "storyId": "echo",
@@ -460,8 +481,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "resumeLabel": "继续故事",
@@ -491,6 +516,7 @@
           "geometries": 82,
           "invention": false,
           "triangles": 69056,
+          "upgrades": [],
           "world": "moon"
         },
         "storyId": "echo",
@@ -504,8 +530,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     },
@@ -543,7 +573,7 @@
             "hewan",
             "companion"
           ],
-          "calls": 171,
+          "calls": 177,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -551,7 +581,8 @@
           ],
           "geometries": 70,
           "invention": false,
-          "triangles": 70180,
+          "triangles": 73300,
+          "upgrades": [],
           "world": "reef"
         },
         "storyId": "echo",
@@ -565,8 +596,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -644,6 +679,7 @@
           "geometries": 78,
           "invention": false,
           "triangles": 72276,
+          "upgrades": [],
           "world": "pocket"
         },
         "storyId": "echo",
@@ -657,8 +693,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -737,6 +777,7 @@
           "geometries": 76,
           "invention": false,
           "triangles": 79648,
+          "upgrades": [],
           "world": "cloud"
         },
         "storyId": "echo",
@@ -750,8 +791,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -827,6 +872,7 @@
           "geometries": 77,
           "invention": false,
           "triangles": 83312,
+          "upgrades": [],
           "world": "cloud"
         },
         "storyId": "echo",
@@ -840,8 +886,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "bag": {
@@ -900,6 +950,7 @@
           "geometries": 76,
           "invention": false,
           "triangles": 79360,
+          "upgrades": [],
           "world": "cloud"
         },
         "storyId": "echo",
@@ -913,8 +964,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     }

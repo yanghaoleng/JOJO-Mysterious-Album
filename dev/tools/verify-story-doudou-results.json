@@ -1,12 +1,13 @@
 {
-  "base": "http://127.0.0.1:8913/dev/",
-  "session": "dev-story-qa",
-  "checkedAt": "2026-09-05T13:24:52.559Z",
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "dev-live-stories",
+  "checkedAt": "2026-09-05T14:09:16.509Z",
   "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
   "log": [
     {
-      "step": 0,
+      "event": "partner-question",
       "story": "doudou",
+      "step": 0,
       "question": "选个伙伴吧。小兔、小狗，还是小猫？",
       "options": [
         {
@@ -39,8 +40,9 @@
       "skips": 1
     },
     {
-      "step": 1,
+      "event": "partner-question",
       "story": "doudou",
+      "step": 1,
       "question": "你想让伙伴穿上什么颜色？",
       "options": [
         {
@@ -87,8 +89,9 @@
       "skips": 2
     },
     {
-      "step": 2,
+      "event": "partner-question",
       "story": "doudou",
+      "step": 2,
       "question": "你喜欢它安静陪着，还是一起蹦蹦跳跳？",
       "options": [
         {
@@ -120,7 +123,7 @@
       "skips": 2
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 0,
       "title": "苹果树下的小狗",
@@ -139,7 +142,7 @@
             "guoguo",
             "companion"
           ],
-          "calls": 163,
+          "calls": 164,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -147,7 +150,8 @@
           ],
           "geometries": 79,
           "invention": false,
-          "triangles": 96558,
+          "triangles": 96846,
+          "upgrades": [],
           "world": "orchard"
         },
         "storyId": "doudou",
@@ -161,8 +165,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -194,7 +202,7 @@
       "skips": 6
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 0,
       "selection": {
@@ -205,7 +213,7 @@
       "method": "visible choice click"
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 1,
       "title": "香香的线索图",
@@ -224,7 +232,7 @@
             "doudou",
             "companion"
           ],
-          "calls": 178,
+          "calls": 176,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -232,7 +240,8 @@
           ],
           "geometries": 89,
           "invention": false,
-          "triangles": 73650,
+          "triangles": 73074,
+          "upgrades": [],
           "world": "bakery"
         },
         "storyId": "doudou",
@@ -246,8 +255,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -287,7 +300,7 @@
       "skips": 8
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 1,
       "selection": {
@@ -298,7 +311,7 @@
       "method": "typed visible answer"
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 2,
       "title": "在河边等一等",
@@ -319,7 +332,7 @@
             "diandian",
             "companion"
           ],
-          "calls": 173,
+          "calls": 174,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -327,7 +340,8 @@
           ],
           "geometries": 60,
           "invention": false,
-          "triangles": 69890,
+          "triangles": 70178,
+          "upgrades": [],
           "world": "bridge"
         },
         "storyId": "doudou",
@@ -341,8 +355,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -382,7 +400,7 @@
       "skips": 8
     },
     {
-      "step": "refresh-continue",
+      "event": "refresh-continue",
       "story": "doudou",
       "before": {
         "busy": false,
@@ -400,7 +418,7 @@
             "diandian",
             "companion"
           ],
-          "calls": 173,
+          "calls": 174,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -408,7 +426,8 @@
           ],
           "geometries": 60,
           "invention": false,
-          "triangles": 69890,
+          "triangles": 70178,
+          "upgrades": [],
           "world": "bridge"
         },
         "storyId": "doudou",
@@ -422,8 +441,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "restored": {
@@ -451,6 +474,7 @@
           "geometries": 60,
           "invention": false,
           "triangles": 69602,
+          "upgrades": [],
           "world": "bridge"
         },
         "storyId": "doudou",
@@ -464,8 +488,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "resumeLabel": "继续故事",
@@ -485,7 +513,7 @@
             "diandian",
             "companion"
           ],
-          "calls": 173,
+          "calls": 174,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -493,7 +521,8 @@
           ],
           "geometries": 60,
           "invention": false,
-          "triangles": 69890,
+          "triangles": 70178,
+          "upgrades": [],
           "world": "bridge"
         },
         "storyId": "doudou",
@@ -507,13 +536,17 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 2,
       "selection": {
@@ -524,7 +557,7 @@
       "method": "visible choice click"
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 3,
       "title": "一起到对岸",
@@ -554,6 +587,7 @@
           "geometries": 60,
           "invention": false,
           "triangles": 73010,
+          "upgrades": [],
           "world": "bridge"
         },
         "storyId": "doudou",
@@ -567,8 +601,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -600,7 +638,7 @@
       "skips": 6
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 3,
       "selection": {
@@ -611,7 +649,7 @@
       "method": "visible choice click"
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 4,
       "title": "哪一扇门",
@@ -642,6 +680,7 @@
           "geometries": 92,
           "invention": false,
           "triangles": 89494,
+          "upgrades": [],
           "world": "home"
         },
         "storyId": "doudou",
@@ -655,8 +694,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -692,7 +735,7 @@
       "skips": 7
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 4,
       "selection": {
@@ -703,7 +746,7 @@
       "method": "visible choice click"
     },
     {
-      "step": "scene-question",
+      "event": "scene-question",
       "story": "doudou",
       "scene": 5,
       "title": "门开了",
@@ -734,6 +777,7 @@
           "geometries": 86,
           "invention": false,
           "triangles": 89690,
+          "upgrades": [],
           "world": "home"
         },
         "storyId": "doudou",
@@ -747,8 +791,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -784,7 +832,7 @@
       "skips": 7
     },
     {
-      "step": "scene-answer",
+      "event": "scene-answer",
       "story": "doudou",
       "scene": 5,
       "selection": {
@@ -795,7 +843,7 @@
       "method": "visible choice click"
     },
     {
-      "step": "complete-and-save",
+      "event": "complete-and-save",
       "story": "doudou",
       "state": {
         "busy": false,
@@ -814,7 +862,7 @@
             "doudou",
             "companion"
           ],
-          "calls": 188,
+          "calls": 194,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -822,7 +870,8 @@
           ],
           "geometries": 88,
           "invention": false,
-          "triangles": 91290,
+          "triangles": 94410,
+          "upgrades": [],
           "world": "home"
         },
         "storyId": "doudou",
@@ -836,8 +885,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "bag": {
@@ -861,7 +914,7 @@
       }
     },
     {
-      "step": "completed-refresh",
+      "event": "completed-refresh",
       "story": "doudou",
       "state": {
         "busy": false,
@@ -889,6 +942,7 @@
           "geometries": 86,
           "invention": false,
           "triangles": 89402,
+          "upgrades": [],
           "world": "home"
         },
         "storyId": "doudou",
@@ -902,8 +956,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     }

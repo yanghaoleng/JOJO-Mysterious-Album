@@ -1,7 +1,7 @@
 {
-  "base": "http://127.0.0.1:8913/dev/",
-  "session": "dev-moon-direct-audit",
-  "checkedAt": "2026-09-05T13:46:56.300Z",
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "dev-live-stories",
+  "checkedAt": "2026-09-05T14:10:23.717Z",
   "method": "real DOM clicks, input fills, speech bubble skip; diagnostics and storage read only",
   "log": [
     {
@@ -44,8 +44,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -110,8 +114,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -153,7 +161,7 @@
             "ace",
             "companion"
           ],
-          "calls": 186,
+          "calls": 185,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -161,7 +169,7 @@
           ],
           "geometries": 83,
           "invention": true,
-          "triangles": 77156,
+          "triangles": 76868,
           "upgrades": [
             "navigation",
             "float"
@@ -179,8 +187,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     },
@@ -206,7 +218,7 @@
             "ace",
             "companion"
           ],
-          "calls": 186,
+          "calls": 185,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -214,7 +226,7 @@
           ],
           "geometries": 83,
           "invention": true,
-          "triangles": 77156,
+          "triangles": 76868,
           "upgrades": [
             "navigation",
             "float"
@@ -232,14 +244,18 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
         {
           "speaker": "阿策",
-          "text": "模型动起来了！它偏向海边，稳稳进入气泡站。"
+          "text": "带导航灯和防水气泡的火箭动起来，偏向海边，稳稳进入海底的气泡站"
         },
         {
           "speaker": "小航",
@@ -331,14 +347,18 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
         {
           "speaker": "泡泡",
-          "text": "新改造让我们上浮了，巨人的软口袋接住了小队。"
+          "text": "新改造把大家送出海面，一阵上升气流又把整支小队轻轻兜进巨人的外套口袋。"
         },
         {
           "speaker": "小航",
@@ -416,8 +436,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "restored": {
@@ -466,8 +490,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "resumeLabel": "继续故事",
@@ -517,8 +545,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     },
@@ -588,8 +620,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -693,8 +729,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -800,8 +840,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "narration": [
@@ -874,7 +918,7 @@
             "yueya",
             "companion"
           ],
-          "calls": 215,
+          "calls": 221,
           "camera": [
             5.484156973829626,
             12.27726684771148,
@@ -882,7 +926,7 @@
           ],
           "geometries": 112,
           "invention": true,
-          "triangles": 77592,
+          "triangles": 80712,
           "upgrades": [
             "navigation",
             "float",
@@ -904,8 +948,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "running",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       },
       "bag": {
@@ -914,11 +962,11 @@
           "深海蓝螺栓泡泡帮我们固定零件的螺栓，下一站还能用。",
           "巨人口袋线又轻又结实的一卷线，用来连接你的下一件新零件。",
           "月球方向卡云游标出的方向：保留这张卡，让发明知道下一站。",
-          "月光火箭一张空白设计纸：我想造一艘带导航灯和防水气泡的火箭。",
-          "月光火箭海底维修站：加一对划水桨",
-          "月光火箭纽扣那么大的窗：装一架折叠梯",
-          "月光火箭白云里的方向：拉出一条发光航线",
-          "月光火箭最后一点距离：用小推进器减速"
+          "航海探险火箭一张空白设计纸：有导航灯和透明气泡",
+          "航海探险火箭海底维修站：两侧各有银灰色划水桨",
+          "航海探险火箭纽扣那么大的窗：装一架折叠梯",
+          "航海探险火箭白云里的方向：拉出一条发光航线",
+          "航海探险火箭最后一点距离：用小推进器减速"
         ],
         "open": true
       },
@@ -926,6 +974,16 @@
         "button": "已经收好啦",
         "disabled": true,
         "memories": [
+          {
+            "inventions": 0,
+            "inventory": 2,
+            "story": "doudou"
+          },
+          {
+            "inventions": 0,
+            "inventory": 3,
+            "story": "echo"
+          },
           {
             "inventions": 5,
             "inventory": 3,
@@ -991,8 +1049,12 @@
           "world": "orchard"
         },
         "voice": {
+          "contextState": "closed",
           "enabled": false,
-          "recording": false
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
         }
       }
     }
