@@ -15,11 +15,13 @@
 
 ## 新模型与场景
 
-- `models.js`：原创陶土感实体模型，独立眼睑、嘴、耳尾与配件；网格局部运动，不使用 Bone、SkinnedMesh、蒙皮权重或旧版动画资源。
+- `models.js`：原创圆润实体模型，独立眼睑、嘴、耳尾与配件；网格局部运动，不使用 Bone、SkinnedMesh、蒙皮权重或旧版动画资源。
 - `assets/characters/`：7 份真实 Object3D 网格文件；曲面形变、法线和 UV 可无损重新读入。授权见 `assets/README.md`。
-- `worlds.js`：11 个新箱庭，包含果园、面包房、木桥、家门、观星台、海底、巨人口袋、云层、月面、萤火草地与河湾；有实际立体地标和行动反馈。
-- `stage.js` / `inventions.js`：可旋转的实景、角色表演与发明。导航屏、浮筒、推进器、绳索、梯子、桨和帆会逐次留在原发明上；明确要求换方案时才替换主体。
+- `worlds.js` / `planet.js`：11 个完整小星球，包含果园、面包房、木桥、家门、观星台、海底、巨人口袋、云层、月面、萤火草地与河湾。景物和角色沿球面站立，侧面、背面与南半球也有对应主题地貌；保留行动反馈。
+- `storybook.js`：实时绘本材质，低高光、柔和明暗色块、细纸纹和轻微边缘积色。保留原材质颜色引用，不额外增加绘制通道。
+- `stage.js` / `inventions.js`：可上下环绕、水平旋转的小星球，支持滚轮与双指缩放、回到正面；被球体挡住的角色不可隔球点选。导航屏、浮筒、推进器、绳索、梯子、桨和帆会逐次留在原发明上；明确要求换方案时才替换主体。
 - 模拟器导出的是网格与材质，以及 `object.userData.recipe` 中的编辑参数。下载文件不包含独立动画运行时；动态行为由本目录源代码提供。
+- 程序化纸纹不会被 Three.js 序列化成贴图。导出的标准材质保留 `storybookStyle` 参数；外部通过 `ObjectLoader` 读入后，可调用 `createStorybookStyle().apply(object)` 恢复纸感。
 
 ## 隔离与服务
 
@@ -36,6 +38,8 @@
 ```sh
 node dev/tools/build.mjs
 node dev/tools/verify-assets.mjs
+node dev/tools/verify-planet.mjs
+node dev/tools/verify-storybook.mjs
 node dev/tools/verify-api-contract.mjs
 node dev/tools/verify-inventions.mjs
 node dev/tools/verify-voice.mjs
@@ -43,6 +47,6 @@ node dev/tools/verify-voice.mjs
 
 本地预览：`node dev/tools/preview.mjs 8914`。默认不调用线上 API；确需验证真实语音时，显式设置 `DEV_API_BASE=https://jma.mikeywa.site`。此本地预览工具只监听回环地址，不作为生产服务。
 
-`verify-story-flows.mjs` 与 `verify-studio-ui.mjs` 使用真实浏览器控件验证。故事脚本可用 `DEV_QA_BASE` 指向预览或上线 URL，使用独立会话，不改业务状态。报告是指定版本、指定路径的检查证据，不等于覆盖所有自由表达或实际手机声学环境。
+`verify-story-flows.mjs`、`verify-studio-ui.mjs` 与 `verify-planet-ui.mjs` 使用真实浏览器控件验证。星球脚本覆盖 11 世界、3 种视口、正反点选，以及独立测试会话中旧版模拟存档的逐字节保留。可用 `DEV_QA_BASE` 指向预览或上线 URL，使用独立会话，不改真实用户业务状态。报告是指定版本、指定路径的检查证据，不等于覆盖所有自由表达或实际手机声学环境。
 
 发布只把本目录的运行资源放入原生产版本的副本，通过版本目录原子切换；比对全部原有文件的校验值。原后端和其他页面不随这次 /dev 发布改变。旧发布目录保留，可随时回退。

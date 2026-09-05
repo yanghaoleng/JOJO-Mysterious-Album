@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
+import { createPlanetSurface } from './planet.js';
 
 /** Independently modelled, material-batched miniature worlds for the /dev edition. */
 export const WORLD_CATALOG = [
@@ -34,10 +35,14 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   const palette = PALETTES[id];
   const rng = seededRandom(seed);
   const group = new THREE.Group();
-  group.name = `handmade-world-${id}`;
+  group.name = `handmade-planet-${id}`;
+  const surface = createPlanetSurface();
+  const { radius, center, surfacePoint, surfaceNormal } = surface;
   const staticRoot = new THREE.Group();
   const liveRoot = new THREE.Group();
-  group.add(staticRoot, liveRoot);
+  const planetRoot = new THREE.Group();
+  const backsideRoot = new THREE.Group();
+  group.add(planetRoot, staticRoot, backsideRoot, liveRoot);
   const geometryCache = new Map();
   const materials = new Map();
   const extraGeometries = new Set();
@@ -205,12 +210,27 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     return node;
   };
 
-  // Rolled clay edge, a thin paper seam and a broad flat play area.
-  const baseProfile = [[0, -0.62], [4.43, -0.62], [4.62, -0.51], [4.72, -0.28], [4.7, -0.12], [4.53, -0.02], [0, -0.02]].map(([r, y]) => new THREE.Vector2(r, y));
-  const baseGeo = new THREE.LatheGeometry(baseProfile, 80); extraGeometries.add(baseGeo);
-  mesh(baseGeo, palette[0]);
-  torus(palette[1], 0, -0.43, 0, 4.6, 0.045);
-  cylinder(palette[2], 0, -0.65, 0, 4.31, 4.24, 0.12);
+  // The world is a closed sphere all the way to its south pole. Quiet colour
+  // variation and radial terrain give the sides and reverse their own surface.
+  const globeGeometry = new THREE.SphereGeometry(radius, 72, 48);
+  const globePositions = globeGeometry.getAttribute('position');
+  const globeColors = [];
+  const land = new THREE.Color(palette[0]); const shade = new THREE.Color(palette[1]);
+  const sand = new THREE.Color(palette[2]); const sample = new THREE.Color();
+  for (let i = 0; i < globePositions.count; i++) {
+    const x = globePositions.getX(i) / radius; const y = globePositions.getY(i) / radius; const z = globePositions.getZ(i) / radius;
+    const variation = Math.sin(x * 6 + z * 3) * Math.sin(y * 5 - z * 4) * 0.5 + 0.5;
+    const patch = Math.max(0, Math.sin(x * 4 - y * 2 + 0.8) + Math.cos(z * 5 + y * 3) - 0.86);
+    sample.copy(land).lerp(shade, variation * 0.15).lerp(sand, Math.min(0.25, patch * 0.18));
+    globeColors.push(sample.r, sample.g, sample.b);
+  }
+  globeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(globeColors, 3));
+  extraGeometries.add(globeGeometry);
+  const globeMaterial = new THREE.MeshStandardMaterial({ color: '#ffffff', vertexColors: true, roughness: 0.94 });
+  materials.set('complete-planet-surface', globeMaterial);
+  const globe = mesh(globeGeometry, globeMaterial, center.toArray(), [1, 1, 1], planetRoot);
+  globe.name = 'complete-planet-sphere';
+  globe.userData.planetBody = true;
 
   // A small burst stays physically inside the diorama and responds to every choice.
   const sparks = [];
@@ -593,13 +613,123 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     });
   }
 
-  // Bake static meshes into one draw call per material. Dynamic landmarks stay separate.
-  function batchStatic() {
-    staticRoot.updateMatrixWorld(true);
+  // The reverse is explorable too: low radial landmarks leave the north-pole
+  // story cast unobstructed while making every orbit recognisably this world.
+  const secondaryAnchors = [];
+  const up = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i < 14; i++) {
+    const polar = [1.43, 1.86, 2.29, 2.69][i % 4];
+    const longitude = i * 2.3999632297 + 0.37;
+    const normal = new THREE.Vector3(Math.sin(polar) * Math.cos(longitude), Math.cos(polar), Math.sin(polar) * Math.sin(longitude));
+    const anchor = part(0, 0, 0, backsideRoot);
+    anchor.position.copy(normal).multiplyScalar(radius).add(center);
+    anchor.quaternion.setFromUnitVectors(up, normal);
+    anchor.name = `radial-terrain-${i}`;
+    secondaryAnchors.push({ point: anchor.position.toArray(), normal: normal.toArray() });
+    const size = 0.45 + (i % 3) * 0.14;
+    if (id === 'moon' || id === 'observatory') {
+      ball(palette[1], 0, 0.016, 0, size, 0.026, size, anchor);
+      torus(palette[2], 0, 0.04, 0, size, size * 0.1, anchor);
+      if (i % 3 === 0) {
+        ball('#a4afba', 0.57, 0.09, 0.15, 0.2, 0.14, 0.18, anchor);
+        ball('#c1c5c5', -0.33, 0.09, -0.43, 0.12, 0.14, 0.15, anchor);
+      }
+    } else if (id === 'cloud') {
+      clouds(0, 0.025, 0, size * 0.87, anchor, i % 2 ? '#e7e7ef' : '#f4efea');
+    } else if (id === 'pocket') {
+      cylinder(i % 2 ? '#ceafb3' : '#d9c89f', 0, 0.065, 0, size * 0.6, size * 0.6, 0.13, anchor);
+      torus('#e4d1c7', 0, 0.14, 0, size * 0.48, 0.018, anchor);
+      [-1, 1].forEach(x => [-1, 1].forEach(z => ball('#8a7897', x * size * 0.15, 0.14, z * size * 0.15, 0.035, 0.012, 0.035, anchor)));
+    } else if (id === 'reef') {
+      ball('#8ebcaf', 0, -0.01, 0, size, 0.12, size * 0.8, anchor);
+      const coralColor = i % 2 ? '#cdad9c' : '#bb9fba';
+      rod(coralColor, [0, 0, 0], [0.04, 0.65, 0], 0.065, anchor);
+      rod(coralColor, [0.02, 0.23, 0], [-0.23, 0.46, 0.01], 0.05, anchor);
+      rod(coralColor, [0.03, 0.4, 0], [0.25, 0.72, 0], 0.05, anchor);
+      ball(coralColor, 0.25, 0.72, 0, 0.06, 0.07, 0.06, anchor);
+    } else {
+      ball(i % 2 ? palette[1] : '#b3c28d', 0, 0.015, 0, size, 0.115, size * 0.72, anchor);
+      if (i % 4 === 0 && ['orchard', 'meadow', 'home', 'bakery'].includes(id)) {
+        rod('#a28562', [0, 0.05, 0], [0, 0.65, 0], 0.075, anchor);
+        ball(id === 'orchard' ? '#97ad71' : '#a5b386', 0, 0.73, 0, 0.36, 0.34, 0.31, anchor);
+        if (id === 'orchard') apple(0.16, 0.7, 0.25, 0.075, anchor);
+      } else {
+        grass(0, 0, 0.75, palette[1], anchor);
+        if (i % 3 === 0) flower(0.2, 0.1, '#efe1b5', 0.1, anchor);
+        if (i % 2 === 0) pebble(-0.24, -0.15, 0.45, palette[2], anchor);
+      }
+    }
+  }
+  if (id === 'pocket') {
+    for (let i = 0; i < 48; i++) {
+      const angle = i / 48 * Math.PI * 2;
+      const threadPoint = value => {
+        const polar = 1.79 + Math.sin(value * 2) * 0.1;
+        return [Math.sin(polar) * Math.cos(value) * (radius + 0.035), Math.cos(polar) * (radius + 0.035) - radius, Math.sin(polar) * Math.sin(value) * (radius + 0.035)];
+      };
+      rod('#dfcdd4', threadPoint(angle - 0.032), threadPoint(angle + 0.032), 0.027, backsideRoot);
+    }
+  }
+  if (['bridge', 'cove', 'reef'].includes(id)) {
+    const positions = []; const normals = []; const indices = [];
+    for (let i = 0; i <= 112; i++) {
+      const longitude = i / 112 * Math.PI * 2;
+      const latitude = 1.7 + Math.sin(longitude * 2 + 0.8) * 0.24 + Math.sin(longitude * 3) * 0.09;
+      for (const side of [-1, 1]) {
+        const polar = latitude + side * (id === 'reef' ? 0.12 : 0.065);
+        const n = new THREE.Vector3(Math.sin(polar) * Math.cos(longitude), Math.cos(polar), Math.sin(polar) * Math.sin(longitude));
+        positions.push(n.x * (radius + 0.014), n.y * (radius + 0.014) - radius, n.z * (radius + 0.014));
+        normals.push(n.x, n.y, n.z);
+      }
+      if (i < 112) { const a = i * 2, b = a + 2; indices.push(a, b, a + 1, b, b + 1, a + 1); }
+    }
+    const riverGeometry = new THREE.BufferGeometry();
+    riverGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    riverGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    riverGeometry.setIndex(indices); extraGeometries.add(riverGeometry);
+    mesh(riverGeometry, '#81b7b3', [0, 0, 0], [1, 1, 1], backsideRoot);
+  }
+
+  // Long terrain triangles need subdivision before curving, otherwise their
+  // chords disappear into the sphere. Static work happens only at creation.
+  function batchStatic(root, curved = false) {
+    root.updateMatrixWorld(true);
     const batches = new Map();
     const normalMatrix = new THREE.Matrix3();
     const p = new THREE.Vector3(); const n = new THREE.Vector3();
-    staticRoot.traverse(item => {
+    const mappedPoint = new THREE.Vector3(); const mappedNormal = new THREE.Vector3();
+    const readVertex = (position, normal, vertex, matrix) => {
+      p.fromBufferAttribute(position, vertex).applyMatrix4(matrix);
+      n.fromBufferAttribute(normal, vertex).applyNormalMatrix(normalMatrix);
+      return [p.x, p.y, p.z, n.x, n.y, n.z];
+    };
+    const append = (batch, vertex) => {
+      if (curved) {
+        surfacePoint(vertex[0], vertex[2], vertex[1], mappedPoint);
+        n.set(vertex[3], vertex[4], vertex[5]);
+        surface.mapNormal(vertex[0], vertex[1], vertex[2], n, mappedNormal);
+        batch.position.push(mappedPoint.x, mappedPoint.y, mappedPoint.z);
+        batch.normal.push(mappedNormal.x, mappedNormal.y, mappedNormal.z);
+      } else {
+        batch.position.push(vertex[0], vertex[1], vertex[2]);
+        batch.normal.push(vertex[3], vertex[4], vertex[5]);
+      }
+    };
+    const planarLength = (a, b) => (a[0] - b[0]) ** 2 + (a[2] - b[2]) ** 2;
+    const emitTriangle = (batch, a, b, c, depth = 0) => {
+      if (curved && depth < 9) {
+        const ab = planarLength(a, b), bc = planarLength(b, c), ca = planarLength(c, a);
+        if (Math.max(ab, bc, ca) > 0.42 ** 2) {
+          if (bc > ab && bc >= ca) return emitTriangle(batch, b, c, a, depth);
+          if (ca > ab && ca > bc) return emitTriangle(batch, c, a, b, depth);
+          const middle = a.map((value, i) => (value + b[i]) / 2);
+          emitTriangle(batch, a, middle, c, depth + 1); emitTriangle(batch, middle, b, c, depth + 1);
+          return;
+        }
+      }
+      append(batch, a); append(batch, b); append(batch, c);
+    };
+    root.traverse(item => {
       if (!item.isMesh) return;
       const key = item.material.uuid;
       if (!batches.has(key)) batches.set(key, { material: item.material, position: [], normal: [] });
@@ -608,38 +738,64 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
       const normals = item.geometry.getAttribute('normal');
       const indices = item.geometry.index;
       normalMatrix.getNormalMatrix(item.matrixWorld);
-      for (let i = 0, count = indices ? indices.count : pos.count; i < count; i++) {
-        const vertex = indices ? indices.getX(i) : i;
-        p.fromBufferAttribute(pos, vertex).applyMatrix4(item.matrixWorld);
-        n.fromBufferAttribute(normals, vertex).applyNormalMatrix(normalMatrix);
-        batch.position.push(p.x, p.y, p.z); batch.normal.push(n.x, n.y, n.z);
+      for (let i = 0, count = indices ? indices.count : pos.count; i < count; i += 3) {
+        emitTriangle(batch, ...[0, 1, 2].map(offset => readVertex(pos, normals, indices ? indices.getX(i + offset) : i + offset, item.matrixWorld)));
       }
     });
-    staticRoot.clear();
+    root.clear();
     batches.forEach(({ material, position, normal }) => {
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3));
       geo.computeBoundingSphere(); extraGeometries.add(geo);
-      mesh(geo, material, [0, 0, 0], [1, 1, 1], staticRoot);
+      mesh(geo, material, [0, 0, 0], [1, 1, 1], root);
     });
   }
-  batchStatic();
+  batchStatic(staticRoot, true);
+  batchStatic(backsideRoot);
+
+  // Animation functions keep their original planar coordinates. A parent
+  // matrix independently places each rigid landmark in its local gravity,
+  // so launches rise radially and repeated updates never accumulate a warp.
+  const dynamicAnchors = [...liveRoot.children].map((object, index) => {
+    const anchor = new THREE.Group();
+    anchor.name = `planet-dynamic-anchor-${index}`;
+    anchor.matrixAutoUpdate = false;
+    anchor.userData = { planetAnchor: true, planarPosition: { x: 0, y: 0, z: 0 } };
+    liveRoot.add(anchor); anchor.add(object);
+    return { anchor, object };
+  });
+  const gravityRotation = new THREE.Quaternion();
+  const gravityNormal = new THREE.Vector3(); const gravityPosition = new THREE.Vector3();
+  const unitScale = new THREE.Vector3(1, 1, 1); const translation = new THREE.Matrix4();
+  const placeDynamicAnchors = () => dynamicAnchors.forEach(({ anchor, object }) => {
+    const { x, y, z } = object.position;
+    surfacePoint(x, z, y, gravityPosition); surfaceNormal(x, z, gravityNormal);
+    gravityRotation.setFromUnitVectors(up, gravityNormal);
+    anchor.matrix.compose(gravityPosition, gravityRotation, unitScale).multiply(translation.makeTranslation(-x, -y, -z));
+    anchor.matrixWorldNeedsUpdate = true;
+    Object.assign(anchor.userData.planarPosition, { x, y, z });
+  });
+  placeDynamicAnchors();
   let meshes = 0; let triangles = 0;
   group.traverse(item => { if (item.isMesh) { meshes++; triangles += (item.geometry.index?.count || item.geometry.getAttribute('position').count) / 3; } });
-  group.userData = { worldId: id, modelSource: 'independently-modelled-dev-dioramas', meshes, triangles };
+  group.userData = { worldId: id, modelSource: 'independently-modelled-dev-planets', meshes, triangles, planetRadius: radius, secondaryAnchors };
 
   return {
     group,
+    planet: { radius, center: center.clone() },
+    surfacePoint,
+    surfaceNormal,
     characterSpots: [{ x: -1.45, y: 0.045, z: 0.35, rotation: 0.24 }, { x: 0, y: 0.045, z: 0.85, rotation: 0 }, { x: 1.45, y: 0.045, z: 0.35, rotation: -0.24 }],
-    focus: { x: 0, y: 0.9, z: 0 },
-    camera: { position: [7.8, 7.4, 12.5], target: [0, 0.85, 0] },
+    focus: { x: 0, y: -1.45, z: 0 },
+    camera: { position: [9, 7.4, 14], target: [0, -1.8, 0] },
     tint: WORLD_CATALOG.find(world => world.id === id).tint,
-    stats: { meshes, triangles, materials: materials.size, staticBatches: staticRoot.children.length },
+    stats: { meshes, triangles, materials: materials.size, staticBatches: staticRoot.children.length + backsideRoot.children.length + 1, radius, secondaryLandmarks: secondaryAnchors.length },
     update(time, dt = 1 / 60) {
       if (disposed) return;
       elapsed = Number.isFinite(time) ? time : elapsed + dt;
       animators.forEach(animate => animate(elapsed, Math.max(0, Math.min(dt, 0.1))));
+      placeDynamicAnchors();
     },
     react(action = 'celebrate') {
       if (disposed) return;

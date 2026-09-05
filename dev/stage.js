@@ -1,52 +1,61 @@
 import * as THREE from '../vendor/three.module.js';
 import { createCharacter } from './models.js';
 import { createWorld } from './worlds.js';
+import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 
 const clamp = THREE.MathUtils.clamp;
+const UP = new THREE.Vector3(0, 1, 0);
+const DEFAULT_PITCH = .25;
 
 export class DioramaStage {
   constructor(container, onTouch = () => {}) {
     this.container = container;
     this.onTouch = onTouch;
     this.actors = new Map();
+    this.style = createStorybookStyle();
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#eeede6');
-    this.scene.fog = new THREE.Fog('#eeede6', 30, 70);
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    this.renderer.setClearColor('#f3ecdf', 0);
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.6));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.22;
+    this.renderer.toneMappingExposure = STORYBOOK_PALETTE.exposure;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.domElement.setAttribute('aria-label', '可以拖动旋转、点击角色的立体场景');
     this.renderer.domElement.setAttribute('role', 'img');
     container.append(this.renderer.domElement);
     this.camera = new THREE.OrthographicCamera(-8, 8, 7, -7, .1, 100);
-    this.target = new THREE.Vector3(0, .65, 0);
+    this.target = new THREE.Vector3(0, -2.65, 0);
     this.yaw = .28;
-    this.pitch = .53;
+    this.pitch = DEFAULT_PITCH;
     this.zoom = 1;
     this.studio = false;
-    this.scene.add(new THREE.HemisphereLight('#fffcf1', '#8a9b84', 2.2));
-    const key = new THREE.DirectionalLight('#fff0d3', 3.4);
+    this.scene.add(new THREE.HemisphereLight(STORYBOOK_PALETTE.sky, STORYBOOK_PALETTE.bounce, STORYBOOK_PALETTE.hemisphereIntensity));
+    const key = new THREE.DirectionalLight(STORYBOOK_PALETTE.sun, STORYBOOK_PALETTE.sunIntensity);
     key.position.set(-7, 12, 8);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
-    Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 40 });
+    Object.assign(key.shadow.camera, { left: -11, right: 11, top: 11, bottom: -11, near: 1, far: 45 });
     key.shadow.normalBias = .04;
     key.shadow.bias = -.00015;
     key.shadow.radius = 3;
     this.scene.add(key);
-    const rim = new THREE.DirectionalLight('#d5e4fa', 1.5);
+    const rim = new THREE.DirectionalLight(STORYBOOK_PALETTE.rim, STORYBOOK_PALETTE.rimIntensity);
     rim.position.set(8, 7, -6);
     this.scene.add(rim);
-    this.floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: '#eeede6', roughness: 1 }));
-    this.floor.rotation.x = -Math.PI / 2;
-    this.floor.position.y = -.73;
-    this.floor.receiveShadow = true;
-    this.scene.add(this.floor);
+    // A floating complete world has no tabletop or plane underneath it.
+    this.space = new THREE.Group();
+    const starGeometry = new THREE.OctahedronGeometry(.105);
+    const starMaterial = new THREE.MeshBasicMaterial({ color: '#c9b078', transparent: true, opacity: .58 });
+    [[-5.5, 1, -1.8], [5.3, -.6, -2], [-5, -5.7, -1.8], [4.6, -6.2, -2.5], [2.4, 3.5, -4]].forEach((point, index) => {
+      const star = new THREE.Mesh(starGeometry, starMaterial);
+      star.position.set(...point); star.scale.setScalar(index % 2 ? .7 : 1);
+      star.rotation.set(.4, .3 * index, .2); this.space.add(star);
+    });
+    this.scene.add(this.space);
+    this.pointers = new Map();
     this.raycaster = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
     this.installPointer();
@@ -62,8 +71,8 @@ export class DioramaStage {
       this.world?.update(time, dt);
       for (const actor of this.actors.values()) actor.update(time, dt);
       if (this.invention && !this.reduced) {
-        this.invention.position.y = 1.2 + Math.sin(time * 1.4) * .10;
-        this.invention.rotation.y += dt * .18;
+        this.invention.position.y = this.invention.userData.restY + Math.sin(time * 1.4) * .10;
+        this.invention.rotation.y += dt * .12;
       }
       this.renderer.render(this.scene, this.camera);
     });
@@ -72,26 +81,42 @@ export class DioramaStage {
   installPointer() {
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', event => {
+      this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
+      if (this.pointers.size === 2) {
+        const [a, b] = [...this.pointers.values()];
+        this.pinch = { distance: a.distanceTo(b), zoom: this.zoom };
+        this.drag = null;
+        canvas.setPointerCapture(event.pointerId);
+        return;
+      }
       this.drag = { x: event.clientX, y: event.clientY, yaw: this.yaw, pitch: this.pitch, moved: false };
       canvas.setPointerCapture(event.pointerId);
     });
     canvas.addEventListener('pointermove', event => {
+      if (this.pointers.has(event.pointerId)) this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
+      if (this.pinch && this.pointers.size === 2) {
+        const [a, b] = [...this.pointers.values()];
+        this.zoom = clamp(this.pinch.zoom * a.distanceTo(b) / Math.max(1, this.pinch.distance), .7, 1.8);
+        this.resize(); return;
+      }
       if (!this.drag) return;
       const dx = event.clientX - this.drag.x;
       const dy = event.clientY - this.drag.y;
       this.drag.moved ||= Math.hypot(dx, dy) > 7;
       this.yaw = this.drag.yaw - dx * .007;
-      this.pitch = clamp(this.drag.pitch + dy * .004, .25, 1.15);
+      this.pitch = clamp(this.drag.pitch + dy * .004, -1.15, 1.35);
       this.updateCamera();
     });
     canvas.addEventListener('pointerup', event => {
-      if (!this.drag?.moved) this.pick(event);
+      if (this.drag && !this.drag.moved && !this.pinch) this.pick(event);
+      this.pointers.delete(event.pointerId);
+      this.pinch = null;
       this.drag = null;
     });
-    canvas.addEventListener('pointercancel', () => { this.drag = null; });
+    canvas.addEventListener('pointercancel', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
       event.preventDefault();
-      this.zoom = clamp(this.zoom - event.deltaY * .001, .75, 1.55);
+      this.zoom = clamp(this.zoom - event.deltaY * .001, .7, 1.8);
       this.resize();
     }, { passive: false });
   }
@@ -102,6 +127,13 @@ export class DioramaStage {
     this.raycaster.setFromCamera(this.pointer, this.camera);
     const hits = this.raycaster.intersectObjects([...this.actors.values()].map(actor => actor.group), true);
     if (!hits.length) return;
+    const blockers = this.world ? this.raycaster.intersectObject(this.world.group, true) : [];
+    const visibleBlocker = blockers.find(hit => {
+      if (!hit.object.visible || hit.object.material?.transparent) return false;
+      for (let parent = hit.object.parent; parent; parent = parent.parent) if (!parent.visible) return false;
+      return true;
+    });
+    if (visibleBlocker && visibleBlocker.distance < hits[0].distance - .025) return;
     let object = hits[0].object;
     while (object && !object.userData.actorId) object = object.parent;
     if (object) {
@@ -115,8 +147,9 @@ export class DioramaStage {
     if (!width || !height) return;
     this.renderer.setSize(width, height);
     const aspect = width / height;
-    const viewWidth = this.studio ? 10.8 : 12.4;
-    const halfH = Math.max(this.studio ? 4.4 : 5.1, viewWidth / aspect / 2) / this.zoom;
+    const viewWidth = this.studio ? 11.8 : 12.4;
+    // Leave room for chimney smoke and radial terrain beyond both poles.
+    const halfH = Math.max(6.6, viewWidth / aspect / 2) / this.zoom;
     Object.assign(this.camera, { left: -halfH * aspect, right: halfH * aspect, top: halfH, bottom: -halfH });
     this.camera.updateProjectionMatrix();
     this.updateCamera();
@@ -132,7 +165,7 @@ export class DioramaStage {
     this.camera.lookAt(this.target);
   }
 
-  resetCamera() { this.yaw = .28; this.pitch = .53; this.zoom = 1; this.resize(); }
+  resetCamera() { this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.resize(); }
 
   setScene(worldId, cast = [], { studio = false } = {}) {
     this.clearInvention();
@@ -141,13 +174,19 @@ export class DioramaStage {
     this.actors.clear();
     this.studio = studio;
     this.world = createWorld(worldId);
+    this.style.apply(this.world.group);
     this.scene.add(this.world.group);
     const spots = this.world.characterSpots || [{ x: -1.6, y: .05, z: 1.5 }, { x: 1.3, y: .05, z: 1 }, { x: 0, y: .05, z: 2.6 }];
     cast.forEach((config, index) => {
       const actor = createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
+      this.style.apply(actor.group);
       const spot = studio ? { x: 0, y: .08, z: 1.2 } : spots[index % spots.length];
-      actor.group.position.set(spot.x, spot.y, spot.z);
-      actor.group.rotation.y = spot.rotation || (index % 2 ? -.22 : .18);
+      const normal = this.world.surfaceNormal?.(spot.x, spot.z) || UP.clone();
+      actor.group.position.copy(this.world.surfacePoint?.(spot.x, spot.z, spot.y) || new THREE.Vector3(spot.x, spot.y, spot.z));
+      actor.group.quaternion.setFromUnitVectors(UP, normal);
+      actor.group.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(UP, spot.rotation || (index % 2 ? -.22 : .18)));
+      actor.group.userData.surfaceNormal = normal.toArray();
+      actor.group.userData.surfaceHeight = spot.y;
       actor.group.userData.actorId = config.id;
       actor.group.userData.actorName = config.name;
       actor.group.userData.manner = config.manner;
@@ -251,16 +290,27 @@ export class DioramaStage {
       sail.scale.z = .15;
     }
     group.userData.upgrades = [...upgrades];
-    group.position.set(0, 1.2, -.2);
+    const anchor = this.world?.surfacePoint?.(0, -.9, 1.4) || new THREE.Vector3(0, 1.2, -.2);
+    group.position.copy(anchor);
+    group.userData.restY = anchor.y;
     group.scale.setScalar(.85);
     this.invention = group;
+    this.style?.apply(group);
     this.scene.add(group);
   }
 
   snapshot() { this.renderer.render(this.scene, this.camera); return this.renderer.domElement.toDataURL('image/png'); }
 
   stats() {
-    return { world: this.worldId, actors: [...this.actors.keys()], calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries, camera: this.camera.position.toArray(), invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [] };
+    return {
+      world: this.worldId, actors: [...this.actors.keys()],
+      calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,
+      camera: this.camera.position.toArray(), orbit: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom },
+      frame: { projection: this.camera.projectionMatrix.toArray(), view: this.camera.matrixWorldInverse.toArray() },
+      planet: this.world?.planet ? { radius: this.world.planet.radius, center: this.world.planet.center.toArray() } : null,
+      actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray() })),
+      invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [],
+    };
   }
 
   dispose() {
@@ -269,7 +319,8 @@ export class DioramaStage {
     this.world?.dispose();
     for (const actor of this.actors.values()) actor.dispose();
     this.clearInvention();
-    this.floor.geometry.dispose(); this.floor.material.dispose();
+    this.space.children[0]?.geometry.dispose(); this.space.children[0]?.material.dispose();
+    this.style.dispose();
     this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }
