@@ -1,0 +1,4098 @@
+{
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "dev-planet-production-final",
+  "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP",
+  "checkedAt": "2026-09-05T17:07:58.629Z",
+  "complete": true,
+  "failure": null,
+  "closed": true,
+  "issues": [],
+  "method": "real isolated browser; 11 worlds × 3 viewports; WebGL alpha silhouette + orthographic sphere bounds; read-only radial/pose diagnostics; real front/back pointer picking; synthetic v1 saves in QA-only session",
+  "rows": [
+    {
+      "event": "view",
+      "label": "1280x900-orchard",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 169,
+        "opaque": 244147,
+        "right": 746,
+        "top": 82,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-orchard.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "orchard",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-orchard-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bakery",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 126,
+        "opaque": 252531,
+        "right": 684,
+        "top": 10,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-bakery.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "bakery",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-bakery-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bridge",
+      "world": "bridge",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 174,
+        "opaque": 235065,
+        "right": 742,
+        "top": 117,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-bridge.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "bridge",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-bridge-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-home",
+      "world": "home",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 88,
+        "opaque": 266660,
+        "right": 698,
+        "top": 82,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-home.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "home",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-home-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-observatory",
+      "world": "observatory",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 741,
+        "edge": 0,
+        "height": 784,
+        "left": 173,
+        "opaque": 220166,
+        "right": 685,
+        "top": 87,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-observatory.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "observatory",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-observatory-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-reef",
+      "world": "reef",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 771,
+        "edge": 0,
+        "height": 784,
+        "left": 143,
+        "opaque": 221149,
+        "right": 720,
+        "top": 137,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-reef.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "reef",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-reef-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-pocket",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 737,
+        "edge": 0,
+        "height": 784,
+        "left": 178,
+        "opaque": 289820,
+        "right": 782,
+        "top": 78,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-pocket.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "pocket",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-pocket-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-cloud",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 748,
+        "edge": 0,
+        "height": 784,
+        "left": 171,
+        "opaque": 225971,
+        "right": 694,
+        "top": 93,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cloud.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "cloud",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cloud-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-moon",
+      "world": "moon",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 741,
+        "edge": 0,
+        "height": 784,
+        "left": 173,
+        "opaque": 211840,
+        "right": 685,
+        "top": 75,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-moon.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "moon",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-moon-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-meadow",
+      "world": "meadow",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 173,
+        "opaque": 240211,
+        "right": 755,
+        "top": 99,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-meadow.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "meadow",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-meadow-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-cove",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 166,
+        "opaque": 227459,
+        "right": 684,
+        "top": 104,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cove.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "1280x900",
+      "world": "cove",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 402.43593262599364,
+          "y": 262.5021804640507
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 456.5085385638526,
+          "y": 428.7319057944711
+        },
+        "nearSphereDistance": 1.7219932927544566,
+        "orbit": {
+          "pitch": -1.03,
+          "yaw": 3.423,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cove-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-cove-hop",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 166,
+        "opaque": 227680,
+        "right": 684,
+        "top": 104,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cove-hop.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-cove-talk",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 784,
+        "width": 858.8125,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 179.95170454545453,
+        "right": 179.95170454545453,
+        "top": 231.74411930778598,
+        "bottom": 53.34678978312314
+      },
+      "pixels": {
+        "bottom": 745,
+        "edge": 0,
+        "height": 784,
+        "left": 166,
+        "opaque": 227910,
+        "right": 684,
+        "top": 104,
+        "width": 858
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 133.751328716718
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-cove-talk.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-homepage",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 779,
+        "width": 844.796875,
+        "x": 435.203125,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 174.53480113636363,
+        "right": 174.53480113636363,
+        "top": 230.26615936322094,
+        "bottom": 53.006567909506344
+      },
+      "pixels": {
+        "bottom": 740,
+        "edge": 0,
+        "height": 779,
+        "left": 164,
+        "opaque": 250382,
+        "right": 737,
+        "top": 81,
+        "width": 844
+      },
+      "standing": [
+        {
+          "id": "dog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "rabbit",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "frog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "dog",
+          "projectedHeight": 95.04538999785268
+        },
+        {
+          "id": "rabbit",
+          "projectedHeight": 87.93504101161999
+        },
+        {
+          "id": "frog",
+          "projectedHeight": 89.31126321305845
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "dog",
+        "rabbit",
+        "frog"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-homepage.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-orchard",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 84,
+        "opaque": 44701,
+        "right": 331,
+        "top": 35,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-orchard.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "390x844",
+      "world": "orchard",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 183.41011672476233,
+          "y": 140.42618014919208
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 206.9283279567529,
+          "y": 212.22576398468695
+        },
+        "nearSphereDistance": 1.7200428490801771,
+        "orbit": {
+          "pitch": -1.034,
+          "yaw": 3.4299999999999997,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-orchard-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-bakery",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 65,
+        "opaque": 46290,
+        "right": 303,
+        "top": 5,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-bakery.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-bridge",
+      "world": "bridge",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 86,
+        "opaque": 43073,
+        "right": 329,
+        "top": 50,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-bridge.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-home",
+      "world": "home",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 49,
+        "opaque": 48796,
+        "right": 310,
+        "top": 36,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-home.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-observatory",
+      "world": "observatory",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 317,
+        "edge": 0,
+        "height": 336,
+        "left": 85,
+        "opaque": 40302,
+        "right": 304,
+        "top": 37,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-observatory.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-reef",
+      "world": "reef",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 330,
+        "edge": 0,
+        "height": 336,
+        "left": 72,
+        "opaque": 40451,
+        "right": 319,
+        "top": 59,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-reef.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "390x844",
+      "world": "reef",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 183.41011672476233,
+          "y": 140.42618014919208
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 206.9283279567529,
+          "y": 212.22576398468695
+        },
+        "nearSphereDistance": 1.7200428490801771,
+        "orbit": {
+          "pitch": -1.034,
+          "yaw": 3.4299999999999997,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-reef-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-pocket",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 315,
+        "edge": 0,
+        "height": 336,
+        "left": 87,
+        "opaque": 53248,
+        "right": 346,
+        "top": 34,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-pocket.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-cloud",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 320,
+        "edge": 0,
+        "height": 336,
+        "left": 84,
+        "opaque": 41399,
+        "right": 308,
+        "top": 40,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-cloud.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-moon",
+      "world": "moon",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 317,
+        "edge": 0,
+        "height": 336,
+        "left": 85,
+        "opaque": 38839,
+        "right": 304,
+        "top": 32,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-moon.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-meadow",
+      "world": "meadow",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 85,
+        "opaque": 44006,
+        "right": 334,
+        "top": 43,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-meadow.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-cove",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 82,
+        "opaque": 41672,
+        "right": 303,
+        "top": 45,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-cove.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-cove-hop",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 82,
+        "opaque": 41712,
+        "right": 303,
+        "top": 45,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-cove-hop.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-cove-talk",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 82,
+        "opaque": 41782,
+        "right": 303,
+        "top": 45,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 57.476605344983156
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-cove-talk.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-homepage",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 336.90625,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 87.80255681818181,
+        "right": 87.80255681818181,
+        "top": 99.5867885147178,
+        "bottom": 22.92457512164583
+      },
+      "pixels": {
+        "bottom": 319,
+        "edge": 0,
+        "height": 336,
+        "left": 84,
+        "opaque": 46436,
+        "right": 331,
+        "top": 35,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "dog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "rabbit",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "frog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "dog",
+          "projectedHeight": 41.10575856734794
+        },
+        {
+          "id": "rabbit",
+          "projectedHeight": 38.03063531555979
+        },
+        {
+          "id": "frog",
+          "projectedHeight": 38.6258315428427
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "dog",
+        "rabbit",
+        "frog"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-homepage.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-orchard",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 75,
+        "opaque": 39907,
+        "right": 308,
+        "top": 33,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-orchard.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "360x800",
+      "world": "orchard",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 169.06050902431886,
+          "y": 136.02511911679608
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 191.25894307466075,
+          "y": 202.55932428952966
+        },
+        "nearSphereDistance": 1.7282590151244341,
+        "orbit": {
+          "pitch": -1.022,
+          "yaw": 3.4299999999999997,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-orchard-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-bakery",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 57,
+        "opaque": 41331,
+        "right": 282,
+        "top": 4,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-bakery.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-bridge",
+      "world": "bridge",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 76,
+        "opaque": 38459,
+        "right": 306,
+        "top": 48,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-bridge.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-home",
+      "world": "home",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 42,
+        "opaque": 43584,
+        "right": 288,
+        "top": 34,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-home.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-observatory",
+      "world": "observatory",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 300,
+        "edge": 0,
+        "height": 318,
+        "left": 76,
+        "opaque": 35998,
+        "right": 283,
+        "top": 35,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-observatory.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-reef",
+      "world": "reef",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 312,
+        "edge": 0,
+        "height": 318,
+        "left": 64,
+        "opaque": 36107,
+        "right": 297,
+        "top": 56,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-reef.png"
+    },
+    {
+      "event": "occlusion-and-reset",
+      "viewport": "360x800",
+      "world": "reef",
+      "front": {
+        "height": 1.55,
+        "point": {
+          "x": 169.06050902431886,
+          "y": 136.02511911679608
+        }
+      },
+      "backside": {
+        "point": {
+          "x": 191.25894307466075,
+          "y": 202.55932428952966
+        },
+        "nearSphereDistance": 1.7282590151244341,
+        "orbit": {
+          "pitch": -1.022,
+          "yaw": 3.4299999999999997,
+          "zoom": 1
+        }
+      },
+      "notices": 1,
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-reef-backside.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-pocket",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 298,
+        "edge": 0,
+        "height": 318,
+        "left": 78,
+        "opaque": 47561,
+        "right": 323,
+        "top": 32,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-pocket.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-cloud",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 303,
+        "edge": 0,
+        "height": 318,
+        "left": 76,
+        "opaque": 36958,
+        "right": 287,
+        "top": 38,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-cloud.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-moon",
+      "world": "moon",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 300,
+        "edge": 0,
+        "height": 318,
+        "left": 76,
+        "opaque": 34685,
+        "right": 283,
+        "top": 30,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-moon.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-meadow",
+      "world": "meadow",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 76,
+        "opaque": 39295,
+        "right": 312,
+        "top": 40,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-meadow.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-cove",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 73,
+        "opaque": 37221,
+        "right": 282,
+        "top": 42,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-cove.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-cove-hop",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 73,
+        "opaque": 37256,
+        "right": 282,
+        "top": 42,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-cove-hop.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-cove-talk",
+      "world": "cove",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 73,
+        "opaque": 37318,
+        "right": 282,
+        "top": 42,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "studio",
+          "distanceError": 9.575673587391975e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999998,
+          "foot": [
+            0,
+            -0.09350871284099328,
+            1.2062874070830587
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "studio",
+          "projectedHeight": 54.25117669887286
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "studio"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-cove-talk.png"
+    },
+    {
+      "event": "view",
+      "label": "360x800-homepage",
+      "world": "orchard",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 318,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 78.81818181818181,
+        "right": 78.81818181818181,
+        "top": 93.99825247433154,
+        "bottom": 21.63811116203209
+      },
+      "pixels": {
+        "bottom": 301,
+        "edge": 0,
+        "height": 318,
+        "left": 75,
+        "opaque": 41455,
+        "right": 308,
+        "top": 33,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "dog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "rabbit",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "frog",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "dog",
+          "projectedHeight": 38.799016712858986
+        },
+        {
+          "id": "rabbit",
+          "projectedHeight": 35.89646090076397
+        },
+        {
+          "id": "frog",
+          "projectedHeight": 36.45825635655015
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "dog",
+        "rabbit",
+        "frog"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-homepage.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-saved-doudou",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 469,
+        "width": 1280,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 490.77272727272725,
+        "right": 490.77272727272725,
+        "top": 138.6326428001934,
+        "bottom": 31.912811745261166
+      },
+      "pixels": {
+        "bottom": 445,
+        "edge": 0,
+        "height": 469,
+        "left": 459,
+        "opaque": 91550,
+        "right": 791,
+        "top": 5,
+        "width": 1280
+      },
+      "standing": [
+        {
+          "id": "anuan",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "doudou",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "anuan",
+          "projectedHeight": 57.2224491771411
+        },
+        {
+          "id": "doudou",
+          "projectedHeight": 52.94163573100096
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 53.77019569566673
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "anuan",
+        "doudou",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-saved-doudou.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "1280x900",
+      "story": "doudou",
+      "sceneIndex": 1,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-saved-moon",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 469,
+        "width": 1280,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 490.77272727272725,
+        "right": 490.77272727272725,
+        "top": 138.6326428001934,
+        "bottom": 31.912811745261166
+      },
+      "pixels": {
+        "bottom": 440,
+        "edge": 0,
+        "height": 469,
+        "left": 490,
+        "opaque": 103647,
+        "right": 851,
+        "top": 47,
+        "width": 1280
+      },
+      "standing": [
+        {
+          "id": "zhuzhu",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "ace",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "zhuzhu",
+          "projectedHeight": 57.2224491771411
+        },
+        {
+          "id": "ace",
+          "projectedHeight": 52.94163573100096
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 53.77019569566673
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "zhuzhu",
+        "ace",
+        "companion"
+      ],
+      "invention": true,
+      "upgrades": [
+        "navigation",
+        "float",
+        "rope"
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-saved-moon.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "1280x900",
+      "story": "moon",
+      "sceneIndex": 2,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-saved-echo",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 469,
+        "width": 1280,
+        "x": 0,
+        "y": 80
+      },
+      "sphereMargins": {
+        "left": 490.77272727272725,
+        "right": 490.77272727272725,
+        "top": 138.6326428001934,
+        "bottom": 31.912811745261166
+      },
+      "pixels": {
+        "bottom": 447,
+        "edge": 0,
+        "height": 469,
+        "left": 486,
+        "opaque": 83204,
+        "right": 798,
+        "top": 56,
+        "width": 1280
+      },
+      "standing": [
+        {
+          "id": "xiaohui",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "hewan",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "xiaohui",
+          "projectedHeight": 57.2224491771411
+        },
+        {
+          "id": "hewan",
+          "projectedHeight": 52.94163573100096
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 53.77019569566673
+        }
+      ],
+      "overflow": {
+        "body": 1280,
+        "document": 1280,
+        "outliers": [],
+        "width": 1280
+      },
+      "actors": [
+        "xiaohui",
+        "hewan",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/1280x900-saved-echo.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "1280x900",
+      "story": "echo",
+      "sceneIndex": 5,
+      "completed": true,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "390x844-saved-doudou",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 404.4375,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 66.31534090909088,
+        "right": 66.31534090909088,
+        "top": 119.5484850159983,
+        "bottom": 27.519696802183518
+      },
+      "pixels": {
+        "bottom": 383,
+        "edge": 0,
+        "height": 404,
+        "left": 39,
+        "opaque": 67934,
+        "right": 326,
+        "top": 4,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "anuan",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "doudou",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "anuan",
+          "projectedHeight": 49.34521170379529
+        },
+        {
+          "id": "doudou",
+          "projectedHeight": 45.65369467154947
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 46.368195142145446
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "anuan",
+        "doudou",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-saved-doudou.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "390x844",
+      "story": "doudou",
+      "sceneIndex": 1,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "390x844-saved-moon",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 404.4375,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 66.31534090909088,
+        "right": 66.31534090909088,
+        "top": 119.5484850159983,
+        "bottom": 27.519696802183518
+      },
+      "pixels": {
+        "bottom": 379,
+        "edge": 0,
+        "height": 404,
+        "left": 65,
+        "opaque": 76921,
+        "right": 377,
+        "top": 40,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "zhuzhu",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "ace",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "zhuzhu",
+          "projectedHeight": 49.34521170379529
+        },
+        {
+          "id": "ace",
+          "projectedHeight": 45.65369467154947
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 46.368195142145446
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "zhuzhu",
+        "ace",
+        "companion"
+      ],
+      "invention": true,
+      "upgrades": [
+        "navigation",
+        "float",
+        "rope"
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-saved-moon.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "390x844",
+      "story": "moon",
+      "sceneIndex": 2,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "390x844-saved-echo",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 404.4375,
+        "width": 390,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 66.31534090909088,
+        "right": 66.31534090909088,
+        "top": 119.5484850159983,
+        "bottom": 27.519696802183518
+      },
+      "pixels": {
+        "bottom": 385,
+        "edge": 0,
+        "height": 404,
+        "left": 62,
+        "opaque": 61715,
+        "right": 331,
+        "top": 48,
+        "width": 390
+      },
+      "standing": [
+        {
+          "id": "xiaohui",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "hewan",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "xiaohui",
+          "projectedHeight": 49.34521170379529
+        },
+        {
+          "id": "hewan",
+          "projectedHeight": 45.65369467154947
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 46.368195142145446
+        }
+      ],
+      "overflow": {
+        "body": 390,
+        "document": 390,
+        "outliers": [],
+        "width": 390
+      },
+      "actors": [
+        "xiaohui",
+        "hewan",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/390x844-saved-echo.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "390x844",
+      "story": "echo",
+      "sceneIndex": 5,
+      "completed": true,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "360x800-saved-doudou",
+      "world": "bakery",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 382,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 58.45454545454544,
+        "right": 58.45454545454544,
+        "top": 112.91613976476305,
+        "bottom": 25.992951144327847
+      },
+      "pixels": {
+        "bottom": 362,
+        "edge": 0,
+        "height": 382,
+        "left": 32,
+        "opaque": 60621,
+        "right": 303,
+        "top": 4,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "anuan",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "doudou",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "anuan",
+          "projectedHeight": 46.607623850038145
+        },
+        {
+          "id": "doudou",
+          "projectedHeight": 43.12090586192402
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 43.79576706981811
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "anuan",
+        "doudou",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-saved-doudou.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "360x800",
+      "story": "doudou",
+      "sceneIndex": 1,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "360x800-saved-moon",
+      "world": "pocket",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 382,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 58.45454545454544,
+        "right": 58.45454545454544,
+        "top": 112.91613976476305,
+        "bottom": 25.992951144327847
+      },
+      "pixels": {
+        "bottom": 358,
+        "edge": 0,
+        "height": 382,
+        "left": 58,
+        "opaque": 68670,
+        "right": 352,
+        "top": 38,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "zhuzhu",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "ace",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "zhuzhu",
+          "projectedHeight": 46.607623850038145
+        },
+        {
+          "id": "ace",
+          "projectedHeight": 43.12090586192402
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 43.79576706981811
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "zhuzhu",
+        "ace",
+        "companion"
+      ],
+      "invention": true,
+      "upgrades": [
+        "navigation",
+        "float",
+        "rope"
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-saved-moon.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "360x800",
+      "story": "moon",
+      "sceneIndex": 2,
+      "completed": false,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "view",
+      "label": "360x800-saved-echo",
+      "world": "cloud",
+      "orbit": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "bounds": {
+        "height": 382,
+        "width": 360,
+        "x": 0,
+        "y": 62
+      },
+      "sphereMargins": {
+        "left": 58.45454545454544,
+        "right": 58.45454545454544,
+        "top": 112.91613976476305,
+        "bottom": 25.992951144327847
+      },
+      "pixels": {
+        "bottom": 364,
+        "edge": 0,
+        "height": 382,
+        "left": 54,
+        "opaque": 55071,
+        "right": 309,
+        "top": 45,
+        "width": 360
+      },
+      "standing": [
+        {
+          "id": "xiaohui",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            -1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        },
+        {
+          "id": "hewan",
+          "distanceError": 6.938893903907228e-17,
+          "upDot": 1.0000000000000002,
+          "normalDot": 1.0000000000000002,
+          "foot": [
+            0,
+            -0.041637146936605696,
+            0.8532545823272611
+          ]
+        },
+        {
+          "id": "companion",
+          "distanceError": 8.187894806610529e-16,
+          "upDot": 0.9999999999999998,
+          "normalDot": 0.9999999999999997,
+          "foot": [
+            1.434920505886201,
+            -0.2199167335847214,
+            0.3463601221104623
+          ]
+        }
+      ],
+      "readability": [
+        {
+          "id": "xiaohui",
+          "projectedHeight": 46.607623850038145
+        },
+        {
+          "id": "hewan",
+          "projectedHeight": 43.12090586192402
+        },
+        {
+          "id": "companion",
+          "projectedHeight": 43.79576706981811
+        }
+      ],
+      "overflow": {
+        "body": 360,
+        "document": 360,
+        "outliers": [],
+        "width": 360
+      },
+      "actors": [
+        "xiaohui",
+        "hewan",
+        "companion"
+      ],
+      "invention": false,
+      "upgrades": [],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-planet-ui-production-DFC9fP/360x800-saved-echo.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "viewport": "360x800",
+      "story": "echo",
+      "sceneIndex": 5,
+      "completed": true,
+      "byteIdentical": true,
+      "fixtureOnly": true
+    },
+    {
+      "event": "browser-errors",
+      "errors": "",
+      "console": ""
+    }
+  ]
+}

@@ -1,0 +1,2308 @@
+{
+  "base": "http://127.0.0.1:8913/dev/?mode=studio",
+  "session": "dev-studio-qa",
+  "artifactPrefix": "/tmp/dev-studio-qa-local-2026-09-05T16-38-12-079Z",
+  "checkedAt": "2026-09-05T16:38:34.067Z",
+  "complete": true,
+  "method": "actual agent-browser clicks, keyboard slider, mouse drag, real model download; diagnostics read only",
+  "rows": [
+    {
+      "event": "character",
+      "type": "dog",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 87,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 55,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 97516,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "rabbit",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 87,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 55,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 97708,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#eee3d5",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "rabbit",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "otter",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 96,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 60,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 98474,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#99735b",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "otter",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "owl",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 97,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 60,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 100312,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#b19a7f",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "owl",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "cat",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 91,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 61,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 97320,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#bf9980",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "cat",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "bear",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 85,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 51,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 96956,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#c39666",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "bear",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "frog",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 81,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.1508906505896271,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 46,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 95536,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#93af83",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "frog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "color",
+      "color": "#eee3d5",
+      "label": "奶油白",
+      "state": {
+        "action": "idle",
+        "color": "#eee3d5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#c99561",
+      "label": "蜂蜜金",
+      "state": {
+        "action": "idle",
+        "color": "#c99561",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#93af83",
+      "label": "嫩叶绿",
+      "state": {
+        "action": "idle",
+        "color": "#93af83",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#90b6c5",
+      "label": "晴空蓝",
+      "state": {
+        "action": "idle",
+        "color": "#90b6c5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#d7a9a5",
+      "label": "桃花粉",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "size-minimum",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 75,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "size-maximum",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "happy",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "curious",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "curious",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "sad",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "sad",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "surprised",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "idle",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "wave",
+      "state": {
+        "action": "wave",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "hop",
+      "state": {
+        "action": "hop",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "listen",
+      "state": {
+        "action": "listen",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "talk",
+      "state": {
+        "action": "talk",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "walk",
+      "state": {
+        "action": "walk",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "world",
+      "id": "orchard",
+      "label": "红苹果园",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 81,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 45,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 95600,
+        "upgrades": [],
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "world",
+      "id": "bakery",
+      "label": "阿暖面包房",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 92,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 55,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 73686,
+        "upgrades": [],
+        "world": "bakery"
+      }
+    },
+    {
+      "event": "world",
+      "id": "bridge",
+      "label": "吱呀小木桥",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 92,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 30,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 74726,
+        "upgrades": [],
+        "world": "bridge"
+      }
+    },
+    {
+      "event": "world",
+      "id": "home",
+      "label": "豆豆的家",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 82,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 48,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 94812,
+        "upgrades": [],
+        "world": "home"
+      }
+    },
+    {
+      "event": "world",
+      "id": "observatory",
+      "label": "望远镜山丘",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 77,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 41,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 50076,
+        "upgrades": [],
+        "world": "observatory"
+      }
+    },
+    {
+      "event": "world",
+      "id": "reef",
+      "label": "海底维修站",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 76,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 30,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 53704,
+        "upgrades": [],
+        "world": "reef"
+      }
+    },
+    {
+      "event": "world",
+      "id": "pocket",
+      "label": "巨人的口袋",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 75,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 30,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 75212,
+        "upgrades": [],
+        "world": "pocket"
+      }
+    },
+    {
+      "event": "world",
+      "id": "cloud",
+      "label": "云层导航站",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 67,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 25,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 66156,
+        "upgrades": [],
+        "world": "cloud"
+      }
+    },
+    {
+      "event": "world",
+      "id": "moon",
+      "label": "月球接引区",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 63,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 27,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 52136,
+        "upgrades": [],
+        "world": "moon"
+      }
+    },
+    {
+      "event": "world",
+      "id": "meadow",
+      "label": "萤火草地",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 101,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 35,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 91052,
+        "upgrades": [],
+        "world": "meadow"
+      }
+    },
+    {
+      "event": "world",
+      "id": "cove",
+      "label": "听听贝河湾",
+      "stage": {
+        "actorSurfaces": [
+          {
+            "foot": [
+              0,
+              -0.09350871284099328,
+              1.2062874070830587
+            ],
+            "height": 0.08,
+            "id": "studio",
+            "normal": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ],
+            "up": [
+              0,
+              0.9594605811119172,
+              0.28184285212220994
+            ]
+          }
+        ],
+        "actors": [
+          "studio"
+        ],
+        "calls": 76,
+        "camera": [
+          6.158581676184441,
+          3.040291062854028,
+          21.417106699033106
+        ],
+        "frame": {
+          "projection": [
+            0.1508906505896271,
+            0,
+            0,
+            0,
+            0,
+            0.1652892561983471,
+            0,
+            0,
+            0,
+            0,
+            -0.02002002002002002,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            1
+          ],
+          "view": [
+            0.9610554383107708,
+            -0.06837148161711327,
+            0.26776442070367135,
+            0,
+            -2.7755575615628914e-17,
+            0.9689124217106448,
+            0.24740395925452305,
+            0,
+            -0.27635564856411376,
+            -0.2377689205011757,
+            0.9311785521318744,
+            0,
+            -3.3306690738754696e-16,
+            2.5676179175332097,
+            -22.34437950797551,
+            1
+          ]
+        },
+        "geometries": 27,
+        "invention": false,
+        "orbit": {
+          "pitch": 0.25,
+          "yaw": 0.28,
+          "zoom": 1
+        },
+        "planet": {
+          "center": [
+            0,
+            -4.2,
+            0
+          ],
+          "radius": 4.2
+        },
+        "triangles": 77570,
+        "upgrades": [],
+        "world": "cove"
+      }
+    },
+    {
+      "event": "camera-drag-and-reset",
+      "beforeCamera": [
+        6.158581676184441,
+        3.040291062854028,
+        21.417106699033106
+      ],
+      "rotated": [
+        -15.040400295214864,
+        5.236649571475381,
+        15.510870945773734
+      ],
+      "reset": [
+        6.158581676184441,
+        3.040291062854028,
+        21.417106699033106
+      ]
+    },
+    {
+      "event": "save-and-reload",
+      "selected": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      },
+      "stored": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      },
+      "restored": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      }
+    },
+    {
+      "event": "desktop-layout",
+      "body": 1280,
+      "document": 1280,
+      "viewport": 1280,
+      "visibleOutliers": []
+    },
+    {
+      "event": "real-download-and-parse",
+      "file": "/tmp/dev-studio-qa-local-2026-09-05T16-38-12-079Z-export.json",
+      "bytes": 232998,
+      "meshes": 59,
+      "triangles": 20254,
+      "bones": 0,
+      "invalid": 0,
+      "checkedValues": 99298,
+      "maxVertexDelta": 0,
+      "rootUserData": {
+        "author": "Codex · 小小陶土剧场",
+        "source": "dev/models.js",
+        "modelVersion": 1,
+        "species": "otter",
+        "usesSkeleton": false,
+        "color": "#90b6c5",
+        "restHeight": 2.2,
+        "triangles": 20254,
+        "meshes": 59,
+        "action": "listen",
+        "expression": "curious",
+        "surfaceNormal": [
+          0,
+          0.9594605811119173,
+          0.28184285212220994
+        ],
+        "surfaceHeight": 0.08,
+        "actorId": "studio",
+        "actorName": "巡游小獭",
+        "creator": "萌萌星立体故事工坊",
+        "recipe": {
+          "type": "otter",
+          "color": "#90b6c5",
+          "name": "巡游小獭",
+          "size": 117,
+          "expression": "curious",
+          "action": "listen",
+          "world": "cove"
+        }
+      }
+    },
+    {
+      "event": "mobile-layout",
+      "body": 390,
+      "document": 390,
+      "viewport": 390,
+      "visibleOutliers": []
+    },
+    {
+      "event": "mobile-controls",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actorSurfaces": [
+            {
+              "foot": [
+                0,
+                -0.09350871284099328,
+                1.2062874070830587
+              ],
+              "height": 0.08,
+              "id": "studio",
+              "normal": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ],
+              "up": [
+                0,
+                0.9594605811119172,
+                0.28184285212220994
+              ]
+            }
+          ],
+          "actors": [
+            "studio"
+          ],
+          "calls": 78,
+          "camera": [
+            6.158581676184441,
+            3.040291062854028,
+            21.417106699033106
+          ],
+          "frame": {
+            "projection": [
+              0.14278713710531893,
+              0,
+              0,
+              0,
+              0,
+              0.1652892561983471,
+              0,
+              0,
+              0,
+              0,
+              -0.02002002002002002,
+              0,
+              0,
+              0,
+              -1.002002002002002,
+              1
+            ],
+            "view": [
+              0.9610554383107708,
+              -0.06837148161711327,
+              0.26776442070367135,
+              0,
+              -2.7755575615628914e-17,
+              0.9689124217106448,
+              0.24740395925452305,
+              0,
+              -0.27635564856411376,
+              -0.2377689205011757,
+              0.9311785521318744,
+              0,
+              -3.3306690738754696e-16,
+              2.5676179175332097,
+              -22.34437950797551,
+              1
+            ]
+          },
+          "geometries": 42,
+          "invention": false,
+          "orbit": {
+            "pitch": 0.25,
+            "yaw": 0.28,
+            "zoom": 1
+          },
+          "planet": {
+            "center": [
+              0,
+              -4.2,
+              0
+            ],
+            "radius": 4.2
+          },
+          "triangles": 55010,
+          "upgrades": [],
+          "world": "moon"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "wave",
+          "color": "#90b6c5",
+          "expression": "happy",
+          "name": "巡游小獭",
+          "size": 117,
+          "type": "otter",
+          "world": "moon"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "page-errors",
+      "errors": ""
+    }
+  ]
+}
