@@ -87,8 +87,9 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   const geometries = new Set();
   const materials = new Set();
   const ownGeometry = geometry => { geometries.add(geometry); return geometry; };
-  const material = (hex, properties = {}) => {
+  const material = (hex, properties = {}, surface = 'paper') => {
     const value = new THREE.MeshStandardMaterial({ color: hex, roughness: .76, metalness: 0, ...properties });
+    value.userData.handcraftedSurface = surface;
     materials.add(value);
     return value;
   };
@@ -96,16 +97,30 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   const darker = material('#a17d62');
   const innerEar = material('#d5a49c');
   const cream = material('#f4e8d6');
-  const ink = material('#34302e', { roughness: .33 });
-  const eyeMaterial = material('#252929', { roughness: .17 });
-  const glintMaterial = material('#fffdf4', { roughness: .24, emissive: '#fff7dc', emissiveIntensity: .15 });
-  const blushMaterial = material('#d89683', { roughness: .91 });
-  const tongueMaterial = material('#c98679');
-  const blue = material('#688f9c');
+  const ink = material('#34302e', { roughness: .33 }, 'ink');
+  const eyeMaterial = material('#252929', { roughness: .17 }, 'ink');
+  const glintMaterial = material('#fffdf4', { roughness: .24, emissive: '#fff7dc', emissiveIntensity: .15 }, 'ink');
+  const blushMaterial = material('#d89683', { roughness: .91 }, 'paint');
+  const tongueMaterial = material('#c98679', {}, 'ink');
+  const blue = material('#688f9c', {}, 'fabric');
   const mustard = material('#c2a166');
-  const sage = material('#617c63');
-  const bagMaterial = material('#b98559');
-  const stitchMaterial = material('#e5c7a0');
+  const sage = material('#617c63', {}, 'fabric');
+  const bagMaterial = material('#b98559', {}, 'fabric');
+  const stitchMaterial = material('#e5c7a0', {}, 'fabric');
+  // Same pigment, different physical substance: do not roughen an eye white
+  // just because it shares cream with a paper belly, tooth, or stitched scarf.
+  const surfaceVariants = new Map();
+  const surfaceMaterial = (base, surface) => {
+    if (base.userData.handcraftedSurface === surface) return base;
+    const key = `${base.uuid}/${surface}`;
+    if (!surfaceVariants.has(key)) {
+      const value = base.clone(); value.userData.handcraftedSurface = surface;
+      materials.add(value); surfaceVariants.set(key, { base, value });
+    }
+    return surfaceVariants.get(key).value;
+  };
+  const eyeWhiteMaterial = surfaceMaterial(cream, 'ink');
+  const detailMaterial = surfaceMaterial(darker, 'ink');
   const sphere = ownGeometry(new THREE.SphereGeometry(1, 20, 14));
   const smallSphere = ownGeometry(new THREE.SphereGeometry(1, 16, 10));
   const group = new THREE.Group();
@@ -165,7 +180,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
       }
     } else {
       for (let toe = -1; toe <= 1; toe += 2) {
-        tube(leg, 'toe-seam', [[toe * .04, -.003, .286], [toe * .04, -.02, .314], [toe * .04, -.051, .329]], .006, darker, 5);
+        tube(leg, 'toe-seam', [[toe * .04, -.003, .286], [toe * .04, -.02, .314], [toe * .04, -.051, .329]], .006, detailMaterial, 5);
       }
     }
     feet.push(leg);
@@ -233,7 +248,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     const large = type === 'owl' || type === 'frog';
     const eyeRadius = large ? .137 : .091;
     if (type === 'frog') ball(eye, 'raised-frog-eye-socket', skin, [0, .011, -.055], [.215, .218, .175]);
-    ball(eye, 'warm-eye-white', cream, [0, 0, 0], [eyeRadius * 1.19, eyeRadius * 1.34, eyeRadius * .55]);
+    ball(eye, 'warm-eye-white', eyeWhiteMaterial, [0, 0, 0], [eyeRadius * 1.19, eyeRadius * 1.34, eyeRadius * .55]);
     const pupil = ball(eye, 'glossy-pupil', eyeMaterial, [side * -.008, -.006, eyeRadius * .41], [eyeRadius * .79, eyeRadius * 1.01, eyeRadius * .55]);
     ball(pupil, 'large-eye-catchlight', glintMaterial, [-.27, .36, .87], [.23, .20, .11], true);
     ball(pupil, 'small-eye-catchlight', glintMaterial, [.28, -.24, .93], [.10, .105, .06], true);
@@ -241,7 +256,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     lid.visible = false;
     eye.userData = { pupil, lid, radius: eyeRadius, side, baseY: eyeY };
     eyes.push(eye);
-    const brow = tube(head, 'soft-eyebrow', [[side * (eyeX - .09), eyeY + eyeRadius * 1.74, eyeZ - .008], [side * eyeX, eyeY + eyeRadius * 1.9, eyeZ + .015], [side * (eyeX + .09), eyeY + eyeRadius * 1.73, eyeZ - .015]], .016, darker, 10);
+    const brow = tube(head, 'soft-eyebrow', [[side * (eyeX - .09), eyeY + eyeRadius * 1.74, eyeZ - .008], [side * eyeX, eyeY + eyeRadius * 1.9, eyeZ + .015], [side * (eyeX + .09), eyeY + eyeRadius * 1.73, eyeZ - .015]], .016, detailMaterial, 10);
     brows.push(brow);
     if (type !== 'owl') ball(head, 'warm-cheek', blushMaterial, [side * (wide ? .44 : .36), -.125, type === 'frog' ? .31 : .35], [.073, .04, .018], true);
   }
@@ -257,7 +272,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   sadMouth.visible = false;
   if (type === 'frog') {
     mouth.scale.setScalar(1.55);
-    for (const side of [-1, 1]) ball(head, 'tiny-nostril', darker, [side * .105, .015, .417], [.014, .013, .009], true);
+    for (const side of [-1, 1]) ball(head, 'tiny-nostril', detailMaterial, [side * .105, .015, .417], [.014, .013, .009], true);
   } else if (type === 'owl') {
     const beak = petal(head, 'rounded-golden-beak', mustard, [0, -.025, .435], [.22, .09, .085], .025, true);
     beak.rotation.z = Math.PI;
@@ -273,7 +288,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     if (type === 'otter' || type === 'cat') {
       for (const side of [-1, 1]) {
         for (let whisker = -1; whisker <= 1; whisker++) {
-          tube(head, 'sculpted-short-whisker', [[side * .225, -.13 + whisker * .031, .433], [side * .35, -.125 + whisker * .051, .42], [side * .46, -.11 + whisker * .069, .373]], .006, darker, 9);
+          tube(head, 'sculpted-short-whisker', [[side * .225, -.13 + whisker * .031, .433], [side * .35, -.125 + whisker * .051, .42], [side * .46, -.11 + whisker * .069, .373]], .006, detailMaterial, 9);
         }
       }
     }
@@ -309,38 +324,38 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     ball(bag, 'satchel-body', type === 'owl' ? sage : bagMaterial, [0, 0, 0], [.185, .20, .086]);
     ball(bag, 'satchel-flap', type === 'owl' ? sage : bagMaterial, [0, .075, .055], [.19, .123, .057]);
     tube(bag, 'satchel-stitched-edge', [[-.143, .038, .09], [-.10, -.027, .107], [0, -.045, .116], [.10, -.027, .107], [.143, .038, .09]], .007, stitchMaterial, 16);
-    ball(bag, 'wooden-bag-button', mustard, [0, -.005, .117], [.031, .029, .012], true);
+    ball(bag, 'wooden-bag-button', surfaceMaterial(mustard, 'wood'), [0, -.005, .117], [.031, .029, .012], true);
     if (type === 'otter') {
-      const shell = ball(bag, 'pocket-shell', cream, [0, .155, .021], [.073, .076, .032], true);
-      for (const side of [-1, 0, 1]) tube(bag, 'shell-ridge', [[side * .039, .19, .049], [side * .024, .157, .054], [0, .116, .05]], .005, stitchMaterial, 5);
+      const shell = ball(bag, 'pocket-shell', surfaceMaterial(cream, 'stone'), [0, .155, .021], [.073, .076, .032], true);
+      for (const side of [-1, 0, 1]) tube(bag, 'shell-ridge', [[side * .039, .19, .049], [side * .024, .157, .054], [0, .116, .05]], .005, surfaceMaterial(stitchMaterial, 'stone'), 5);
     }
     if (type === 'owl') {
       ball(bag, 'book-pages', cream, [.02, .185, .007], [.12, .083, .048], true);
-      ball(bag, 'book-cover-edge', sage, [.02, .197, -.023], [.126, .095, .018], true);
+      ball(bag, 'book-cover-edge', surfaceMaterial(sage, 'paper'), [.02, .197, -.023], [.126, .095, .018], true);
     }
   } else if (type === 'rabbit' || type === 'bear') {
-    const scarfMaterial = type === 'rabbit' ? blue : mustard;
+    const scarfMaterial = type === 'rabbit' ? blue : surfaceMaterial(mustard, 'fabric');
     const collar = part(body, 'soft-scarf-collar', ownGeometry(new THREE.TorusGeometry(.3, .071, 10, 32)), scarfMaterial, [0, .47, 0], [1, 1, .78]);
     collar.rotation.x = Math.PI / 2;
     ball(body, 'scarf-knot', scarfMaterial, [.20, .40, .25], [.106, .088, .07]);
     const scarfEnd = petal(body, 'hanging-scarf-end', scarfMaterial, [.205, .4, .26], [.35, .082, .026], .056);
     scarfEnd.rotation.z = Math.PI - .20;
-    tube(body, 'scarf-end-stitch', [[.205, .133, .314], [.25, .13, .315], [.278, .149, .31]], .008, cream, 8);
+    tube(body, 'scarf-end-stitch', [[.205, .133, .314], [.25, .13, .315], [.278, .149, .31]], .008, surfaceMaterial(cream, 'fabric'), 8);
   } else if (type === 'cat') {
     const collar = part(body, 'little-green-collar', ownGeometry(new THREE.TorusGeometry(.29, .041, 8, 30)), sage, [0, .465, 0], [1, 1, .86]);
     collar.rotation.x = Math.PI / 2;
-    ball(body, 'moon-shaped-name-charm', mustard, [0, .369, .3], [.059, .069, .028], true);
-    ball(body, 'moon-charm-inlay', sage, [.023, .394, .321], [.043, .042, .008], true);
+    ball(body, 'moon-shaped-name-charm', surfaceMaterial(mustard, 'paint'), [0, .369, .3], [.059, .069, .028], true);
+    ball(body, 'moon-charm-inlay', surfaceMaterial(sage, 'paint'), [.023, .394, .321], [.043, .042, .008], true);
   } else if (type === 'frog') {
-    const leaf = petal(body, 'tiny-lily-leaf-cape', sage, [0, .5, -.05], [.68, .32, .027], -.13, true);
+    const leaf = petal(body, 'tiny-lily-leaf-cape', surfaceMaterial(sage, 'foliage'), [0, .5, -.05], [.68, .32, .027], -.13, true);
     leaf.rotation.x = -Math.PI * .74;
-    tube(body, 'leaf-stem-necklace', [[-.25, .37, .23], [0, .27, .34], [.26, .37, .23]], .026, sage, 18);
-    ball(body, 'dew-drop-pendant', mustard, [0, .265, .357], [.045, .065, .027], true);
+    tube(body, 'leaf-stem-necklace', [[-.25, .37, .23], [0, .27, .34], [.26, .37, .23]], .026, surfaceMaterial(sage, 'foliage'), 18);
+    ball(body, 'dew-drop-pendant', surfaceMaterial(mustard, 'paint'), [0, .265, .357], [.045, .065, .027], true);
   }
   if (type === 'owl') {
     for (let row = 0; row < 2; row++) {
       for (let feather = -1; feather <= 1; feather++) {
-        tube(body, 'chest-feather-engraving', [[feather * .13 - .036, .04 - row * .15, .398], [feather * .13, .008 - row * .15, .405], [feather * .13 + .036, .04 - row * .15, .398]], .009, darker, 7);
+        tube(body, 'chest-feather-engraving', [[feather * .13 - .036, .04 - row * .15, .398], [feather * .13, .008 - row * .15, .405], [feather * .13 + .036, .04 - row * .15, .398]], .009, detailMaterial, 7);
       }
     }
   }
@@ -350,6 +365,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     skin.color.set(nextColor);
     darker.color.copy(skin.color).multiplyScalar(.72);
     innerEar.color.copy(skin.color).lerp(new THREE.Color('#dea3a0'), .63);
+    surfaceVariants.forEach(({ base, value }) => value.color.copy(base.color));
     group.userData.color = `#${skin.color.getHexString()}`;
   }
   setColor(color ?? preset.color);

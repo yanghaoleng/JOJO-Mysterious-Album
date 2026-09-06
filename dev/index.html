@@ -9,12 +9,21 @@
   <title>萌萌星 · 立体故事工坊</title>
   <link rel="icon" href="../favicon.ico">
   <link rel="stylesheet" href="./app.css?v=20260906-planet">
+  <link rel="stylesheet" href="./immersive.css?v=20260906-handcrafted">
 </head>
 <body data-view="home">
   <header class="topbar">
     <a href="./" id="home-link" class="icon-control" aria-label="返回故事工坊"><i data-lucide="house"></i></a>
     <a class="wordmark" href="./">萌萌星<span>立体故事工坊</span></a>
-    <button id="restart" class="icon-control" aria-label="重新开始当前故事" hidden><i data-lucide="rotate-ccw"></i></button>
+    <div class="story-tools" id="story-tools" hidden>
+      <button id="open-story-menu" class="icon-control" aria-label="故事菜单" aria-expanded="false" aria-controls="story-menu"><span aria-hidden="true">···</span></button>
+      <div id="story-menu" class="story-menu" role="group" aria-label="故事工具" hidden>
+        <p id="objective"></p>
+        <button id="bag-button" class="quiet-button" aria-haspopup="dialog">小小背包 <span id="bag-count">0</span></button>
+        <button id="scene-reset" class="quiet-button">回到伙伴身边</button>
+        <button id="restart" class="quiet-button" aria-label="重新开始当前故事">重新开始</button>
+      </div>
+    </div>
     <a class="original-link" id="original-link" href="../">原版图鉴</a>
   </header>
 
@@ -23,8 +32,8 @@
       <div id="stage" class="stage"></div>
       <div class="stage-loading" id="stage-loading"><span></span><p>小世界正在展开</p></div>
       <div class="scene-caption" id="scene-caption" hidden><span id="chapter-name"></span><h1 id="scene-title"></h1></div>
-      <button class="camera-reset" id="camera-reset" aria-label="恢复正面视角">回到正面</button>
-      <p class="stage-hint" id="stage-hint">转一转小星球 · 轻碰伙伴打招呼</p>
+      <button class="camera-reset" id="camera-reset" aria-label="恢复正面视角">回到伙伴</button>
+      <p class="stage-hint" id="stage-hint">轻轻转动世界 · 和伙伴打个招呼</p>
     </div>
 
     <section id="home-panel" class="home-panel">
@@ -36,7 +45,6 @@
     </section>
 
     <section class="story-panel" id="story-panel" hidden>
-      <div class="story-topline"><p id="objective"></p><button id="bag-button" class="quiet-button" aria-haspopup="dialog">背包 <span id="bag-count">0</span></button></div>
       <button type="button" class="speech-card" id="speech-card" aria-label="听角色说话，轻点可跳过这一句">
         <span class="speaker" id="speaker"></span>
         <span class="speech-text" id="speech-text" aria-live="polite"></span>
@@ -47,11 +55,17 @@
         <p class="heard" id="heard" hidden></p>
         <div class="answer-controls">
           <button class="mic-control" id="mic-button" data-state="off" aria-label="打开麦克风回答" aria-pressed="false"><i data-lucide="mic"></i><span id="mic-label">和它说说</span><span class="voice-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>
-          <button class="quiet-button" id="show-choices" aria-expanded="false">看看办法</button>
-          <button class="quiet-button" id="show-text" aria-expanded="false">写下来</button>
+          <button class="reply-more" id="reply-more" aria-label="更多回答方式" aria-expanded="false" aria-controls="reply-options"><span aria-hidden="true">···</span></button>
         </div>
-        <div class="choices" id="choices" hidden></div>
-        <form id="text-form" class="text-form" hidden><label for="answer-input" class="sr-only">你的想法</label><input id="answer-input" maxlength="180" placeholder="把你的想法写在这里" autocomplete="off"><button class="primary" type="submit">告诉它</button></form>
+        <div class="reply-options" id="reply-options" role="group" aria-label="其他回答方式" hidden>
+          <div class="reply-tabs">
+            <button class="quiet-button" id="show-choices" aria-expanded="false" aria-controls="choices">看看办法</button>
+            <button class="quiet-button" id="show-text" aria-expanded="false" aria-controls="text-form">写下来</button>
+            <button class="quiet-button" id="close-replies" aria-label="收起回答方式">收起</button>
+          </div>
+          <div class="choices" id="choices" hidden></div>
+          <form id="text-form" class="text-form" hidden><label for="answer-input" class="sr-only">你的想法</label><input id="answer-input" maxlength="180" placeholder="把你的想法写在这里" autocomplete="off" enterkeyhint="send"><button class="primary" type="submit">告诉它</button></form>
+        </div>
       </div>
       <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a href="./" class="quiet-button">再去一个小世界</a></div>
     </section>
@@ -75,6 +89,6 @@
   <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <div id="transition" class="transition" aria-hidden="true"></div>
-  <script type="module" src="./app.bundle.js?v=20260906-planet"></script>
+  <script type="module" src="./app.bundle.js?v=20260906-handcrafted"></script>
 </body>
 </html>

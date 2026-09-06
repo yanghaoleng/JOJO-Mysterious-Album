@@ -19,7 +19,7 @@ const COLORS = [
 const EXPRESSIONS = { happy: '开心', curious: '好奇', sad: '有点难过', surprised: '惊喜' };
 const ACTIONS = { idle: '放松', wave: '打招呼', hop: '跳一跳', listen: '认真听', talk: '说句话', walk: '迈小步' };
 let stage, story, state, phase = 'home', epoch = 0, busy = false, pendingChoices = [], setupStep = 0;
-let shownChoices = false, shownText = false, noticeTimer;
+let shownChoices = false, shownText = false, replyOpen = false, menuOpen = false, noticeTimer, frameRequest;
 let studio = { type: 'dog', color: '#c99561', name: '小团', size: 100, expression: 'happy', action: 'idle', world: 'orchard' };
 
 function readStorage(key, fallback) {
@@ -52,8 +52,58 @@ const voice = new StoryVoice({
   },
   onAnswer: text => handleAnswer(text),
   onLevel: level => $('mic-button').style.setProperty('--level', level.toFixed(2)),
-  onError: message => { notify(message); if (['question', 'setup'].includes(phase)) { shownChoices = true; renderAnswerOptions(); } },
+  onError: message => { notify(message); if (['question', 'setup'].includes(phase)) setReplyMode('choices'); },
 });
+
+function resumeListening() {
+  voice.listen(['question', 'setup'].includes(phase) && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden);
+}
+
+function scheduleFraming() {
+  cancelAnimationFrame(frameRequest);
+  frameRequest = requestAnimationFrame(() => {
+    if (!stage) return;
+    const visibleBottom = Math.min(innerHeight, (window.visualViewport?.height || innerHeight) + (window.visualViewport?.offsetTop || 0));
+    document.body.style.setProperty('--keyboard-offset', `${Math.max(0, innerHeight - visibleBottom)}px`);
+    const bounds = $('stage').getBoundingClientRect();
+    if (document.body.dataset.view === 'story') {
+      const top = Math.max(document.querySelector('.topbar').getBoundingClientRect().bottom, $('scene-caption').getBoundingClientRect().bottom);
+      const bottom = Math.min($('story-panel').getBoundingClientRect().top, visibleBottom);
+      stage.setViewportInsets?.({ top: Math.max(0, top - bounds.top + 22), bottom: Math.max(0, bounds.bottom - bottom + 20), left: 20, right: 20 });
+    } else stage.setViewportInsets?.({ top: 20, bottom: document.body.dataset.view === 'studio' ? 48 : 36, left: 18, right: 18 });
+  });
+}
+
+function setWorld(worldId, cast, options) {
+  stage.setScene(worldId, cast, options);
+  const environment = stage.world?.atmosphere;
+  if (environment) {
+    document.body.dataset.period = environment.period;
+    for (const key of ['base', 'glow', 'horizon']) document.body.style.setProperty(`--sky-${key}`, environment[key]);
+    for (const key of ['ink', 'muted', 'accent', 'paper']) document.body.style.setProperty(`--${key}`, environment[key]);
+    document.querySelector('meta[name="theme-color"]').content = environment.base;
+  }
+  scheduleFraming();
+}
+
+function setStoryMenu(open, restoreFocus = false) {
+  menuOpen = Boolean(open);
+  if (menuOpen && replyOpen) setReplyMode(null);
+  $('story-menu').hidden = !menuOpen;
+  $('open-story-menu').setAttribute('aria-expanded', String(menuOpen));
+  if (restoreFocus) $('open-story-menu').focus({ preventScroll: true });
+  resumeListening();
+}
+
+function setReplyMode(mode, restoreFocus = false) {
+  if (mode && menuOpen) setStoryMenu(false);
+  replyOpen = Boolean(mode);
+  shownChoices = mode === 'choices'; shownText = mode === 'text';
+  renderAnswerOptions();
+  if (shownText) $('answer-input').focus({ preventScroll: true });
+  else if (restoreFocus) $('reply-more').focus({ preventScroll: true });
+  resumeListening();
+}
 
 function speakerInfo(id) {
   if (id === 'companion') return { id, name: state?.companion?.name || '小团', voice: 'bubble' };
@@ -83,18 +133,19 @@ function showView(view) {
   $('story-panel').hidden = view !== 'story';
   $('studio-panel').hidden = view !== 'studio';
   $('scene-caption').hidden = view !== 'story';
-  $('restart').hidden = view !== 'story';
+  $('story-tools').hidden = view !== 'story';
   $('original-link').hidden = view !== 'home';
   $('stage-hint').hidden = view === 'story';
-  $('camera-reset').hidden = view === 'home';
+  $('camera-reset').hidden = view !== 'studio';
   $('ending').hidden = true;
   $('speech-card').hidden = false;
   $('story-topline')?.removeAttribute('hidden');
-  requestAnimationFrame(() => stage.resize());
+  requestAnimationFrame(() => { stage.resize(); scheduleFraming(); });
 }
 
 function route() {
-  epoch++; voice.stop(); busy = false; shownChoices = shownText = false;
+  epoch++; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
+  setStoryMenu(false);
   $('transition').classList.remove('closed');
   if ($('bag-dialog').open) $('bag-dialog').close();
   const params = new URLSearchParams(location.search);
@@ -102,7 +153,7 @@ function route() {
   const id = params.get('story');
   if (id && STORIES.some(item => item.id === id)) { openStory(getStory(id)); return; }
   phase = 'home'; story = null; showView('home');
-  stage.setScene('orchard', [{ id: 'dog', type: 'dog', name: '豆豆' }, { id: 'rabbit', type: 'rabbit', name: '雪团' }, { id: 'frog', type: 'frog', name: '小荷' }]);
+  setWorld('orchard', [{ id: 'dog', type: 'dog', name: '豆豆' }, { id: 'rabbit', type: 'rabbit', name: '雪团' }, { id: 'frog', type: 'frog', name: '小荷' }]);
   document.title = '萌萌星 · 立体故事工坊';
 }
 
@@ -121,7 +172,7 @@ function openStory(selected) {
   $('answer-dock').hidden = true; $('story-start').hidden = false;
   $('resume-note').textContent = state.setupDone && !state.completed ? '上次走到的地方还在，继续一起走。' : '说出你的想法，也可以随时点选。';
   $('start-story').textContent = state.setupDone && !state.completed ? '继续故事' : '开始对话';
-  stage.setScene(story.scenes[state.sceneIndex].world, [...story.scenes[state.sceneIndex].cast, { ...state.companion, id: 'companion' }]);
+  setWorld(story.scenes[state.sceneIndex].world, [...story.scenes[state.sceneIndex].cast, { ...state.companion, id: 'companion' }]);
   if (state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
 }
@@ -153,15 +204,16 @@ async function setupQuestion() {
   $('chapter-name').textContent = '认识今天的小伙伴';
   $('scene-title').textContent = story.title;
   $('objective').textContent = '三个小选择，一位新朋友。';
-  stage.setScene('cove', [{ id: 'guide', type: 'otter', name: '河湾' }, { id: 'companion', ...state.companion }]);
+  setWorld('cove', [{ id: 'guide', type: 'otter', name: '河湾' }, { id: 'companion', ...state.companion }]);
   const token = epoch;
   await speakLine({ speaker: 'guide', text: SETUP[setupStep].question }, token);
   if (token !== epoch) return;
   phase = 'setup'; busy = false; pendingChoices = SETUP[setupStep].choices;
-  renderAnswerOptions(); voice.listen(true);
+  renderAnswerOptions(); resumeListening();
 }
 
 function renderAnswerOptions() {
+  document.body.dataset.reply = shownText ? 'text' : shownChoices ? 'choices' : 'none';
   $('answer-dock').hidden = !['question', 'setup'].includes(phase);
   $('choices').replaceChildren();
   pendingChoices.forEach(choice => {
@@ -170,11 +222,15 @@ function renderAnswerOptions() {
     button.addEventListener('click', () => choose(choice)); $('choices').append(button);
   });
   $('choices').hidden = !shownChoices;
+  $('reply-options').hidden = !replyOpen;
+  $('reply-more').setAttribute('aria-expanded', String(replyOpen));
+  $('reply-more').setAttribute('aria-label', replyOpen ? '收起回答方式' : '更多回答方式');
   $('show-choices').setAttribute('aria-expanded', String(shownChoices));
   $('text-form').hidden = !shownText;
   $('show-text').setAttribute('aria-expanded', String(shownText));
   $('show-choices').textContent = story?.id === 'moon' && phase === 'question' ? '找点灵感' : '看看办法';
   $('answer-input').placeholder = story?.id === 'moon' && phase === 'question' ? '你想造或改什么？' : '把你的想法写在这里';
+  scheduleFraming();
 }
 
 async function choose(choice, customResult) {
@@ -182,13 +238,14 @@ async function choose(choice, customResult) {
   void voice.unlock();
   const wasSetup = phase === 'setup', token = epoch;
   busy = true; phase = 'responding'; voice.listen(false); $('answer-dock').hidden = true;
+  setReplyMode(null);
   $('heard').hidden = true;
   if (wasSetup) {
     let response;
     if (setupStep === 0) { state.companion.type = choice.id; response = `好，${choice.label}来陪你。`; }
     if (setupStep === 1) { state.companion.color = COLORS.find(color => color.id === choice.id).color; response = `穿上${choice.label}，一眼就认出它。`; }
     if (setupStep === 2) { state.companion.manner = choice.id; response = choice.id === 'calm' ? '我会慢慢陪着你，听你说完。' : '我们一起试一试，也可以停下来休息。'; }
-    stage.setScene('cove', [{ id: 'guide', type: 'otter', name: '河湾' }, { id: 'companion', ...state.companion }]);
+    setWorld('cove', [{ id: 'guide', type: 'otter', name: '河湾' }, { id: 'companion', ...state.companion }]);
     stage.act('celebrate');
     await speakLine({ speaker: 'companion', text: response }, token);
     if (token !== epoch) return;
@@ -216,7 +273,7 @@ async function enterScene(index) {
   if (token !== epoch) return;
   state.sceneIndex = index; persist();
   const scene = story.scenes[index];
-  stage.setScene(scene.world, [...scene.cast, { ...state.companion, id: 'companion' }]);
+  setWorld(scene.world, [...scene.cast, { ...state.companion, id: 'companion' }]);
   if (state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);
@@ -231,7 +288,7 @@ async function enterScene(index) {
   await speakLine({ speaker: scene.cast[0].id, text: scene.question }, token);
   if (token !== epoch) return;
   phase = 'question'; busy = false; pendingChoices = scene.choices;
-  $('answer-input').value = ''; renderAnswerOptions(); voice.listen(true);
+  $('answer-input').value = ''; renderAnswerOptions(); resumeListening();
 }
 
 function matchChoice(text, choices) {
@@ -261,11 +318,11 @@ async function handleAnswer(raw) {
   if (!text) return;
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
-  $('heard').textContent = `听见了：${text}`; $('heard').hidden = false;
+  $('heard').textContent = `${shownText ? '你的想法' : '听见了'}：${text}`; $('heard').hidden = false;
   if (phase === 'setup') {
     const choice = matchChoice(text, pendingChoices);
     if (choice) await choose(choice);
-    else { shownChoices = true; renderAnswerOptions(); notify('也可以从下面挑一个你喜欢的。'); }
+    else { setReplyMode('choices'); notify('也可以从下面挑一个你喜欢的。'); }
     return;
   }
   const scene = story.scenes[state.sceneIndex], token = epoch;
@@ -298,10 +355,10 @@ async function handleAnswer(raw) {
       if (token !== epoch) return;
       const choice = scene.choices.find(item => item.id === result.choiceId);
       if (result.shouldRespond && !result.privacyRedirect && choice) { busy = false; await choose(choice); }
-      else { shownChoices = true; renderAnswerOptions(); notify(result.listeningPrompt || '再具体说说，也可以点一个办法。'); }
+      else { setReplyMode('choices'); notify(result.listeningPrompt || '再具体说说，也可以点一个办法。'); }
     }
   } finally {
-    if (token === epoch && phase === 'question') { busy = false; voice.listen(true); }
+    if (token === epoch && phase === 'question') { busy = false; resumeListening(); }
   }
 }
 
@@ -329,7 +386,7 @@ function openBag() {
     const p = document.createElement('p'); p.textContent = item.description;
     section.append(h, p); content.append(section);
   });
-  voice.listen(false); $('bag-dialog').showModal();
+  setStoryMenu(false); voice.listen(false); $('bag-dialog').showModal();
 }
 
 function updateStudio() {
@@ -345,7 +402,7 @@ function updateStudio() {
   document.querySelectorAll('[data-action]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.action === studio.action)));
   document.querySelectorAll('[data-world]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.world === studio.world)));
 }
-function rebuildStudio() { stage.setScene(studio.world, [{ id: 'studio', type: studio.type, name: studio.name, color: studio.color }], { studio: true }); updateStudio(); }
+function rebuildStudio() { setWorld(studio.world, [{ id: 'studio', type: studio.type, name: studio.name, color: studio.color }], { studio: true }); updateStudio(); stage.frameCharacters?.(); }
 function openStudio() {
   phase = 'studio'; showView('studio'); document.title = '角色模拟器 · 萌萌星';
   rebuildStudio(); renderSaved();
@@ -377,7 +434,7 @@ function initializeControls() {
     const subtitle = document.createElement('small'); subtitle.textContent = `${item.age} · ${item.subtitle}`;
     const arrow = document.createElement('b'); arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
     link.append(title, subtitle, arrow); $('story-list').append(link);
-    link.onmouseenter = () => { if (phase === 'home') stage.setScene(item.scenes[0].world, item.scenes[0].cast); };
+    link.onmouseenter = () => { if (phase === 'home') setWorld(item.scenes[0].world, item.scenes[0].cast); };
   });
   CHARACTER_CATALOG.forEach(item => {
     const button = document.createElement('button'); button.className = 'type-button'; button.dataset.type = item.id; button.textContent = item.name;
@@ -405,7 +462,9 @@ function initializeControls() {
     if (url.origin === location.origin && url.pathname === location.pathname) { event.preventDefault(); navigate(url); }
   });
   $('start-story').onclick = startStory;
-  $('restart').onclick = () => { epoch++; voice.stop(); state = defaultState(); persist(); openStory(story); };
+  $('restart').onclick = () => { epoch++; voice.stop(); setStoryMenu(false); setReplyMode(null); state = defaultState(); persist(); openStory(story); };
+  $('open-story-menu').onclick = () => setStoryMenu(!menuOpen);
+  $('scene-reset').onclick = () => { stage.resetCamera(); setStoryMenu(false, true); };
   $('camera-reset').onclick = () => stage.resetCamera();
   $('speech-card').onclick = () => voice.skip();
   $('mic-button').onclick = async () => {
@@ -413,12 +472,14 @@ function initializeControls() {
     if (!['question', 'setup'].includes(phase) || busy) return;
     voice.listen(true); await voice.enable();
   };
-  $('show-choices').onclick = () => { shownChoices = !shownChoices; renderAnswerOptions(); };
-  $('show-text').onclick = () => { shownText = !shownText; renderAnswerOptions(); if (shownText) $('answer-input').focus(); };
+  $('reply-more').onclick = () => setReplyMode(replyOpen ? null : 'choices');
+  $('close-replies').onclick = () => setReplyMode(null, true);
+  $('show-choices').onclick = () => setReplyMode('choices');
+  $('show-text').onclick = () => setReplyMode('text');
   $('text-form').onsubmit = event => { event.preventDefault(); void handleAnswer($('answer-input').value); };
   $('bag-button').onclick = openBag;
   $('close-bag').onclick = () => $('bag-dialog').close();
-  $('bag-dialog').addEventListener('close', () => voice.listen(['question', 'setup'].includes(phase)));
+  $('bag-dialog').addEventListener('close', () => { resumeListening(); if (document.body.dataset.view === 'story') $('open-story-menu').focus({ preventScroll: true }); });
   $('save-memory').onclick = () => {
     const memories = readStorage('memories', []);
     if (store('memories', [...(Array.isArray(memories) ? memories : []), { story: story.id, title: story.title, date: new Date().toISOString(), companion: state.companion, inventory: state.inventory, inventions: state.inventions }].slice(-20))) {
@@ -426,7 +487,7 @@ function initializeControls() {
     }
   };
   $('character-name').oninput = event => { studio.name = event.target.value.trim().slice(0, 10) || '小团'; };
-  $('character-size').oninput = event => { studio.size = Number(event.target.value); updateStudio(); };
+  $('character-size').oninput = event => { studio.size = Number(event.target.value); updateStudio(); stage.frameCharacters?.(); };
   $('save-character').onclick = () => {
     const saved = readStorage('characters', []);
     if (store('characters', [...(Array.isArray(saved) ? saved : []).filter(item => item.name !== studio.name), studio].slice(-8))) { renderSaved(); notify('伙伴已经保存，下次还在这里。'); }
@@ -446,6 +507,21 @@ function initializeControls() {
     busy = false; updateStudio();
   };
   addEventListener('popstate', route);
+  addEventListener('resize', scheduleFraming);
+  window.visualViewport?.addEventListener('resize', scheduleFraming);
+  window.visualViewport?.addEventListener('scroll', scheduleFraming);
+  const panelObserver = new ResizeObserver(scheduleFraming);
+  panelObserver.observe($('story-panel')); panelObserver.observe($('scene-caption'));
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || $('bag-dialog').open) return;
+    if (replyOpen) { event.preventDefault(); setReplyMode(null, true); }
+    else if (menuOpen) { event.preventDefault(); setStoryMenu(false, true); }
+  });
+  document.addEventListener('pointerdown', event => {
+    if (!menuOpen || event.target.closest('#story-tools')) return;
+    setStoryMenu(false);
+    if (event.target.closest('#stage')) { event.preventDefault(); event.stopPropagation(); }
+  }, true);
   addEventListener('pagehide', () => voice.stop());
   document.addEventListener('visibilitychange', () => { if (document.hidden) voice.pause(); });
 }
