@@ -1,0 +1,694 @@
+{
+  "scope": "combined-production-coverage-not-a-single-successful-run",
+  "base": "https://jma.mikeywa.site/dev/",
+  "productCommit": "ccda97cd6b2f70271656bac31f1390b0e8dccde7",
+  "bundleSha256": "e409c3e8008b00a2c0f9e0f84cd9abfe670442489470347f455b653d1737f318",
+  "checkedAt": "2026-09-06T02:58:10.690Z",
+  "status": "incomplete",
+  "complete": false,
+  "passed": false,
+  "singleRunPass": false,
+  "closed": true,
+  "issues": [],
+  "coverage": {
+    "viewsObserved": 96,
+    "viewsExpected": 135,
+    "missingViews": [
+      "360x800-bridge-ready",
+      "360x800-bridge-question",
+      "360x800-bridge-choices",
+      "360x800-bridge-text",
+      "360x800-home-ready",
+      "360x800-home-question",
+      "360x800-home-choices",
+      "360x800-home-text",
+      "360x800-observatory-ready",
+      "360x800-observatory-question",
+      "360x800-observatory-choices",
+      "360x800-observatory-text",
+      "360x800-reef-ready",
+      "360x800-reef-question",
+      "360x800-reef-choices",
+      "360x800-reef-text",
+      "360x800-pocket-ready",
+      "360x800-pocket-question",
+      "360x800-pocket-choices",
+      "360x800-pocket-text",
+      "360x800-cloud-ready",
+      "360x800-cloud-question",
+      "360x800-cloud-choices",
+      "360x800-cloud-text",
+      "360x800-moon-ready",
+      "360x800-moon-question",
+      "360x800-moon-choices",
+      "360x800-moon-text",
+      "360x800-cove-ready",
+      "360x800-cove-question",
+      "360x800-cove-choices",
+      "360x800-cove-text",
+      "360x800-meadow-ready",
+      "360x800-meadow-question",
+      "360x800-meadow-choices",
+      "360x800-meadow-text",
+      "390x844-setup-unmatched-fallback",
+      "390x844-permission-denied-fallback",
+      "390x500-text-resize-proxy"
+    ],
+    "legacySavesVerified": 23,
+    "legacySavesExpected": 33,
+    "missingLegacySaves": [
+      "360x800-bakery",
+      "360x800-bridge",
+      "360x800-home",
+      "360x800-observatory",
+      "360x800-reef",
+      "360x800-pocket",
+      "360x800-cloud",
+      "360x800-moon",
+      "360x800-cove",
+      "360x800-meadow"
+    ],
+    "worldsObserved": [
+      "orchard",
+      "bakery",
+      "bridge",
+      "home",
+      "observatory",
+      "reef",
+      "pocket",
+      "cloud",
+      "moon",
+      "cove",
+      "meadow"
+    ],
+    "periodsObserved": [
+      "day",
+      "night",
+      "dusk"
+    ],
+    "minimumObservedMobileQuestionActorHeight": 127.29500128570538,
+    "pointerChecks": 4,
+    "menuKeyboardDialogChecks": 8
+  },
+  "sourceResults": [
+    {
+      "file": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "session": "immersive-production-ccda97c",
+      "checkedAt": "2026-09-06T02:39:42.739Z",
+      "complete": false,
+      "passed": false,
+      "closed": true,
+      "viewRows": 84,
+      "legacySaveRows": 21,
+      "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM"
+    },
+    {
+      "file": "dev/tools/verify-immersive-ui-production-attempt2-results.json",
+      "session": "immersive-production-ccda97c-retry1",
+      "checkedAt": "2026-09-06T02:41:57.129Z",
+      "complete": false,
+      "passed": false,
+      "closed": true,
+      "viewRows": 20,
+      "legacySaveRows": 4,
+      "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e"
+    },
+    {
+      "file": "dev/tools/verify-immersive-ui-production-390-meadow-results.json",
+      "session": "immersive-production-ccda97c-390",
+      "checkedAt": "2026-09-06T02:47:43.839Z",
+      "complete": true,
+      "passed": true,
+      "closed": true,
+      "viewRows": 4,
+      "legacySaveRows": 1,
+      "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx"
+    },
+    {
+      "file": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "session": "immersive-production-ccda97c-360",
+      "checkedAt": "2026-09-06T02:49:33.288Z",
+      "complete": false,
+      "passed": false,
+      "closed": true,
+      "viewRows": 8,
+      "legacySaveRows": 1,
+      "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW"
+    }
+  ],
+  "navigationFailures": [
+    {
+      "file": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "lastCompletedView": "390x844-cove-text",
+      "failure": "Error: Command failed: /Users/jojo/.npm-global/bin/agent-browser --session immersive-production-ccda97c open https://jma.mikeywa.site/dev/?story=echo\n✗ Operation timed out. The page may still be loading or the element may not exist.\n\n    at genericNodeError (node:internal/errors:983:15)\n    at wrappedFn (node:internal/errors:537:14)\n    at checkExecSyncError (node:child_process:882:11)\n    at execFileSync (node:child_process:918:15)\n    at command (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:31:30)\n    at open (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:72:22)\n    at install (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:150:3)\n    at file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:287:59\n    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)"
+    },
+    {
+      "file": "dev/tools/verify-immersive-ui-production-attempt2-results.json",
+      "lastCompletedView": "1280x900-observatory-text",
+      "failure": "Error: spawnSync /Users/jojo/.npm-global/bin/agent-browser ETIMEDOUT\n    at Object.spawnSync (node:internal/child_process:1120:20)\n    at spawnSync (node:child_process:868:24)\n    at execFileSync (node:child_process:911:15)\n    at command (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:31:30)\n    at file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:305:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)"
+    },
+    {
+      "file": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "lastCompletedView": "360x800-bakery-text",
+      "failure": "Error: spawnSync /Users/jojo/.npm-global/bin/agent-browser ETIMEDOUT\n    at Object.spawnSync (node:internal/child_process:1120:20)\n    at spawnSync (node:child_process:868:24)\n    at execFileSync (node:child_process:911:15)\n    at command (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:41:30)\n    at file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:317:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)"
+    }
+  ],
+  "navigationDiagnostics": "dev/tools/verify-immersive-ui-production-navigation-diagnostics.json",
+  "rootCause": "Unconfirmed. Three automated navigation/reload operations timed out. Independent reloads and resource checks were normal; no evidence justifies attributing the failures to product code or production infrastructure.",
+  "evidenceBoundary": [
+    "All observed view assertions passed; incomplete matrix is NOT reported as a production pass.",
+    "One completed filtered batch had empty browser errors and console. Independent bounded navigation also had empty errors and console; incomplete attempts did not complete the final console sweep.",
+    "Only isolated synthetic legacy records were used; no real user save was modified.",
+    "No physical microphone or ASR was used. Four input-guard cases were previously proved locally with explicitly synthetic audio and are not included as production coverage.",
+    "Reduced-height keyboard proxy and denial/fallback extras were not reached in production."
+  ],
+  "visualReview": [
+    {
+      "file": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-orchard-question.png",
+      "result": "Day orchard: three readable characters; no bottom-panel occlusion."
+    },
+    {
+      "file": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-observatory-question.png",
+      "result": "Night observatory: character and invention readable; caption and answer separated."
+    },
+    {
+      "file": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-reef-text.png",
+      "result": "Reef text mode: three actors visible; focused input and send button fit."
+    },
+    {
+      "file": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-moon-choices.png",
+      "result": "Night moon: actors visible above choice disclosure; no horizontal clipping."
+    },
+    {
+      "file": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-choices.png",
+      "result": "Night meadow: characters and choice buttons readable."
+    }
+  ],
+  "views": [
+    {
+      "label": "1280x900-orchard-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-orchard-ready.png"
+    },
+    {
+      "label": "1280x900-orchard-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-orchard-question.png"
+    },
+    {
+      "label": "1280x900-orchard-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-orchard-choices.png"
+    },
+    {
+      "label": "1280x900-orchard-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-orchard-text.png"
+    },
+    {
+      "label": "1280x900-bakery-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bakery-ready.png"
+    },
+    {
+      "label": "1280x900-bakery-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bakery-question.png"
+    },
+    {
+      "label": "1280x900-bakery-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bakery-choices.png"
+    },
+    {
+      "label": "1280x900-bakery-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bakery-text.png"
+    },
+    {
+      "label": "1280x900-bridge-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bridge-ready.png"
+    },
+    {
+      "label": "1280x900-bridge-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bridge-question.png"
+    },
+    {
+      "label": "1280x900-bridge-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bridge-choices.png"
+    },
+    {
+      "label": "1280x900-bridge-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-bridge-text.png"
+    },
+    {
+      "label": "1280x900-home-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-home-ready.png"
+    },
+    {
+      "label": "1280x900-home-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-home-question.png"
+    },
+    {
+      "label": "1280x900-home-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-home-choices.png"
+    },
+    {
+      "label": "1280x900-home-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-home-text.png"
+    },
+    {
+      "label": "1280x900-observatory-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-observatory-ready.png"
+    },
+    {
+      "label": "1280x900-observatory-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-observatory-question.png"
+    },
+    {
+      "label": "1280x900-observatory-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-observatory-choices.png"
+    },
+    {
+      "label": "1280x900-observatory-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-observatory-text.png"
+    },
+    {
+      "label": "1280x900-reef-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-reef-ready.png"
+    },
+    {
+      "label": "1280x900-reef-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-reef-question.png"
+    },
+    {
+      "label": "1280x900-reef-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-reef-choices.png"
+    },
+    {
+      "label": "1280x900-reef-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-reef-text.png"
+    },
+    {
+      "label": "1280x900-pocket-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-pocket-ready.png"
+    },
+    {
+      "label": "1280x900-pocket-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-pocket-question.png"
+    },
+    {
+      "label": "1280x900-pocket-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-pocket-choices.png"
+    },
+    {
+      "label": "1280x900-pocket-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-pocket-text.png"
+    },
+    {
+      "label": "1280x900-cloud-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cloud-ready.png"
+    },
+    {
+      "label": "1280x900-cloud-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cloud-question.png"
+    },
+    {
+      "label": "1280x900-cloud-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cloud-choices.png"
+    },
+    {
+      "label": "1280x900-cloud-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cloud-text.png"
+    },
+    {
+      "label": "1280x900-moon-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-moon-ready.png"
+    },
+    {
+      "label": "1280x900-moon-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-moon-question.png"
+    },
+    {
+      "label": "1280x900-moon-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-moon-choices.png"
+    },
+    {
+      "label": "1280x900-moon-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-moon-text.png"
+    },
+    {
+      "label": "1280x900-cove-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cove-ready.png"
+    },
+    {
+      "label": "1280x900-cove-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cove-question.png"
+    },
+    {
+      "label": "1280x900-cove-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cove-choices.png"
+    },
+    {
+      "label": "1280x900-cove-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-cove-text.png"
+    },
+    {
+      "label": "1280x900-meadow-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-meadow-ready.png"
+    },
+    {
+      "label": "1280x900-meadow-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-meadow-question.png"
+    },
+    {
+      "label": "1280x900-meadow-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-meadow-choices.png"
+    },
+    {
+      "label": "1280x900-meadow-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/1280x900-meadow-text.png"
+    },
+    {
+      "label": "390x844-orchard-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-orchard-ready.png"
+    },
+    {
+      "label": "390x844-orchard-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-orchard-question.png"
+    },
+    {
+      "label": "390x844-orchard-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-orchard-choices.png"
+    },
+    {
+      "label": "390x844-orchard-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-orchard-text.png"
+    },
+    {
+      "label": "390x844-bakery-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bakery-ready.png"
+    },
+    {
+      "label": "390x844-bakery-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bakery-question.png"
+    },
+    {
+      "label": "390x844-bakery-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bakery-choices.png"
+    },
+    {
+      "label": "390x844-bakery-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bakery-text.png"
+    },
+    {
+      "label": "390x844-bridge-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bridge-ready.png"
+    },
+    {
+      "label": "390x844-bridge-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bridge-question.png"
+    },
+    {
+      "label": "390x844-bridge-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bridge-choices.png"
+    },
+    {
+      "label": "390x844-bridge-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-bridge-text.png"
+    },
+    {
+      "label": "390x844-home-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-home-ready.png"
+    },
+    {
+      "label": "390x844-home-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-home-question.png"
+    },
+    {
+      "label": "390x844-home-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-home-choices.png"
+    },
+    {
+      "label": "390x844-home-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-home-text.png"
+    },
+    {
+      "label": "390x844-observatory-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-observatory-ready.png"
+    },
+    {
+      "label": "390x844-observatory-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-observatory-question.png"
+    },
+    {
+      "label": "390x844-observatory-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-observatory-choices.png"
+    },
+    {
+      "label": "390x844-observatory-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-observatory-text.png"
+    },
+    {
+      "label": "390x844-reef-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-reef-ready.png"
+    },
+    {
+      "label": "390x844-reef-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-reef-question.png"
+    },
+    {
+      "label": "390x844-reef-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-reef-choices.png"
+    },
+    {
+      "label": "390x844-reef-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-reef-text.png"
+    },
+    {
+      "label": "390x844-pocket-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-pocket-ready.png"
+    },
+    {
+      "label": "390x844-pocket-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-pocket-question.png"
+    },
+    {
+      "label": "390x844-pocket-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-pocket-choices.png"
+    },
+    {
+      "label": "390x844-pocket-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-pocket-text.png"
+    },
+    {
+      "label": "390x844-cloud-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cloud-ready.png"
+    },
+    {
+      "label": "390x844-cloud-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cloud-question.png"
+    },
+    {
+      "label": "390x844-cloud-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cloud-choices.png"
+    },
+    {
+      "label": "390x844-cloud-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cloud-text.png"
+    },
+    {
+      "label": "390x844-moon-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-moon-ready.png"
+    },
+    {
+      "label": "390x844-moon-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-moon-question.png"
+    },
+    {
+      "label": "390x844-moon-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-moon-choices.png"
+    },
+    {
+      "label": "390x844-moon-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-moon-text.png"
+    },
+    {
+      "label": "390x844-cove-ready",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cove-ready.png"
+    },
+    {
+      "label": "390x844-cove-question",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cove-question.png"
+    },
+    {
+      "label": "390x844-cove-choices",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cove-choices.png"
+    },
+    {
+      "label": "390x844-cove-text",
+      "source": "dev/tools/verify-immersive-ui-production-attempt1-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-PFHLMM/390x844-cove-text.png"
+    },
+    {
+      "label": "390x844-meadow-ready",
+      "source": "dev/tools/verify-immersive-ui-production-390-meadow-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-ready.png"
+    },
+    {
+      "label": "390x844-meadow-question",
+      "source": "dev/tools/verify-immersive-ui-production-390-meadow-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-question.png"
+    },
+    {
+      "label": "390x844-meadow-choices",
+      "source": "dev/tools/verify-immersive-ui-production-390-meadow-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-choices.png"
+    },
+    {
+      "label": "390x844-meadow-text",
+      "source": "dev/tools/verify-immersive-ui-production-390-meadow-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-text.png"
+    },
+    {
+      "label": "360x800-orchard-ready",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-orchard-ready.png"
+    },
+    {
+      "label": "360x800-orchard-question",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-orchard-question.png"
+    },
+    {
+      "label": "360x800-orchard-choices",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-orchard-choices.png"
+    },
+    {
+      "label": "360x800-orchard-text",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-orchard-text.png"
+    },
+    {
+      "label": "360x800-bakery-ready",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-bakery-ready.png"
+    },
+    {
+      "label": "360x800-bakery-question",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-bakery-question.png"
+    },
+    {
+      "label": "360x800-bakery-choices",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-bakery-choices.png"
+    },
+    {
+      "label": "360x800-bakery-text",
+      "source": "dev/tools/verify-immersive-ui-production-360-and-extras-results.json",
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-aa37oW/360x800-bakery-text.png"
+    }
+  ],
+  "verifiedLegacySaves": [
+    "1280x900-orchard",
+    "1280x900-bakery",
+    "1280x900-bridge",
+    "1280x900-home",
+    "1280x900-observatory",
+    "1280x900-reef",
+    "1280x900-pocket",
+    "1280x900-cloud",
+    "1280x900-moon",
+    "1280x900-cove",
+    "1280x900-meadow",
+    "390x844-orchard",
+    "390x844-bakery",
+    "390x844-bridge",
+    "390x844-home",
+    "390x844-observatory",
+    "390x844-reef",
+    "390x844-pocket",
+    "390x844-cloud",
+    "390x844-moon",
+    "390x844-cove",
+    "390x844-meadow",
+    "360x800-orchard"
+  ]
+}

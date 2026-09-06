@@ -13,7 +13,23 @@ const resultFile=new URL(`./verify-studio-${environment}-results.json`,import.me
 const call=(...args)=>execFileSync(browser,['--session',session,...args],{encoding:'utf8',timeout:25000}).trim();
 const evaluate=source=>JSON.parse(call('eval',source));
 const getState=()=>evaluate('window.__DEV_STORY__.status');
-const click=selector=>call('click',selector);
+const click=selector=>{
+ evaluate(`(async()=>{
+   const target=document.querySelector(${JSON.stringify(selector)});
+   if(!target)throw new Error('Missing click target');
+   const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   let rect=target.getBoundingClientRect();
+   if(rect.bottom>innerHeight-8){target.scrollIntoView({block:'end',behavior:'instant'});await frame();}
+   rect=target.getBoundingClientRect();
+   const preview=document.querySelector('.world-viewport');
+   const previewRect=preview?.getBoundingClientRect();
+   const sticky=preview&&['sticky','fixed'].includes(getComputedStyle(preview).position)&&!preview.contains(target)&&rect.right>previewRect.left&&rect.left<previewRect.right;
+   const top=sticky?Math.max(0,Math.min(innerHeight,previewRect.bottom)):0;
+   if(rect.top<top+8){scrollBy({top:rect.top-top-12,behavior:'instant'});await frame();}
+   return true;
+ })()`);
+ return call('click',selector);
+};
 const capture=name=>call('screenshot',`${artifactPrefix}-${name}.png`);
 const rows=[];
 let complete=false;
@@ -85,8 +101,15 @@ const reference=createCharacter({type:selected.type,color:selected.color});
 const sourceMeshes=[],loadedMeshes=[];reference.group.traverse(node=>{if(node.isMesh)sourceMeshes.push(node);});object.traverse(node=>{if(node.isMesh)loadedMeshes.push(node);});
 assert(sourceMeshes.length===loadedMeshes.length,'Downloaded model mesh count differs from source');
 let checkedValues=0,maxVertexDelta=0;
+const surfaceKinds=new Set(['paper','fabric','wood','stone','foliage','water','paint','ink']);
+const surfaceTags={};let checkedSurfaceMeshes=0;
 for(let i=0;i<sourceMeshes.length;i++){
  const source=sourceMeshes[i],loaded=loadedMeshes[i];assert(source.name===loaded.name,'Downloaded mesh order differs from source');
+ const sourceSurface=source.material.userData.handcraftedSurface;
+ const loadedSurface=loaded.material.userData.handcraftedSurface;
+ assert(surfaceKinds.has(sourceSurface),`Source material classification missing: ${source.name}`);
+ assert(loadedSurface===sourceSurface,`Downloaded material classification differs: ${source.name}`);
+ surfaceTags[loadedSurface]=(surfaceTags[loadedSurface]||0)+1;checkedSurfaceMeshes++;
  for(const attribute of ['position','normal','uv']){
   const a=source.geometry.attributes[attribute]?.array,b=loaded.geometry.attributes[attribute]?.array;
   if(!a&&!b)continue;assert(a?.length===b?.length,`Attribute length mismatch: ${source.name}/${attribute}`);
@@ -97,7 +120,7 @@ for(let i=0;i<sourceMeshes.length;i++){
  if(a)assert(a.every((value,index)=>value===b[index]),`Index differs: ${source.name}`);
 }
 reference.dispose();assert(maxVertexDelta<=1e-6,'Downloaded sculpted geometry differs from source');
-record('real-download-and-parse',{file:output,bytes:(await stat(output)).size,meshes,triangles,bones,invalid,checkedValues,maxVertexDelta,rootUserData:object.userData,topLevelUserData:exported.userData});
+record('real-download-and-parse',{file:output,bytes:(await stat(output)).size,meshes,triangles,bones,invalid,checkedValues,maxVertexDelta,checkedSurfaceMeshes,surfaceTags,rootUserData:object.userData,topLevelUserData:exported.userData});
 call('set','viewport','390','844');call('reload');call('snapshot','-i');click('.saved-character');
 // The preview is sticky on mobile. A user scrolls back to the tabs after
 // selecting a saved item at the bottom; don't click through the canvas.
@@ -109,5 +132,8 @@ assert(getState().studio.action==='wave'&&getState().studio.expression==='happy'
 call('scroll','up','1600');click('#tab-world');click('[data-world="moon"]');settle();capture('mobile-moon');assert(getState().stage.world==='moon','Mobile scene control failed');
 record('mobile-controls',{state:getState()});
 const errors=call('errors');record('page-errors',{errors});assert(!errors.trim(),'Uncaught page errors');
+const consoleOutput=call('console');
+const shaderErrors=consoleOutput.split('\n').filter(line=>/THREE\.WebGLProgram|shader.*(?:error|failed)|(?:error|failed).*shader|VALIDATE_STATUS.*false|WebGL.*INVALID_OPERATION/i.test(line));
+record('shader-console',{consoleOutput,shaderErrors});assert(!shaderErrors.length,'Shader compilation or WebGL program errors');
 console.log('Studio acceptance passed.');
 complete=true;

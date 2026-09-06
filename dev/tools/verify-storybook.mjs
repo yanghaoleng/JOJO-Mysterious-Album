@@ -8,7 +8,9 @@
 import assert from 'node:assert/strict';
 import * as THREE from '../../vendor/three.module.js';
 import { CHARACTER_CATALOG, createCharacter } from '../models.js';
-import { createStorybookStyle } from '../storybook.js';
+import { createStorybookStyle, STORYBOOK_SURFACE_PROFILES } from '../storybook.js';
+
+const STYLE_VERSION = 'storybook-handcrafted-v2';
 
 let cases = 0;
 let checkedMeshes = 0;
@@ -34,6 +36,7 @@ const materialState = material => ({
   onBeforeCompile: material.onBeforeCompile, cacheKey: material.customProgramCacheKey,
   extensions: material.extensions, derivatives: material.extensions?.derivatives,
   hadTag: Object.hasOwn(material.userData, 'storybookStyle'), tag: material.userData.storybookStyle,
+  surface: material.userData.handcraftedSurface,
 });
 
 function assertPreserved(material, before) {
@@ -41,6 +44,7 @@ function assertPreserved(material, before) {
     assert.strictEqual(material[key], before[key], `Borrowed material property changed: ${key}`);
   }
   if (before.emissiveValue) assert.ok(material.emissive.equals(before.emissiveValue), 'Emissive color changed');
+  assert.strictEqual(material.userData.handcraftedSurface, before.surface, 'Semantic surface tag changed');
 }
 
 function assertRestored(material, before) {
@@ -67,7 +71,12 @@ function assertShaderInjection(material) {
   for (const chunk of ['#include <alphamap_fragment>', '#include <alphatest_fragment>', '#include <lights_fragment_begin>', '#include <emissivemap_fragment>', '#include <tonemapping_fragment>', '#include <fog_fragment>']) {
     assert.ok(shader.fragmentShader.includes(chunk), `Existing Standard shader stage removed: ${chunk}`);
   }
-  for (const name of ['uStorybookWash', 'uStorybookGrain', 'uStorybookBands', 'uStorybookEdge']) {
+  assert.ok(shader.fragmentShader.indexOf('roughnessFactor = clamp(') > shader.fragmentShader.indexOf('#include <roughnessmap_fragment>'), 'Surface roughness precedes its Standard declaration');
+  assert.ok(shader.fragmentShader.indexOf('normal = storybookReliefNormal(') > shader.fragmentShader.indexOf('#include <normal_fragment_maps>'), 'Relief overrides or precedes the original normal-map contribution');
+  assert.ok(shader.fragmentShader.includes('storybookDetailAA(storyP * 12.0)'), 'Visible middle-scale relief lost anti-aliasing');
+  assert.ok(shader.fragmentShader.includes('fwidth(p)'), 'Texture detail is not footprint filtered');
+  assert.ok(shader.fragmentShader.includes('abs(determinant) < 1e-10'), 'Relief lost grazing/degenerate-triangle protection');
+  for (const name of ['uStorybookWash', 'uStorybookGrain', 'uStorybookBands', 'uStorybookEdge', 'uStorybookRelief', 'uStorybookScale']) {
     assert.ok(Number.isFinite(shader.uniforms[name]?.value), `Missing finite shader uniform: ${name}`);
   }
   assert.ok(!shader.fragmentShader.includes('gl_FragCoord'), 'Paper coordinates became screen-space noise');
@@ -95,9 +104,13 @@ function verifyModel(type) {
     assertPreserved(material, before);
     assert.strictEqual(material.onBeforeCompile, wrappedHooks.get(material), 'Repeated apply stacked hooks');
     assert.equal(material.version, versions.get(material), 'Repeated apply unnecessarily invalidated shaders');
-    assert.ok(material.roughness >= .96, 'Material is still glossy');
-    assert.equal(material.metalness, 0, 'Plastic/metal reflection reduction was not applied');
-    assert.equal(material.userData.storybookStyle?.version, 'storybook-pigment-v1', 'Missing serializable style tag');
+    const surface = material.userData.storybookStyle.surface;
+    assert.ok(material.roughness >= STORYBOOK_SURFACE_PROFILES[surface].roughness, 'Surface roughness floor was not applied');
+    if (surface === 'ink') {
+      assert.equal(material.roughness, before.roughness, 'Clean ink/eye roughness changed');
+      assert.equal(material.metalness, before.metalness, 'Clean ink/eye reflection changed');
+    } else assert.equal(material.metalness, 0, 'Plastic/metal reflection reduction was not applied');
+    assert.equal(material.userData.storybookStyle?.version, STYLE_VERSION, 'Missing serializable style tag');
     assertShaderInjection(material);
   }
   model.setColor('#90b6c5');
@@ -128,7 +141,8 @@ function verifyModel(type) {
     }
     assert.deepEqual(target.index?.array, source.index?.array, 'JSON topology changed');
     assert.ok(loadedMeshes[i].material.isMeshStandardMaterial, 'Export stopped using loadable standard materials');
-    assert.equal(loadedMeshes[i].material.userData.storybookStyle?.version, 'storybook-pigment-v1', 'JSON lost paper-style metadata');
+    assert.equal(loadedMeshes[i].material.userData.storybookStyle?.version, STYLE_VERSION, 'JSON lost paper-style metadata');
+    assert.equal(loadedMeshes[i].material.userData.handcraftedSurface, beforeMeshes[i].material.userData.handcraftedSurface, 'JSON lost semantic surface type');
   }
   const loadedMaterialState = new Map(loadedMeshes.map(mesh => [mesh.material, materialState(mesh.material)]));
   style.apply(loaded);
@@ -149,6 +163,75 @@ function verifyModel(type) {
 }
 
 for (const entry of CHARACTER_CATALOG) verifyModel(entry.id);
+
+// All eight bounded shader branches, including clean ink and non-fabric water.
+{
+  const style = createStorybookStyle({ wash: .31, grain: .18, relief: 1.1, scale: 1.35 });
+  const geometry = new THREE.SphereGeometry(1, 12, 8);
+  const fixtures = Object.keys(STORYBOOK_SURFACE_PROFILES).map(surface => {
+    const material = new THREE.MeshPhysicalMaterial({ roughness: .23, metalness: .12, clearcoat: .3 });
+    material.userData.handcraftedSurface = surface;
+    return { surface, material, before: materialState(material), mesh: new THREE.Mesh(geometry, material) };
+  });
+  const keys = new Set();
+  for (const { surface, material, mesh, before } of fixtures) {
+    style.apply(mesh);
+    const shader = assertShaderInjection(material);
+    assert.ok(shader.fragmentShader.startsWith(`#define STORYBOOK_SURFACE ${STORYBOOK_SURFACE_PROFILES[surface].id}\n`), `${surface} did not select its compile-time branch`);
+    assert.equal(shader.uniforms.uStorybookRelief.value, 1.1);
+    assert.equal(shader.uniforms.uStorybookScale.value, 1.35);
+    assert.equal(material.userData.storybookStyle.relief, 1.1, 'Relief tuning was not serializable');
+    keys.add(material.customProgramCacheKey());
+    if (surface === 'ink') {
+      assert.equal(material.roughness, before.roughness); assert.equal(material.metalness, before.metalness); assert.equal(material.clearcoat, before.clearcoat);
+    }
+    if (surface === 'water') assert.equal(material.roughness, .34, 'Water was made into a matte fabric');
+    assert.equal(material.map, null, 'Procedural treatment allocated a bitmap map');
+    assert.equal(material.normalMap, null, 'Procedural treatment allocated a normal texture');
+  }
+  assert.equal(keys.size, 8, 'Surface shader cache keys collide');
+  const untagged = new THREE.MeshStandardMaterial();
+  const unknown = new THREE.MeshStandardMaterial(); unknown.userData.handcraftedSurface = 'unrecognised';
+  style.apply(new THREE.Mesh(geometry, untagged)); style.apply(new THREE.Mesh(geometry, unknown));
+  assert.equal(untagged.userData.storybookStyle.surface, 'paper');
+  assert.equal(unknown.userData.storybookStyle.surface, 'paper');
+  assert.equal(unknown.userData.handcraftedSurface, 'unrecognised', 'Fallback overwrote authored metadata');
+  style.dispose();
+  for (const { material, before } of fixtures) { assertRestored(material, before); material.dispose(); }
+  untagged.dispose(); unknown.dispose(); geometry.dispose();
+  console.log('PASS eight surface branches: bounded cache keys, tunable relief, clean ink, water roughness, no texture allocation, unknown/default paper');
+  cases++;
+}
+
+{
+  const material = new THREE.MeshStandardMaterial(); const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const style = createStorybookStyle({ wash: Infinity, grain: -3, relief: 99, scale: NaN, bands: -1, edge: 50 });
+  style.apply(new THREE.Mesh(geometry, material)); const shader = assertShaderInjection(material);
+  assert.equal(shader.uniforms.uStorybookWash.value, .22);
+  assert.equal(shader.uniforms.uStorybookGrain.value, 0);
+  assert.equal(shader.uniforms.uStorybookRelief.value, 1.5);
+  assert.equal(shader.uniforms.uStorybookScale.value, 1);
+  assert.equal(shader.uniforms.uStorybookBands.value, 0);
+  assert.equal(shader.uniforms.uStorybookEdge.value, .18);
+  style.dispose(); material.dispose(); geometry.dispose();
+  console.log('PASS material tuning guardrails: finite bounded uniforms for invalid caller input'); cases++;
+}
+
+{
+  const material = new THREE.MeshStandardMaterial(); const geometry = new THREE.SphereGeometry(1, 8, 6);
+  const mesh = new THREE.Mesh(geometry, material), before = materialState(material);
+  const disabled = createStorybookStyle({ wash: 0, grain: 0, relief: 0 }); disabled.apply(mesh);
+  const cachedShader = assertShaderInjection(material), programKey = material.customProgramCacheKey();
+  disabled.dispose(); assertRestored(material, before);
+  const enabled = createStorybookStyle(); enabled.apply(mesh);
+  assert.equal(material.customProgramCacheKey(), programKey, 'Numeric tuning multiplied surface program variants');
+  assert.equal(cachedShader.uniforms.uStorybookRelief.value, .38, 'Reapplied style left cached GPU program with previous zero relief');
+  assert.equal(cachedShader.uniforms.uStorybookWash.value, .22, 'Reapplied style left cached GPU program with previous wash');
+  const nextShader = assertShaderInjection(material);
+  assert.strictEqual(nextShader.uniforms.uStorybookGrain, cachedShader.uniforms.uStorybookGrain, 'Material uniform cells were recreated despite an existing program cache');
+  enabled.dispose(); assertRestored(material, before); material.dispose(); geometry.dispose();
+  console.log('PASS cached-program reapply: new tuning reaches existing uniform cells without shader variant growth'); cases++;
+}
 
 // A genuinely translucent/emissive fixture covers the properties that character
 // materials do not exercise, plus material arrays and a shared material owner.

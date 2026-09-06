@@ -18,6 +18,12 @@ const log = [];
 const record = (event, details) => { const entry = { event, ...details }; log.push(entry); console.log(JSON.stringify(entry)); };
 const capture = name => command('screenshot', `/tmp/dev-story-qa-${name}.png`);
 const click = selector => {
+  // The immersive UI keeps secondary controls in real disclosure layers.
+  // Exercise their visible trigger first; never activate a hidden control.
+  if (['#restart', '#bag-button', '#scene-reset'].includes(selector)
+    && evaluate(`Boolean(document.querySelector('#story-menu')?.hidden)`)) click('#open-story-menu');
+  if ((['#show-choices', '#show-text'].includes(selector) || selector.startsWith('[data-choice=') || selector.startsWith('#text-form'))
+    && evaluate(`Boolean(document.querySelector('#reply-options')?.hidden)`)) click('#reply-more');
   // Short viewports need a real scroll before pointer clicks below the fold.
   command('eval', `document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'center',inline:'center',behavior:'instant'})`);
   return command('click', selector);
@@ -41,11 +47,13 @@ function decision() {
   })()`);
 }
 function choices() {
+  if (evaluate(`Boolean(document.querySelector('#reply-options')?.hidden)`)) click('#reply-more');
   const open = evaluate(`document.querySelector('#show-choices').getAttribute('aria-expanded')==='true'`);
   if (!open) click('#show-choices');
   return evaluate(`Array.from(document.querySelectorAll('#choices button')).map(button=>({id:button.dataset.choice,label:button.textContent,visible:button.getClientRects().length>0}))`);
 }
 function submit(text) {
+  if (evaluate(`Boolean(document.querySelector('#reply-options')?.hidden)`)) click('#reply-more');
   if (!evaluate(`document.querySelector('#show-text').getAttribute('aria-expanded')==='true'`)) click('#show-text');
   command('fill', '#answer-input', text);
   click('#text-form button');
