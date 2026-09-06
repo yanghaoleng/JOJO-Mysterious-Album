@@ -241,7 +241,10 @@ function anchorStageSpeech() {
   const stageRect = stage.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
   if (!targetRect.width || !targetRect.height) return;
-  const halfBubble = Math.min((bubble.getBoundingClientRect().width || 260) / 2, stageRect.width / 2 - 12);
+  // The shared bubble stylesheet loads later and has its own rest transform.
+  // This stage uses centre/bottom coordinates, including during its entrance.
+  bubble.style.setProperty('--bubble-rest-transform', 'translate(-50%, -100%)');
+  const halfBubble = Math.min((bubble.offsetWidth || 260) / 2, stageRect.width / 2 - 12);
   const idealX = targetRect.left - stageRect.left + targetRect.width / 2;
   const x = Math.max(halfBubble + 12, Math.min(stageRect.width - halfBubble - 12, idealX));
   const y = Math.max(86, targetRect.top - stageRect.top + targetRect.height * .16);
