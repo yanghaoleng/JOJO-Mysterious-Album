@@ -1,5 +1,14 @@
 // The /dev stories are independent of the published story blueprints.
 // Choices are practical suggestions, never a test or a personality score.
+import { getNpc } from '../src/story-npcs/catalog.js';
+
+// NPC identity stays separate from the player's saved companion.
+function catalogActor(id) {
+  const profile = getNpc(id);
+  if (!profile) throw new Error(`Missing story NPC: ${id}`);
+  return { id, characterId: id, type: id, name: profile.name, voice: profile.voiceKey, speechRate: profile.speechRate };
+}
+
 const homeSketch = {
   id: 'home-sketch', name: '回家线索图',
   description: '红屋顶、骨头门牌、小木桥。到岔路口时，一样一样对照。',
@@ -42,44 +51,46 @@ const doudouScenes = [
     ],
     closing: [
       { speaker: 'doudou', text: '我想起来了，我家有红屋顶。' },
-      { speaker: 'guoguo', text: '阿暖熊认识附近的家，我们去问问。' },
+      { speaker: 'guoguo', text: '猪小弟正在面包房画画，我们去问问。' },
     ],
   },
   {
     id: 'doudou-bakery', title: '香香的线索图', chapter: 1, world: 'bakery',
     objective: '把豆豆记得的三条线索画下来。',
     cast: [
-      { id: 'anuan', type: 'bear', name: '阿暖', color: '#c69c72', voice: 'moss' },
+      catalogActor('zhuxiaodi'),
       { id: 'doudou', type: 'dog', name: '豆豆', color: '#cf955f', voice: 'sprout' },
     ],
     dialogue: [
-      { speaker: 'anuan', text: '豆豆，我认得你家的骨头门牌。' },
+      { speaker: 'zhuxiaodi', text: '慢慢来，我认得你家的骨头门牌。' },
       { speaker: 'doudou', text: '对！回家还要过一座小木桥。' },
-      { speaker: 'anuan', text: '红屋顶、骨头门牌、小木桥。' },
+      { speaker: 'zhuxiaodi', text: '红屋顶、骨头门牌、小木桥。' },
       { speaker: 'doudou', text: '我怕又忘了，可以画下来吗？' },
+      { speaker: 'zhuxiaodi', text: '当然，我喜欢画画。你说，我来画。' },
     ],
     question: '我们先画哪一条线索？',
     choices: [
-      { id: 'roof', label: '先画红屋顶', hints: ['屋顶', '红色', '房子', '红'], result: '红屋顶画好了，再添上门牌和小桥。', speaker: 'anuan', action: 'glow', reward: homeSketch, expression: 'happy' },
-      { id: 'sign', label: '先画骨头门牌', hints: ['骨头', '门牌', '牌子', '图'], result: '骨头门牌画好了，再添上屋顶和小桥。', speaker: 'anuan', action: 'glow', reward: homeSketch, expression: 'happy' },
+      { id: 'roof', label: '先画红屋顶', hints: ['屋顶', '红色', '房子', '红'], result: '红屋顶画好了，再慢慢添上门牌和小桥。', speaker: 'zhuxiaodi', action: 'glow', reward: homeSketch, expression: 'happy' },
+      { id: 'sign', label: '先画骨头门牌', hints: ['骨头', '门牌', '牌子', '图'], result: '骨头门牌画好了，再慢慢添上屋顶和小桥。', speaker: 'zhuxiaodi', action: 'glow', reward: homeSketch, expression: 'happy' },
     ],
     closing: [
       { speaker: 'doudou', text: '这就是我家！线索图我拿好了。' },
-      { speaker: 'anuan', text: '沿着门外的小路，就能看到木桥。' },
+      { speaker: 'zhuxiaodi', text: '叫叫在河边等你们，沿小路就能看见。' },
     ],
   },
   {
     id: 'doudou-riverbank', title: '在河边等一等', chapter: 2, world: 'bridge',
     objective: '先问豆豆需要怎样的陪伴。',
     cast: [
+      catalogActor('jiaojiao'),
       { id: 'doudou', type: 'dog', name: '豆豆', color: '#cf955f', voice: 'sprout' },
-      { id: 'diandian', type: 'frog', name: '点点', color: '#91ae72', voice: 'bubble' },
     ],
     dialogue: [
-      { speaker: 'diandian', text: '豆豆，桥板结实，小船也在岸边。' },
-      { speaker: 'doudou', text: '我知道，可我的腿还是有点抖。' },
-      { speaker: 'diandian', text: '那我们先在岸上等一会儿。' },
+      { speaker: 'jiaojiao', text: '我是叫叫！找到桥啦，我们——' },
+      { speaker: 'doudou', text: '桥找到了，可我的腿还是有点抖。' },
+      { speaker: 'jiaojiao', text: '啊，我跑太快了。先听你说完。' },
       { speaker: 'doudou', text: '有人陪着，我会安心一点。' },
+      { speaker: 'jiaojiao', text: '勇敢也可以等一等，我们都在这儿。' },
     ],
     question: '等一会儿的时候，怎么陪豆豆？',
     choices: [
@@ -88,7 +99,7 @@ const doudouScenes = [
     ],
     closing: [
       { speaker: 'doudou', text: '我准备好了，不过还想慢慢来。' },
-      { speaker: 'diandian', text: '好，我们一起选一条过河的路。' },
+      { speaker: 'jiaojiao', text: '点点在桥头。我去请它带路，你们慢慢来。' },
     ],
   },
   {
@@ -116,13 +127,13 @@ const doudouScenes = [
     id: 'doudou-two-houses', title: '哪一扇门', chapter: 3, world: 'home',
     objective: '对照线索图，找到豆豆家的门。',
     cast: [
-      { id: 'yueya', type: 'cat', name: '邮差月牙', color: '#bcc1d1', voice: 'star' },
+      catalogActor('lingdang'),
       { id: 'doudou', type: 'dog', name: '豆豆', color: '#cf955f', voice: 'sprout' },
     ],
     dialogue: [
-      { speaker: 'yueya', text: '左边是蓝屋顶，右边是红屋顶。' },
+      { speaker: 'lingdang', text: '我是铃铛。等等，我们先对照线索图。' },
       { speaker: 'doudou', text: '我的图上画着红屋顶和骨头门牌。' },
-      { speaker: 'yueya', text: '骨头门牌也在右边，我们靠近看看。' },
+      { speaker: 'lingdang', text: '右边是红屋顶，再找找骨头门牌。' },
     ],
     question: '你想先对照什么？',
     choices: [
@@ -131,7 +142,7 @@ const doudouScenes = [
     ],
     closing: [
       { speaker: 'doudou', text: '我认出来了，就是这里！' },
-      { speaker: 'yueya', text: '我们轻轻敲门，等妈妈来开。' },
+      { speaker: 'lingdang', text: '线索都对上了。轻轻敲门，等妈妈来开。' },
     ],
   },
   {

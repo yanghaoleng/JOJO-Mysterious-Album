@@ -103,10 +103,11 @@ export class SeedRealtimeSpeech {
     session.resolve?.(false);
   }
 
-  begin(voice, { onSegment = () => {} } = {}) {
+  begin(voice, { onSegment = () => {}, npcId = '' } = {}) {
     this.stop();
     const session = {
       voice,
+      npcId: typeof npcId === 'string' ? npcId : '',
       pending: '',
       queue: [],
       closed: false,
@@ -185,7 +186,7 @@ export class SeedRealtimeSpeech {
       response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' },
-        body: JSON.stringify({ text, voice: session.voice, realtime: true }),
+        body: JSON.stringify({ text, voice: session.voice, realtime: true, ...(session.npcId ? { npcId: session.npcId } : {}) }),
         signal: session.controller.signal,
       });
       if (!response.ok) throw new Error(`tts_${response.status}`);
@@ -194,6 +195,9 @@ export class SeedRealtimeSpeech {
       if (session.cancelled || session !== this.session) return;
       const provider = response.headers.get('X-TTS-Provider') || 'seed';
       document.documentElement.dataset.conversationTts = provider;
+      document.documentElement.dataset.conversationNpc = response.headers.get('X-NPC-Id') || '';
+      document.documentElement.dataset.conversationVoice = response.headers.get('X-TTS-Voice') || session.voice;
+      document.documentElement.dataset.conversationSpeechRate = response.headers.get('X-Speech-Rate') || '';
       this.onState('speaking');
       await this.playBytes(session, data, text);
     } catch (error) {

@@ -1,3 +1,5 @@
+import { npcSystemContext } from './_npc-profile.js';
+
 const QUESTION_FIELDS = new Set(['animal', 'color', 'name']);
 const SCENE_IDS = new Set(['orchard-bush', 'warm-bakery', 'creaky-bridge', 'two-houses', 'doudou-home']);
 const TEMPLATE_IDS = new Set(['snow-rabbit', 'bean-dog', 'moon-cat']);
@@ -212,7 +214,7 @@ export default async function handler(request, response) {
       body: JSON.stringify({
         model: process.env.ARK_LLM_MODEL || 'doubao-seed-2-0-mini-260428',
         messages: [
-          { role: 'system', content: mode === 'scene' ? SCENE_SYSTEM_PROMPT : SYSTEM_PROMPT },
+          { role: 'system', content: mode === 'scene' ? SCENE_SYSTEM_PROMPT + npcSystemContext(request.body?.npcId) : SYSTEM_PROMPT },
           {
             role: 'user',
             content: mode === 'scene'

@@ -1,3 +1,5 @@
+import { getNpc } from '../src/story-npcs/catalog.js';
+
 export async function requestJSON(path, body, timeout = 12000, signal) {
   // Avoid AbortSignal.any/timeout: older mobile Safari has AbortController only.
   const controller = new AbortController();
@@ -182,7 +184,7 @@ export class StoryVoice {
     }
   }
 
-  async say(text, voice = 'sprout', onStart = () => {}) {
+  async say(text, voice = 'sprout', onStart = () => {}, npcId = '') {
     this.skip();
     this.cancelASR();
     const session = { controller: new AbortController(), source: null, finish: null, settled: false };
@@ -195,7 +197,7 @@ export class StoryVoice {
     void (async () => {
       try {
         session.requestTimeout = setTimeout(() => session.controller.abort(), 9000);
-        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, realtime: true }), signal: session.controller.signal });
+        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true }), signal: session.controller.signal });
         if (!response.ok) throw new Error('tts_unavailable');
         const bytes = await response.arrayBuffer();
         clearTimeout(session.requestTimeout);
@@ -222,7 +224,7 @@ export class StoryVoice {
         try {
           if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) throw new Error('speech_unavailable');
           const speech = new window.SpeechSynthesisUtterance(text);
-          speech.lang = 'zh-CN'; speech.rate = .92;
+          speech.lang = 'zh-CN'; speech.rate = getNpc(npcId)?.speechRate || .92;
           speech.onend = () => this.finish(session);
           speech.onerror = () => this.finish(session);
           session.synthetic = true;

@@ -29,11 +29,11 @@ const DOUDOU_ITEMS = {
   },
   homeSketch: {
     id: 'homeSketch', name: '回家线索图', mark: '图', color: '#688795',
-    short: '红屋顶、骨头门牌和一座小木桥。', description: '阿暖熊把豆豆记得的线索画在纸上。', use: '到了岔路口，把看见的房子和线索一项项对上。',
+    short: '红屋顶、骨头门牌和一座小木桥。', description: '猪小弟在阿暖面包房把豆豆记得的线索画在纸上。', use: '到了岔路口，把看见的房子和线索一项项对上。',
   },
   duckFeather: {
     id: 'duckFeather', name: '点点的水滴章', mark: '滴', color: '#5f8f9b',
-    short: '过桥时得到的一枚蓝色小印章。', description: '点点小蛙看见你耐心陪豆豆过桥，把它送给你。', use: '豆豆紧张时，拿出来提醒它慢慢走也没关系。',
+    short: '过桥时得到的一枚蓝色小印章。', description: '叫叫把点点小蛙准备的水滴章送给你，记住一起慢慢过河的办法。', use: '豆豆紧张时，拿出来提醒它慢慢走也没关系。',
   },
 };
 
@@ -84,21 +84,21 @@ const doudouScenes = [
     id: 'warm-bakery', chapter: 1, name: '阿暖面包房', place: 'breakfast-table', sceneId: 'breakfast-table',
     objective: '把豆豆记得的家画成一张线索图。',
     npc: {
-      name: '阿暖熊', templateId: 'honey-bear', entrance: 'door', voice: 'moss',
-      intro: '你们好，我是阿暖熊，这间面包房每天都会给附近的小狗烤骨头饼干。',
+      name: '猪小弟', characterId: 'zhuxiaodi', entrance: 'door', voice: 'moss',
+      intro: '我是猪小弟，今天在阿暖面包房帮忙。不着急，我陪你们把回家的线索画下来。',
     },
     cast: [{
       name: '豆豆小狗', templateId: 'bean-dog', entrance: 'left', voice: 'sprout',
-      intro: '阿暖熊你好，我是豆豆。我正在找回家的路。',
+      intro: '猪小弟你好，我是豆豆。我正在找回家的路。',
       line: '我还记得回家前要走过一座吱呀响的小木桥。',
     }],
     conversation: [
-      { speaker: 'npc', text: '我见过豆豆妈妈。她家确实有红屋顶，门口还挂着骨头牌。' },
+      { speaker: 'npc', text: '阿暖熊借了我纸和笔。慢点说，红屋顶、骨头门牌，我一笔一笔画。' },
       { speaker: 'cast', text: '对了，回家前还要走过一座会吱呀响的小木桥。' },
     ],
-    dialogue: '线索已经有三个：红屋顶、骨头门牌、小木桥。可以说“把三个都画下来”，或者“先画最容易认的骨头门牌”。',
+    dialogue: '不着急，三个线索我都听见了。你想“把三个都画下来”，还是“先画骨头门牌”？我跟着你画。',
     choices: [
-      { id: 'draw-all', label: '把三个都画下来', voiceHints: ['三个都画', '全画下来', '都记下来', '画全部'], result: '阿暖熊画下红屋顶、骨头门牌和小木桥，三条线索一眼就能看清。', trait: 'make' },
+      { id: 'draw-all', label: '把三个都画下来', voiceHints: ['三个都画', '全画下来', '都记下来', '画全部'], result: '猪小弟慢慢画下红屋顶、骨头门牌和小木桥，三条线索一眼就能看清。', trait: 'make' },
       { id: 'draw-sign', label: '先画骨头门牌', voiceHints: ['骨头门牌', '画骨头', '门牌', '先画牌子'], result: '你先把骨头门牌画得大大的，再补上红屋顶和小木桥。', trait: 'listen' },
     ],
     reward: 'homeSketch', petLine: '线索图画好啦。我们沿着面包香味外的小路去找木桥。',
@@ -107,19 +107,19 @@ const doudouScenes = [
     id: 'creaky-bridge', chapter: 2, name: '吱呀小木桥', place: 'paper-creek', sceneId: 'paper-creek',
     objective: '陪有点怕水的豆豆安全过桥。',
     npc: {
-      name: '点点小蛙', templateId: 'pond-frog', entrance: 'water', voice: 'bubble',
-      intro: '你们好，我是点点小蛙。我每天都从这座小桥下面游过去。',
+      name: '叫叫', characterId: 'jiaojiao', entrance: 'left', voice: 'star',
+      intro: '我可是勇敢的小鸡叫叫！咦，豆豆在发抖。先不往前冲，我陪你站稳。',
     },
     cast: [{
       name: '豆豆小狗', templateId: 'bean-dog', entrance: 'bridge', voice: 'sprout',
-      intro: '点点你好，我是豆豆。桥一响，我的腿就有一点发抖。',
+      intro: '叫叫你好，我是豆豆。桥一响，我的腿就有一点发抖。',
       line: '只要有人陪着我慢一点，我愿意试试看。',
     }],
     conversation: [
-      { speaker: 'npc', text: '桥板很结实，只是踩上去会吱呀响。我的小船也能载你们过河。' },
+      { speaker: 'npc', text: '点点说桥板很结实。它也把小船靠过来了，会载着大家慢慢过河。' },
       { speaker: 'cast', text: '我想回家，可是看到水还是有一点紧张。' },
     ],
-    dialogue: '怎么陪豆豆过河？可以说“牵着它慢慢走”，或者“大家坐点点的小船”。',
+    dialogue: '这次我不抢先跑。我们“牵着豆豆慢慢走”，还是“坐点点的小船”？你选，我来帮忙。',
     choices: [
       { id: 'walk-slowly', label: '牵着它慢慢走', voiceHints: ['牵着它', '慢慢走', '走过桥', '陪它走'], result: '你牵着豆豆一步一步走。桥响了几声，豆豆一直能感觉到你在旁边。', trait: 'patient' },
       { id: 'take-boat', label: '坐点点的小船', voiceHints: ['坐船', '小船', '点点的船', '划过去'], result: '点点把小船靠到岸边。大家坐稳后，小船轻轻滑到了对岸。', trait: 'together' },
@@ -130,19 +130,19 @@ const doudouScenes = [
     id: 'two-houses', chapter: 2, name: '两座小房子', place: 'rooftop', sceneId: 'rooftop',
     objective: '把眼前的房子和线索图一项项对上。',
     npc: {
-      name: '邮差月牙', templateId: 'moon-cat', entrance: 'right', voice: 'star',
-      intro: '晚上好，我是邮差月牙。这条路上的每一块门牌，我都认得。',
+      name: '铃铛', characterId: 'lingdang', entrance: 'right', voice: 'lively',
+      intro: '我是铃铛。等等，我已经计划好了！先看屋顶，再看门牌，和你们的图一项项核对。',
     },
     cast: [{
       name: '豆豆小狗', templateId: 'bean-dog', entrance: 'left', voice: 'sprout',
-      intro: '月牙你好，我是豆豆。左边是蓝屋顶和小鱼牌，右边是红屋顶和骨头牌。',
+      intro: '铃铛你好，我是豆豆。左边是蓝屋顶和小鱼牌，右边是红屋顶和骨头牌。',
       line: '我的线索图上画着红屋顶和骨头门牌。',
     }],
     conversation: [
       { speaker: 'npc', text: '左边房子是蓝屋顶，挂着小鱼牌；右边房子是红屋顶，挂着骨头牌。' },
       { speaker: 'cast', text: '线索图上正好画着红屋顶和骨头门牌。' },
     ],
-    dialogue: '豆豆家是哪一间？可以说“右边红屋顶那间”，或者“跟着骨头门牌走”。',
+    dialogue: '线索对上哪一间？你可以说“右边红屋顶那间”，或者“跟着骨头门牌走”。说说你发现的证据。',
     choices: [
       { id: 'red-roof', label: '右边红屋顶那间', voiceHints: ['右边', '红屋顶', '右边那间', '红色房子'], result: '你指向右边的红屋顶。三个线索都对上了，豆豆一下子认出了门口。', trait: 'listen' },
       { id: 'bone-sign', label: '跟着骨头门牌走', voiceHints: ['骨头门牌', '骨头牌', '跟着门牌', '看牌子'], result: '你把图上的骨头门牌和眼前的牌子一对，正是右边那一间。', trait: 'make' },

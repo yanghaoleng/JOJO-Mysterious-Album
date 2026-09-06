@@ -14,11 +14,13 @@ const SCENE_ROUTES = {
   moon: 'creaky-bridge', reef: 'creaky-bridge', pocket: 'two-houses', cloud: 'doudou-home',
 };
 
+const npcIdFor = scene => (scene.cast.find(actor => actor.id === scene.questionSpeaker) || scene.cast[0])?.characterId || '';
+
 export function moonRequest(scene, inventions, answer) {
   const route = MOON_ROUTES[scene.id];
   if (!route) throw new Error('Unsupported invention scene');
   return {
-    storyId: 'moon-plan', sceneId: route[0], sceneName: scene.title,
+    storyId: 'moon-plan', sceneId: route[0], sceneName: scene.title, npcId: npcIdFor(scene),
     question: scene.question, destination: route[1], constraint: scene.inventionResult,
     previousInventions: inventions.slice(-3).map(item => item.visual.name), answer,
   };
@@ -28,7 +30,7 @@ export function sceneRequest(scene, answer) {
   const route = scene.id === 'doudou-home' ? 'doudou-home' : SCENE_ROUTES[scene.world];
   if (!route) throw new Error('Unsupported dialogue scene');
   return {
-    mode: 'scene', sceneId: route,
+    mode: 'scene', sceneId: route, npcId: npcIdFor(scene),
     question: `${scene.title}：${scene.question}`, answer,
     choices: scene.choices.map(choice => ({ id: choice.id, label: choice.label, result: choice.result, voiceHints: choice.hints })),
   };

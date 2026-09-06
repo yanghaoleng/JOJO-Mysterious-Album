@@ -1,3 +1,5 @@
+import { npcProfile, npcSpeechRate } from './_npc-profile.js';
+
 const VOICES = {
   sprout: { referenceId: '57744207b298418194abd366d4596c8b', fishSpeed: 0.92, volcSpeed: 0.94, pitch: 1.04, speaker: 'ICL_zh_female_keainvsheng_tob' },
   bubble: { referenceId: '35e4dae87120478ea72d3eef6ff77ba0', fishSpeed: 1.08, volcSpeed: 1.08, pitch: 1.08, speaker: 'ICL_zh_female_tiaopigongzhu_tob' },
@@ -123,11 +125,14 @@ export const maxDuration = 90;
 export default async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
   const text = String(request.body?.text || '').trim().replace(/[<>]/g, '').slice(0, 120);
-  const voice = VOICES[request.body?.voice] ? request.body.voice : 'star';
+  const profile = npcProfile(request.body?.npcId);
+  const requestedVoice = profile && Object.hasOwn(VOICES, profile.voiceKey) ? profile.voiceKey : request.body?.voice;
+  const voice = Object.hasOwn(VOICES, requestedVoice) ? requestedVoice : 'star';
   if (!text) return response.status(400).json({ error: 'text_required' });
 
   try {
-    const preset = VOICES[voice];
+    const preset = { ...VOICES[voice] };
+    if (profile) preset.volcSpeed = preset.fishSpeed = npcSpeechRate(profile, preset.volcSpeed);
     const provider = (process.env.PET_TTS_PROVIDER || 'fish').toLowerCase();
     let audio;
     let actualProvider = provider;
@@ -145,6 +150,11 @@ export default async function handler(request, response) {
     response.setHeader('Content-Length', String(audio.length));
     response.setHeader('Cache-Control', 'no-store');
     response.setHeader('X-TTS-Provider', actualProvider);
+    response.setHeader('X-NPC-Id', profile?.id || '');
+    response.setHeader('X-TTS-Voice', voice);
+    const speechRate = String(actualProvider === 'fish' ? preset.fishSpeed : preset.volcSpeed);
+    response.setHeader('X-Speech-Rate', speechRate);
+    response.setHeader('Speech-Rate', speechRate);
     return response.status(200).send(audio);
   } catch (error) {
     const unavailable = error?.message === 'tts_not_configured';

@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
 import { createCharacter } from './models.js';
+import { createDocumentCharacter } from '../src/story-npcs/factory.js';
 import { createWorld } from './worlds.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 
@@ -280,7 +281,9 @@ export class DioramaStage {
     this.scene.add(this.world.group);
     const spots = this.world.characterSpots || [{ x: -1.6, y: .05, z: 1.5 }, { x: 1.3, y: .05, z: 1 }, { x: 0, y: .05, z: 2.6 }];
     cast.forEach((config, index) => {
-      const actor = createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
+      const actor = config.characterId
+        ? createDocumentCharacter({ characterId: config.characterId, scale: studio ? 1.3 : .78 })
+        : createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
       const restBounds = new THREE.Box3().setFromObject(actor.group);
       restBounds.min.divide(actor.group.scale); restBounds.max.divide(actor.group.scale);
       this.actorFrames.set(config.id, restBounds);

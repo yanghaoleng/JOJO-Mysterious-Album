@@ -14,6 +14,7 @@ import json
 import base64
 import hashlib
 import hmac
+import math
 import os
 import re
 import secrets
@@ -34,6 +35,42 @@ from volc_asr import transcribe_pcm
 
 
 ROOT = Path(__file__).resolve().parent
+NPC_CATALOG_PATH = ROOT / "src" / "story-npcs" / "catalog.json"
+
+
+def load_npc_profiles():
+    try:
+        profiles = json.loads(NPC_CATALOG_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # Older/non-NPC releases can still serve their original stories.
+        return {}
+    if not isinstance(profiles, list):
+        return {}
+    return {profile["id"]: profile for profile in profiles if isinstance(profile, dict)
+            and isinstance(profile.get("id"), str) and re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", profile["id"])}
+
+
+NPC_PROFILES = load_npc_profiles()
+
+
+def npc_profile(npc_id):
+    # Never repair client text into a valid identity or accept a client persona.
+    if not isinstance(npc_id, str) or len(npc_id) > 64 or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", npc_id):
+        return None
+    return NPC_PROFILES.get(npc_id)
+
+
+def npc_system_context(npc_id):
+    profile = npc_profile(npc_id)
+    if not profile:
+        return ""
+    fields = {key: profile.get(key, "") for key in ("name", "personality", "speakingStyle", "sampleLine")}
+    fields["npcId"] = profile["id"]
+    return ("\n\n当前发言的是下面这位故事 NPC，不是孩子创建的伙伴。只用这些设定调整 reaction 和 listeningPrompt 的口吻，不替换主角或其他人物身份。"
+            "以上儿童安全规则、行动 ID 白名单、剧情约束、字数与输出格式始终优先；示例只参考语气，不必复述，也不能额外追问。\n受控角色设定："
+            + json.dumps(fields, ensure_ascii=False))
+
+
 ANALYTICS_DB = Path(os.environ.get("ANALYTICS_DB_PATH", str(ROOT / ".data" / "analytics.db")))
 DATA_SESSION_SECONDS = 12 * 60 * 60
 SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{8,80}$")
@@ -876,7 +913,7 @@ def fallback_scene_choice(answer, choices):
     return best_id
 
 
-def scene_turn_result(scene_id, question, answer, choices):
+def scene_turn_result(scene_id, question, answer, choices, npc_id=None):
     key = os.environ.get("ARK_API_KEY", "")
     if not key:
         raise RuntimeError("story_ai_not_configured")
@@ -884,7 +921,7 @@ def scene_turn_result(scene_id, question, answer, choices):
         {
             "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
             "messages": [
-                {"role": "system", "content": SCENE_TURN_PROMPT},
+                {"role": "system", "content": SCENE_TURN_PROMPT + npc_system_context(npc_id)},
                 {
                     "role": "user",
                     "content": (
@@ -1007,7 +1044,7 @@ def moon_director_result(payload):
     body = json.dumps(
         {
             "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
-            "messages": [{"role": "system", "content": MOON_DIRECTOR_PROMPT}, {"role": "user", "content": prompt}],
+            "messages": [{"role": "system", "content": MOON_DIRECTOR_PROMPT + npc_system_context(payload.get("npcId"))}, {"role": "user", "content": prompt}],
             "reasoning_effort": "minimal",
             "response_format": {"type": "json_object"},
             "max_tokens": 520,
@@ -1342,11 +1379,24 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
     return result
 
 
-def fish_tts(text, voice):
+def npc_tts_settings(npc_id, requested_voice):
+    profile = npc_profile(npc_id)
+    voice = profile.get("voiceKey") if profile and profile.get("voiceKey") in TTS_VOICES else requested_voice
+    voice = voice if isinstance(voice, str) and voice in TTS_VOICES else "star"
+    preset = dict(TTS_VOICES[voice])
+    if profile:
+        rate = profile.get("speechRate", preset["volc_speed"])
+        if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate):
+            rate = preset["volc_speed"]
+        preset["volc_speed"] = preset["fish_speed"] = max(.86, min(1.08, rate))
+    return profile, voice, preset
+
+
+def fish_tts(text, voice, preset=None):
     key = os.environ.get("FISH_AUDIO_API_KEY", "")
     if not key:
         raise RuntimeError("tts_not_configured")
-    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
+    preset = preset if preset is not None else TTS_VOICES.get(voice, TTS_VOICES["star"])
     body = json.dumps(
         {
             "text": text,
@@ -1375,7 +1425,7 @@ def fish_tts(text, voice):
         return result.read()
 
 
-def volc_seed_tts(text, voice):
+def volc_seed_tts(text, voice, preset=None):
     """Use the current Seed / Doubao V3 SSE transport.
 
     The speech console still issues an app id plus access token for older
@@ -1387,7 +1437,7 @@ def volc_seed_tts(text, voice):
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
     resource_id = os.environ.get("VOLC_TTS_RESOURCE_ID", "volc.service_type.10029")
-    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
+    preset = preset if preset is not None else TTS_VOICES.get(voice, TTS_VOICES["star"])
     voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
     speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
     if not app_id or not token or not resource_id or not speaker:
@@ -1446,11 +1496,11 @@ def volc_seed_tts(text, voice):
     return b"".join(chunks)
 
 
-def volc_tts_v1(text, voice):
+def volc_tts_v1(text, voice, preset=None):
     """Temporary compatibility fallback for a legacy-only voice entitlement."""
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
-    preset = TTS_VOICES.get(voice, TTS_VOICES["star"])
+    preset = preset if preset is not None else TTS_VOICES.get(voice, TTS_VOICES["star"])
     voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
     speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
     if not app_id or not token or not speaker:
@@ -1469,14 +1519,14 @@ def volc_tts_v1(text, voice):
     return base64.b64decode(payload["data"])
 
 
-def tts_audio(text, voice):
+def tts_audio(text, voice, preset=None):
     provider = os.environ.get("PET_TTS_PROVIDER", "fish").strip().lower()
     if provider == "volc":
         try:
-            return volc_seed_tts(text, voice), "volc-seed-v3"
+            return volc_seed_tts(text, voice, preset), "volc-seed-v3"
         except Exception:
-            return volc_tts_v1(text, voice), "volc-v1-fallback"
-    return fish_tts(text, voice), "fish"
+            return volc_tts_v1(text, voice, preset), "volc-v1-fallback"
+    return fish_tts(text, voice, preset), "fish"
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -1539,12 +1589,16 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.write_sse("done", {"ok": True})
         self.close_connection = True
 
-    def respond_audio(self, data, provider):
+    def respond_audio(self, data, provider, npc_id="", voice="star", speech_rate=1):
         self.send_response(200)
         self.send_header("Content-Type", "audio/mpeg")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-TTS-Provider", provider)
+        self.send_header("X-NPC-Id", npc_id)
+        self.send_header("X-TTS-Voice", voice)
+        self.send_header("X-Speech-Rate", str(speech_rate))
+        self.send_header("Speech-Rate", str(speech_rate))
         self.end_headers()
         self.wfile.write(data)
 
@@ -1713,12 +1767,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 return
             if path == "/api/tts":
                 text = str(payload.get("text", "")).strip().replace("<", "").replace(">", "")[:120]
-                voice = str(payload.get("voice", "star"))
+                profile, voice, preset = npc_tts_settings(payload.get("npcId"), payload.get("voice", "star"))
                 if not text:
                     self.respond_json(400, {"error": "text_required"})
                     return
-                audio, provider = tts_audio(text, voice)
-                self.respond_audio(audio, provider)
+                audio, provider = tts_audio(text, voice, preset)
+                rate = preset["fish_speed"] if provider == "fish" else preset["volc_speed"]
+                self.respond_audio(audio, provider, profile["id"] if profile else "", voice, rate)
                 return
             if path == "/api/moon-director":
                 story_id = str(payload.get("storyId", "")).strip()[:32]
@@ -1747,7 +1802,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                     if scene_id not in scene_ids or len(choices) < 2:
                         self.respond_json(400, {"error": "unknown_scene"})
                         return
-                    self.respond_json(200, scene_turn_result(scene_id, question, answer, choices))
+                    self.respond_json(200, scene_turn_result(scene_id, question, answer, choices, payload.get("npcId")))
                     return
                 question_id = str(payload.get("questionId", "")).strip()[:24]
                 question = str(payload.get("question", "")).strip().replace("<", "").replace(">", "")[:100]

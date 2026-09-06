@@ -10,13 +10,14 @@ import {
   createGlossCharacter,
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
-import { storyBySlug } from './story-blueprints.js?v=20260901-two-stories';
+import { storyBySlug } from './story-blueprints.js?v=20260906-document-npcs';
 import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260901-grounded-guide';
 import { storyCharacterTemplateById } from './story-character-templates.js';
+import { createLegacyDocumentNpc } from './story-npcs/legacy-adapter.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
-import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
+import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260906-npc-identity';
 import {
   setVoiceInputControlLevel,
   setVoiceInputControlState,
@@ -377,18 +378,21 @@ class PetRenderer {
     this.face = null;
     this.holder = null;
     this.animator = null;
+    this.documentNpc = null;
+    this.disposed = false;
+    this.reactionTimer = null;
     this.options = { boil: true, blink: true, gaze: true, sway: true, breath: true, talk: false, amp: .95, phase: .4 };
     this.resize = this.resize.bind(this);
     this.tick = this.tick.bind(this);
     addEventListener('resize', this.resize, { passive: true });
     this.resize();
-    requestAnimationFrame(this.tick);
+    this.frame = requestAnimationFrame(this.tick);
   }
 
   resize() {
     const rect = this.canvas.getBoundingClientRect();
-    const width = Math.max(220, Math.round(rect.width || 420));
-    const height = Math.max(240, Math.round(rect.height || 520));
+    const width = this.documentNpc ? Math.max(1, Math.round(rect.width || 220)) : Math.max(220, Math.round(rect.width || 420));
+    const height = this.documentNpc ? Math.max(1, Math.round(rect.height || 240)) : Math.max(240, Math.round(rect.height || 520));
     this.renderer.setSize(width, height, false);
     const aspect = width / height;
     this.camera.left = -2.25 * aspect;
@@ -396,6 +400,37 @@ class PetRenderer {
     this.camera.top = 2.25;
     this.camera.bottom = -2.25;
     this.camera.updateProjectionMatrix();
+    this.documentNpc?.fit(this.camera, this.documentPlacement);
+  }
+
+  clearCharacter() {
+    clearTimeout(this.reactionTimer);
+    this.animator = null;
+    this.face?.dispose();
+    if (this.holder) this.scene.remove(this.holder);
+    this.face = null;
+    this.holder = null;
+    this.documentNpc = null;
+    this.options.talk = false;
+    delete this.canvas.dataset.documentCharacter;
+  }
+
+  buildNpc(character, placement = { scaleMultiplier: 1.32, offsetY: -1.02 }) {
+    if (!character.characterId) {
+      const template = storyCharacterTemplateById(character.templateId);
+      this.buildRecipe(makeStoryGuideRecipe(template), placement);
+      return;
+    }
+    this.clearCharacter();
+    this.documentPlacement = placement;
+    this.documentNpc = createLegacyDocumentNpc({ characterId: character.characterId, renderer: this.renderer });
+    this.face = this.documentNpc.face;
+    this.animator = this.documentNpc.animator;
+    this.holder = this.face.group;
+    this.scene.add(this.holder);
+    this.canvas.dataset.documentCharacter = character.characterId;
+    this.animator.setPose('idle');
+    this.resize();
   }
 
   build(pet) {
@@ -435,8 +470,7 @@ class PetRenderer {
   }
 
   buildRecipe(recipe, { scaleMultiplier = 1.42, offsetY = -1.15 } = {}) {
-    if (this.face) this.face.dispose();
-    if (this.holder) this.scene.remove(this.holder);
+    this.clearCharacter();
 
     configureRendererForCharacterSystem(this.renderer, activeRenderStyle.character.system);
     if (activeRenderStyle.character.system === 'gloss') {
@@ -468,6 +502,10 @@ class PetRenderer {
 
   setTalking(talking) {
     this.options.talk = talking;
+    if (this.documentNpc) {
+      this.animator.setTalking(talking);
+      return;
+    }
     if (talking) this.animator?.setFace('happy');
     else this.animator?.setFace('idle');
   }
@@ -478,18 +516,30 @@ class PetRenderer {
     if (kind === 'brave') this.animator.setPose('attack');
     if (kind === 'listen') this.animator.setFace('sleepy');
     if (kind === 'walk') this.animator.setPose('walk');
-    setTimeout(() => {
+    clearTimeout(this.reactionTimer);
+    this.reactionTimer = setTimeout(() => {
       this.animator?.setFace('idle');
       if (kind === 'walk' || kind === 'brave') this.animator?.setPose('idle');
     }, kind === 'walk' ? 760 : 1400);
   }
 
   tick() {
-    requestAnimationFrame(this.tick);
+    if (this.disposed) return;
+    this.frame = requestAnimationFrame(this.tick);
     const dt = Math.min(.04, this.clock.getDelta());
     const elapsed = this.clock.elapsedTime;
     this.animator?.update(elapsed, dt);
     if (!this.canvas.closest('[hidden]')) this.renderer.render(this.scene, this.camera);
+  }
+
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    cancelAnimationFrame(this.frame);
+    removeEventListener('resize', this.resize);
+    this.clearCharacter();
+    this.clock.stop();
+    this.renderer.dispose();
   }
 }
 
@@ -568,6 +618,8 @@ async function playTts(text, voice, { pet = false, npc = false, onTimeline = nul
   stopAudio();
   const requestId = activeTtsRequest;
   const npcVoiceRenderer = activeSceneSpeaker === 'companion' ? companionRenderers[0] : npcRenderer;
+  const currentScene = SCENES[state.sceneIndex];
+  const speakerCharacter = npc ? (activeSceneSpeaker === 'companion' ? currentScene?.cast?.[0] : currentScene?.npc) : null;
   let timelineStarted = false;
   const stopTalking = () => {
     if (pet) petRenderer.setTalking(false);
@@ -591,6 +643,7 @@ async function playTts(text, voice, { pet = false, npc = false, onTimeline = nul
   };
   try {
     const played = await storyRealtimeSpeech.speak(String(text).slice(0, 120), voice, {
+      npcId: speakerCharacter?.characterId || '',
       onSegment: () => {
         if (requestId !== activeTtsRequest || timelineStarted) return;
         timelineStarted = true;
@@ -1348,6 +1401,7 @@ async function understandSceneAnswer(scene, answer) {
       body: JSON.stringify({
         mode: 'scene',
         sceneId: scene.id,
+        npcId: scene.npc.characterId || '',
         question: scene.dialogue,
         answer,
         choices: scene.choices.map(({ id, label, result, trait, voiceHints }) => ({ id, label, result, trait, voiceHints })),
@@ -1405,6 +1459,7 @@ async function understandDirectorAnswer(scene, answer) {
         storyId: story.id,
         sceneId: scene.id,
         sceneName: scene.name,
+        npcId: scene.npc.characterId || '',
         question: scene.dialogue,
         destination: scene.director.destination,
         constraint: scene.director.constraint,
@@ -1547,24 +1602,23 @@ function renderSceneCast(scene) {
     button.className = 'npc-companion';
     delete button.dataset.entry;
   });
-  const mainTemplate = storyCharacterTemplateById(scene.npc.templateId);
-  npcRenderer.buildRecipe(makeStoryGuideRecipe(mainTemplate), { scaleMultiplier: 1.32, offsetY: -1.02 });
+  npcRenderer.buildNpc(scene.npc);
   scene.cast.slice(0, 1).forEach((character, index) => {
     const button = document.querySelector(`[data-companion="${index}"]`);
-    const template = storyCharacterTemplateById(character.templateId);
     button.dataset.line = character.line;
     button.dataset.name = character.name;
     button.dataset.voice = character.voice || 'bubble';
     button.dataset.entry = character.entrance || 'left';
     button.setAttribute('aria-label', `触摸${character.name}`);
     button.querySelector('span').textContent = character.name;
-    companionRenderers[index].buildRecipe(makeStoryGuideRecipe(template), { scaleMultiplier: 1.32, offsetY: -1.02 });
+    companionRenderers[index].buildNpc(character);
   });
 }
 
 function enterMainCharacter(scene) {
   const npc = $('npc-wrap');
   npc.hidden = false;
+  npcRenderer.resize();
   npc.dataset.entry = scene.npc.entrance || 'right';
   npc.classList.remove('is-entered', 'is-entering');
   void npc.offsetWidth;
@@ -1582,6 +1636,7 @@ function enterCompanion(scene, index = 0) {
   if (!character || !button) return;
   $('npc-companions').hidden = false;
   button.hidden = false;
+  companionRenderers[index].resize();
   button.dataset.entry = character.entrance || 'left';
   button.classList.remove('is-entered', 'is-entering');
   void button.offsetWidth;
@@ -2016,6 +2071,7 @@ addEventListener('resize', () => requestAnimationFrame(anchorStageSpeech), { pas
 addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
+  for (const renderer of [guideRenderer, petRenderer, npcRenderer, ...companionRenderers]) renderer.dispose();
 });
 addEventListener('storage', event => {
   if (event.key === RENDER_STYLE_STORAGE_KEY) location.reload();
@@ -2024,7 +2080,7 @@ updateBackpack();
 setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
-  story, state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, renderScene, renderStoryBackdrop, collectItem, finishStory,
+  story, state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, npcRenderer, companionRenderers, renderScene, renderStoryBackdrop, collectItem, finishStory,
   beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   resolveDirectorTurn, drawInvention, setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
 };

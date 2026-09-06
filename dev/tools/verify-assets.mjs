@@ -13,6 +13,7 @@ import { CHARACTER_CATALOG, createCharacter } from '../models.js';
 import { WORLD_CATALOG, createWorld } from '../worlds.js';
 import { STORIES } from '../stories.js';
 import { DioramaStage } from '../stage.js';
+import { supportsDocumentCharacter } from '../../src/story-npcs/factory.js';
 
 const project = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const dev = resolve(project, 'dev');
@@ -68,7 +69,8 @@ for (const file of sourceFiles) {
 const runtimeSources = sourceFiles.filter(file => dirname(file) === dev && extname(file) === '.js');
 for (const file of runtimeSources) {
   const source = await readFile(file, 'utf8');
-  assert.ok(!/from\s*['"][^'"]*(?:\/src\/|legacy|rig\.js|scenery\.js)/.test(source), `Legacy runtime imported by ${relative(project, file)}`);
+  const withoutSharedNpcs = source.replace(/from\s*['"][^'"]*\/src\/story-npcs\/(?:catalog|factory)\.js['"]/g, '');
+  assert.ok(!/from\s*['"][^'"]*(?:\/src\/|legacy|rig\.js|scenery\.js)/.test(withoutSharedNpcs), `Legacy runtime imported by ${relative(project, file)}`);
   assert.ok(!/(?:localStorage|sessionStorage)\s*\.\s*clear\s*\(/.test(source), `Shared storage cleared by ${relative(project, file)}`);
   assert.ok(!/serviceWorker\s*\.\s*register\s*\(/.test(source), `Unreviewed service worker in ${relative(project, file)}`);
 }
@@ -191,7 +193,7 @@ for (const story of STORIES) {
     assert.equal(Boolean(scene.final), index === 5, `${scene.id} final-scene marker`);
     assert.ok(scene.objective && scene.question && scene.dialogue.length, `${scene.id} incomplete narrative`);
     assert.ok(scene.cast.length >= 1 && scene.cast.length <= 2, `${scene.id} must keep room for the companion and invention`);
-    scene.cast.forEach(actor => assert.ok(characterIds.has(actor.type), `${scene.id} missing character ${actor.type}`));
+    scene.cast.forEach(actor => assert.ok(actor.characterId ? supportsDocumentCharacter(actor.characterId) : characterIds.has(actor.type), `${scene.id} missing character ${actor.characterId || actor.type}`));
     const cast = new Set([...scene.cast.map(actor => actor.id), 'companion']);
     [...scene.dialogue, ...(scene.closing || [])].forEach(line => assert.ok(cast.has(line.speaker) && line.text, `${scene.id} has an unavailable speaker`));
     assert.equal(new Set(scene.choices.map(choice => choice.id)).size, scene.choices.length, `${scene.id} repeats a choice ID`);

@@ -6,6 +6,7 @@ import { StoryVoice, requestJSON } from './voice.js';
 import { moonRequest, sceneRequest } from './story-api.js';
 import { describeInvention } from './inventions.js';
 import { mountProductIcons } from '../vendor/ui-icons.js';
+import { getNpc } from '../src/story-npcs/catalog.js';
 
 const $ = id => document.getElementById(id);
 const STORAGE = 'jma.dev.clay.v1';
@@ -107,7 +108,9 @@ function setReplyMode(mode, restoreFocus = false) {
 
 function speakerInfo(id) {
   if (id === 'companion') return { id, name: state?.companion?.name || '小团', voice: 'bubble' };
-  return story?.scenes[state.sceneIndex]?.cast.find(actor => actor.id === id) || { id: 'guide', name: '河湾', voice: 'moss' };
+  const actor = story?.scenes[state.sceneIndex]?.cast.find(actor => actor.id === id);
+  const profile = actor?.characterId && getNpc(actor.characterId);
+  return profile ? { ...actor, name: profile.name, voice: profile.voiceKey } : actor || { id: 'guide', name: '河湾', voice: 'moss' };
 }
 
 async function speakLine(line, token = epoch) {
@@ -117,7 +120,7 @@ async function speakLine(line, token = epoch) {
   $('speech-text').textContent = line.text;
   $('speech-card').dataset.speaking = 'true';
   stage.speak(line.speaker, true);
-  await voice.say(line.text, info.voice);
+  await voice.say(line.text, info.voice, () => {}, info.characterId);
   if (token === epoch) {
     $('speech-card').dataset.speaking = 'false'; stage.speak(line.speaker, false);
   }

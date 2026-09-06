@@ -1,3 +1,5 @@
+import { npcSystemContext } from './_npc-profile.js';
+
 const SCENE_IDS = new Set(['moon-hill', 'moon-underwater', 'moon-pocket', 'moon-clouds', 'moon-landing']);
 const VISUAL_KINDS = new Set(['portal', 'rocket', 'submarine', 'ladder', 'parachute', 'balloon', 'vehicle']);
 const MOTIONS = new Set(['pulse', 'lift', 'drift']);
@@ -148,7 +150,7 @@ export default async function handler(request, response) {
       body: JSON.stringify({
         model: process.env.ARK_LLM_MODEL || 'doubao-seed-2-0-mini-260428',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: SYSTEM_PROMPT + npcSystemContext(request.body?.npcId) },
           {
             role: 'user',
             content: `当前场景：${payload.sceneName}（${payload.sceneId}）\n角色问题：${payload.question}\n孩子刚才说：${payload.answer}\n本轮必须抵达：${payload.destination}\n固定剧情约束：${payload.constraint}\n之前造过：${payload.previousInventions.join('、') || '还没有'}`,
