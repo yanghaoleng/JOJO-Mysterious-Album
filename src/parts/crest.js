@@ -23,6 +23,21 @@ const ALL = STYLES.map(p => p[0]);
 const PAIRED = new Set(['horns', 'antlers', 'bunny', 'floppy', 'cat', 'bear', 'stalks', 'frills']);
 const EARS = new Set(['cat', 'bunny', 'floppy', 'bear']);
 
+// Use the finished head contour so narrow / pear-shaped heads keep their ears.
+function earAnchor(P, F, sd) {
+  const poly = F.L.facePoly;
+  const minX = Math.min(...poly.map(p => p[0]));
+  const maxX = Math.max(...poly.map(p => p[0]));
+  const x = Math.max(minX * .84, Math.min(maxX * .84, sd * F.w * P.spread));
+  let y = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    if (a[0] === b[0] || x < Math.min(a[0], b[0]) || x > Math.max(a[0], b[0])) continue;
+    y = Math.min(y, a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]));
+  }
+  return [x, (Number.isFinite(y) ? y : -F.s * F.P.skull.skullY * .84) + F.s * .08];
+}
+
 // the inner-ear arc of a bear nub: a smile across its lower half
 function circlePtsArc(cx, cy, r) {
   const pts = [];
@@ -79,10 +94,10 @@ export const Crest = {
     // sit on top and stay in front.
     const order = EARS.has(P.style) ? 0 : 7;
     if (!PAIRED.has(P.style)) return [{ name: 'crest', order, x: F.turn * F.w * .12 / U, y: -topY / U }];
-    return [-1, 1].map(sd => ({
-      name: 'horn' + (sd < 0 ? 'L' : 'R'), order,
-      x: sd * F.w * P.spread / U, y: -topY / U, side: sd,
-    }));
+    return [-1, 1].map(sd => {
+      const [x, y] = EARS.has(P.style) ? earAnchor(P, F, sd) : [sd * F.w * P.spread, topY];
+      return { name: 'horn' + (sd < 0 ? 'L' : 'R'), order, x: x / U, y: -y / U, side: sd };
+    });
   },
   size: (P, F) => PAIRED.has(P.style)
     ? [(F.w * 1.9 * Math.max(1, P.len)) / U, (F.s * 1.7 * Math.max(1, P.len)) / U]
@@ -91,7 +106,8 @@ export const Crest = {
   draw(s, P, st, F, bone) {
     const S = F.s, w = F.w;
     const sd = bone.side ?? 1;
-    const bx = sd * w * P.spread, by = -S * F.P.skull.skullY * .84;
+    const [bx, by] = EARS.has(P.style) ? earAnchor(P, F, sd)
+      : [sd * w * P.spread, -S * F.P.skull.skullY * .84];
 
     const STYLE = { dark: 'black', ringed: 'hatch', bone: 'light' };
     const toneFill = (pts, ridges) => {
@@ -160,17 +176,17 @@ export const Crest = {
       const m = 1 + (sd > 0 ? P.earAsym : -P.earAsym * .6);   // uneven pair
       const hh = S * .36 * P.len * m;
       const half = w * .23 * P.len * m;           // half the base width
-      const inner = bx + sd * half;               // toward the face
-      const outer = bx - sd * half;               // away from it
-      const apex = bx - sd * half * (.45 + P.tilt);          // the tip leans
+      const inner = bx - sd * half;               // toward the face
+      const outer = bx + sd * half;               // away from it
+      const apex = bx + sd * half * (.45 + P.tilt);          // the tip leans
       // NOT smoothed: chaikin rounds the corners off and a rounded
       // triangle is a blob. A cat ear is three straight edges.
       const tri = [[inner, by + S * .1], [apex, by - hh], [outer, by + S * .04]];
       toneFill(tri);
       // the pink inside, a smaller triangle sharing the apex direction
-      const innerTri = [[inner - sd * half * .42, by + S * .05],
+      const innerTri = [[inner + sd * half * .42, by + S * .05],
                         [apex, by - hh * .58],
-                        [outer + sd * half * .3, by + S * .01]];
+                        [outer - sd * half * .3, by + S * .01]];
       s.paperFill(innerTri);
       s.sline(innerTri.concat([innerTri[0]]), F.lwThin * .85, .45);
 

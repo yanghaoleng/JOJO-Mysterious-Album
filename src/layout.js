@@ -13,6 +13,7 @@
 // construction holds still while the ink is redrawn each frame.
 // ---------------------------------------------------------------
 import { chaikin, SKINC, HAIRCOL, ACCENTC } from './sketch.js';
+import { torsoOutline, torsoSpanAt } from './torso-outline.js';
 import { MEDIA } from './media.js';
 import { makeRng, hashStr } from './rng.js';
 import { U } from './part.js';
@@ -190,10 +191,10 @@ function featureLayout(recipe, Ps, S, w, turn, at, ts, press, M) {
 //
 // Returns `sd => [x, y]` in character px, or null when this body has
 // no hand to speak of (a fin, a paw, a quadruped's foreleg).
-function gripBiped(A, S, halfW, h, shoulderX, shoulderY, hipY) {
+function gripBiped(A, S, halfW, h, shoulderX, shoulderY, hipY, shoulderCenterX, outline) {
   if (!A) return null;
   return sd => {
-    const x0 = sd * shoulderX, y0 = shoulderY;
+    const x0 = sd * shoulderX + shoulderCenterX, y0 = shoulderY;
     const L = h * .62 * A.len;
     // A fin has no hand, but it still has an END, and a child with
     // stubby wings for arms can absolutely pin a sword against itself.
@@ -206,7 +207,11 @@ function gripBiped(A, S, halfW, h, shoulderX, shoulderY, hipY) {
     const droop = Math.max(.15, A.droop + (sd > 0 ? A.asym : 0));
     let dropY = L * (.55 + droop * .55);
     let outX = sd * L * .32;
-    if (A.style === 'hips') { outX = sd * halfW * .82; dropY = hipY - y0 - S * .04; }
+    if (A.style === 'hips') {
+      dropY = hipY - y0 - S * .04;
+      const span = torsoSpanAt(outline, y0 + dropY);
+      outX = span[sd < 0 ? 0 : 1] - sd * S * .025 - x0;
+    }
     else if (A.style === 'clasped') { outX = -sd * shoulderX * .48; dropY = L * (.62 + droop * .35); }
     else if (A.style === 'behind') { outX = sd * L * .12; dropY = L * (.34 + droop * .2); }
     return [x0 + outX, y0 + dropY];
@@ -279,7 +284,11 @@ function bodyLayout(Ps, S, w, base) {
   const bot = top + h;
   const hipY = bot - h * .06;
   const shoulderY = top + h * .22;
-  const shoulderX = halfW * .95;
+  const outline = torsoOutline(T, { halfW, top, bot, h });
+  const [leftShoulder, rightShoulder] = torsoSpanAt(outline, shoulderY);
+  const shoulderCenterX = (leftShoulder + rightShoulder) / 2;
+  // Bury the pivot slightly inside the body so rotating arms stay attached.
+  const shoulderX = Math.max(S * .02, (rightShoulder - leftShoulder) / 2 - S * .025);
 
   const Lg = Ps.legs ?? { style: 'stub', len: .4, foot: 'oval' };
   const legLen = Lg.style === 'none' ? 0 : h * .5 * Lg.len;
@@ -291,10 +300,11 @@ function bodyLayout(Ps, S, w, base) {
     top, bot, h, halfW,
     shoulderY,
     shoulderX,
+    shoulderCenterX,
     hipY,
     hipX: halfW * .42,
     floorY,
-    grip: gripBiped(Ps.arms, S, halfW, h, shoulderX, shoulderY, hipY),
+    grip: gripBiped(Ps.arms, S, halfW, h, shoulderX, shoulderY, hipY, shoulderCenterX, outline),
     gripR: S * .075,
   };
 }
