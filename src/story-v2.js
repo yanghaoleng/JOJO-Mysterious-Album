@@ -244,6 +244,7 @@ function anchorStageSpeech() {
   // The shared bubble stylesheet loads later and has its own rest transform.
   // This stage uses centre/bottom coordinates, including during its entrance.
   bubble.style.setProperty('--bubble-rest-transform', 'translate(-50%, -100%)');
+  bubble.style.maxWidth = `${Math.max(1, stageRect.width - 24)}px`;
   const halfBubble = Math.min((bubble.offsetWidth || 260) / 2, stageRect.width / 2 - 12);
   const idealX = targetRect.left - stageRect.left + targetRect.width / 2;
   const x = Math.max(halfBubble + 12, Math.min(stageRect.width - halfBubble - 12, idealX));
@@ -2070,10 +2071,15 @@ mountAppNavigation($('story-navigation'), {
 
 configureStoryPage();
 renderStoryBackdrop(SCENES[0]);
+// Calligraph changes the bubble width while revealing a longer sentence.
+// Re-anchor to the final size as well as the first, shorter animation frame.
+const stageSpeechResize = typeof ResizeObserver === 'function' ? new ResizeObserver(anchorStageSpeech) : null;
+stageSpeechResize?.observe($('npc-speech'));
 addEventListener('resize', () => requestAnimationFrame(anchorStageSpeech), { passive: true });
 addEventListener('beforeunload', () => {
   stopRecognition();
   stopGuideVoiceSession();
+  stageSpeechResize?.disconnect();
   for (const renderer of [guideRenderer, petRenderer, npcRenderer, ...companionRenderers]) renderer.dispose();
 });
 addEventListener('storage', event => {
