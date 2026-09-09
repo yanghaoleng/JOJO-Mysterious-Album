@@ -2,11 +2,11 @@
 // never sends it to a model, and never creates a story progress record.
 const chapterPreviews = [
   { world: ['咕噜咕噜', '肚子星'], theme: '感受', momo: '鼓鼓', color: '暖暖黄', hex: '#ecd271', tint: '#f8f4df', description: '它的肚子里像藏着一面小鼓，咕噜咕噜响。鼓鼓有点不好意思，也不知道这声音在说什么。', question: '肚子咕噜叫，是不是在跟我说话？', invitation: '先听一听，再说说你自己的感觉。' },
-  { world: ['哗啦啦', '海洋星'], theme: '发现', momo: '灰灰', color: '深深蓝', hex: '#8dbbcf', tint: '#eaf2f4', description: '一条褪色的小鱼游在灰蒙蒙的海里。海底被乱七八糟的东西盖住了，灰灰有点想念从前的蓝。', question: '海底的蓝色，会藏在哪里？', invitation: '仔细看一看，一起发现被挡住的线索。' },
-  { world: ['呼呼呼', '天气星'], theme: '提问', momo: '憋憋', color: '轻轻白', hex: '#d9e2e5', tint: '#edf1f1', description: '憋憋是一朵把自己憋得圆滚滚的云。它从来没哭过，今天却有一肚子的话，不知道怎么说出口。', question: '云朵，你肚子里装着什么？', invitation: '问得温柔一点，也给云朵一点时间。' },
+  { world: ['哗啦啦', '海洋星'], theme: '发现', momo: '灰灰', color: '深深蓝', hex: '#8dbbcf', tint: '#eaf2f4', description: '灰灰住在灰蒙蒙的海里，身边的蓝色淡了。海底被乱七八糟的东西盖住了，灰灰有点想念从前的蓝。', question: '海底的蓝色，会藏在哪里？', invitation: '仔细看一看，一起发现被挡住的线索。' },
+  { world: ['呼呼呼', '天气星'], theme: '提问', momo: '憋憋', color: '轻轻白', hex: '#d9e2e5', tint: '#edf1f1', description: '住在云里的憋憋把自己抱得紧紧的。它从来没哭过，今天却有一肚子的话，不知道怎么说出口。', question: '云朵，你肚子里装着什么？', invitation: '问得温柔一点，也给云朵一点时间。' },
   { world: ['嘀嗒嘀嗒', '时间星'], theme: '顺序', momo: '乱乱', color: '慢慢绿', hex: '#a8c9a8', tint: '#edf3e9', description: '乱乱总把早上和晚上弄混。星球上的一天也跟着乱了套，它看着匆忙的一天，想知道可不可以先停下来。', question: '我们的一天，应该从哪里开始？', invitation: '从熟悉的小事开始，慢慢找到一天的节奏。' },
   { world: ['影子影子', '星'], theme: '勇敢', momo: '躲躲', color: '柔柔粉', hex: '#e6b4bc', tint: '#f6edef', description: '躲躲一直藏在角落里。它觉得自己的样子不够好看，所以连打招呼，都只敢轻轻伸出一点点。', question: '如果影子不一样，还能做朋友吗？', invitation: '说出一个想法，陪它试着走出来一点。' },
-  { world: ['好大好大', '小星星'], theme: '想象', momo: '点点', color: '闪闪金', hex: '#dcb85f', tint: '#f6f1df', description: '点点是一颗小小的星星。它望着很大的宇宙，担心自己的光太小，也不敢说出藏了很久的愿望。', question: '一点点的光，可以照亮什么呢？', invitation: '把你的愿望告诉它，最后一扇门就在前面。' },
+  { world: ['好大好大', '小星星'], theme: '想象', momo: '点点', color: '闪闪金', hex: '#dcb85f', tint: '#f6f1df', description: '点点抱着一点小小的星光。它望着很大的宇宙，担心自己的光太小，也不敢说出藏了很久的愿望。', question: '一点点的光，可以照亮什么呢？', invitation: '把你的愿望告诉它，最后一扇门就在前面。' },
 ];
 
 const tabButtons = [...document.querySelectorAll('[data-chapter]')];

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Sketch } from './sketch.js';
 import { setHand, setRender, U } from './part.js';
 import { SoftStorySketch } from './soft-story-sketch.js?v=20260831-default-drawn';
-import { applyRenderStyleCssVars, loadAppliedRenderStyle, RENDER_STYLE_STORAGE_KEY } from './render-style-config.js?v=20260831-default-drawn';
+import { applyRenderStyleCssVars, loadAppliedRenderStyle, RENDER_STYLE_STORAGE_KEY, ORIGINAL_RENDER_STYLE } from './render-style-config.js?v=20260831-default-drawn';
 import { newRecipe, ensureParams, buildCharacter } from './rig.js';
 import { createAnimator } from './anim.js';
 import {
@@ -10,7 +10,8 @@ import {
   createGlossCharacter,
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
-import { storyBySlug } from './story-blueprints.js?v=20260906-document-npcs';
+import { storyBySlug } from './story-blueprints.js?v=20260909-wow-original-2d';
+import { readWowProgress, writeWowProgress, wowSceneIndex, wowFogProgress, wowInvention, requestWowTurn, downloadWowJourney, wowVisibleWords, WOW_CAST } from './wow-story-adapter.js';
 import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260901-grounded-guide';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { createLegacyDocumentNpc } from './story-npcs/legacy-adapter.js';
@@ -19,7 +20,7 @@ import { getScene3DEnabled, subscribeScene3D } from './scene-mode.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
-import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260906-npc-identity';
+import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260909-wow-child-profile';
 import {
   setVoiceInputControlLevel,
   setVoiceInputControlState,
@@ -32,9 +33,12 @@ import {
 
 installUISFX();
 
-const activeRenderStyle = loadAppliedRenderStyle();
 const storyParams = new URLSearchParams(location.search);
-const requestedStory = storyParams.get('story') || 'doudou';
+const requestedStory = storyParams.get('story') || document.body.dataset.storyDefault || 'doudou';
+const isWow = requestedStory === 'wow';
+// WOW is the original illustrated edition. This page-local choice never
+// rewrites the user's separate 3D experiment or renderer preferences.
+const activeRenderStyle = isWow ? structuredClone(ORIGINAL_RENDER_STYLE) : loadAppliedRenderStyle();
 // This fixture is deliberately unavailable on the public site, even if its
 // query string is copied. It never opens a microphone or requests paid speech.
 const localPlanetPreview = ['localhost', '127.0.0.1'].includes(location.hostname)
@@ -78,7 +82,9 @@ const state = {
   petIntroduced: false,
   petOffset: { x: 0, y: 0 },
   busy: false,
+  wow: isWow ? readWowProgress() : null,
 };
+if (isWow) state.sceneIndex = wowSceneIndex(state.wow);
 
 function configureStoryPage() {
   document.title = `${story.title} | 萌萌星的奇妙图鉴`;
@@ -91,10 +97,13 @@ function configureStoryPage() {
   $('cover-illustration').alt = story.slug === 'moon'
     ? '山丘上的望远镜、远处月亮和一个模糊未定的发明轮廓简笔画'
     : '红苹果树、小路、小桥和远处红屋顶房子的简笔画，草丛里有一个模糊的小动物轮廓';
-  for (const chapter of CHAPTERS) {
-    const dot = document.querySelector(`[data-chapter-dot="${chapter.number}"]`);
-    if (dot) dot.textContent = chapter.title;
-  }
+  $('chapter-progress').replaceChildren(...CHAPTERS.map(chapter => {
+    const dot = document.createElement('span');
+    dot.dataset.chapterDot = chapter.number;
+    dot.textContent = isWow ? ['咚咚声', '海螺歌', '云朵雨', '慢慢来', '弯弯路', '一点光'][chapter.number - 1] : chapter.title;
+    dot.title = chapter.title;
+    return dot;
+  }));
   $('ending-label').textContent = story.ending.label;
   $('ending-title').textContent = story.ending.title;
   $('backpack-title').textContent = story.slug === 'moon' ? '登月工具包' : '豆豆线索包';
@@ -102,6 +111,34 @@ function configureStoryPage() {
     ? '工具包还是空的。第一枚任务章会在望远镜山丘出现。'
     : '线索包还是空的。第一件东西会在红苹果园出现。';
   $('mic-button').setAttribute('aria-describedby', 'story-privacy');
+  if (isWow) {
+    document.documentElement.dataset.storyEdition = 'original-2d';
+    const coverCanvas = document.createElement('canvas');
+    coverCanvas.id = 'cover-illustration'; coverCanvas.className = 'cover-illustration';
+    coverCanvas.width = 1024; coverCanvas.height = 768;
+    coverCanvas.setAttribute('role', 'img'); coverCanvas.setAttribute('aria-label', '项目绘本场景里的城堡窗台，远山在窗后轻轻显现');
+    $('cover-illustration').replaceWith(coverCanvas);
+    paintSceneCanvas(coverCanvas, 'castle-window', activeRenderStyle.background);
+    $('backpack-title').textContent = '我的好奇背包';
+    $('backpack-button').setAttribute('aria-label', '打开好奇背包和旅程');
+    $('empty-inventory').textContent = '小背包还空着。我们先听听窗里的声音。';
+    if (state.wow.entries.length) $('cover-copy').textContent = state.wow.done ? '六次相遇已经留下。打开背包，可以重温和下载你的旅程。' : '小灯留着光，等你回来。点一下，接着上次的故事。';
+    const fog = document.createElement('div'); fog.id = 'wow-story-fog'; fog.setAttribute('aria-hidden', 'true'); $('world-stage').append(fog);
+    const lamp = document.createElement('span'); lamp.id = 'wow-light-state'; lamp.className = 'sr-only'; lamp.setAttribute('aria-live', 'polite'); $('world-stage').append(lamp);
+    const actions = document.createElement('div'); actions.className = 'wow-journey-actions';
+    const download = document.createElement('button'); download.type = 'button'; download.className = 'secondary-action'; download.textContent = '下载旅程纪念册';
+    download.addEventListener('click', () => downloadWowJourney(state.wow));
+    const restart = document.createElement('button'); restart.type = 'button'; restart.className = 'secondary-action'; restart.textContent = '重新开始';
+    restart.addEventListener('click', () => {
+      if (!confirm('重新开始会清除这台设备的本次旅程。可以先下载纪念册。确定重新开始吗？')) return;
+      const fresh = { version: 1, chapter: 0, scene: 0, entries: [], props: [], colors: [], firstWords: '', pending: null, done: false };
+      if (!writeWowProgress(fresh)) { toast('暂时无法清除本机记录，请稍后重试。'); return; }
+      location.reload();
+    });
+    actions.append(download, restart);
+    const notes = document.createElement('div'); notes.id = 'wow-journey-notes'; $('backpack-dialog').append(notes, actions);
+    $('story-privacy').textContent = '与大人一起允许麦克风后，语音经本站服务识别，不保存录音。故事回应处理转写文字；旅程只存在这台设备，不询问真实姓名、学校和住址。';
+  }
 }
 
 let activeAudio = null;
@@ -140,6 +177,7 @@ let petWalkId = 0;
 let inkPlanetStage = null;
 let planetViewportFrame = 0;
 let displayedStoryScene = null;
+let wowTtsNoticeShown = false;
 
 // Keep a single audio context unlocked from the child's first deliberate tap.
 // Later streamed replies can then play without relying on a delayed HTMLAudio
@@ -387,6 +425,14 @@ function setBusy(busy) {
 function renderStoryBackdrop(scene) {
   const canvas = $('story-scene-backdrop');
   const config = sceneById(scene.sceneId);
+  if (isWow) {
+    // Ask the existing scene painter for the actual viewport proportions so
+    // its window sides and other story clues are not cropped off on phones.
+    const rect = $('world-stage').getBoundingClientRect();
+    const quality = Math.min(2, devicePixelRatio || 1);
+    canvas.width = Math.round((rect.width || innerWidth) * quality);
+    canvas.height = Math.round((rect.height || innerHeight) * quality);
+  }
   document.body.dataset.scene = scene.id;
   document.body.dataset.place = config.id;
   document.body.dataset.sceneBackdrop = config.id;
@@ -739,7 +785,7 @@ function mountPlanetScene(scene) {
 }
 
 function applySceneDepth() {
-  const enabled = getScene3DEnabled();
+  const enabled = !isWow && getScene3DEnabled();
   document.documentElement.dataset.scene3d = String(enabled);
   if (!enabled) {
     leavePlanetStage();
@@ -812,6 +858,7 @@ async function playTts(text, voice, { pet = false, npc = false, onTimeline = nul
   try {
     const played = await storyRealtimeSpeech.speak(String(text).slice(0, 120), voice, {
       npcId: speakerCharacter?.characterId || '',
+      ...(isWow ? { speechProfile: 'wow-child' } : {}),
       onSegment: () => {
         if (requestId !== activeTtsRequest || timelineStarted) return;
         timelineStarted = true;
@@ -822,7 +869,10 @@ async function playTts(text, voice, { pet = false, npc = false, onTimeline = nul
     });
     if (requestId !== activeTtsRequest) return false;
     if (!timelineStarted) onTimeline?.(estimatedSpeechTime(text));
-    if (!played) document.documentElement.dataset.ttsSource = 'visual-only';
+    if (!played) {
+      document.documentElement.dataset.ttsSource = 'visual-only';
+      if (isWow && !wowTtsNoticeShown) { wowTtsNoticeShown = true; toast('童声暂未连上，可以先看字幕，轻点气泡继续。'); }
+    }
     stopTalking();
     return played;
   } catch (error) {
@@ -1036,15 +1086,15 @@ function setGuideVoiceUi(mode, message) {
   $('guide-figure').dataset.state = phase === 'interview' && ['listening', 'thinking'].includes(mode) ? mode : '';
   if (phase === 'quest') {
     $('npc-wrap').dataset.state = ['listening', 'thinking', 'speaking'].includes(mode) ? mode : '';
-    if (mode === 'thinking') setBubble('npc', story.slug === 'moon' ? '正在把你的办法画出来…' : '正在听懂你想怎么照顾豆豆…', '');
+    if (mode === 'thinking') setBubble('npc', isWow ? '我在认真听你的想法…' : story.slug === 'moon' ? '正在把你的办法画出来…' : '正在听懂你想怎么照顾豆豆…', '');
   }
-  if (mode === 'speaking') showLiveAnswer();
+  if (mode === 'speaking' && !isWow) showLiveAnswer();
   if (message) writeSpeechStatus($('speech-status'), message);
 }
 
 function showLiveAnswer(text = '') {
   const bubble = $('live-answer-bubble');
-  const value = String(text).trim().slice(0, 80);
+  const value = (isWow ? wowVisibleWords(text) : String(text)).trim().slice(0, isWow ? MAX_INTERVIEW_ANSWER : 80);
   const shouldEnter = bubble.hidden;
   const shouldShow = hasVisibleBubbleContent(value);
   bubble.hidden = !shouldShow;
@@ -1111,7 +1161,7 @@ function startGuideRecognition() {
     const heard = String(finalText || interim).trim().slice(0, MAX_INTERVIEW_ANSWER);
     if (heard) {
       showLiveAnswer(heard);
-      writeSpeechStatus($('speech-status'), `正在听：${heard}`);
+      writeSpeechStatus($('speech-status'), `正在听：${isWow ? wowVisibleWords(heard) : heard}`);
     }
     if (finalText.trim()) handleGuideUtterance(finalText.trim());
   };
@@ -1169,6 +1219,7 @@ async function stopGuideVoiceSession() {
 async function startGuideVoiceSession() {
   if (localPlanetPreview) return;
   if (guideVoiceSession.active || state.busy) return;
+  if (document.body.dataset.phase === 'ending') { setGuideVoiceUi('complete', '故事已经讲完，麦克风保持关闭'); return; }
   const Recognition = recognitionConstructor();
   if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
     document.documentElement.dataset.asrSource = 'unavailable';
@@ -1197,16 +1248,28 @@ async function startGuideVoiceSession() {
   setBusy(true);
   void playUISFX('start', { volume: 0.14 });
   trackAnalytics(`${story.analytics}_voice_enabled`, { depth: 2 });
+  if (document.body.dataset.phase === 'quest') {
+    setBusy(false);
+    guideVoiceSession.speaking = false;
+    resumeGuideListening({ preserveBubble: true, message: '麦克风回来啦，我们接着听刚才的故事' });
+    return;
+  }
   if (document.body.dataset.phase === 'cover' && story.onboarding === 'direct') {
     await beginDirectStory();
     return;
   }
   if (document.body.dataset.phase === 'cover') await beginInterview();
+  const currentQuestion = INTERVIEW_QUESTIONS[state.questionIndex];
+  if (document.body.dataset.phase !== 'interview' || !currentQuestion) {
+    setBusy(false); guideVoiceSession.speaking = false;
+    resumeGuideListening({ preserveBubble: true });
+    return;
+  }
   $('mic-button').disabled = false;
   presentDialogueSequence([
     { kind: 'guide', text: state.guide.hello, label: '先领一只小宠物', voice: state.guide.voice },
     {
-      kind: 'guide', text: INTERVIEW_QUESTIONS[0].question, label: '第一个问题', voice: state.guide.voice,
+      kind: 'guide', text: currentQuestion.question, label: '想听你说', voice: state.guide.voice,
       onShow: renderQuestion,
     },
   ], () => {
@@ -1354,6 +1417,7 @@ async function beginDirectStory() {
   state.petName = preset.name;
   state.petVoice = pickPetVoice();
   petRenderer.build(state.pet);
+  if (isWow) petRenderer.buildNpc(WOW_CAST[0], { scaleMultiplier: .92, offsetY: -1.02 });
   state.petIntroduced = false;
   await startQuest();
 }
@@ -1705,7 +1769,33 @@ function drawInvention(visual) {
   ctx.ellipse(320, 452, 205, 26, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  if (visual.kind === 'portal') {
+  if (visual.kind === 'key') {
+    // A key is an invention in the same Moon Plan sketch surface: the shared
+    // pencil paths, reveal animation and stored recipe all stay in use.
+    const shape = visual.shape || 'star';
+    sketchPath(ctx, [[310, 228], [310, 402], [370, 402], [370, 378], [336, 378], [336, 351], [357, 351], [357, 328], [336, 328], [336, 228]], primary, 8);
+    if (shape === 'moon') {
+      const points = [];
+      for (let i = 0; i <= 36; i++) { const a = -.85 + i / 36 * Math.PI * 1.57; points.push([320 + Math.cos(a) * 79, 176 + Math.sin(a) * 79]); }
+      for (let i = 0; i <= 24; i++) { const a = Math.PI * .75 - i / 24 * Math.PI * 1.25; points.push([355 + Math.cos(a) * 56, 152 + Math.sin(a) * 56]); }
+      sketchPath(ctx, points, primary, 7, true);
+    } else if (shape === 'heart') {
+      const points = Array.from({ length: 65 }, (_, i) => { const t = i / 64 * Math.PI * 2; return [320 + 4.8 * 16 * Math.sin(t) ** 3, 171 - 4.8 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))]; });
+      sketchPath(ctx, points, primary, 7, true);
+    } else if (shape === 'leaf') {
+      sketchPath(ctx, [[320, 92], [265, 131], [251, 181], [277, 218], [320, 241], [362, 212], [384, 166], [359, 121], [320, 92]], primary, 7, true);
+      sketchPath(ctx, [[320, 231], [312, 175], [320, 112]], accent, 4);
+    } else if (shape === 'cloud') {
+      sketchPath(ctx, [[250, 224], [219, 203], [213, 178], [227, 155], [255, 151], [265, 120], [285, 106], [312, 112], [332, 137], [354, 125], [380, 133], [389, 160], [415, 178], [419, 201], [400, 223], [250, 224]], primary, 7, true);
+    } else if (shape === 'fish') {
+      sketchEllipse(ctx, 304, 171, 80, 60, primary, primary);
+      sketchPath(ctx, [[381, 167], [420, 123], [420, 219], [381, 183]], primary, 7);
+      sketchEllipse(ctx, 269, 155, 6, 6, accent, accent);
+    } else {
+      const points = Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5; const r = i % 2 ? 42 : 88; return [320 + Math.cos(a) * r, 172 + Math.sin(a) * r]; });
+      sketchPath(ctx, points, primary, 7, true);
+    }
+  } else if (visual.kind === 'portal') {
     sketchEllipse(ctx, 320, 250, 155, 182, primary, accent);
     sketchEllipse(ctx, 320, 250, 108, 137, accent, primary);
     sketchPath(ctx, [[188, 410], [452, 410], [480, 438], [160, 438], [188, 410]], primary, 6, true);
@@ -1764,8 +1854,9 @@ function drawInvention(visual) {
 async function startQuest() {
   $('chapter-progress').hidden = false;
   $('backpack-button').hidden = false;
-  state.sceneIndex = 0;
-  await playTransition(() => renderScene(SCENES[0]));
+  if (!isWow) state.sceneIndex = 0;
+  if (isWow && state.wow.done) { await finishStory(); return; }
+  await playTransition(() => renderScene(SCENES[state.sceneIndex]));
 }
 
 function renderSceneCast(scene) {
@@ -1850,7 +1941,163 @@ function setSceneSpeaker(scene, speaker = 'npc') {
   requestAnimationFrame(() => requestAnimationFrame(anchorStageSpeech));
 }
 
+function saveWowProgress() {
+  if (writeWowProgress(state.wow)) return;
+  document.documentElement.dataset.wowStorage = 'unavailable';
+  toast('这台设备暂时无法保存，请在背包里下载旅程纪念册。');
+}
+
+function hydrateWowJourney() {
+  state.inventory = [...state.wow.props, ...state.wow.colors.map(color => `wow-color-${color.id}`)].map(id => ({ id, used: false }));
+  state.inventions = state.wow.entries.filter(entry => entry.kind === 'create').map(entry => ({ scene: entry.id, answer: entry.answer, visual: wowInvention(entry.visual, entry.chapter) }));
+  updateBackpack();
+  if (state.wow.entries.length) $('backpack-button').hidden = false;
+}
+
+function renderWowJourney() {
+  const notes = $('wow-journey-notes');
+  if (!notes) return;
+  notes.replaceChildren(...CHAPTERS.map(chapter => {
+    const entries = state.wow.entries.filter(entry => entry.chapter === chapter.number);
+    if (!entries.length) return null;
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); summary.textContent = `${chapter.title} · ${entries.length}句话`;
+    const list = document.createElement('ul');
+    entries.forEach(entry => { const item = document.createElement('li'); item.textContent = entry.answer; list.append(item); });
+    details.append(summary, list); return details;
+  }).filter(Boolean));
+}
+
+function updateWowAtmosphere(scene) {
+  const progress = wowFogProgress(state.wow, scene.chapter);
+  document.body.dataset.wowBeat = String(scene.wow.beatIndex);
+  document.body.dataset.wowChapter = String(scene.chapter);
+  document.body.dataset.wowMomo = scene.chapter === 1 && scene.wow.beatIndex < 3 ? 'hidden' : 'visible';
+  document.body.style.setProperty('--wow-fog-opacity', String(.56 * (1 - progress)));
+  document.body.style.setProperty('--wow-world-saturation', String(.18 + .82 * progress));
+  document.body.style.setProperty('--wow-world-brightness', String(.66 + .34 * progress));
+  $('wow-story-fog').dataset.progress = progress.toFixed(4);
+  $('wow-light-state').textContent = `这一章已有${Math.round(progress * scene.wow.beatCount)}句话被听见，灰灰雾随着发现慢慢散开。`;
+}
+
+async function renderWowScene(scene) {
+  state.busy = true;
+  updateWowAtmosphere(scene);
+  const previous = displayedStoryScene;
+  const newActor = !previous || previous.npc.templateId !== scene.npc.templateId;
+  const firstAppearance = scene.chapter === 1 && scene.wow.beatIndex === 3;
+  displayedStoryScene = scene;
+  leavePlanetStage();
+  renderStoryBackdrop(scene);
+  showPanel('quest-panel', 'quest');
+  updateChapterProgress(scene.chapter);
+  const chapter = CHAPTERS[scene.chapter - 1];
+  $('chapter-label').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${scene.wow.beatIndex + 1}/${scene.wow.beatCount} ${chapter.title}`;
+  $('scene-title').textContent = scene.name;
+  $('scene-objective').textContent = scene.objective;
+  $('choice-result').hidden = true;
+  $('reward-row').hidden = true;
+  $('npc-speech').hidden = true;
+  $('npc-name').textContent = scene.npc.name;
+  $('npc-wrap').setAttribute('aria-label', `触摸${scene.npc.name}`);
+  $('npc-wrap').setAttribute('aria-hidden', String(scene.chapter === 1 && scene.wow.beatIndex < 3));
+  $('npc-wrap').tabIndex = scene.chapter === 1 && scene.wow.beatIndex < 3 ? -1 : 0;
+  $('npc-wrap').dataset.templateId = scene.npc.templateId;
+  $('npc-companions').hidden = true;
+  if (newActor) renderSceneCast(scene);
+  if (newActor || firstAppearance) enterMainCharacter(scene);
+  else $('npc-wrap').hidden = false;
+  if (scene.chapter > 1) {
+    if ($('pet-stage').hidden) enterPet();
+  } else $('pet-stage').hidden = true;
+  state.wow.chapter = scene.chapter - 1;
+  state.wow.scene = scene.wow.beatIndex;
+  if (scene.wow.prop && !state.wow.props.includes(scene.wow.prop)) {
+    state.wow.props.push(scene.wow.prop);
+    collectItem(scene.wow.prop);
+  }
+  const invention = state.inventions.find(item => SCENES.find(beat => beat.id === item.scene)?.chapter === scene.chapter);
+  if (invention) drawInvention(invention.visual);
+  else $('story-invention').hidden = true;
+  updateWowAtmosphere(scene);
+  saveWowProgress();
+  setSceneSpeaker(scene, 'npc');
+  if (state.wow.pending?.id === scene.id) {
+    showLiveAnswer(state.wow.pending.answer);
+    presentDialogueSequence([{ kind: 'npc', text: state.wow.pending.reaction, voice: scene.npc.voice }], () => advanceWowScene(scene));
+    return;
+  }
+  const expand = value => value.replaceAll('{firstWords}', state.wow.firstWords || '你好，我在这里。');
+  presentDialogueSequence([
+    { kind: 'npc', text: expand(scene.wow.text), voice: scene.npc.voice, delayBefore: newActor || firstAppearance ? 580 : 0 },
+    { kind: 'npc', text: scene.dialogue, voice: scene.npc.voice },
+  ], () => {
+    state.busy = false;
+    guideVoiceSession.processing = false;
+    guideVoiceSession.speaking = false;
+    if (localPlanetPreview) {
+      setGuideVoiceUi('paused', '本地绘本预览，不打开麦克风、不请求语音');
+      document.documentElement.dataset.planetPreviewReady = scene.id;
+    } else if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true, message: '我在听，你可以慢慢说' });
+  });
+}
+
+async function advanceWowScene(scene) {
+  guideVoiceSession.processing = false;
+  guideVoiceSession.speaking = false;
+  state.busy = false;
+  state.wow.pending = null;
+  if (scene.final) { saveWowProgress(); void playTransition(finishStory); return; }
+  state.sceneIndex += 1;
+  const next = SCENES[state.sceneIndex];
+  state.wow.chapter = next.chapter - 1;
+  state.wow.scene = next.wow.beatIndex;
+  saveWowProgress();
+  if (next.sceneId !== scene.sceneId || next.chapter !== scene.chapter) void playTransition(() => renderScene(next));
+  else void renderScene(next);
+}
+
+async function submitWowAnswer(scene, answer) {
+  state.busy = true;
+  showLiveAnswer(answer);
+  setGuideVoiceUi('thinking', `${scene.npc.name}正在认真听你的想法`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 13000);
+  const result = await requestWowTurn(scene, answer, controller.signal);
+  clearTimeout(timer);
+  if (SCENES[state.sceneIndex]?.id !== scene.id) return;
+  if (!result.accepted) {
+    presentDialogueSequence([{ kind: 'npc', text: result.reaction, voice: scene.npc.voice }], () => {
+      state.busy = false; guideVoiceSession.processing = false; guideVoiceSession.speaking = false;
+      if (guideVoiceSession.active && !guideVoiceSession.manualPause) resumeGuideListening({ preserveBubble: true, message: '不用着急，我会在这里等你' });
+    });
+    return;
+  }
+  const entry = { id: scene.id, chapter: scene.chapter, kind: scene.wow.kind, answer, reaction: result.reaction, source: result.source, visual: result.visual };
+  state.wow.entries = [...state.wow.entries.filter(item => item.id !== entry.id), entry];
+  state.wow.pending = entry;
+  if (!state.wow.firstWords) state.wow.firstWords = answer;
+  if (scene.wow.kind === 'create') {
+    const visual = wowInvention(result.visual, scene.chapter);
+    state.inventions.push({ scene: scene.id, answer, visual });
+    drawInvention(visual);
+  }
+  if (scene.reward && !state.wow.colors.some(color => color.id === scene.chapter)) {
+    state.wow.colors.push({ id: scene.chapter, color: scene.wow.color, name: scene.wow.colorName });
+    collectItem(scene.reward);
+  }
+  saveWowProgress();
+  updateWowAtmosphere(scene);
+  npcRenderer.react('happy');
+  document.documentElement.dataset.storyAi = result.source === 'ai' ? 'wow-ai' : 'deterministic-fallback';
+  $('choice-result').hidden = false;
+  $('result-copy').hidden = false;
+  $('result-copy').textContent = result.source === 'ai' ? '你的想法被听见了。' : '这次由本地故事接住你的想法。';
+  presentDialogueSequence([{ kind: 'npc', text: result.reaction, voice: scene.npc.voice, onShow: () => setSceneSpeaker(scene, 'npc') }], () => advanceWowScene(scene));
+}
+
 async function renderScene(scene) {
+  if (scene.mode === 'wow') { await renderWowScene(scene); return; }
   state.busy = true;
   releasePlanetActors();
   displayedStoryScene = scene;
@@ -2012,6 +2259,7 @@ async function submitSceneAnswer(raw) {
     return;
   }
   const scene = SCENES[state.sceneIndex];
+  if (scene.mode === 'wow') { await submitWowAnswer(scene, answer); return; }
   setSceneSpeaker(scene, 'npc');
   setBubble('npc', `我听见了“${answer.slice(0, 18)}”`, '正在想');
   setGuideVoiceUi('thinking', `${scene.npc.name}正在理解你想做什么`);
@@ -2143,9 +2391,16 @@ async function finishStory() {
   $('npc-wrap').hidden = true;
   $('npc-companions').hidden = true;
   $('npc-speech').hidden = true;
-  updateChapterProgress(4);
+  updateChapterProgress(isWow ? 7 : 4);
   showPanel('ending-panel', 'ending');
-  if (story.slug === 'moon') {
+  if (isWow) {
+    state.wow.done = true;
+    saveWowProgress();
+    $('ending-copy').textContent = `你的话走过了六个世界，留下${state.wow.colors.length}种颜色和${state.inventions.length}把钥匙。它们都收在这次旅程里。`;
+    $('pet-ending-line').textContent = `“${state.wow.firstWords}”——这是我们一直记得的第一句话。`;
+    $('ending-memory').replaceChildren(...state.wow.entries.filter(entry => entry.kind === 'create').map((entry, index) => createUserInputBubble(entry.answer, `wow-ending-${index}`)));
+    $('save-ending').textContent = '下载我的旅程纪念册';
+  } else if (story.slug === 'moon') {
     const names = state.inventions.map(item => item.visual?.name).filter(Boolean);
     $('ending-copy').textContent = `你和${state.petName}从山丘出发，绕到海底、巨人口袋和云层，最后抵达月球。${names.length ? `一路造过：${names.join('、')}。` : ''}每次偏航以后，你都没有丢掉最初的目标。`;
     $('pet-ending-line').textContent = `${state.petName}说：“${story.ending.petLine}”`;
@@ -2160,12 +2415,13 @@ async function finishStory() {
     )));
   }
   petRenderer.react('happy');
-  showPetThought(story.slug === 'moon' ? '登月计划完成。我们的发明也一起到啦！' : '豆豆到家啦！它正在门口向大家摇尾巴。');
+  showPetThought(isWow ? story.ending.petLine : story.slug === 'moon' ? '登月计划完成。我们的发明也一起到啦！' : '豆豆到家啦！它正在门口向大家摇尾巴。');
   setGuideVoiceUi('complete', '故事讲完了，麦克风已经安静关闭');
   void playUISFX('achievement');
 }
 
 function saveEnding() {
+  if (isWow) { downloadWowJourney(state.wow); return; }
   const record = {
     storyId: STORY_ID,
     completedAt: new Date().toISOString(),
@@ -2259,7 +2515,7 @@ $('ink-planet-reset').addEventListener('click', event => {
   event.stopPropagation(); inkPlanetStage?.resetView(); syncPlanetHotspots();
 });
 $('ink-planet-stage').addEventListener('inkplanet:viewchange', syncPlanetHotspots);
-$('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
+$('backpack-button').addEventListener('click', () => { if (isWow) renderWowJourney(); $('backpack-dialog').showModal(); });
 $('close-backpack').addEventListener('click', () => $('backpack-dialog').close());
 $('backpack-dialog').addEventListener('click', event => {
   if (event.target === $('backpack-dialog')) {
@@ -2282,7 +2538,7 @@ const stageSpeechResize = typeof ResizeObserver === 'function' ? new ResizeObser
 stageSpeechResize?.observe($('npc-speech'));
 const planetUiResize = typeof ResizeObserver === 'function' ? new ResizeObserver(updatePlanetViewport) : null;
 planetUiResize?.observe($('quest-panel')); planetUiResize?.observe($('voice-dock'));
-addEventListener('resize', () => { requestAnimationFrame(anchorStageSpeech); updatePlanetViewport(); }, { passive: true });
+addEventListener('resize', () => { requestAnimationFrame(anchorStageSpeech); updatePlanetViewport(); if (isWow) renderStoryBackdrop(displayedStoryScene || SCENES[0]); }, { passive: true });
 addEventListener('pagehide', event => {
   stopRecognition();
   stopGuideVoiceSession();
@@ -2300,11 +2556,12 @@ addEventListener('storage', event => {
   if (event.key === RENDER_STYLE_STORAGE_KEY) location.reload();
 });
 updateBackpack();
+if (isWow) hydrateWowJourney();
 setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
 document.documentElement.dataset.storyReady = 'true';
 window.__storyV2 = {
   story, state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, npcRenderer, companionRenderers, renderScene, renderStoryBackdrop, collectItem, finishStory,
-  beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
+  beginInterview, beginDirectStory, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   resolveDirectorTurn, drawInvention, setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
   get inkPlanetStage() { return inkPlanetStage; }, localPlanetPreview,
 };

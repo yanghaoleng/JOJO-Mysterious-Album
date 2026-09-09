@@ -1,4 +1,5 @@
 import { storyCharacterTemplateById } from './story-character-templates.js';
+import { WOW_BLUEPRINT } from './wow-story-adapter.js';
 
 const doudouGuide = storyCharacterTemplateById('river-otter');
 const moonGuide = storyCharacterTemplateById('book-owl');
@@ -248,6 +249,7 @@ const moonScenes = [
 ];
 
 export const STORIES = {
+  wow: WOW_BLUEPRINT,
   doudou: {
     ...STORY_CATALOG[0], analytics: 'doudou', onboarding: 'interview',
     guide: {

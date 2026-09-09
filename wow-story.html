@@ -2,49 +2,178 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f9f8f3">
-  <title>第一束好奇光 · 哇呜星故事</title>
-  <meta name="description" content="跟着自己的第一句话，陪六位MOMO找回六种颜色。">
-  <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/src/wow-story.css?v=20260909">
-  <script type="module" src="/src/wow-story.js?v=20260909"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9e3d3">
+  <title>哇呜！第一束好奇光 | 萌萌星的奇妙图鉴</title>
+  <meta name="description" content="在原版绘本世界里，听见鼓鼓，和项目里的伙伴一起走过六个世界。">
+  <link rel="icon" href="./favicon.ico?v=20260829-soft-corner" sizes="any">
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260829-soft-corner">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
+  <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260828-picturebook-alpha">
+  <link rel="preload" as="image" type="image/webp" href="./assets/story/covers/doudou-home.webp?v=20260901-doudou">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260909-scene-3d-switch">
+  <link rel="stylesheet" href="./src/wow-shared-story.css?v=20260909-original-2d">
+  <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
+  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
+  <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-no-icon-clipping">
 </head>
-<body>
+<body data-story-default="wow" data-phase="cover" data-place="meadow" data-analytics-page="doudou">
   <header class="story-header">
-    <a class="back" href="/wow" aria-label="返回故事介绍">← <span>哇呜星</span></a>
-    <div class="chapter-heading"><p id="chapter-number">第一章</p><h1 id="chapter-title">是谁在咚咚响？</h1></div>
-    <button class="small-button" id="open-book" type="button">我的旅程</button>
+    <nav id="story-navigation"></nav>
+    <div class="chapter-progress" id="chapter-progress" aria-label="章节进度" hidden>
+      <span data-chapter-dot="1">遇见豆豆</span>
+      <span data-chapter-dot="2">陪它走</span>
+      <span data-chapter-dot="3">平安到家</span>
+    </div>
   </header>
-  <main id="story-main">
-    <p id="storage-warning" class="storage-warning" role="status" hidden>这台设备暂时无法保存进度。离开前，请在“我的旅程”中下载纪念册。</p>
-    <div class="story-progress"><span id="place">咕噜咕噜肚子星</span><span id="scene-count">1 / 10</span><progress id="progress" max="41" value="0" aria-label="故事进度"></progress></div>
-    <section class="experience" aria-label="互动故事">
-      <div class="scene-panel">
-        <canvas id="wow-stage" width="1100" height="650" role="img" aria-label="灰色小窗里传来轻轻的鼓声"></canvas>
-        <div class="scene-caption"><span id="stage-note">有一个小小的声音，正在等你。</span><span id="color-count">0 / 6 种颜色</span></div>
-        <div id="inventory" class="inventory" aria-label="我的道具"></div>
+
+  <main id="story-world">
+    <section class="world-stage" id="world-stage" aria-label="横版故事舞台，轻触空白处可以让伙伴走过去">
+      <canvas class="story-scene-backdrop" id="story-scene-backdrop" width="1024" height="768" aria-hidden="true"></canvas>
+      <div class="ink-planet-stage" id="ink-planet-stage" hidden></div>
+      <div class="ink-planet-controls" id="ink-planet-controls" hidden>
+        <button id="ink-planet-reset" type="button" aria-label="复位小星球视角">复位</button>
+        <span id="ink-planet-hint">拖动看一看<br>双指缩放</span>
       </div>
-      <section class="dialogue-panel" aria-labelledby="speaker">
-        <div class="speaker-row"><span id="speaker">星星窗</span><button id="read-aloud" type="button" class="text-button" aria-label="朗读当前故事">听一听</button></div>
-        <p class="story-line" id="story-line" aria-live="polite"></p>
-        <div id="response-area">
-          <form id="answer-form">
-            <label for="answer" id="prompt">你想对小窗说的第一句话是什么？</label>
-            <div class="answer-field"><input id="answer" name="answer" type="text" maxlength="160" autocomplete="off" placeholder="你好，我在这里……"><button id="send-answer" type="submit" aria-label="寄出这句话">寄出 →</button></div>
-          </form>
-          <div class="voice-row"><button id="record" class="voice-button" type="button"><i data-lucide="mic" aria-hidden="true"></i><span>用声音说</span></button><span id="voice-note">也可以打字，或试试下面的说法。</span></div>
-          <div id="suggestions" class="suggestions" aria-label="可以这样说"></div>
-          <p id="status" role="status" aria-live="polite"></p>
+
+      <div class="npc-speech stage-speech character-bubble" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="npc" data-bubble-max-chars="15" hidden>
+        <b id="npc-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="npc"></b>
+        <span class="character-bubble__tail" aria-hidden="true"></span>
+      </div>
+
+      <div class="npc-wrap" id="npc-wrap" role="button" tabindex="0" aria-label="触摸当前故事角色" hidden>
+        <div class="npc-portal" aria-hidden="true"></div>
+        <div class="npc-character" id="npc-character" aria-hidden="true">
+          <canvas id="npc-canvas"></canvas>
         </div>
-        <div id="reply" class="reply" hidden><p class="your-words" id="your-words"></p><p id="reaction" aria-live="polite"></p><span id="response-source"></span><button id="next-scene" class="primary-button" type="button">继续听故事 →</button></div>
-        <div class="quiet-row"><span>不用想好才开口，也可以歇一会儿。</span><button id="rest" type="button" class="text-button">歇一会儿</button></div>
-      </section>
+        <b id="npc-name">河湾小水獭</b>
+      </div>
+
+      <div class="npc-companions" id="npc-companions" aria-label="场景里的其他角色" hidden>
+        <button class="npc-companion" type="button" data-companion="0" aria-label="触摸场景角色一">
+          <canvas id="npc-companion-canvas-0" aria-hidden="true"></canvas><span></span>
+        </button>
+        <button class="npc-companion" type="button" data-companion="1" aria-label="触摸场景角色二">
+          <canvas id="npc-companion-canvas-1" aria-hidden="true"></canvas><span></span>
+        </button>
+      </div>
+
+      <div class="pet-stage" id="pet-stage" role="button" tabindex="0" aria-label="触摸你的小伙伴" hidden>
+        <canvas id="pet-canvas" aria-label="根据回答生成的小宠物"></canvas>
+        <div class="pet-thought character-bubble" id="pet-thought" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="pet" data-bubble-max-chars="15" hidden>
+          <b id="pet-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="pet"></b>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <figure class="story-invention" id="story-invention" hidden aria-label="根据你的办法画出的发明">
+        <canvas id="story-invention-canvas" width="640" height="520" aria-hidden="true"></canvas>
+        <figcaption id="story-invention-name"></figcaption>
+      </figure>
+    </section>
+
+    <section class="paper-panel cover-panel" id="cover-panel" aria-labelledby="cover-title">
+      <img class="cover-illustration" id="cover-illustration" src="./assets/story/covers/doudou-home.webp?v=20260901-doudou" alt="红苹果树、小路、小桥和远处红屋顶房子的简笔画，草丛里有一个模糊的小动物轮廓">
+      <div class="cover-text">
+        <h1 id="cover-title">送豆豆回家</h1>
+        <p class="cover-copy" id="cover-copy">一只迷路的小狗躲在草丛里，等着有人陪它回家。</p>
+        <a href="./story-npcs.html" style="display:inline-block;margin-top:12px;font-size:13px;color:inherit;text-underline-offset:4px">认识故事里的朋友 ↗</a>
+      </div>
+    </section>
+    <p class="sr-only" id="story-privacy">语音只在获得麦克风授权后开始，经本项目服务端识别且不保存。故事不会询问姓名、学校、住址或精确生日。</p>
+
+    <section class="conversation-panel" id="interview-panel" hidden aria-labelledby="interview-question" data-voice-state="setup">
+      <div class="guide-encounter">
+        <div class="guide-speech character-bubble" id="guide-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="guide" data-bubble-max-chars="15" data-mode="question">
+          <h2 id="interview-question" class="character-bubble__text" data-calligraph-bubble data-bubble-key="guide">你希望伙伴更像哪种动物？像小兔子、小狗，还是小猫？</h2>
+          <span class="character-bubble__tail" aria-hidden="true"></span>
+        </div>
+
+        <div class="guide-figure" id="guide-figure" role="button" tabindex="0" aria-label="触摸河湾小水獭">
+          <canvas id="guide-canvas" aria-label="角色模拟器里的河湾小水獭"></canvas>
+          <div class="guide-nameplate">
+            <b id="guide-name">河湾小水獭</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="heard-notes" id="heard-notes" aria-label="图鉴员记住的偏好"></div>
+    </section>
+
+    <section class="paper-panel ritual-panel" id="ritual-panel" hidden aria-labelledby="ritual-title">
+      <p class="section-label">一起照顾豆豆的小伙伴画好啦</p>
+      <h2 id="ritual-title">这是今天陪你出发的小伙伴</h2>
+      <p id="ritual-copy">它照着你的三个具体选择，长出了特别的样子。</p>
+      <div class="voice-seals" aria-label="宠物配方的三个部分">
+        <span data-seal="name">形</span>
+        <span data-seal="listen">色</span>
+        <span data-seal="voice">陪</span>
+      </div>
+      <p class="ritual-status" id="ritual-status" role="status">小伙伴会先打个招呼，然后一起出发。</p>
+    </section>
+
+    <section class="paper-panel quest-panel" id="quest-panel" hidden aria-labelledby="scene-title">
+      <div class="scene-heading">
+        <div>
+          <p class="section-label" id="chapter-label">第一章 遇见豆豆</p>
+          <h2 id="scene-title">红苹果园</h2>
+        </div>
+        <p id="scene-objective">先照顾好躲在草丛里的豆豆。</p>
+      </div>
+      <div class="choice-result" id="choice-result" hidden aria-live="polite">
+        <p id="result-copy"></p>
+        <div class="reward-row" id="reward-row" hidden>
+          <img id="reward-image" alt="">
+          <div><b id="reward-name"></b><span id="reward-short"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="paper-panel ending-panel" id="ending-panel" hidden aria-labelledby="ending-title">
+      <p class="section-label" id="ending-label">你把豆豆平安送回家啦</p>
+      <h2 id="ending-title">豆豆到家了</h2>
+      <p class="ending-copy" id="ending-copy"></p>
+      <blockquote id="pet-ending-line"></blockquote>
+      <div class="ending-memory" id="ending-memory"></div>
+      <div class="ending-actions">
+        <button class="primary-action" id="save-ending" type="button">收进这台设备的图鉴</button>
+      </div>
+    </section>
+
+    <section class="voice-dock" id="voice-dock" data-voice-state="setup" aria-label="故事语音控制">
+      <div class="live-answer-bubble character-bubble user-input-bubble" id="live-answer-bubble" hidden aria-live="polite" aria-atomic="true" data-bubble-shell data-bubble-key="story-user" data-bubble-max-chars="18">
+        <b id="live-answer-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="story-user"></b>
+        <span class="character-bubble__tail" aria-hidden="true"></span>
+      </div>
+      <button class="mic-button guide-mic voice-input-control" id="mic-button" type="button" data-uisfx="none" data-state="setup" aria-pressed="false" aria-label="允许麦克风并开始故事">
+        <span class="voice-input-control__start"><i data-lucide="mic" aria-hidden="true"></i><span>开始对话</span></span>
+        <span class="voice-input-control__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="voice-input-control__thinking" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </button>
     </section>
   </main>
-  <dialog id="voice-consent" aria-labelledby="consent-title"><form method="dialog"><h2 id="consent-title">和大人一起，打开收音机</h2><p>点一下开始说话，再点一下结束。声音会发送到本站的语音服务转成文字，不保存录音。寄出前可以修改文字。</p><p>故事中的文字会交给 AI 回应；旅程记录只留在这台设备。请不要说真实姓名、学校、住址或电话。</p><div class="dialog-actions"><button value="cancel" class="small-button">先用文字</button><button value="allow" class="primary-button">同意并打开麦克风</button></div></form></dialog>
-  <dialog id="book-dialog" aria-labelledby="book-title"><div class="dialog-top"><h2 id="book-title">我的哇呜旅程</h2><button id="close-book" class="text-button" type="button">关闭</button></div><p class="book-intro">你的原话、自己造的钥匙、一起找回的颜色。保存在这台设备。</p><div id="book-content"></div><div class="dialog-actions"><button id="download-book" class="primary-button" type="button">下载旅程纪念册</button><button id="restart" class="text-button" type="button">重新开始</button></div><p id="download-status" role="status"></p><div id="restart-confirm" hidden><p>重新开始会清除这台设备上的本次旅程。可以先下载纪念册。</p><button id="confirm-restart" class="small-button" type="button">清除并重新开始</button><button id="cancel-restart" class="text-button" type="button">保留旅程</button></div></dialog>
-  <dialog id="rest-dialog"><h2>小灯会留着光，等你回来。</h2><p>不用一直说话。已经找到的颜色都会留下。</p><button id="resume" class="primary-button" type="button">我回来啦</button><a class="text-button" href="/wow">回故事介绍</a></dialog>
-  <noscript><p class="noscript">这段互动故事需要开启 JavaScript。也可以<a href="/docs/WOW-STORYLINE.md">阅读完整故事脚本</a>。</p></noscript>
+
+  <button class="backpack-button" id="backpack-button" type="button" hidden aria-haspopup="dialog" data-uisfx="open">
+    <span class="backpack-mark brush-icon brush-icon-backpack" aria-hidden="true"></span>
+    <span class="backpack-label">背包</span>
+    <span class="backpack-quick-items" id="backpack-quick-items" aria-hidden="true"></span>
+  </button>
+
+  <dialog class="backpack-dialog" id="backpack-dialog" aria-labelledby="backpack-title">
+    <div class="dialog-heading">
+      <div>
+        <p class="section-label">一路带着的东西</p>
+        <h2 id="backpack-title">小小背包</h2>
+      </div>
+      <button class="dialog-close" id="close-backpack" type="button" aria-label="关闭背包">关</button>
+    </div>
+    <div class="inventory-list" id="inventory-list"></div>
+    <p class="empty-inventory" id="empty-inventory">背包还是空的。第一件东西会在纸上地面出现。</p>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+  <script type="module" src="./src/story-v2.js?v=20260909-wow-original-2d"></script>
 </body>
 </html>

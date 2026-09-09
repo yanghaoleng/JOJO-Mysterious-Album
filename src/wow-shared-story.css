@@ -1,0 +1,57 @@
+/* Only WOW's story-specific atmosphere; layout and controls are story-v2. */
+body[data-story="wow"] .chapter-progress {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: min(570px, calc(100vw - 170px));
+  background: #eee7d7ed;
+}
+body[data-story="wow"] .chapter-progress span { min-width: 0; padding-inline: 3px; }
+body[data-story="wow"][data-phase="quest"] .story-scene-backdrop {
+  filter: saturate(var(--wow-world-saturation, .18)) brightness(var(--wow-world-brightness, .66)) contrast(1.12);
+  transition: filter 1000ms ease;
+}
+#wow-story-fog {
+  position: absolute;
+  inset: -8%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 56%, #72808daa 0 15%, transparent 56%),
+    radial-gradient(ellipse at 86% 42%, #647382a8 0 18%, transparent 57%),
+    radial-gradient(ellipse at 48% 90%, #72818da8 0 20%, transparent 66%),
+    linear-gradient(110deg, #34475f72, #43576b50);
+  filter: blur(13px);
+  opacity: var(--wow-fog-opacity, .78);
+  transition: opacity 1300ms ease;
+}
+body[data-story="wow"]:not([data-phase="quest"]) #wow-story-fog { display: none; }
+body[data-story="wow"][data-wow-momo="hidden"] #npc-wrap { pointer-events: none; }
+body[data-story="wow"][data-wow-momo="hidden"] #npc-character,
+body[data-story="wow"][data-wow-momo="hidden"] #npc-name { opacity: 0; }
+body[data-story="wow"][data-wow-beat="2"][data-wow-momo="hidden"] #npc-character {
+  opacity: .24;
+  clip-path: inset(0 0 68% 0);
+}
+body[data-story="wow"] #npc-character { transition: opacity 700ms ease; }
+body[data-story="wow"] .story-invention { z-index: 4; }
+body[data-story="wow"] .story-invention[data-motion="float"] canvas { animation: invention-drift 4.2s ease-in-out infinite alternate; }
+.wow-journey-actions { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.wow-journey-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+#wow-journey-notes details { border-top: 1px solid var(--line); padding: 12px 0; font-size: 13px; }
+#wow-journey-notes summary { cursor: pointer; padding: 8px 0; }
+#wow-journey-notes li { line-height: 1.8; overflow-wrap: anywhere; }
+body[data-story="wow"] .choice-result > p { font-size: 11px; color: var(--ink-soft); }
+body[data-story="wow"] .quest-panel { text-shadow: 0 1px 7px #fffce6b5; }
+body[data-story="wow"] .quest-panel .scene-heading { background: linear-gradient(90deg, #f7f1e4ed, #f7f1e4ab 72%, transparent); padding: 7px 8px; margin-left: -8px; }
+body[data-story="wow"] .live-answer-bubble { max-width: min(360px, calc(100vw - 28px)); }
+@media (max-width: 720px) {
+  body[data-story="wow"] .chapter-progress { width: auto; gap: 3px; }
+  body[data-story="wow"] .chapter-progress span { font-size: 10px; }
+  body[data-story="wow"] .quest-panel .scene-heading h2 { font-size: 21px; }
+  body[data-story="wow"] .quest-panel .section-label { font-size: 10px; line-height: 1.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #wow-story-fog,
+  body[data-story="wow"] #npc-character,
+  body[data-story="wow"] .story-scene-backdrop { transition: none; }
+  body[data-story="wow"] .story-invention canvas { animation: none !important; }
+}

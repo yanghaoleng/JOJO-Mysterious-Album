@@ -103,11 +103,12 @@ export class SeedRealtimeSpeech {
     session.resolve?.(false);
   }
 
-  begin(voice, { onSegment = () => {}, npcId = '' } = {}) {
+  begin(voice, { onSegment = () => {}, npcId = '', speechProfile = '' } = {}) {
     this.stop();
     const session = {
       voice,
       npcId: typeof npcId === 'string' ? npcId : '',
+      speechProfile: speechProfile === 'wow-child' ? speechProfile : '',
       pending: '',
       queue: [],
       closed: false,
@@ -186,7 +187,7 @@ export class SeedRealtimeSpeech {
       response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' },
-        body: JSON.stringify({ text, voice: session.voice, realtime: true, ...(session.npcId ? { npcId: session.npcId } : {}) }),
+        body: JSON.stringify({ text, voice: session.voice, realtime: true, ...(session.npcId ? { npcId: session.npcId } : {}), ...(session.speechProfile ? { speechProfile: session.speechProfile } : {}) }),
         signal: session.controller.signal,
       });
       if (!response.ok) throw new Error(`tts_${response.status}`);
