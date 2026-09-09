@@ -12,10 +12,16 @@ import { WOW_PROPS, wowVisualState } from './wow-story.js';
 import { createWowPresentation } from './wow-visuals.js';
 import { chapterDecorationProgress, chapterLayoutOptions, newJourneySeed, savedJourneySeed } from './journey-layout.js';
 import { ReadAlong } from './read-along.js';
+import { createVoiceInput } from '../src/voice-input-control.js';
 
 const $ = id => document.getElementById(id);
 const reading = new ReadAlong($('speech-text'));
 const endingReading = new ReadAlong($('ending-line'));
+const voiceInput = createVoiceInput({
+  button: $('mic-button'), transcript: $('heard'), status: $('voice-feedback'),
+  sanitize: text => PRIVATE.test(text) ? '听见你的话了，个人信息就不展示啦。' : text,
+});
+let voiceTransport = 'off', voiceCapture = null;
 let spokenLineVersion = 0;
 const STORAGE = 'jma.dev.clay.v1';
 const COLORS = [
@@ -78,7 +84,7 @@ async function handleWowAnswer(raw) {
   const fallback = localResult(payload);
   if (!fallback.accepted) { notify(fallback.reaction); return; }
   busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
-  $('answer-dock').hidden = true;
+  renderVoiceInput();
   $('speaker').textContent = scene.cast[0].name;
   reading.setText(scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
   syncWowPresentation(true);
@@ -112,31 +118,53 @@ function downloadWowMemory() {
 const voice = new StoryVoice({
   speechProfile: () => story?.id === 'wow' ? 'wow-child' : '',
   onState(value) {
-    $('mic-button').dataset.state = value;
-    $('mic-button').setAttribute('aria-pressed', String(Boolean(voice.enabled || voice.opening)));
-    const labels = { requesting: '正在打开', listening: '我在听', thinking: '想一想', speaking: '听它说', off: voice.enabled ? '继续说说' : '和它说说' };
-    $('mic-label').textContent = labels[value] || labels.off;
-    $('mic-button').setAttribute('aria-label', voice.enabled || voice.opening ? '暂停麦克风' : '打开麦克风回答');
+    voiceTransport = value;
+    renderVoiceInput();
   },
   onAnswer: text => handleAnswer(text, 'voice'),
-  onLevel: level => $('mic-button').style.setProperty('--level', level.toFixed(2)),
+  onLevel: level => voiceInput.setLevel(level),
   onCapture: update => showVoiceFeedback(update),
   onError: message => notify(message),
 });
 
-function showVoiceFeedback({ state: captureState, text, message }) {
-  const labels = {
-    listening: '麦克风已打开，等你说话', receiving: '收到声音了，继续说吧',
-    transcribing: '声音已收到，正在转成文字…', transcript: '已识别，伙伴正在听你的想法',
-    quiet: '暂时没有检测到说话声，可以靠近一点再试', paused: '麦克风已暂停',
-  };
-  const el = $('voice-feedback');
-  el.textContent = message || labels[captureState] || '';
-  el.dataset.state = captureState;
-  el.hidden = !el.textContent;
-  if (text) { $('heard').textContent = PRIVATE.test(text) ? '听见你的话了，个人信息就不展示啦。' : `你说：“${text}”`; $('heard').hidden = false; }
-  if (captureState === 'transcribing') $('mic-label').textContent = '正在转写';
-  if (captureState === 'receiving') $('mic-label').textContent = '听到声音';
+const CAPTURE_LABELS = {
+  listening: '麦克风已打开，等你说话', receiving: '收到声音了，继续说吧',
+  transcribing: '声音已收到，正在转成文字…', transcript: '已识别，伙伴正在听你的想法',
+  quiet: '暂时没有检测到说话声，可以靠近一点再试', paused: '麦克风已暂停',
+};
+function renderVoiceInput() {
+  const capture = voiceCapture?.state;
+  const persistent = ['error', 'quiet', 'short', 'empty', 'paused'].includes(capture);
+  const answerable = ['question', 'setup'].includes(phase) && !busy;
+  const mode = persistent ? capture
+    : voiceTransport === 'requesting' ? 'requesting'
+      : voiceTransport === 'speaking' ? 'speaking'
+        : capture === 'transcribing' ? 'transcribing'
+          : voiceTransport === 'thinking' || busy ? 'thinking'
+            : voiceTransport === 'listening' ? capture === 'receiving' ? 'receiving' : 'listening'
+              : voice.enabled ? 'paused' : 'setup';
+  voiceInput.setState(mode, {
+    message: voiceCapture?.message || CAPTURE_LABELS[capture] || '',
+    disabled: !answerable || ['requesting', 'thinking', 'speaking'].includes(mode),
+    pressed: Boolean(voice.enabled || voice.opening),
+  });
+  // Capture diagnostics survive generic transport off/listening callbacks.
+  // In particular, a successful transcript is not an ASR error or a new input.
+  $('voice-feedback').dataset.state = capture || mode;
+  $('mic-button').dataset.captureState = capture || '';
+  $('answer-dock').hidden = document.body.dataset.view !== 'story' || !['question', 'setup', 'responding', 'narrating', 'transition'].includes(phase);
+  $('reply-more').hidden = !answerable;
+  scheduleFraming();
+}
+function resetVoiceInput() {
+  voiceCapture = null; voiceTransport = 'off'; voiceInput.reset();
+  delete $('mic-button').dataset.captureState;
+}
+function showVoiceFeedback(update) {
+  voiceCapture = update;
+  if (update.state === 'receiving') voiceInput.clearTranscript();
+  if (update.text) voiceInput.setTranscript(update.text);
+  renderVoiceInput();
 }
 
 function resumeListening() {
@@ -260,7 +288,7 @@ function showView(view) {
 function route() {
   epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
   spokenLineVersion++; reading.clear(); endingReading.clear();
-  $('heard').hidden = true; $('voice-feedback').hidden = true;
+  resetVoiceInput();
   setStoryMenu(false);
   $('transition').classList.remove('closed');
   if ($('bag-dialog').open) $('bag-dialog').close();
@@ -277,7 +305,7 @@ function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ t
 
 function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
-  $('heard').hidden = true; $('voice-feedback').hidden = true;
+  resetVoiceInput();
   story = selected; state = savedState() || defaultState(); phase = 'ready';
   if (story.id === 'wow') persist();
   showView('story');
@@ -332,7 +360,7 @@ async function startStory() {
 }
 
 async function setupQuestion() {
-  phase = 'narrating'; busy = true; $('answer-dock').hidden = true;
+  phase = 'narrating'; busy = true; renderVoiceInput();
   $('chapter-name').textContent = '认识今天的小伙伴';
   $('scene-title').textContent = story.title;
   $('objective').textContent = '三个小选择，一位新朋友。';
@@ -346,12 +374,14 @@ async function setupQuestion() {
 
 function renderAnswerOptions() {
   document.body.dataset.reply = shownText ? 'text' : shownChoices ? 'choices' : 'none';
-  $('answer-dock').hidden = !['question', 'setup'].includes(phase);
+  renderVoiceInput();
   $('choices').replaceChildren();
   pendingChoices.forEach(choice => {
     const button = document.createElement('button'); button.className = 'choice-button';
     button.dataset.choice = choice.id; button.textContent = choice.label;
-    button.addEventListener('click', () => choose(choice)); $('choices').append(button);
+    button.addEventListener('click', () => {
+      voiceCapture = null; voiceInput.setTranscript(choice.label); choose(choice);
+    }); $('choices').append(button);
   });
   $('choices').hidden = !shownChoices;
   $('reply-options').hidden = !replyOpen;
@@ -370,7 +400,7 @@ async function choose(choice, customResult) {
   if (busy || !['question', 'setup'].includes(phase)) return;
   void voice.unlock();
   const wasSetup = phase === 'setup', token = epoch;
-  busy = true; phase = 'responding'; voice.listen(false); $('answer-dock').hidden = true;
+  busy = true; phase = 'responding'; voice.listen(false); renderVoiceInput();
   setReplyMode(null);
   if (wasSetup) {
     let response;
@@ -405,7 +435,7 @@ async function enterScene(index) {
   const keepWorld = sameChapter && mountedStoryScene.world === scene.world && stage.worldId === scene.world;
   const circularTransition = !sameChapter;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  busy = true; phase = 'transition'; voice.listen(false); $('answer-dock').hidden = true;
+  busy = true; phase = 'transition'; voice.listen(false); renderVoiceInput();
   if (circularTransition) {
     $('transition').classList.add('closed');
     await wait(reduced ? 0 : 540);
@@ -460,7 +490,8 @@ async function handleAnswer(raw, source = 'text') {
   if (busy || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
-  $('heard').textContent = PRIVATE.test(text) ? '听见你的话了，个人信息就不展示啦。' : `${source === 'voice' ? '你说' : '你的想法'}：“${text}”`; $('heard').hidden = false;
+  if (source !== 'voice') { voiceCapture = null; renderVoiceInput(); }
+  voiceInput.setTranscript(text);
   if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(text);
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
@@ -471,7 +502,7 @@ async function handleAnswer(raw, source = 'text') {
     return;
   }
   const scene = story.scenes[state.sceneIndex], token = epoch;
-  busy = true; voice.listen(false); $('mic-label').textContent = '想一想';
+  busy = true; voice.listen(false); setReplyMode(null); renderVoiceInput();
   try {
     if (scene.freeInput) {
       let result;
@@ -614,8 +645,11 @@ function initializeControls() {
   $('camera-reset').onclick = () => stage.resetCamera();
   $('speech-card').onclick = () => voice.skip();
   $('mic-button').onclick = async () => {
-    if (voice.enabled || voice.opening) { voice.pause(); return; }
+    const retry = voiceCapture?.state === 'error';
+    if (!retry && (voice.enabled || voice.opening)) { voice.pause(); return; }
     if (!['question', 'setup'].includes(phase) || busy) return;
+    if (retry) voice.pause();
+    resetVoiceInput();
     voice.listen(true); await voice.enable();
   };
   $('reply-more').onclick = () => setReplyMode(replyOpen ? null : 'choices');

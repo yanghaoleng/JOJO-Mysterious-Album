@@ -380,10 +380,11 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-  <link rel="stylesheet" href="./src/lab.css?v=20260909-scene-3d-switch">
+  <link rel="stylesheet" href="./src/lab.css?v=20260909-shared-voice">
 <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
-<link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
+<link rel="stylesheet" href="./src/speech-bubble.css?v=20260909-shared-voice">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
+<link rel="stylesheet" href="./src/voice-input-control.css?v=20260909-shared-voice">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -670,10 +671,7 @@
             </div>
           </header>
 
-          <div class="character-call-status" aria-live="polite">
-            <i aria-hidden="true"></i>
-            <span id="character-call-status">已接通</span>
-          </div>
+          <p id="character-call-status" class="character-call-status" role="status">已接通</p>
 
           <div id="character-call-transcript" class="character-call-transcript" aria-live="polite"></div>
 
@@ -695,15 +693,8 @@
           </aside>
 
           <div id="character-call-voice" class="character-call-voice">
-            <div id="character-call-live" class="character-call-live character-bubble user-input-bubble" hidden aria-live="polite" aria-atomic="true" data-bubble-shell data-bubble-key="call-user-live" data-bubble-max-chars="22">
-              <span id="character-call-live-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="call-user-live"></span>
-              <span class="character-bubble__tail" aria-hidden="true"></span>
-            </div>
-            <button id="character-call-mic" class="character-call-mic voice-input-control" type="button" aria-label="开始语音输入" data-state="idle">
-              <span class="voice-input-control__start"><i data-lucide="mic" aria-hidden="true"></i><span>开始对话</span></span>
-              <span class="voice-input-control__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="voice-input-control__thinking" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-            </button>
+            <div id="character-call-live" class="character-call-live" hidden></div>
+            <button id="character-call-mic" class="character-call-mic" type="button" aria-label="开始语音输入"></button>
           </div>
         </section>
       </section>
@@ -778,6 +769,6 @@
   </script>
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260909-scene-3d-switch"></script>
+  <script type="module" src="./src/mode.js?v=20260909-shared-voice"></script>
 </body>
 </html>

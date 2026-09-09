@@ -11,11 +11,12 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
   <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260828-picturebook-alpha">
   <link rel="preload" as="image" type="image/webp" href="./assets/story/covers/doudou-home.webp?v=20260901-doudou">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260909-scene-3d-switch">
-  <link rel="stylesheet" href="./src/wow-shared-story.css?v=20260909-original-2d">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260909-shared-voice">
+  <link rel="stylesheet" href="./src/wow-shared-story.css?v=20260909-shared-voice">
   <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
-  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
+  <link rel="stylesheet" href="./src/speech-bubble.css?v=20260909-shared-voice">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-no-icon-clipping">
+  <link rel="stylesheet" href="./src/voice-input-control.css?v=20260909-shared-voice">
 </head>
 <body data-story-default="wow" data-phase="cover" data-place="meadow" data-analytics-page="doudou">
   <header class="story-header">
@@ -141,15 +142,9 @@
     </section>
 
     <section class="voice-dock" id="voice-dock" data-voice-state="setup" aria-label="故事语音控制">
-      <div class="live-answer-bubble character-bubble user-input-bubble" id="live-answer-bubble" hidden aria-live="polite" aria-atomic="true" data-bubble-shell data-bubble-key="story-user" data-bubble-max-chars="18">
-        <b id="live-answer-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="story-user"></b>
-        <span class="character-bubble__tail" aria-hidden="true"></span>
-      </div>
-      <button class="mic-button guide-mic voice-input-control" id="mic-button" type="button" data-uisfx="none" data-state="setup" aria-pressed="false" aria-label="允许麦克风并开始故事">
-        <span class="voice-input-control__start"><i data-lucide="mic" aria-hidden="true"></i><span>开始对话</span></span>
-        <span class="voice-input-control__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-        <span class="voice-input-control__thinking" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-      </button>
+      <div class="live-answer-bubble" id="live-answer-bubble" hidden></div>
+      <button class="mic-button guide-mic voice-input-control" id="mic-button" type="button" data-uisfx="none" data-state="setup" aria-pressed="false" aria-label="允许麦克风并开始故事"></button>
+      <p id="speech-status"></p>
     </section>
   </main>
 
@@ -174,6 +169,6 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260909-wow-original-2d"></script>
+  <script type="module" src="./src/story-v2.js?v=20260909-shared-voice"></script>
 </body>
 </html>

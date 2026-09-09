@@ -33,10 +33,7 @@ import {
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
-import {
-  setVoiceInputControlLevel,
-  setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-waveform-loader';
+import { createVoiceInput } from './voice-input-control.js?v=20260909-shared-voice';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -466,6 +463,13 @@ const callState = {
   bubbleId: 0,
   returnFocus: null,
 };
+const callVoiceInput = createVoiceInput({
+  button: $('character-call-mic'),
+  transcript: $('character-call-live'),
+  status: $('character-call-status'),
+});
+let callVoiceMode = 'setup';
+let callVoiceLabel = '开启麦克风并持续聆听';
 const pointerRaycaster = new THREE.Raycaster();
 const pointerNdc = new THREE.Vector2();
 const pointerHeadWorld = new THREE.Vector3();
@@ -2074,7 +2078,10 @@ function setCharacterCallStatus(state, text) {
   const overlay = $('character-call');
   if (!overlay) return;
   overlay.dataset.state = state;
-  $('character-call-status').textContent = text;
+  callVoiceInput.setState(callVoiceMode, {
+    message: text, label: callVoiceLabel, disabled: false,
+    pressed: callState.micEnabled && !callState.micPaused,
+  });
 }
 
 function renderCharacterCallCard() {
@@ -2096,6 +2103,12 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   const message = { role, content: String(text || '').trim().slice(0, 220) };
   callState.messages.push(message);
   callState.messages = callState.messages.slice(-12);
+  if (role === 'user') {
+    // The same bubble owns interim and final words. History is still sent to
+    // the character, but never renders a second copy of the child's sentence.
+    setCharacterCallLive(message.content);
+    return { message, node: null, bubbleKey: null };
+  }
   const node = document.createElement('p');
   const bubbleKey = `call-${role}-${++callState.bubbleId}`;
   const initialText = message.content || (pending ? '正在想…' : '我在认真听。');
@@ -2113,8 +2126,13 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   node.appendChild(content);
   const transcript = $('character-call-transcript');
   transcript.appendChild(node);
-  while (transcript.children.length > 2) transcript.firstElementChild?.remove();
+  while (transcript.children.length > 1) transcript.firstElementChild?.remove();
   mountSpeechBubble(content);
+  // A fast first token can arrive before the mounted bubble subscribes to
+  // updates. Replay the latest text after its first paint, never an old copy.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (node.isConnected) setSpeechBubbleText(bubbleKey, message.content || initialText, { complete: true, enter: false });
+  }));
   return { message, node, bubbleKey };
 }
 
@@ -2188,22 +2206,22 @@ function applyCharacterCallTool(payload) {
 }
 
 function setCharacterCallMic(state, label) {
-  const button = $('character-call-mic');
-  if (!button) return;
-  setVoiceInputControlState(button, state);
-  button.setAttribute('aria-label', label);
+  callVoiceMode = state === 'idle' ? 'setup' : state;
+  callVoiceLabel = label;
+  callVoiceInput.setState(callVoiceMode, {
+    label, message: $('character-call-status').textContent, disabled: false,
+    pressed: callState.micEnabled && !callState.micPaused,
+  });
 }
 
-function setCharacterCallLive(text = '') {
-  const live = $('character-call-live');
-  if (!live) return;
+function setCharacterCallLive(text = '', { interim = false } = {}) {
   const value = String(text || '').trim().slice(0, 180);
-  const shouldEnter = live.hidden;
-  live.hidden = !value;
-  if (value) setSpeechBubbleText('call-user-live', value, { complete: true, enter: shouldEnter });
+  if (value) callVoiceInput.setTranscript(value, { interim });
+  else callVoiceInput.clearTranscript();
 }
 
 function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
+  callVoiceInput.setActivity(false);
   clearTimeout(callState.recognitionRestartTimer);
   callState.recognitionRestartTimer = 0;
   const recognition = callState.recognition;
@@ -2217,7 +2235,6 @@ function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
     callState.micEnabled = false;
     callState.micPaused = false;
     setConversationAudioSession('auto');
-    setVoiceInputControlLevel($('character-call-mic'), 0);
     setCharacterCallMic('idle', '开启麦克风并持续聆听');
   }
 }
@@ -2432,7 +2449,6 @@ async function sendCharacterCall(messageText, { interrupt = false } = {}) {
   const topicContext = turnTopic === 'growth' ? growthTopicContext() : {};
   speaker?.cancel();
   callState.busy = true;
-  setCharacterCallLive('');
   setCharacterCallMic('thinking', '角色正在思考');
   appendCharacterCallMessage('user', message);
   const history = callState.messages.slice(0, -1);
@@ -2521,14 +2537,16 @@ function startCharacterCallRecognition() {
     setCharacterCallStatus('listening', `${callState.template.name}正在听`);
     animator?.setPose('sit');
   };
-  // iOS Safari owns its recognition microphone session.  Deliberately avoid
-  // opening a second getUserMedia stream only for a meter: that has previously
-  // stolen the speech output session. Native sound/speech callbacks still make
-  // the shared waveform visibly answer the user's voice.
-  recognition.onsoundstart = () => setVoiceInputControlLevel($('character-call-mic'), .38);
-  recognition.onsoundend = () => setVoiceInputControlLevel($('character-call-mic'), .12);
-  recognition.onspeechstart = () => setVoiceInputControlLevel($('character-call-mic'), .92);
-  recognition.onspeechend = () => setVoiceInputControlLevel($('character-call-mic'), .18);
+  // WebSpeech owns this microphone. These real browser events report voice
+  // activity, not amplitude: the shared component shows steady active bars.
+  // Do not add a second getUserMedia stream for a meter; that can steal iOS's
+  // speech output session. Story PCM inputs separately use measured setLevel.
+  recognition.onsoundstart = recognition.onspeechstart = () => {
+    if (callState.recognition === recognition) callVoiceInput.setActivity(true);
+  };
+  recognition.onsoundend = recognition.onspeechend = () => {
+    if (callState.recognition === recognition) callVoiceInput.setActivity(false);
+  };
   recognition.onresult = event => {
     let interim = '';
     let complete = '';
@@ -2537,13 +2555,12 @@ function startCharacterCallRecognition() {
       if (event.results[index].isFinal) complete += text;
       else interim += text;
     }
-    setCharacterCallLive((complete || interim).trim());
-    if ((complete || interim).trim()) setVoiceInputControlLevel($('character-call-mic'), complete.trim() ? .84 : .62);
+    const heard = (complete || interim).trim();
+    if (heard) setCharacterCallLive(heard, { interim: !complete.trim() });
     if (complete.trim()) {
       const message = complete.trim();
       if (message === callState.lastRecognizedTurn) return;
       callState.lastRecognizedTurn = message;
-      setCharacterCallLive('');
       // A completed user utterance is an intentional barge-in: stop only the
       // character's output, then replace the outstanding response.  The mic
       // itself remains live, so Safari does not have to churn audio sessions.
@@ -2553,6 +2570,7 @@ function startCharacterCallRecognition() {
   };
   recognition.onerror = event => {
     if (callState.recognition !== recognition) return;
+    callVoiceInput.setActivity(false);
     callState.recognition = null;
     if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
       stopCharacterCallRecognition({ releaseMedia: true });
@@ -2568,12 +2586,12 @@ function startCharacterCallRecognition() {
   recognition.onend = () => {
     if (callState.recognition !== recognition) return;
     callState.recognition = null;
-    setCharacterCallLive('');
-    setVoiceInputControlLevel($('character-call-mic'), .08);
+    callVoiceInput.setActivity(false);
     scheduleCharacterCallRecognition(260);
   };
   try { recognition.start(); } catch {
     if (callState.recognition === recognition) callState.recognition = null;
+    callVoiceInput.setActivity(false);
     scheduleCharacterCallRecognition(520);
   }
 }
@@ -2589,7 +2607,6 @@ async function beginCharacterCallRecognition() {
     } else {
       callState.micPaused = true;
       stopCharacterCallRecognition();
-      setCharacterCallLive('');
       animator?.setPose('idle');
       setCharacterCallStatus('paused', '持续聆听已暂停');
       setCharacterCallMic('paused', '继续持续聆听');
@@ -2604,7 +2621,7 @@ async function beginCharacterCallRecognition() {
     return;
   }
   setCharacterCallStatus('permission', '正在请求麦克风权限');
-  setCharacterCallMic('thinking', '正在请求麦克风权限');
+  setCharacterCallMic('requesting', '正在请求麦克风权限');
   try {
     // Do not keep an extra getUserMedia stream alive just to preflight
     // permission.  On iOS Safari that stream can steal the audio session and
@@ -2642,6 +2659,13 @@ function resetActiveCharacterCard() {
 }
 
 function initCharacterCalling() {
+  // Keep the character's answer above the one shared input bubble even when
+  // a long transcript wraps or the debug panel changes the available width.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(([entry]) => {
+      $('character-call').style.setProperty('--call-voice-height', `${Math.ceil(entry.contentRect.height)}px`);
+    }).observe($('character-call-voice'));
+  }
   $('character-call-end').addEventListener('click', endCharacterCall);
   $('character-call').querySelectorAll('[data-call-mode]').forEach(button => {
     button.addEventListener('click', () => setCharacterCallMode(button.dataset.callMode));

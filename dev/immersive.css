@@ -80,15 +80,8 @@ body[data-view=story] .story-start { gap: 0; margin-top: 17px; }
 body[data-view=story] #resume-note { display: none; }
 body[data-view=story] #start-story { min-width: 136px; min-height: 52px; }
 body[data-view=story] .answer-dock { padding: 16px 0 0; }
-body[data-view=story] .answer-controls { position: relative; display: flex; justify-content: center; gap: 0; min-height: 56px; }
+body[data-view=story] .answer-controls { position: relative; display: flex; justify-content: center; gap: 0; min-height: 58px; }
 body[data-view=story][data-reply=text] .answer-controls { display: none; }
-body[data-view=story] .mic-control {
-  min-width: 136px; min-height: 54px; border: 1px solid color-mix(in srgb, var(--paper) 90%, transparent);
-  background: color-mix(in srgb, var(--paper) 78%, transparent); color: var(--ink);
-  box-shadow: 0 5px 20px #34444a0a; border-radius: 28px; padding: 0 22px;
-}
-body[data-view=story] .mic-control span { font-size: 13px; }
-body[data-view=story] .mic-control[data-state=listening] { border-color: color-mix(in srgb, var(--accent) 45%, var(--paper)); }
 .reply-more { position: absolute; left: calc(50% + 87px); top: 5px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 22px; letter-spacing: 2px; }
 .reply-more[aria-expanded=true] { background: color-mix(in srgb, var(--paper) 72%, transparent); color: var(--ink); }
 .reply-options { margin-top: 12px; padding: 2px 14px 14px; max-height: min(34dvh, 260px); overflow-y: auto; overscroll-behavior: contain; border: 1px solid color-mix(in srgb, var(--paper) 86%, transparent); border-radius: 20px; background: color-mix(in srgb, var(--paper) 94%, transparent); }
@@ -101,7 +94,9 @@ body[data-view=story] .choice-button { min-height: 44px; padding: 10px 15px; fon
 body[data-view=story] .choice-button:hover { background: color-mix(in srgb, var(--sky-horizon) 40%, var(--paper)); }
 body[data-view=story] .text-form { margin-top: 12px; }
 body[data-view=story] .text-form input { background: var(--paper); border-color: color-mix(in srgb, var(--muted) 28%, transparent); font-size: 16px; }
-body[data-view=story] .heard { margin: 0 15px 12px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+/* Voice appearance lives in the shared component; only stage spacing stays here. */
+body[data-view=story] #heard { max-width: min(360px, calc(100% - 24px)); margin: 12px auto 14px; }
+body[data-view=story] #voice-feedback { max-width: min(360px, calc(100% - 24px)); margin-top: 8px; }
 body[data-view=story] .ending { padding: 12px 18px 0; max-height: 45dvh; overflow-y: auto; }
 body[data-view=story] .ending h2 { font-size: 25px; margin-bottom: 12px; }
 body[data-view=story] .ending p { margin: 0; }
@@ -149,5 +144,5 @@ body[data-view=story] .text-form input::placeholder { color: var(--muted); opaci
   body[data-view=story] .reply-options { margin-top: 5px; max-height: 27dvh; }
 }
 @media(prefers-reduced-transparency: reduce) {
-  .story-menu, .reply-options, body[data-view=story] .mic-control { background: var(--paper); }
+  .story-menu, .reply-options { background: var(--paper); }
 }

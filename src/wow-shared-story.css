@@ -42,7 +42,6 @@ body[data-story="wow"] .story-invention[data-motion="float"] canvas { animation:
 body[data-story="wow"] .choice-result > p { font-size: 11px; color: var(--ink-soft); }
 body[data-story="wow"] .quest-panel { text-shadow: 0 1px 7px #fffce6b5; }
 body[data-story="wow"] .quest-panel .scene-heading { background: linear-gradient(90deg, #f7f1e4ed, #f7f1e4ab 72%, transparent); padding: 7px 8px; margin-left: -8px; }
-body[data-story="wow"] .live-answer-bubble { max-width: min(360px, calc(100vw - 28px)); }
 @media (max-width: 720px) {
   body[data-story="wow"] .chapter-progress { width: auto; gap: 3px; }
   body[data-story="wow"] .chapter-progress span { font-size: 10px; }

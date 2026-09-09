@@ -21,10 +21,7 @@ import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260909-wow-child-profile';
-import {
-  setVoiceInputControlLevel,
-  setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-waveform-loader';
+import { createVoiceInput } from './voice-input-control.js?v=20260909-shared-voice';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
@@ -64,6 +61,12 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const panels = ['cover-panel', 'interview-panel', 'ritual-panel', 'quest-panel', 'ending-panel'];
 const STORY_STORAGE_KEY = 'mengmeng-story-adventures';
 const MAX_INTERVIEW_ANSWER = 180;
+const storyVoiceInput = createVoiceInput({
+  button: $('mic-button'),
+  transcript: $('live-answer-bubble'),
+  status: $('speech-status'),
+  sanitize: isWow ? wowVisibleWords : undefined,
+});
 
 const state = {
   guide: story.guide,
@@ -732,6 +735,11 @@ function syncPlanetHotspots() {
 function updatePlanetViewport() {
   cancelAnimationFrame(planetViewportFrame);
   planetViewportFrame = requestAnimationFrame(() => {
+    if (document.body.dataset.phase === 'interview') {
+      const transcript = $('live-answer-bubble');
+      const bottom = transcript.hidden ? 0 : transcript.getBoundingClientRect().bottom + 12;
+      document.body.style.setProperty('--story-input-bottom', `${bottom}px`);
+    }
     if (!inkPlanetStage || document.body.dataset.phase !== 'quest') return;
     const rect = $('ink-planet-stage').getBoundingClientRect();
     const headingBottom = Math.max($('quest-panel').getBoundingClientRect().bottom, $('chapter-progress').getBoundingClientRect().bottom);
@@ -739,7 +747,7 @@ function updatePlanetViewport() {
     inkPlanetStage.setViewportInsets({
       // Desktop headings occupy a side column, not a full-width exclusion.
       top: rect.width >= 860 ? 150 : Math.min(200, Math.max(135, headingBottom - rect.top + 12)),
-      bottom: dock.height ? Math.min(130, Math.max(108, rect.bottom - dock.top + 8)) : 90,
+      bottom: dock.height ? Math.min(Math.max(130, rect.height * .38), Math.max(108, rect.bottom - dock.top + 8)) : 90,
       left: 18, right: 18,
     });
     inkPlanetStage.resize(); syncPlanetHotspots();
@@ -1031,9 +1039,11 @@ function writeSpeechStatus(status, message) {
     status.textContent = message;
     return;
   }
-  const dot = document.createElement('i');
-  dot.setAttribute('aria-hidden', 'true');
-  status.replaceChildren(dot, document.createTextNode(message));
+  storyVoiceInput.setState($('voice-dock').dataset.voiceState || 'setup', {
+    message,
+    disabled: $('mic-button').disabled,
+    pressed: $('mic-button').getAttribute('aria-pressed') === 'true',
+  });
 }
 
 async function doubaoTranscript(pcm, status, fallbackText = '', maxLength = MAX_INTERVIEW_ANSWER) {
@@ -1064,41 +1074,25 @@ async function doubaoTranscript(pcm, status, fallbackText = '', maxLength = MAX_
 
 function setGuideVoiceUi(mode, message) {
   const panel = $('voice-dock');
-  const button = $('mic-button');
-  const labels = {
-    setup: '允许麦克风并开始故事',
-    requesting: '正在打开麦克风',
-    listening: '我在听，点一下暂停',
-    thinking: '正在理解你的回答',
-    speaking: '故事角色正在说话',
-    paused: '继续听我说',
-    error: '再试一次打开麦克风',
-    complete: '故事已经讲完',
-  };
   panel.dataset.voiceState = mode;
   document.body.dataset.voiceState = mode;
-  setVoiceInputControlState(button, mode);
-  button.setAttribute('aria-pressed', String(mode === 'listening'));
-  button.setAttribute('aria-label', labels[mode] || labels.setup);
-  button.title = labels[mode] || labels.setup;
-  button.disabled = ['requesting', 'thinking', 'speaking', 'complete'].includes(mode);
+  storyVoiceInput.setState(mode, {
+    message,
+    disabled: ['requesting', 'thinking', 'speaking', 'complete'].includes(mode),
+    pressed: mode === 'listening',
+  });
   const phase = document.body.dataset.phase;
   $('guide-figure').dataset.state = phase === 'interview' && ['listening', 'thinking'].includes(mode) ? mode : '';
   if (phase === 'quest') {
     $('npc-wrap').dataset.state = ['listening', 'thinking', 'speaking'].includes(mode) ? mode : '';
     if (mode === 'thinking') setBubble('npc', isWow ? '我在认真听你的想法…' : story.slug === 'moon' ? '正在把你的办法画出来…' : '正在听懂你想怎么照顾豆豆…', '');
   }
-  if (mode === 'speaking' && !isWow) showLiveAnswer();
-  if (message) writeSpeechStatus($('speech-status'), message);
 }
 
-function showLiveAnswer(text = '') {
-  const bubble = $('live-answer-bubble');
-  const value = (isWow ? wowVisibleWords(text) : String(text)).trim().slice(0, isWow ? MAX_INTERVIEW_ANSWER : 80);
-  const shouldEnter = bubble.hidden;
-  const shouldShow = hasVisibleBubbleContent(value);
-  bubble.hidden = !shouldShow;
-  if (shouldShow) setSpeechBubbleText('story-user', value, { complete: true, enter: shouldEnter });
+function showLiveAnswer(text = '', options = {}) {
+  const value = String(text || '').trim().slice(0, MAX_INTERVIEW_ANSWER);
+  if (!value) { storyVoiceInput.clearTranscript(); return; }
+  storyVoiceInput.setTranscript(value, { interim: Boolean(options?.interim) });
 }
 
 function createUserInputBubble(text, key) {
@@ -1160,8 +1154,8 @@ function startGuideRecognition() {
     }
     const heard = String(finalText || interim).trim().slice(0, MAX_INTERVIEW_ANSWER);
     if (heard) {
-      showLiveAnswer(heard);
-      writeSpeechStatus($('speech-status'), `正在听：${isWow ? wowVisibleWords(heard) : heard}`);
+      showLiveAnswer(heard, { interim: !finalText.trim() });
+      writeSpeechStatus($('speech-status'), '我在听，你可以接着说');
     }
     if (finalText.trim()) handleGuideUtterance(finalText.trim());
   };
@@ -1192,12 +1186,11 @@ function startGuideRecognition() {
   }
 }
 
-function resumeGuideListening({ preserveBubble = false, message = '正在听，你说完一句后我会自己回应' } = {}) {
+function resumeGuideListening({ message = '正在听，你说完一句后我会自己回应' } = {}) {
   if (!guideVoiceSession.active || !guideVoiceSession.capture || guideVoiceSession.processing || guideVoiceSession.speaking) return;
   guideVoiceSession.paused = false;
   guideVoiceSession.manualPause = false;
   guideVoiceSession.capture.resume();
-  if (!preserveBubble) showLiveAnswer('');
   setGuideVoiceUi('listening', message);
   startGuideRecognition();
 }
@@ -1232,7 +1225,7 @@ async function startGuideVoiceSession() {
   setGuideVoiceUi('requesting', '请在浏览器提示里允许使用麦克风，只需要这一次');
   try {
     guideVoiceSession.capture = await startContinuousPcmCapture();
-    guideVoiceSession.capture.setLevelListener(level => setVoiceInputControlLevel($('mic-button'), level));
+    guideVoiceSession.capture.setLevelListener(level => storyVoiceInput.setLevel(level));
   } catch {
     $('mic-button').disabled = false;
     document.documentElement.dataset.asrSource = 'permission-denied';
@@ -1384,7 +1377,6 @@ function renderQuestion() {
   $('guide-speech').dataset.mode = 'question';
   setBubble('guide', question.question, '想听你说');
   guideVoiceSession.pendingAnswer = '';
-  showLiveAnswer('');
   if (!guideVoiceSession.active) setGuideVoiceUi('setup', '麦克风还未授权，点一下开始');
   else if (guideVoiceSession.manualPause) setGuideVoiceUi('paused', '已经暂停，点一下麦克风会继续听');
 }
@@ -2538,6 +2530,7 @@ const stageSpeechResize = typeof ResizeObserver === 'function' ? new ResizeObser
 stageSpeechResize?.observe($('npc-speech'));
 const planetUiResize = typeof ResizeObserver === 'function' ? new ResizeObserver(updatePlanetViewport) : null;
 planetUiResize?.observe($('quest-panel')); planetUiResize?.observe($('voice-dock'));
+planetUiResize?.observe($('live-answer-bubble'));
 addEventListener('resize', () => { requestAnimationFrame(anchorStageSpeech); updatePlanetViewport(); if (isWow) renderStoryBackdrop(displayedStoryScene || SCENES[0]); }, { passive: true });
 addEventListener('pagehide', event => {
   stopRecognition();
