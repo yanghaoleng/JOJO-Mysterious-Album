@@ -268,11 +268,12 @@ export function createExtendedCharacter({ characterId, scale = 1 } = {}) {
   fit.scale.setScalar(factor); body.position.set(-center.x, -bounds.min.y, -center.z);
   group.scale.setScalar(Number.isFinite(scale) && scale > 0 ? scale : 1);
   const restY = body.position.y, restX = body.position.x;
-  let action = 'idle', expression = 'happy', disposed = false, blendTalk = 0;
+  let action = 'idle', expression = 'happy', disposed = false, blendTalk = 0, airborneHeight = 0;
   const actions = new Set(['idle','talk','wave','hop','listen','walk']);
   const expressions = new Set(['happy','curious','sad','surprised']);
   return {
     group,
+    grounding: { getAirborneHeight: () => airborneHeight },
     setAction(value) { action = actions.has(value) ? value : 'idle'; },
     setExpression(value) { expression = expressions.has(value) ? value : 'happy'; },
     setColor(value) { if (/^#[0-9a-f]{6}$/i.test(value || '')) skin.color.set(value); },
@@ -280,6 +281,7 @@ export function createExtendedCharacter({ characterId, scale = 1 } = {}) {
       if(disposed)return;
       const t=Number.isFinite(time)?time:0, delta=Math.max(0,Math.min(Number.isFinite(dt)?dt:.016,.1));
       blendTalk = THREE.MathUtils.lerp(blendTalk,action==='talk'?1:0,1-Math.exp(-delta*13));
+      airborneHeight = (action==='hop'?Math.abs(Math.sin(t*4.8))*.13:0)*fit.scale.y;
       body.position.y=restY+(action==='hop'?Math.abs(Math.sin(t*4.8))*.13:Math.sin(t*1.9)*.008);
       body.position.x=restX;
       body.rotation.y=action==='talk'?Math.sin(t*3)*.025:Math.sin(t*.8)*.018;

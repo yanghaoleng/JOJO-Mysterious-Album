@@ -14,6 +14,8 @@ import { WORLD_CATALOG, createWorld } from '../worlds.js';
 import { STORIES } from '../stories.js';
 import { DioramaStage } from '../stage.js';
 import { supportsDocumentCharacter } from '../../src/story-npcs/factory.js';
+import { WOW_STORY } from '../../src/wow-story-data.js';
+import { WOW_PROPS } from '../wow-story.js';
 
 const project = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const dev = resolve(project, 'dev');
@@ -69,8 +71,10 @@ for (const file of sourceFiles) {
 const runtimeSources = sourceFiles.filter(file => dirname(file) === dev && extname(file) === '.js');
 for (const file of runtimeSources) {
   const source = await readFile(file, 'utf8');
-  const withoutSharedNpcs = source.replace(/from\s*['"][^'"]*\/src\/story-npcs\/(?:catalog|factory)\.js['"]/g, '');
-  assert.ok(!/from\s*['"][^'"]*(?:\/src\/|legacy|rig\.js|scenery\.js)/.test(withoutSharedNpcs), `Legacy runtime imported by ${relative(project, file)}`);
+  let withoutSharedModules = source.replace(/from\s*['"]\.\.\/src\/(?:story-npcs\/(?:catalog|factory)|wow-story-data|wow-local-turn)\.js['"]/g, '');
+  // The separate yellow-four study explicitly reuses the solid NPC toolkit.
+  if (relative(dev, file) === 'yellow-four-models.js') withoutSharedModules = withoutSharedModules.replace(/from\s*['"]\.\.\/src\/story-npcs\/models\.js['"]/g, '');
+  assert.ok(!/from\s*['"][^'"]*(?:\/src\/|legacy|rig\.js|scenery\.js)/.test(withoutSharedModules), `Legacy runtime imported by ${relative(project, file)}`);
   assert.ok(!/(?:localStorage|sessionStorage)\s*\.\s*clear\s*\(/.test(source), `Shared storage cleared by ${relative(project, file)}`);
   assert.ok(!/serviceWorker\s*\.\s*register\s*\(/.test(source), `Unreviewed service worker in ${relative(project, file)}`);
 }
@@ -175,38 +179,66 @@ for (const entry of CHARACTER_CATALOG) {
 
 assert.equal(WORLD_CATALOG.length, 11);
 assert.equal(new Set(WORLD_CATALOG.map(world => world.id)).size, 11);
-assert.deepEqual(new Set(STORIES.map(story => story.id)), new Set(['doudou', 'moon', 'echo']));
+assert.deepEqual(new Set(STORIES.map(story => story.id)), new Set(['doudou', 'moon', 'echo', 'wow']));
 const worldIds = new Set(WORLD_CATALOG.map(world => world.id));
 const characterIds = new Set(CHARACTER_CATALOG.map(character => character.id));
 const visitedWorlds = new Set(); const sceneIds = new Set();
 const actionIds = new Set(['celebrate', 'listen', 'bridge', 'boat', 'launch', 'glow']);
 let sceneCount = 0; let choiceCount = 0;
 for (const story of STORIES) {
-  assert.equal(story.scenes.length, 6, `${story.id} needs six scenes`);
-  assert.equal(story.chapters.length, 3, `${story.id} needs three chapters`);
+  const isWow = story.id === 'wow';
+  const sourceScenes = isWow ? WOW_STORY.chapters.flatMap(chapter => chapter.scenes.map(scene => ({ ...scene, chapter: chapter.id }))) : null;
+  assert.equal(story.scenes.length, isWow ? 41 : 6, `${story.id} scene count`);
+  assert.equal(story.chapters.length, isWow ? 6 : 3, `${story.id} chapter count`);
   assert.ok(story.ending.title && story.ending.text, `${story.id} lacks an ending`);
   for (const [index, scene] of story.scenes.entries()) {
     sceneCount++;
     assert.ok(!sceneIds.has(scene.id), `Duplicate scene ID ${scene.id}`); sceneIds.add(scene.id);
     assert.ok(worldIds.has(scene.world), `Missing world ${scene.world}`); visitedWorlds.add(scene.world);
-    assert.equal(scene.chapter, Math.floor(index / 2) + 1, `${scene.id} chapter sequence`);
-    assert.equal(Boolean(scene.final), index === 5, `${scene.id} final-scene marker`);
+    assert.equal(scene.chapter, isWow ? sourceScenes[index].chapter : Math.floor(index / 2) + 1, `${scene.id} chapter sequence`);
+    assert.equal(Boolean(scene.final), index === story.scenes.length - 1, `${scene.id} final-scene marker`);
     assert.ok(scene.objective && scene.question && scene.dialogue.length, `${scene.id} incomplete narrative`);
     assert.ok(scene.cast.length >= 1 && scene.cast.length <= 2, `${scene.id} must keep room for the companion and invention`);
-    scene.cast.forEach(actor => assert.ok(actor.characterId ? supportsDocumentCharacter(actor.characterId) : characterIds.has(actor.type), `${scene.id} missing character ${actor.characterId || actor.type}`));
-    const cast = new Set([...scene.cast.map(actor => actor.id), 'companion']);
+    scene.cast.forEach(actor => {
+      if (isWow) {
+        assert.equal(typeof actor.createActor, 'function', `${scene.id} needs its WOW sculpt`);
+        const model = actor.createActor({ scale: .78 });
+        inspectObject(model.group, scene.id); model.dispose();
+      } else assert.ok(actor.characterId ? supportsDocumentCharacter(actor.characterId) : characterIds.has(actor.type), `${scene.id} missing character ${actor.characterId || actor.type}`);
+    });
+    const cast = new Set([...scene.cast.map(actor => actor.id), isWow ? 'guide' : 'companion']);
     [...scene.dialogue, ...(scene.closing || [])].forEach(line => assert.ok(cast.has(line.speaker) && line.text, `${scene.id} has an unavailable speaker`));
     assert.equal(new Set(scene.choices.map(choice => choice.id)).size, scene.choices.length, `${scene.id} repeats a choice ID`);
     assert.ok(scene.choices.length >= 2 && scene.choices.length <= 3, `${scene.id} needs focused choices`);
     for (const choice of scene.choices) {
       choiceCount++;
+      if (isWow) { assert.ok(choice.id && choice.label, `${scene.id} missing a suggested expression`); continue; }
       assert.ok(choice.label && choice.result && choice.hints.length, `${scene.id}/${choice.id} incomplete choice`);
       assert.ok(cast.has(choice.speaker), `${scene.id}/${choice.id} unavailable result speaker`);
       assert.ok(actionIds.has(choice.action), `${scene.id}/${choice.id} unsupported reaction`);
     }
+    if (isWow) {
+      const source = sourceScenes[index];
+      assert.equal(scene.id, source.id, 'WOW must preserve source scene order');
+      assert.equal(scene.dialogue[0].text, source.text, `${scene.id} lost its authored world introduction`);
+      assert.equal(scene.question, source.prompt);
+      assert.deepEqual(scene.choices.map(choice => choice.label), source.suggestions);
+      assert.equal(scene.wow.kind, source.kind);
+      assert.equal(scene.wow.prop, source.prop);
+    }
+  }
+  if (isWow) {
+    assert.deepEqual(story.scenes.map((scene, index) => [index, scene.wow.prop]).filter(([, prop]) => prop), [[1, 'torch'], [3, 'radio'], [8, 'jar']]);
+    assert.deepEqual(Object.keys(WOW_PROPS).sort(), ['jar', 'radio', 'torch']);
+    for (const chapter of story.chapters) {
+      assert.equal(story.scenes.filter(scene => scene.chapter === chapter.number && scene.wow.kind === 'create').length, 1);
+      assert.equal(story.scenes.filter(scene => scene.chapter === chapter.number && scene.wow.kind === 'color').length, 1);
+    }
+    assert.ok(story.scenes.some(scene => scene.dialogue.some(line => line.text.includes('{firstWords}'))));
+    assert.ok(story.ending.companionLine.includes('{firstWords}'));
   }
 }
-assert.equal(sceneCount, 18);
+assert.equal(sceneCount, 59);
 assert.deepEqual(visitedWorlds, worldIds, 'Not every new world is used by a story');
 const worlds = [];
 for (const entry of WORLD_CATALOG) {
@@ -242,7 +274,7 @@ for (const kind of ['portal', 'rocket', 'submarine', 'ladder', 'parachute', 'bal
 inventionStage.clearInvention();
 
 const qa = [];
-for (const story of STORIES) {
+for (const story of STORIES.filter(story => story.id !== 'wow')) {
   const data = JSON.parse(await readFile(resolve(dev, `tools/verify-story-${story.id}-results.json`), 'utf8'));
   const event = item => item.event ?? item.step;
   const questions = data.log.filter(item => event(item) === 'scene-question').map(item => item.scene);
@@ -253,7 +285,7 @@ for (const story of STORIES) {
 
 console.log(JSON.stringify({
   passed: true,
-  scope: 'Local resources, exported geometry, numerical animation lifecycle, three-story contracts, and existing QA evidence coverage',
+  scope: 'Local resources, exported geometry, animation lifecycle, three original story contracts, WOW source/prop order, and existing original-story QA evidence',
   notProvenByThisCheck: ['Live release', 'Actual microphone and audio playback', 'All alternative answers', 'AI semantic responses', 'Simulator browser controls'],
   counts: { localReferences: references.length, characters: characters.length, worlds: worlds.length, inventionTypes: inventions.length, storyScenes: sceneCount, choices: choiceCount },
   sharedReadOnlyResources: [...shared].sort(), storageNamespace: 'jma.dev.clay.v1',

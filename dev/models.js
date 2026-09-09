@@ -126,7 +126,6 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   const group = new THREE.Group();
   group.name = `clay-${type}`;
   group.userData = { author: 'Codex · 小小陶土剧场', source: 'dev/models.js', modelVersion: 1, species: type, usesSkeleton: false };
-  group.scale.setScalar(Number.isFinite(scale) && scale > 0 ? scale : 1);
   const fit = new THREE.Group();
   const actor = new THREE.Group();
   group.add(fit);
@@ -374,6 +373,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   const nativeHeight = bounds.max.y - bounds.min.y;
   fit.scale.setScalar(2.2 / nativeHeight);
   fit.position.y = -bounds.min.y * fit.scale.y;
+  group.scale.setScalar(Number.isFinite(scale) && scale > 0 ? scale : 1);
   group.userData.restHeight = 2.2;
   group.userData.triangles = 0;
   group.userData.meshes = 0;
@@ -390,6 +390,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   let previousTime = null;
   const weights = Object.fromEntries([...ACTIONS].map(key => [key, key === 'idle' ? 1 : 0]));
   let expressionAmount = 0;
+  let airborneHeight = 0;
   function setAction(nextAction) {
     if (!ACTIONS.has(nextAction)) return false;
     action = nextAction;
@@ -416,6 +417,7 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
     const gait = Math.sin(time * 8.5);
     const hopPhase = Math.max(0, Math.sin(time * 4.4));
     const breath = Math.sin(time * 2.15);
+    airborneHeight = hopping * hopPhase * .20 * fit.scale.y;
     actor.position.y = hopping * hopPhase * .20 + walking * Math.abs(gait) * .03;
     actor.rotation.z = Math.sin(time * 1.45) * .012 + walking * gait * .035;
     actor.scale.set(1 - hopping * hopPhase * .035, 1 + hopping * hopPhase * .06, 1 - hopping * hopPhase * .025);
@@ -479,5 +481,5 @@ export function createCharacter({ type = 'dog', color, scale = 1 } = {}) {
   setAction('idle');
   setExpression('happy');
   update(0, 1 / 60);
-  return { group, update, setAction, setExpression, setColor, dispose };
+  return { group, update, setAction, setExpression, setColor, dispose, grounding: { getAirborneHeight: () => airborneHeight } };
 }

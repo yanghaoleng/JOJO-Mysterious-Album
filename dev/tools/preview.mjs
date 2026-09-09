@@ -6,7 +6,7 @@ import { dirname, resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const apiBase = process.env.DEV_API_BASE;
-const apiPaths = new Set(['/api/tts', '/api/asr', '/api/story-turn', '/api/moon-director']);
+const apiPaths = new Set(['/api/tts', '/api/asr', '/api/story-turn', '/api/moon-director', '/api/wow-turn']);
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.ico': 'image/x-icon' };
 http.createServer(async (request, response) => {
   try {

@@ -7,6 +7,9 @@ import { moonRequest, sceneRequest } from './story-api.js';
 import { describeInvention } from './inventions.js';
 import { mountProductIcons } from '../vendor/ui-icons.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
+import { localResult } from '../src/wow-local-turn.js';
+import { WOW_PROPS, wowVisualState } from './wow-story.js';
+import { createWowPresentation } from './wow-visuals.js';
 
 const $ = id => document.getElementById(id);
 const STORAGE = 'jma.dev.clay.v1';
@@ -19,6 +22,7 @@ const COLORS = [
 ];
 const EXPRESSIONS = { happy: '开心', curious: '好奇', sad: '有点难过', surprised: '惊喜' };
 const ACTIONS = { idle: '放松', wave: '打招呼', hop: '跳一跳', listen: '认真听', talk: '说句话', walk: '迈小步' };
+let wowPresentation = null, wowRequest = null;
 let stage, story, state, phase = 'home', epoch = 0, busy = false, pendingChoices = [], setupStep = 0;
 let shownChoices = false, shownText = false, replyOpen = false, menuOpen = false, noticeTimer, frameRequest;
 let studio = { type: 'dog', color: '#c99561', name: '小团', size: 100, expression: 'happy', action: 'idle', world: 'orchard' };
@@ -35,14 +39,61 @@ function notify(message) {
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { $('notice').dataset.visible = 'false'; }, 4200);
 }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], completed: false });
+const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], firstWords: '', completed: false });
 function savedState() {
   const saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || saved.sceneIndex < 0 || saved.sceneIndex >= story.scenes.length || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
   const type = CHARACTER_CATALOG.some(item => item.id === saved.companion?.type) ? saved.companion.type : 'rabbit';
-  return { ...defaultState(), ...saved, companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
+  return { ...defaultState(), ...saved, wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
 }
 function persist() { store(`story.${story.id}`, state); }
+function storyCast(scene) { return story?.id === 'wow' ? scene.cast : [...scene.cast, { ...state.companion, id:'companion' }]; }
+function syncWowPresentation(lit = false) {
+  if (story?.id !== 'wow') return;
+  if (!wowPresentation) wowPresentation = createWowPresentation(stage);
+  wowPresentation.set(wowVisualState(story.scenes[state.sceneIndex], state, lit));
+}
+
+async function handleWowAnswer(raw) {
+  if (busy || phase !== 'question') return;
+  const answer = String(raw || '').trim().slice(0, 160);
+  if (!answer) return;
+  const scene = story.scenes[state.sceneIndex], token = epoch;
+  const payload = { chapter:scene.chapter, kind:scene.wow.kind, answer, prompt:scene.question, momo:scene.wow.momo };
+  const fallback = localResult(payload);
+  if (!fallback.accepted) { notify(fallback.reaction); return; }
+  busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
+  $('heard').hidden = true; $('answer-dock').hidden = true;
+  $('speaker').textContent = scene.cast[0].name;
+  $('speech-text').textContent = scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……';
+  syncWowPresentation(true);
+  const controller = new AbortController(); wowRequest = controller;
+  let result;
+  try { result = await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
+  catch { if (controller.signal.aborted || token !== epoch) return; result = fallback; }
+  finally { if (wowRequest === controller) wowRequest = null; }
+  if (token !== epoch || controller.signal.aborted) return;
+  if (typeof result?.accepted !== 'boolean' || typeof result?.reaction !== 'string') result = fallback;
+  if (!result.accepted) { phase='question';busy=false;notify(result.reaction);renderAnswerOptions();resumeListening();return; }
+  const shapes = ['star','moon','leaf','heart','cloud','fish'];
+  const visual = {shape:shapes.includes(result.visual?.shape)?result.visual.shape:fallback.visual.shape,color:/^#[0-9a-f]{6}$/i.test(result.visual?.color || '')?result.visual.color:fallback.visual.color};
+  const entry = {id:scene.id,chapter:scene.chapter,answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
+  state.wowEntries = [...state.wowEntries.filter(item=>item.id!==scene.id),entry];
+  if (!state.firstWords) state.firstWords = answer;
+  if (scene.wow.kind === 'create') state.inventions = [...state.inventions.filter(item=>item.chapter!==scene.chapter),{chapter:scene.chapter,scene:scene.title,visual:{...visual,kind:'wow-key',name:`第${scene.chapter}把想象钥匙`,details:answer}}];
+  if (scene.wow.kind === 'color' && !state.inventory.some(item=>item.id===`wow-color-${scene.chapter}`)) state.inventory.push({id:`wow-color-${scene.chapter}`,name:scene.wow.colorName,color:scene.wow.color,description:answer});
+  persist(); updateBag(); syncWowPresentation(true); stage.actors.get('wow')?.setExpression('happy');
+  await speakLine({speaker:scene.questionSpeaker || 'wow',text:entry.reaction,source:entry.source},token);
+  if (token !== epoch) return;
+  if (scene.final) await finishStory(); else await enterScene(state.sceneIndex+1);
+}
+
+function downloadWowMemory() {
+  const escape = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const content = state.wowEntries.map(entry=>`<article><h2>第${entry.chapter}章 · ${escape(story.scenes.find(scene=>scene.id===entry.id)?.title||'')}</h2><blockquote>${escape(entry.answer)}</blockquote><p>${escape(entry.reaction)}</p></article>`).join('');
+  download(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>我的立体哇呜旅程</title><style>body{max-width:720px;margin:40px auto;padding:20px;font:16px/1.8 system-ui;background:#fcfaf4;color:#314555}h2{font-size:18px}article{border-bottom:1px solid #ddd;padding:16px 0;break-inside:avoid}blockquote{border-left:3px solid #d7b659;padding-left:20px;margin-left:0;overflow-wrap:anywhere}</style><h1>我的立体哇呜旅程</h1><p>六位朋友，六种颜色。故事从这句话开始：</p><blockquote>${escape(state.firstWords)}</blockquote>${content}</html>`,'我的立体哇呜旅程.html','text/html;charset=utf-8');
+  notify('旅程已整理好，可以打开下载的纪念册阅读或打印。');
+}
 const voice = new StoryVoice({
   onState(value) {
     $('mic-button').dataset.state = value;
@@ -76,6 +127,7 @@ function scheduleFraming() {
 }
 
 function setWorld(worldId, cast, options) {
+  wowPresentation?.dispose(); wowPresentation = null;
   stage.setScene(worldId, cast, options);
   const environment = stage.world?.atmosphere;
   if (environment) {
@@ -107,6 +159,7 @@ function setReplyMode(mode, restoreFocus = false) {
 }
 
 function speakerInfo(id) {
+  if (story?.id === 'wow' && id === 'guide') return { id, name: '星星窗', voice: 'bubble' };
   if (id === 'companion') return { id, name: state?.companion?.name || '小团', voice: 'bubble' };
   const actor = story?.scenes[state.sceneIndex]?.cast.find(actor => actor.id === id);
   const profile = actor?.characterId && getNpc(actor.characterId);
@@ -116,11 +169,13 @@ function speakerInfo(id) {
 async function speakLine(line, token = epoch) {
   if (token !== epoch) return;
   const info = speakerInfo(line.speaker);
-  $('speaker').textContent = info.name;
-  $('speech-text').textContent = line.text;
+  const text = story?.id === 'wow' ? line.text.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。') : line.text;
+  $('speaker').textContent = info.name + (line.source === 'local' ? ' · 本地回应' : line.source === 'ai' ? ' · AI 回应' : '');
+  $('speech-text').textContent = text;
   $('speech-card').dataset.speaking = 'true';
   stage.speak(line.speaker, true);
-  await voice.say(line.text, info.voice, () => {}, info.characterId);
+  const chunks = Array.from(text).reduce((parts, char) => { if (!parts.length || parts.at(-1).length + char.length > 110) parts.push(''); parts[parts.length - 1] += char; return parts; }, []);
+  for (const chunk of chunks) { if (token !== epoch) return; await voice.say(chunk, info.voice, () => {}, info.characterId); }
   if (token === epoch) {
     $('speech-card').dataset.speaking = 'false'; stage.speak(line.speaker, false);
   }
@@ -147,7 +202,7 @@ function showView(view) {
 }
 
 function route() {
-  epoch++; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
+  epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
   setStoryMenu(false);
   $('transition').classList.remove('closed');
   if ($('bag-dialog').open) $('bag-dialog').close();
@@ -163,6 +218,7 @@ function route() {
 function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ top: 0, behavior: 'instant' }); }
 
 function openStory(selected) {
+  busy = false; $('transition').classList.remove('closed');
   story = selected; state = savedState() || defaultState(); phase = 'ready';
   showView('story');
   document.title = `${story.title} · 萌萌星`;
@@ -175,8 +231,13 @@ function openStory(selected) {
   $('answer-dock').hidden = true; $('story-start').hidden = false;
   $('resume-note').textContent = state.setupDone && !state.completed ? '上次走到的地方还在，继续一起走。' : '说出你的想法，也可以随时点选。';
   $('start-story').textContent = state.setupDone && !state.completed ? '继续故事' : '开始对话';
-  setWorld(story.scenes[state.sceneIndex].world, [...story.scenes[state.sceneIndex].cast, { ...state.companion, id: 'companion' }]);
-  if (state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
+  if (story.id === 'wow' && state.completed) {
+    $('resume-note').textContent = '六种颜色都在这里，你的旅程也保存好了。';
+    $('start-story').textContent = '查看我的旅程';
+  }
+  setWorld(story.scenes[state.sceneIndex].world, storyCast(story.scenes[state.sceneIndex]));
+  syncWowPresentation();
+  if (story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
 }
 
@@ -193,6 +254,13 @@ const SETUP = [
 async function startStory() {
   if (phase !== 'ready' || busy) return;
   void voice.unlock(); $('story-start').hidden = true;
+  if (story.id === 'wow') {
+    if (state.completed) { await finishStory(); return; }
+    while (state.wowEntries.some(entry => entry.id === story.scenes[state.sceneIndex].id)) {
+      if (story.scenes[state.sceneIndex].final) { await finishStory(); return; }
+      state.sceneIndex++;
+    }
+  }
   if (state.completed) state = defaultState();
   if (!state.setupDone && story.onboarding === 'direct') {
     state.companion = { type: story.companion, color: story.color, name: story.companionName, manner: 'calm' };
@@ -237,6 +305,7 @@ function renderAnswerOptions() {
 }
 
 async function choose(choice, customResult) {
+  if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(choice.label);
   if (busy || !['question', 'setup'].includes(phase)) return;
   void voice.unlock();
   const wasSetup = phase === 'setup', token = epoch;
@@ -276,11 +345,14 @@ async function enterScene(index) {
   if (token !== epoch) return;
   state.sceneIndex = index; persist();
   const scene = story.scenes[index];
-  setWorld(scene.world, [...scene.cast, { ...state.companion, id: 'companion' }]);
-  if (state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
+  if (scene.wow?.prop && !state.inventory.some(item => item.id === scene.wow.prop)) state.inventory.push({ ...WOW_PROPS[scene.wow.prop] });
+  if (scene.wow) { persist(); updateBag(); }
+  setWorld(scene.world, storyCast(scene));
+  syncWowPresentation();
+  if (story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);
-  $('chapter-name').textContent = `第${['一', '二', '三'][scene.chapter - 1]}章 · ${chapter?.title || ''}`;
+  $('chapter-name').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${chapter?.title || ''}`;
   $('objective').textContent = scene.objective;
   $('speech-text').textContent = ''; $('speaker').textContent = '';
   $('transition').classList.remove('closed');
@@ -288,7 +360,7 @@ async function enterScene(index) {
   if (token !== epoch) return;
   phase = 'narrating'; await dialogue(scene.dialogue, token);
   if (token !== epoch) return;
-  await speakLine({ speaker: scene.cast[0].id, text: scene.question }, token);
+  await speakLine({ speaker: scene.questionSpeaker || scene.cast[0].id, text: scene.question }, token);
   if (token !== epoch) return;
   phase = 'question'; busy = false; pendingChoices = scene.choices;
   $('answer-input').value = ''; renderAnswerOptions(); resumeListening();
@@ -319,6 +391,7 @@ async function handleAnswer(raw) {
   if (busy || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
+  if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(text);
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
   $('heard').textContent = `${shownText ? '你的想法' : '听见了'}：${text}`; $('heard').hidden = false;
@@ -370,10 +443,11 @@ async function finishStory() {
   phase = 'complete'; busy = false; voice.listen(false); state.completed = true; persist();
   stage.act('celebrate'); $('answer-dock').hidden = true; $('story-start').hidden = true; $('speech-card').hidden = true;
   $('ending').hidden = false; $('ending-title').textContent = story.ending.title;
-  $('ending-text').textContent = story.ending.text; $('ending-line').textContent = story.ending.companionLine;
+  const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。');
+  $('ending-text').textContent = story.ending.text; $('ending-line').textContent = endingLine;
   $('save-memory').textContent = '收进我的图鉴'; $('save-memory').disabled = false;
-  await voice.say(story.ending.companionLine, 'bubble', () => stage.speak('companion', true));
-  if (token === epoch) stage.speak('companion', false);
+  if (story.id === 'wow') { $('save-memory').textContent = '下载我的旅程'; await speakLine({ speaker: 'wow', text: endingLine }, token); }
+  else { await voice.say(endingLine, 'bubble', () => stage.speak('companion', true)); if (token === epoch) stage.speak('companion', false); }
 }
 
 function updateBag() {
@@ -465,7 +539,7 @@ function initializeControls() {
     if (url.origin === location.origin && url.pathname === location.pathname) { event.preventDefault(); navigate(url); }
   });
   $('start-story').onclick = startStory;
-  $('restart').onclick = () => { epoch++; voice.stop(); setStoryMenu(false); setReplyMode(null); state = defaultState(); persist(); openStory(story); };
+  $('restart').onclick = () => { epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); setStoryMenu(false); setReplyMode(null); state = defaultState(); persist(); openStory(story); };
   $('open-story-menu').onclick = () => setStoryMenu(!menuOpen);
   $('scene-reset').onclick = () => { stage.resetCamera(); setStoryMenu(false, true); };
   $('camera-reset').onclick = () => stage.resetCamera();
@@ -484,6 +558,7 @@ function initializeControls() {
   $('close-bag').onclick = () => $('bag-dialog').close();
   $('bag-dialog').addEventListener('close', () => { resumeListening(); if (document.body.dataset.view === 'story') $('open-story-menu').focus({ preventScroll: true }); });
   $('save-memory').onclick = () => {
+    if (story?.id === 'wow') { downloadWowMemory(); return; }
     const memories = readStorage('memories', []);
     if (store('memories', [...(Array.isArray(memories) ? memories : []), { story: story.id, title: story.title, date: new Date().toISOString(), companion: state.companion, inventory: state.inventory, inventions: state.inventions }].slice(-20))) {
       $('save-memory').textContent = '已经收好啦'; $('save-memory').disabled = true; notify('这段旅行已经收进这台设备的图鉴。');
@@ -525,7 +600,8 @@ function initializeControls() {
     setStoryMenu(false);
     if (event.target.closest('#stage')) { event.preventDefault(); event.stopPropagation(); }
   }, true);
-  addEventListener('pagehide', () => voice.stop());
+  addEventListener('pagehide', () => { wowRequest?.abort(); wowRequest = null; voice.stop(); });
+  addEventListener('pageshow', event => { if (event.persisted && story?.id === 'wow') route(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) voice.pause(); });
 }
 
@@ -537,7 +613,7 @@ try {
   });
   initializeControls(); route(); $('stage-loading').classList.add('is-ready');
   // Read-only diagnostics for release verification; never changes story progress.
-  window.__DEV_STORY__ = { get status() { return { phase, busy, storyId: story?.id || null, sceneIndex: state?.sceneIndex, setupStep, completed: Boolean(state?.completed), inventory: state?.inventory.map(item => item.id) || [], inventions: state?.inventions.map(item => item.visual.kind) || [], studio: { ...studio }, stage: stage.stats(), voice: { enabled: voice.enabled, opening: Boolean(voice.opening), recording: voice.recording, samples: voice.samples || 0, voicedSeconds: voice.voiced || 0, contextState: voice.context?.state || 'closed' } }; } };
+  window.__DEV_STORY__ = { get status() { return { phase, busy, storyId: story?.id || null, sceneIndex: state?.sceneIndex, setupStep, completed: Boolean(state?.completed), inventory: state?.inventory.map(item => item.id) || [], inventions: state?.inventions.map(item => item.visual.kind) || [], studio: { ...studio }, wow: story?.id === 'wow' ? { entries: state.wowEntries.length, firstWords: state.firstWords, presentation: stage.scene.getObjectByName('wow-story-props')?.userData.state } : null, stage: stage.stats(), voice: { enabled: voice.enabled, opening: Boolean(voice.opening), recording: voice.recording, samples: voice.samples || 0, voicedSeconds: voice.voiced || 0, contextState: voice.context?.state || 'closed' } }; } };
 } catch (error) {
   console.error(error);
   $('stage-loading').querySelector('p').textContent = '这个浏览器暂时无法打开立体场景，请换一个支持 WebGL 的浏览器。';

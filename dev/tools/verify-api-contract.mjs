@@ -1,12 +1,23 @@
 import assert from 'node:assert/strict';
 import { STORIES } from '../stories.js';
 import { moonRequest, sceneRequest } from '../story-api.js';
+import { localResult } from '../../src/wow-local-turn.js';
+import { execFileSync } from 'node:child_process';
 
 const sceneIds = new Set(['orchard-bush', 'warm-bakery', 'creaky-bridge', 'two-houses', 'doudou-home']);
 const moonIds = new Set(['moon-hill', 'moon-underwater', 'moon-pocket', 'moon-clouds', 'moon-landing']);
 let sceneCount = 0, inventionCount = 0;
+const wowPayloads = [];
 for (const story of STORIES) for (const scene of story.scenes) {
-  if (scene.freeInput) {
+  if (story.id === 'wow') {
+    for (const choice of scene.choices) {
+      const payload = { chapter: scene.chapter, kind: scene.wow.kind, answer: choice.label, prompt: scene.question, momo: scene.wow.momo };
+      const local = localResult(payload);
+      assert.equal(local.accepted, true, `${scene.id}: suggested reply was rejected`);
+      assert.ok(local.reaction && local.visual?.shape && local.visual?.color);
+      wowPayloads.push(payload);
+    }
+  } else if (scene.freeInput) {
     if (scene.final) continue;
     const request = moonRequest(scene, [], '装一个会发光的导航屏');
     assert.ok(moonIds.has(request.sceneId));
@@ -26,4 +37,10 @@ for (const story of STORIES) for (const scene of story.scenes) {
 }
 assert.equal(sceneCount, 12);
 assert.equal(inventionCount, 5);
-console.log('PASS: 12 dialogue scenes and 5 free-invention scenes match the unchanged production API; the final moon memento stays local.');
+assert.equal(wowPayloads.length, 82);
+// Compare with the actual backend validator/fallback without calling the AI or network.
+const backendResults = JSON.parse(execFileSync('python3', ['-c', 'import json,sys; from wow_director import validate_payload,local_result; print(json.dumps([local_result(validate_payload(p)) for p in json.load(sys.stdin)]))'], {
+  cwd: new URL('../../', import.meta.url), input: JSON.stringify(wowPayloads), encoding: 'utf8',
+}));
+backendResults.forEach((result, index) => assert.deepEqual(result, localResult(wowPayloads[index]), `WOW frontend/backend mismatch at ${index}`));
+console.log('PASS: 12 dialogue scenes and 5 free-invention scenes keep their production API; all 82 WOW suggestions across 41 scenes match the WOW backend contract and local fallback.');

@@ -2,6 +2,7 @@ import * as THREE from '../vendor/three.module.js';
 import { createCharacter } from './models.js';
 import { createDocumentCharacter } from '../src/story-npcs/factory.js';
 import { createWorld } from './worlds.js';
+import { createActorGrounding } from './planet.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 
 const clamp = THREE.MathUtils.clamp;
@@ -80,7 +81,10 @@ export class DioramaStage {
       if (document.hidden) return;
       const time = this.reduced ? 0 : now / 1000;
       this.world?.update(time, dt);
-      for (const actor of this.actors.values()) actor.update(time, dt);
+      for (const actor of this.actors.values()) {
+        actor.update(time, dt);
+        actor.surfaceGrounding?.update();
+      }
       this.updateLighting(dt);
       if (this.invention && !this.reduced) {
         this.invention.position.y = this.invention.userData.restY + Math.sin(time * 1.4) * .10;
@@ -281,7 +285,9 @@ export class DioramaStage {
     this.scene.add(this.world.group);
     const spots = this.world.characterSpots || [{ x: -1.6, y: .05, z: 1.5 }, { x: 1.3, y: .05, z: 1 }, { x: 0, y: .05, z: 2.6 }];
     cast.forEach((config, index) => {
-      const actor = config.characterId
+      const actor = typeof config.createActor === 'function'
+        ? config.createActor({ scale: studio ? 1.3 : .78 })
+        : config.characterId
         ? createDocumentCharacter({ characterId: config.characterId, scale: studio ? 1.3 : .78 })
         : createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
       const restBounds = new THREE.Box3().setFromObject(actor.group);
@@ -298,11 +304,16 @@ export class DioramaStage {
       actor.group.userData.actorId = config.id;
       actor.group.userData.actorName = config.name;
       actor.group.userData.manner = config.manner;
+      this.applyActorGrounding(actor, spot);
       this.actors.set(config.id, actor);
       this.scene.add(actor.group);
     });
     this.worldId = worldId;
     this.resetCamera();
+  }
+
+  applyActorGrounding(actor, spot) {
+    actor.surfaceGrounding = createActorGrounding(actor, this.world, spot);
   }
 
   speak(id, speaking) {
@@ -446,7 +457,7 @@ export class DioramaStage {
       safeViewport: viewport ? { ...viewport, insets: { ...viewport.insets } } : null,
       lighting: { period: this.world?.atmosphere?.period || 'day', sky: this.hemisphere.color.getHexString(), bounce: this.hemisphere.groundColor.getHexString(), sun: this.sun.color.getHexString(), rim: this.rim.color.getHexString(), hemisphereIntensity: this.hemisphere.intensity, sunIntensity: this.sun.intensity, rimIntensity: this.rim.intensity, exposure: this.renderer.toneMappingExposure },
       planet: this.world?.planet ? { radius: this.world.planet.radius, center: this.world.planet.center.toArray() } : null,
-      actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray() })),
+      actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray(), grounding: actor.group.userData.grounding })),
       invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [],
     };
   }

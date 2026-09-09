@@ -148,7 +148,7 @@ export function createNPCToolkit(characterId, skinColor, { scale = 1, species = 
     group.scale.setScalar(Number.isFinite(scale) && scale > 0 ? scale : 1);
     group.userData.restHeight = 2.2; group.userData.meshes = 0; group.userData.triangles = 0;
     group.traverse(node => { if (node.isMesh) { group.userData.meshes++; group.userData.triangles += (node.geometry.index?.count || node.geometry.attributes.position.count) / 3; } });
-    let action = 'idle', expression = 'happy', disposed = false;
+    let action = 'idle', expression = 'happy', disposed = false, airborneHeight = 0;
     const weights = Object.fromEntries([...ACTIONS].map(key => [key, key === 'idle' ? 1 : 0]));
     const phase = [...characterId].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17 * .17;
     const setAction = next => { if (!ACTIONS.has(next)) return false; action = next; group.userData.action = next; return true; };
@@ -159,6 +159,7 @@ export function createNPCToolkit(characterId, skinColor, { scale = 1, species = 
       const blend = 1 - Math.exp(-dt * 9);
       for (const key of ACTIONS) weights[key] = THREE.MathUtils.lerp(weights[key], key === action ? 1 : 0, blend);
       const jump = Math.max(0, Math.sin(time * 4.3)), gait = Math.sin(time * 7.8), talk = weights.talk;
+      airborneHeight = weights.hop * jump * .16 * fit.scale.y;
       rig.position.y = weights.hop * jump * .16 + weights.walk * Math.abs(gait) * .018;
       rig.rotation.z = Math.sin(time * 1.7 + phase) * .010 + weights.walk * gait * .025;
       rig.scale.set(1 - weights.hop * jump * .025, 1 + Math.sin(time * 1.9 + phase) * .006 + weights.hop * jump * .035, 1);
@@ -190,7 +191,7 @@ export function createNPCToolkit(characterId, skinColor, { scale = 1, species = 
     const setColor = color => { if (typeof color !== 'string' && typeof color !== 'number') return; for (const material of skinMaterials) material.color.set(color); group.userData.color = `#${skin.color.getHexString()}`; };
     const dispose = () => { if (disposed) return; disposed = true; for (const geometry of geometrySet) geometry.dispose(); for (const material of materialSet) material.dispose(); };
     setAction('idle'); setExpression('happy');
-    return { group, update, setAction, setExpression, setColor, dispose };
+    return { group, update, setAction, setExpression, setColor, dispose, grounding: { getAirborneHeight: () => airborneHeight } };
   };
   return b;
 }
