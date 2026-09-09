@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20260829-square-master">
   <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260828-picturebook-alpha">
   <link rel="preload" as="image" type="image/webp" href="./assets/story/covers/doudou-home.webp?v=20260901-doudou">
-  <link rel="stylesheet" href="./src/story-v2.css?v=20260901-two-stories">
+  <link rel="stylesheet" href="./src/story-v2.css?v=20260909-scene-3d-switch">
   <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
   <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
   <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-no-icon-clipping">
@@ -29,6 +29,11 @@
   <main id="story-world">
     <section class="world-stage" id="world-stage" aria-label="横版故事舞台，轻触空白处可以让伙伴走过去">
       <canvas class="story-scene-backdrop" id="story-scene-backdrop" width="1024" height="768" aria-hidden="true"></canvas>
+      <div class="ink-planet-stage" id="ink-planet-stage" hidden></div>
+      <div class="ink-planet-controls" id="ink-planet-controls" hidden>
+        <button id="ink-planet-reset" type="button" aria-label="复位小星球视角">复位</button>
+        <span id="ink-planet-hint">拖动看一看<br>双指缩放</span>
+      </div>
 
       <div class="npc-speech stage-speech character-bubble" id="npc-speech" role="button" tabindex="0" aria-label="跳过当前语音" aria-live="polite" data-bubble-shell data-bubble-key="npc" data-bubble-max-chars="15" hidden>
         <b id="npc-bubble-text" class="character-bubble__text" data-calligraph-bubble data-bubble-key="npc"></b>
@@ -168,6 +173,6 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
-  <script type="module" src="./src/story-v2.js?v=20260906-npc42-bubbles"></script>
+  <script type="module" src="./src/story-v2.js?v=20260909-scene-3d-switch"></script>
 </body>
 </html>

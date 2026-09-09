@@ -380,7 +380,7 @@
     #guide, #game-hud { background: var(--paper-light); }
   }
 </style>
-<link rel="stylesheet" href="./src/lab.css?v=20260901-two-stories">
+  <link rel="stylesheet" href="./src/lab.css?v=20260909-scene-3d-switch">
 <link rel="stylesheet" href="./src/app-navigation.css?v=20260828-style-editor">
 <link rel="stylesheet" href="./src/speech-bubble.css?v=20260901-loader-shadow">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
@@ -619,6 +619,11 @@
         </section>
 
         <section class="lab-panel" data-lab-panel="scene" role="tabpanel" hidden>
+          <label class="lab-scene-mode" for="lab-scene-3d">
+            <span><b id="lab-scene-3d-label">3D 场景</b><small id="lab-scene-3d-help">故事与模拟器共用，切换立即生效</small></span>
+            <input id="lab-scene-3d" type="checkbox" role="switch" checked aria-checked="true" aria-labelledby="lab-scene-3d-label" aria-describedby="lab-scene-3d-help">
+            <i aria-hidden="true"></i>
+          </label>
           <h2>把它放进一个世界</h2>
           <p class="panel-help">场景会改变落脚位置和动作。宇宙、云朵与海底会让它慢慢漂浮。</p>
           <div id="scene-groups" class="scene-groups" aria-label="场景分类"></div>
@@ -641,6 +646,8 @@
           <span class="character-bubble__tail" aria-hidden="true"></span>
         </div>
         <div id="lab-stage" aria-hidden="true"></div>
+        <div id="lab-planet-stage" hidden></div>
+        <button id="lab-planet-reset" class="lab-planet-reset" type="button" hidden>视角复位</button>
         <section id="character-call" class="character-call" role="dialog" aria-modal="true" aria-label="角色视频通话" hidden>
           <header class="character-call-head">
             <div class="character-call-person">
@@ -764,6 +771,6 @@
   </script>
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
-  <script type="module" src="./src/mode.js?v=20260901-grounded-guide"></script>
+  <script type="module" src="./src/mode.js?v=20260909-scene-3d-switch"></script>
 </body>
 </html>

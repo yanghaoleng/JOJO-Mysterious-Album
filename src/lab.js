@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { LabPlanetStage } from './lab-planet-stage.js';
+import { getScene3DEnabled, setScene3DEnabled, subscribeScene3D } from './scene-mode.js';
 import { PAPER, Sketch } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setHand, setRender, U } from './part.js';
@@ -401,6 +403,7 @@ let face;
 let recipe;
 let animator;
 let environment;
+let labPlanetStage = null;
 let sceneId = readSceneId();
 let characterBase = { x: 0, y: -1.02, scale: 1.08 };
 let resizeObserver;
@@ -1205,10 +1208,11 @@ function positionBubble() {
   const rect = preview?.getBoundingClientRect();
   if (!bubble || !rect?.width || !rect?.height) return;
   face.group.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
+  const viewCamera = labPlanetStage?.camera || camera;
+  viewCamera.updateMatrixWorld(true);
   bubbleAnchorWorld.copy(bubbleAnchorLocal);
   face.group.localToWorld(bubbleAnchorWorld);
-  bubbleAnchorWorld.project(camera);
+  bubbleAnchorWorld.project(viewCamera);
   const rawX = (bubbleAnchorWorld.x * .5 + .5) * rect.width;
   const rawY = (-bubbleAnchorWorld.y * .5 + .5) * rect.height;
   const halfWidth = Math.max(56, Math.min(bubbleMetrics.width * .5, rect.width * .5 - 11));
@@ -1220,6 +1224,7 @@ function positionBubble() {
 }
 
 function setEnvironment(id, { speak = true } = {}) {
+  labPlanetStage?.releaseActors();
   const config = sceneById(id);
   sceneId = config.id;
   try { localStorage.setItem(SCENE_KEY, sceneId); } catch { /* scene remains in memory */ }
@@ -1236,12 +1241,14 @@ function setEnvironment(id, { speak = true } = {}) {
     applyCharacterPlacement(0);
   }
   applySceneSpatialMetadata(config);
+  syncLabPlanetScene();
   refreshSceneControls();
   refreshCharacterEditorAppearance();
   if (speak && speaker) speaker.speak(config.line, { offlineKey: `scene-${config.id}` });
 }
 
 function buildNow() {
+  labPlanetStage?.releaseActors();
   if (face) {
     face.group.userData.softShadow?.userData.dispose?.();
     scene.remove(face.group);
@@ -1308,6 +1315,61 @@ function buildNow() {
   positionBubble();
   try { localStorage.setItem(RECIPE_KEY, JSON.stringify(recipe)); } catch { /* recipe remains in memory */ }
   refreshControls();
+  syncLabPlanetScene();
+}
+
+function refreshSceneModeControl() {
+  const enabled = getScene3DEnabled();
+  const control = $('lab-scene-3d');
+  if (control) { control.checked = enabled; control.setAttribute('aria-checked', String(enabled)); }
+  document.querySelector('.lab-preview')?.classList.toggle('is-planet', Boolean(labPlanetStage));
+  if ($('lab-planet-reset')) $('lab-planet-reset').hidden = !labPlanetStage;
+}
+
+function releaseLabPlanet() {
+  const oldStage = labPlanetStage;
+  labPlanetStage = null;
+  oldStage?.dispose();
+  if ($('lab-planet-stage')) $('lab-planet-stage').hidden = true;
+  if ($('lab-stage')) $('lab-stage').style.visibility = '';
+  refreshSceneModeControl();
+}
+
+function syncLabPlanetViewport() {
+  labPlanetStage?.setViewportInsets({ top: callState.active ? 145 : 86, bottom: callState.active ? 180 : 42, left: 18, right: 18 });
+}
+
+function syncLabPlanetScene() {
+  if (!active || !face || !getScene3DEnabled()) {
+    releaseLabPlanet();
+    if (active && renderer) { animationLoop.last = 0; renderer.setAnimationLoop(animationLoop); }
+    return;
+  }
+  const host = $('lab-planet-stage');
+  host.hidden = false;
+  try {
+    if (!labPlanetStage) {
+      labPlanetStage = new LabPlanetStage(host, () => {
+        const point = labPlanetStage?.getActorScreenPoint('lab-character', .65);
+        const rect = host.getBoundingClientRect();
+        if (point?.visible) respondToCharacterTap({ clientX: rect.left + point.x, clientY: rect.top + point.y });
+      });
+    }
+    // Only one loop updates the original animator and expression canvases.
+    renderer.setAnimationLoop(null);
+    labPlanetStage.setLabScene(sceneId, {
+      id: 'lab-character', holder: face.group, character: { name: characterTemplateById(activeTemplateId)?.name || '角色' },
+      update(time, dt) { animator?.update(time, dt); applyCharacterPlacement(time); positionBubble(); },
+    });
+    syncLabPlanetViewport();
+    $('lab-stage').style.visibility = 'hidden';
+    refreshSceneModeControl();
+  } catch (error) {
+    releaseLabPlanet();
+    renderer.setAnimationLoop(animationLoop);
+    console.error('Lab planet unavailable', error);
+    showStatus('这个设备暂时无法打开 3D 场景，已保留原来的绘本场景。');
+  }
 }
 
 function rebuild() {
@@ -1320,7 +1382,7 @@ function rebuild() {
 }
 
 function animationLoop(now) {
-  if (!active) return;
+  if (!active || labPlanetStage) return;
   const t = now / 1000;
   const dt = Math.min(.05, animationLoop.last ? (now - animationLoop.last) / 1000 : .016);
   animationLoop.last = now;
@@ -1438,6 +1500,11 @@ function renderSceneCards() {
 }
 
 function initScenePicker() {
+  $('lab-scene-3d').addEventListener('change', event => setScene3DEnabled(event.target.checked));
+  $('lab-planet-reset').addEventListener('click', () => labPlanetStage?.resetView());
+  $('lab-planet-stage').addEventListener('inkplanet:viewchange', positionBubble);
+  subscribeScene3D(() => { syncLabPlanetScene(); refreshSceneModeControl(); });
+  refreshSceneModeControl();
   const groups = $('scene-groups');
   for (const name of SCENE_GROUPS) {
     const button = document.createElement('button');
@@ -1529,10 +1596,11 @@ function pointGazeAt(clientX, clientY, { releaseAfter = 0 } = {}) {
   const preview = document.querySelector('.lab-preview');
   const rect = preview?.getBoundingClientRect();
   if (!rect?.width || !rect?.height) return;
-  scene.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
+  const viewCamera = labPlanetStage?.camera || camera;
+  (labPlanetStage?.scene || scene).updateMatrixWorld(true);
+  viewCamera.updateMatrixWorld(true);
   face.headGroup.getWorldPosition(pointerHeadWorld);
-  pointerHeadWorld.project(camera);
+  pointerHeadWorld.project(viewCamera);
   const headX = rect.left + (pointerHeadWorld.x * .5 + .5) * rect.width;
   const headY = rect.top + (-pointerHeadWorld.y * .5 + .5) * rect.height;
   const x = (clientX - headX) / (rect.width * .34);
@@ -2248,6 +2316,7 @@ function startCharacterCall(config) {
   const overlay = $('character-call');
   document.body.classList.add('character-call-active');
   preview.classList.add('is-calling');
+  syncLabPlanetViewport();
   for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = true;
   overlay.hidden = false;
   $('character-call-name').textContent = config.name;
@@ -2282,6 +2351,7 @@ function endCharacterCall() {
   callState.busy = false;
   document.body.classList.remove('character-call-active');
   document.querySelector('.lab-preview')?.classList.remove('is-calling');
+  syncLabPlanetViewport();
   for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = false;
   $('character-call').hidden = true;
   $('character-call-transcript').innerHTML = '';
@@ -3023,6 +3093,7 @@ export async function activateLab() {
   active = true;
   animationLoop.last = 0;
   renderer.setAnimationLoop(animationLoop);
+  syncLabPlanetScene();
   refreshProfile();
   refreshControls();
   refreshEditorGate();
@@ -3033,9 +3104,20 @@ export async function activateLab() {
 
 export function deactivateLab() {
   active = false;
+  releaseLabPlanet();
   if (renderer) renderer.setAnimationLoop(null);
   if (callState.active) endCharacterCall();
   speaker?.cancel();
 }
+
+// Read-only diagnostics for browser regression, never a second state store.
+window.__lab = Object.freeze({
+  get stage() { return labPlanetStage; }, get face() { return face; },
+  get scene() { return scene; }, get sceneId() { return sceneId; },
+  get active() { return active; }, get scene3DEnabled() { return getScene3DEnabled(); },
+  get animator() { return animator; }, get recipe() { return recipe; },
+});
+window.addEventListener('pagehide', () => { releaseLabPlanet(); renderer?.setAnimationLoop(null); });
+window.addEventListener('pageshow', () => { if (active) syncLabPlanetScene(); });
 
 export { VOICE_PRESETS, QUESTIONS, ACTION_PRESETS, INTERACTION_SCRIPTS, CHARACTER_TEMPLATES };

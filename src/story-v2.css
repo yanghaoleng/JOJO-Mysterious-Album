@@ -1027,6 +1027,65 @@ body[data-phase="interview"] .live-answer-bubble {
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* Only quest scenes borrow their existing actors into the shared planet.
+   Interview, creation and ending portraits keep their original canvases. */
+.ink-planet-stage {
+  position: absolute; z-index: 1; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse at 56% 30%, var(--planet-glow, #f5edda) 0%, transparent 64%),
+    linear-gradient(180deg, var(--planet-base, #eae5d5), var(--planet-horizon, #d7dfca));
+}
+.ink-planet-stage > canvas { display: block; width: 100%; height: 100%; }
+.ink-planet-controls {
+  position: absolute; z-index: 17;
+  left: max(14px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: 8px;
+  color: var(--ink-soft); pointer-events: none;
+}
+.ink-planet-controls button {
+  min-width: 44px; min-height: 44px; padding: 0 9px;
+  border: 1px solid rgba(58, 65, 52, .2); border-radius: 50%;
+  background: rgba(247, 241, 228, .83); color: var(--ink); font-size: 12px;
+  cursor: pointer; pointer-events: auto;
+}
+.ink-planet-controls span { font-size: 10px; line-height: 1.6; }
+.has-ink-planet .story-scene-backdrop { visibility: hidden; }
+body[data-phase="quest"] .has-ink-planet :is(.npc-wrap, .pet-stage, .npc-companion) {
+  position: absolute; right: auto; bottom: auto; margin: 0;
+  opacity: 1; transform: none; animation: none; transition: none;
+  pointer-events: none; will-change: auto;
+}
+body[data-phase="quest"] .has-ink-planet :is(.npc-wrap, .pet-stage, .npc-companion):focus-visible {
+  outline: 2px solid rgba(63, 80, 57, .48); outline-offset: 5px; border-radius: 20px;
+}
+body[data-phase="quest"] .has-ink-planet :is(#pet-canvas, .npc-character, .npc-companion canvas) { display: none; }
+body[data-phase="quest"] .has-ink-planet .npc-companions {
+  inset: 0; width: 100%; height: 100%; display: block; pointer-events: none;
+}
+body[data-phase="quest"] .has-ink-planet :is(.npc-wrap > b, .npc-companion > span) {
+  position: absolute; top: calc(100% + 7px); left: 50%; margin: 0;
+  width: max-content; max-width: 160px; transform: translateX(-50%);
+  padding: 3px 7px; border-radius: 12px; background: rgba(247, 241, 228, .7);
+  font-size: 11px; line-height: 1.3; white-space: normal; text-align: center;
+  color: #344131;
+}
+body[data-phase="quest"] .has-ink-planet .pet-thought {
+  bottom: auto; --bubble-rest-transform: translate(-50%, -100%); pointer-events: auto;
+}
+body[data-phase="quest"] .has-ink-planet .npc-speech { transition: width 250ms ease; }
+body[data-phase="quest"][data-planet-period="night"] .story-header {
+  background: none;
+}
+body[data-phase="quest"][data-planet-period="night"] :is(.quest-panel, .chapter-progress span.active) { color: var(--planet-ink, #f2eadb); }
+body[data-phase="quest"][data-planet-period="night"] :is(.quest-panel .section-label, .quest-panel .scene-heading > p, .chapter-progress span) { color: var(--planet-muted, #d3ccda); }
+body[data-phase="quest"][data-planet-period] .quest-panel h2 {
+  color: var(--planet-ink, var(--ink)); text-shadow: none;
+}
+body[data-phase="quest"][data-planet-period] .quest-panel :is(.section-label, .scene-heading > p) {
+  color: var(--planet-muted, var(--ink-soft)); text-shadow: none;
+}
+html[data-planet-preview="local-only"] body[data-phase="quest"] .voice-dock { display: none; }
+
 @media (max-width: 860px) {
   .story-header { grid-template-columns: 1fr; min-height: 66px; }
   .chapter-progress { position: fixed; left: 12px; right: 12px; top: 66px; width: auto; }

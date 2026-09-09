@@ -1,0 +1,76 @@
+import assert from 'node:assert/strict';
+import { createSceneModeStore, SCENE_3D_STORAGE_KEY } from './scene-mode.js';
+
+function browser(initial = null) {
+  const host = new EventTarget();
+  const items = new Map(initial === null ? [] : [[SCENE_3D_STORAGE_KEY, initial]]);
+  host.localStorage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };
+  host.storage = (key, newValue, storageArea = host.localStorage) => {
+    if (key === null) items.clear();
+    else if (storageArea === host.localStorage) newValue === null ? items.delete(key) : items.set(key, newValue);
+    host.dispatchEvent(Object.assign(new Event('storage'), { key, newValue, storageArea }));
+  };
+  return host;
+}
+
+const host = browser();
+const store = createSceneModeStore(host);
+assert.equal(store.get(), true, 'New users start in 3D without writing storage');
+assert.equal(host.localStorage.getItem(SCENE_3D_STORAGE_KEY), null);
+const changes = [];
+const unsubscribe = store.subscribe(value => changes.push(value));
+assert.equal(store.set(false), false);
+assert.deepEqual(changes, [false], 'Same-tab subscribers update synchronously');
+assert.equal(host.localStorage.getItem(SCENE_3D_STORAGE_KEY), 'false');
+const restored = createSceneModeStore(host);
+assert.equal(restored.get(), false, 'Explicit 2D survives a reload');
+store.set(false);
+assert.deepEqual(changes, [false], 'No duplicate notification');
+host.storage(SCENE_3D_STORAGE_KEY, 'true');
+assert.equal(store.get(), true);
+assert.equal(restored.get(), true, 'Other tabs update immediately');
+host.storage('unrelated-key', 'false');
+host.storage(SCENE_3D_STORAGE_KEY, 'false', {});
+assert.equal(store.get(), true, 'Ignore unrelated keys and sessionStorage');
+host.storage(SCENE_3D_STORAGE_KEY, 'false');
+host.storage(null, null);
+assert.equal(store.get(), true, 'Clear storage restores default 3D');
+host.storage(SCENE_3D_STORAGE_KEY, 'false');
+host.storage(SCENE_3D_STORAGE_KEY, null);
+assert.equal(store.get(), true, 'Removing preference restores default 3D');
+host.localStorage.setItem(SCENE_3D_STORAGE_KEY, 'false');
+host.dispatchEvent(new Event('pageshow'));
+assert.equal(store.get(), false, 'Restored pages reconcile the preference');
+unsubscribe();
+const count = changes.length;
+store.set(true);
+assert.equal(changes.length, count, 'Unsubscribe stops notifications');
+store.dispose(); restored.dispose();
+
+const restricted = new EventTarget();
+Object.defineProperty(restricted, 'localStorage', { get() { throw new Error('Blocked'); } });
+const privateStore = createSceneModeStore(restricted);
+assert.equal(privateStore.get(), true);
+privateStore.set(false);
+restricted.dispatchEvent(new Event('focus'));
+assert.equal(privateStore.get(), false, 'Storage failure preserves in-memory switching');
+privateStore.dispose();
+const quotaHost = browser();
+const writableSet = quotaHost.localStorage.setItem;
+quotaHost.localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
+const quotaStore = createSceneModeStore(quotaHost);
+quotaStore.set(false);
+quotaHost.dispatchEvent(new Event('focus'));
+quotaHost.dispatchEvent(new Event('pageshow'));
+assert.equal(quotaStore.get(), false, 'Readable but unwritable storage must not undo a local choice');
+quotaHost.storage(SCENE_3D_STORAGE_KEY, 'true');
+assert.equal(quotaStore.get(), true, 'A real change from another tab supersedes the unsaved choice');
+quotaStore.set(false);
+quotaHost.localStorage.setItem = writableSet;
+quotaStore.set(false);
+assert.equal(quotaHost.localStorage.getItem(SCENE_3D_STORAGE_KEY), 'false', 'A later successful write persists the choice');
+quotaHost.localStorage.setItem(SCENE_3D_STORAGE_KEY, 'true');
+quotaHost.dispatchEvent(new Event('focus'));
+assert.equal(quotaStore.get(), true);
+quotaStore.dispose();
+console.log('Scene mode: defaults, persistence, same-tab/cross-tab sync, restoration and restricted storage passed.');

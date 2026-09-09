@@ -14,6 +14,8 @@ import { storyBySlug } from './story-blueprints.js?v=20260906-document-npcs';
 import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260901-grounded-guide';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { createLegacyDocumentNpc } from './story-npcs/legacy-adapter.js';
+import { InkPlanetStage } from './ink-planet-stage.js';
+import { getScene3DEnabled, subscribeScene3D } from './scene-mode.js';
 import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
@@ -31,7 +33,12 @@ import {
 installUISFX();
 
 const activeRenderStyle = loadAppliedRenderStyle();
-const requestedStory = new URLSearchParams(location.search).get('story') || 'doudou';
+const storyParams = new URLSearchParams(location.search);
+const requestedStory = storyParams.get('story') || 'doudou';
+// This fixture is deliberately unavailable on the public site, even if its
+// query string is copied. It never opens a microphone or requests paid speech.
+const localPlanetPreview = ['localhost', '127.0.0.1'].includes(location.hostname)
+  && storyParams.get('preview') === 'planet';
 const story = storyBySlug(requestedStory);
 const CHAPTERS = story.chapters;
 const INTERVIEW_QUESTIONS = story.interviewQuestions;
@@ -130,12 +137,15 @@ let dialogueSequence = null;
 let dialogueSequenceId = 0;
 let activeSceneSpeaker = 'npc';
 let petWalkId = 0;
+let inkPlanetStage = null;
+let planetViewportFrame = 0;
+let displayedStoryScene = null;
 
 // Keep a single audio context unlocked from the child's first deliberate tap.
 // Later streamed replies can then play without relying on a delayed HTMLAudio
 // autoplay permission.
-document.addEventListener('pointerdown', () => { void storyRealtimeSpeech.unlock(); }, { capture: true });
-document.addEventListener('keydown', () => { void storyRealtimeSpeech.unlock(); }, { capture: true });
+document.addEventListener('pointerdown', () => { if (!localPlanetPreview) void storyRealtimeSpeech.unlock(); }, { capture: true });
+document.addEventListener('keydown', () => { if (!localPlanetPreview) void storyRealtimeSpeech.unlock(); }, { capture: true });
 
 const petTapLines = [
   '我在这里。',
@@ -239,6 +249,17 @@ function anchorStageSpeech() {
   const stage = $('world-stage');
   if (!bubble || bubble.hidden || !target || target.closest('[hidden]')) return;
   const stageRect = stage.getBoundingClientRect();
+  const planetPoint = inkPlanetStage?.getActorScreenPoint(activeSceneSpeaker === 'companion' ? 'companion-0' : 'npc', 1);
+  if (planetPoint && document.body.dataset.phase === 'quest') {
+    bubble.style.visibility = planetPoint.visible ? '' : 'hidden';
+    bubble.style.setProperty('--bubble-rest-transform', 'translate(-50%, -100%)');
+    bubble.style.maxWidth = `${Math.max(1, stageRect.width - 24)}px`;
+    const halfBubble = Math.min((bubble.offsetWidth || 260) / 2, stageRect.width / 2 - 12);
+    bubble.style.left = `${Math.max(halfBubble + 12, Math.min(stageRect.width - halfBubble - 12, planetPoint.x))}px`;
+    bubble.style.top = `${Math.max((bubble.offsetHeight || 70) + 90, planetPoint.y - 12)}px`;
+    return;
+  }
+  bubble.style.visibility = '';
   const targetRect = target.getBoundingClientRect();
   if (!targetRect.width || !targetRect.height) return;
   // The shared bubble stylesheet loads later and has its own rest transform.
@@ -271,6 +292,10 @@ function advanceBubble() {
 }
 
 async function speakBubblePage(kind, text, voice) {
+  if (localPlanetPreview) {
+    setBubble(kind, text, '', { complete: true });
+    return false;
+  }
   const skipId = speechSkipId;
   activeBubbleKind = kind;
   const fallbackDuration = estimatedSpeechTime(text);
@@ -340,6 +365,7 @@ function presentDialogueSequence(steps, onComplete) {
 }
 
 function showPanel(id, phase) {
+  if (phase !== 'quest') leavePlanetStage();
   for (const panelId of panels) $(panelId).hidden = panelId !== id;
   document.body.dataset.phase = phase;
   window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -383,6 +409,7 @@ class PetRenderer {
     this.holder = null;
     this.animator = null;
     this.documentNpc = null;
+    this.planetHosted = false;
     this.disposed = false;
     this.reactionTimer = null;
     this.options = { boil: true, blink: true, gaze: true, sway: true, breath: true, talk: false, amp: .95, phase: .4 };
@@ -394,6 +421,9 @@ class PetRenderer {
   }
 
   resize() {
+    // The shared stage owns the borrowed holder's fit. Calling the portrait
+    // adapter's fit here would silently change its height on the planet.
+    if (this.planetHosted) return;
     const rect = this.canvas.getBoundingClientRect();
     const width = this.documentNpc ? Math.max(1, Math.round(rect.width || 220)) : Math.max(220, Math.round(rect.width || 420));
     const height = this.documentNpc ? Math.max(1, Math.round(rect.height || 240)) : Math.max(240, Math.round(rect.height || 520));
@@ -411,7 +441,7 @@ class PetRenderer {
     clearTimeout(this.reactionTimer);
     this.animator = null;
     this.face?.dispose();
-    if (this.holder) this.scene.remove(this.holder);
+    this.holder?.removeFromParent();
     this.face = null;
     this.holder = null;
     this.documentNpc = null;
@@ -532,6 +562,7 @@ class PetRenderer {
     this.frame = requestAnimationFrame(this.tick);
     const dt = Math.min(.04, this.clock.getDelta());
     const elapsed = this.clock.elapsedTime;
+    if (this.planetHosted) return;
     this.animator?.update(elapsed, dt);
     if (!this.canvas.closest('[hidden]')) this.renderer.render(this.scene, this.camera);
   }
@@ -591,6 +622,138 @@ const companionRenderers = [
   new PetRenderer($('npc-companion-canvas-0')),
   new PetRenderer($('npc-companion-canvas-1')),
 ];
+
+const planetPortraits = () => [petRenderer, npcRenderer, ...companionRenderers];
+const planetHotspots = () => [
+  ['npc', $('npc-wrap')], ['pet', $('pet-stage')],
+  ...companionRenderers.map((renderer, index) => [`companion-${index}`, document.querySelector(`[data-companion="${index}"]`)]),
+];
+
+function releasePlanetActors() {
+  inkPlanetStage?.releaseActors();
+  for (const renderer of planetPortraits()) {
+    renderer.planetHosted = false;
+    renderer.resize();
+  }
+}
+
+function leavePlanetStage() {
+  releasePlanetActors();
+  inkPlanetStage?.dispose(); inkPlanetStage = null;
+  cancelAnimationFrame(planetViewportFrame);
+  $('ink-planet-stage').hidden = true;
+  $('ink-planet-controls').hidden = true;
+  $('world-stage').classList.remove('has-ink-planet');
+  delete document.body.dataset.planetPeriod;
+  for (const key of ['ink', 'muted']) document.body.style.removeProperty(`--planet-${key}`);
+  $('world-stage').setAttribute('aria-label', '横版故事舞台，轻触空白处可以让伙伴走过去');
+  for (const [, element] of planetHotspots()) {
+    if (!element) continue;
+    for (const property of ['left', 'top', 'width', 'height', 'visibility']) element.style.removeProperty(property);
+    element.removeAttribute('aria-hidden');
+  }
+  for (const id of ['pet-thought', 'npc-speech']) {
+    const bubble = $(id);
+    for (const property of ['left', 'top', 'bottom', 'visibility']) bubble.style.removeProperty(property);
+  }
+  for (const renderer of planetPortraits()) renderer.resize();
+}
+
+function syncPlanetHotspots() {
+  if (!inkPlanetStage || document.body.dataset.phase !== 'quest') return;
+  const rect = $('ink-planet-stage').getBoundingClientRect();
+  for (const [id, element] of planetHotspots()) {
+    if (!element) continue;
+    const head = inkPlanetStage.getActorScreenPoint(id, 1);
+    const foot = inkPlanetStage.getActorScreenPoint(id, 0);
+    const height = Math.max(44, Math.hypot(head.x - foot.x, head.y - foot.y));
+    const width = Math.min(190, Math.max(64, height * .78));
+    const left = (head.x + foot.x) / 2 - width / 2;
+    const top = Math.min(head.y, foot.y);
+    const visible = head.visible && foot.visible && left < rect.width && left + width > 0 && top < rect.height && top + height > 0;
+    element.style.left = `${left}px`; element.style.top = `${top}px`;
+    element.style.width = `${width}px`; element.style.height = `${height}px`;
+    element.style.visibility = visible ? '' : 'hidden';
+    element.setAttribute('aria-hidden', String(!visible));
+    if (id === 'pet') {
+      $('pet-thought').style.left = `${head.x - left}px`;
+      $('pet-thought').style.top = `${head.y - top - 12}px`;
+    }
+  }
+  anchorStageSpeech();
+}
+
+function updatePlanetViewport() {
+  cancelAnimationFrame(planetViewportFrame);
+  planetViewportFrame = requestAnimationFrame(() => {
+    if (!inkPlanetStage || document.body.dataset.phase !== 'quest') return;
+    const rect = $('ink-planet-stage').getBoundingClientRect();
+    const headingBottom = Math.max($('quest-panel').getBoundingClientRect().bottom, $('chapter-progress').getBoundingClientRect().bottom);
+    const dock = $('voice-dock').getBoundingClientRect();
+    inkPlanetStage.setViewportInsets({
+      // Desktop headings occupy a side column, not a full-width exclusion.
+      top: rect.width >= 860 ? 150 : Math.min(200, Math.max(135, headingBottom - rect.top + 12)),
+      bottom: dock.height ? Math.min(130, Math.max(108, rect.bottom - dock.top + 8)) : 90,
+      left: 18, right: 18,
+    });
+    inkPlanetStage.resize(); syncPlanetHotspots();
+  });
+}
+
+function createPlanetScene(scene) {
+  const container = $('ink-planet-stage');
+  container.hidden = false;
+  if (!inkPlanetStage) inkPlanetStage = new InkPlanetStage(container, id => {
+    const element = planetHotspots().find(([actorId]) => actorId === id)?.[1];
+    if (element && !element.hidden && element.getAttribute('aria-hidden') !== 'true') element.click();
+  });
+  const entry = (id, renderer, character, visible) => {
+    renderer.planetHosted = true;
+    return { id, holder: renderer.holder, character, visible, update: (time, dt) => renderer.animator?.update(time, dt) };
+  };
+  const entries = [entry('npc', npcRenderer, scene.npc, !$('npc-wrap').hidden)];
+  scene.cast.slice(0, 1).forEach((character, index) => entries.push(entry(`companion-${index}`, companionRenderers[index], character, !document.querySelector(`[data-companion="${index}"]`).hidden)));
+  if (petRenderer.holder) entries.push(entry('pet', petRenderer, { name: state.petName }, !$('pet-stage').hidden));
+  inkPlanetStage.setStoryScene(scene, entries);
+  document.body.dataset.planetPeriod = container.dataset.period || 'day';
+  for (const key of ['ink', 'muted']) {
+    document.body.style.setProperty(`--planet-${key}`, container.style.getPropertyValue(`--planet-${key}`));
+  }
+  $('world-stage').classList.add('has-ink-planet');
+  $('world-stage').setAttribute('aria-label', '水墨小星球故事舞台，拖动调整视角，轻触角色互动');
+  $('ink-planet-controls').hidden = false;
+  updatePlanetViewport();
+}
+
+function mountPlanetScene(scene) {
+  try {
+    createPlanetScene(scene);
+    delete document.documentElement.dataset.scene3dUnavailable;
+  } catch (error) {
+    // A device may support the portrait canvases but refuse one more context.
+    // Restore the original scene so the same dialogue can still continue.
+    leavePlanetStage();
+    document.documentElement.dataset.scene3dUnavailable = 'true';
+    console.warn('3D scene unavailable; continuing with the illustrated scene.', error);
+  }
+}
+
+function applySceneDepth() {
+  const enabled = getScene3DEnabled();
+  document.documentElement.dataset.scene3d = String(enabled);
+  if (!enabled) {
+    leavePlanetStage();
+    requestAnimationFrame(anchorStageSpeech);
+    return;
+  }
+  if (document.body.dataset.phase !== 'quest' || !displayedStoryScene || inkPlanetStage) return;
+  // Only exchange the rendering surface: keep dialogue, inventory, progress,
+  // actor identities and the current microphone session exactly as they are.
+  petWalkId += 1;
+  $('pet-stage').classList.remove('is-walking');
+  mountPlanetScene(displayedStoryScene);
+}
+
 guideRenderer.buildRecipe(makeStoryGuideRecipe(story.guide.template), { scaleMultiplier: 1.56, offsetY: -1.08 });
 
 function stopAudio() {
@@ -619,6 +782,7 @@ function stopAudio() {
 }
 
 async function playTts(text, voice, { pet = false, npc = false, onTimeline = null } = {}) {
+  if (localPlanetPreview) return false;
   stopAudio();
   const requestId = activeTtsRequest;
   const npcVoiceRenderer = activeSceneSpeaker === 'companion' ? companionRenderers[0] : npcRenderer;
@@ -1003,6 +1167,7 @@ async function stopGuideVoiceSession() {
 }
 
 async function startGuideVoiceSession() {
+  if (localPlanetPreview) return;
   if (guideVoiceSession.active || state.busy) return;
   const Recognition = recognitionConstructor();
   if (!Recognition || !navigator.mediaDevices?.getUserMedia) {
@@ -1072,6 +1237,7 @@ async function handleGuideUtterance(browserText) {
 }
 
 function toggleGuideVoice() {
+  if (localPlanetPreview) { toast('本地舞台预览不会打开麦克风。'); return; }
   if (state.busy || guideVoiceSession.processing || guideVoiceSession.speaking) return;
   if (!guideVoiceSession.active) {
     startGuideVoiceSession();
@@ -1328,6 +1494,7 @@ function showPetThought(text, duration = 5200) {
 }
 
 async function movePetTo(clientX, clientY) {
+  if (inkPlanetStage && document.body.dataset.phase === 'quest') return;
   const walkId = ++petWalkId;
   const stage = $('world-stage').getBoundingClientRect();
   const pet = $('pet-stage').getBoundingClientRect();
@@ -1398,6 +1565,7 @@ function fallbackSceneTurn(scene, answer) {
 }
 
 async function understandSceneAnswer(scene, answer) {
+  if (localPlanetPreview) return fallbackSceneTurn(scene, answer);
   try {
     const response = await fetch('/api/story-turn', {
       method: 'POST',
@@ -1455,6 +1623,7 @@ function fallbackDirectorTurn(scene, answer) {
 }
 
 async function understandDirectorAnswer(scene, answer) {
+  if (localPlanetPreview) return fallbackDirectorTurn(scene, answer);
   try {
     const response = await fetch('/api/moon-director', {
       method: 'POST',
@@ -1622,6 +1791,8 @@ function renderSceneCast(scene) {
 function enterMainCharacter(scene) {
   const npc = $('npc-wrap');
   npc.hidden = false;
+  inkPlanetStage?.setActorVisible('npc', true);
+  syncPlanetHotspots();
   npcRenderer.resize();
   npc.dataset.entry = scene.npc.entrance || 'right';
   npc.classList.remove('is-entered', 'is-entering');
@@ -1640,6 +1811,8 @@ function enterCompanion(scene, index = 0) {
   if (!character || !button) return;
   $('npc-companions').hidden = false;
   button.hidden = false;
+  inkPlanetStage?.setActorVisible(`companion-${index}`, true);
+  syncPlanetHotspots();
   companionRenderers[index].resize();
   button.dataset.entry = character.entrance || 'left';
   button.classList.remove('is-entered', 'is-entering');
@@ -1655,6 +1828,8 @@ function enterCompanion(scene, index = 0) {
 function enterPet() {
   const pet = $('pet-stage');
   pet.hidden = false;
+  inkPlanetStage?.setActorVisible('pet', true);
+  syncPlanetHotspots();
   pet.dataset.entry = story.initialPet?.entrance || 'house';
   pet.classList.remove('show', 'is-entering');
   void pet.offsetWidth;
@@ -1677,6 +1852,8 @@ function setSceneSpeaker(scene, speaker = 'npc') {
 
 async function renderScene(scene) {
   state.busy = true;
+  releasePlanetActors();
+  displayedStoryScene = scene;
   renderStoryBackdrop(scene);
   showPanel('quest-panel', 'quest');
   const chapter = CHAPTERS.find(item => item.number === scene.chapter);
@@ -1693,6 +1870,27 @@ async function renderScene(scene) {
   delete npc.dataset.entry;
   $('npc-name').textContent = scene.npc.name;
   renderSceneCast(scene);
+  if (getScene3DEnabled()) mountPlanetScene(scene);
+  else leavePlanetStage();
+  if (localPlanetPreview) {
+    enterPet(); enterMainCharacter(scene);
+    scene.cast.slice(0, 1).forEach((character, index) => enterCompanion(scene, index));
+    state.busy = false;
+    guideVoiceSession.speaking = false;
+    setGuideVoiceUi('paused', '本地星球预览，不打开麦克风、不请求语音');
+    $('mic-button').disabled = true;
+    $('mic-button').setAttribute('aria-label', '本地预览，麦克风未开启');
+    // The no-audio preview can run before the calligraph React effect subscribes.
+    // Reissue briefly until its visible text acknowledges the real scene line.
+    setSceneSpeaker(scene, 'npc');
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      setBubble('npc', scene.dialogue, '', { complete: true });
+      await delay(50);
+      if ($('npc-bubble-text').textContent === scene.dialogue) break;
+    }
+    document.documentElement.dataset.planetPreviewReady = scene.id;
+    return;
+  }
   await delay(240);
   petRenderer.react(scene.chapter === 3 ? 'brave' : 'idle');
   guideVoiceSession.speaking = true;
@@ -2054,8 +2252,13 @@ $('pet-stage').addEventListener('keydown', event => {
   }
 });
 $('world-stage').addEventListener('click', event => {
+  if (inkPlanetStage && document.body.dataset.phase === 'quest') return;
   if (!$('pet-stage').hidden && !state.busy) void movePetTo(event.clientX, event.clientY);
 });
+$('ink-planet-reset').addEventListener('click', event => {
+  event.stopPropagation(); inkPlanetStage?.resetView(); syncPlanetHotspots();
+});
+$('ink-planet-stage').addEventListener('inkplanet:viewchange', syncPlanetHotspots);
 $('backpack-button').addEventListener('click', () => $('backpack-dialog').showModal());
 $('close-backpack').addEventListener('click', () => $('backpack-dialog').close());
 $('backpack-dialog').addEventListener('click', event => {
@@ -2070,18 +2273,29 @@ mountAppNavigation($('story-navigation'), {
 });
 
 configureStoryPage();
+applySceneDepth();
+const unsubscribeSceneDepth = subscribeScene3D(applySceneDepth);
 renderStoryBackdrop(SCENES[0]);
 // Calligraph changes the bubble width while revealing a longer sentence.
 // Re-anchor to the final size as well as the first, shorter animation frame.
 const stageSpeechResize = typeof ResizeObserver === 'function' ? new ResizeObserver(anchorStageSpeech) : null;
 stageSpeechResize?.observe($('npc-speech'));
-addEventListener('resize', () => requestAnimationFrame(anchorStageSpeech), { passive: true });
-addEventListener('beforeunload', () => {
+const planetUiResize = typeof ResizeObserver === 'function' ? new ResizeObserver(updatePlanetViewport) : null;
+planetUiResize?.observe($('quest-panel')); planetUiResize?.observe($('voice-dock'));
+addEventListener('resize', () => { requestAnimationFrame(anchorStageSpeech); updatePlanetViewport(); }, { passive: true });
+addEventListener('pagehide', event => {
   stopRecognition();
   stopGuideVoiceSession();
+  leavePlanetStage();
+  // Back/forward cache retains this document. Keep the original characters
+  // and preference subscription alive so returning also honours a new mode.
+  if (event.persisted) return;
   stageSpeechResize?.disconnect();
+  planetUiResize?.disconnect();
+  unsubscribeSceneDepth();
   for (const renderer of [guideRenderer, petRenderer, npcRenderer, ...companionRenderers]) renderer.dispose();
 });
+addEventListener('pageshow', event => { if (event.persisted) applySceneDepth(); });
 addEventListener('storage', event => {
   if (event.key === RENDER_STYLE_STORAGE_KEY) location.reload();
 });
@@ -2092,4 +2306,26 @@ window.__storyV2 = {
   story, state, activeRenderStyle, ITEMS, SCENES, guideRenderer, petRenderer, npcRenderer, companionRenderers, renderScene, renderStoryBackdrop, collectItem, finishStory,
   beginInterview, submitInterviewAnswer, finishInterview, submitSceneAnswer, resolveSceneChoice,
   resolveDirectorTurn, drawInvention, setVoiceState: setGuideVoiceUi, setBubble, advanceBubble, skipCurrentSpeech, movePetTo,
+  get inkPlanetStage() { return inkPlanetStage; }, localPlanetPreview,
 };
+
+async function beginPlanetPreview() {
+  if (!localPlanetPreview) return;
+  const preset = story.initialPet || { templateId: 'snow-rabbit', name: '雪团小兔', palette: 'moss', feature: 'listening-ears' };
+  const template = storyCharacterTemplateById(preset.templateId);
+  state.petTemplate = template;
+  state.pet = {
+    seed: hashString(`${story.id}|planet-preview|${template.seed}`),
+    templateId: template.id, templateName: template.name, species: template.species,
+    palette: preset.palette, feature: preset.feature,
+  };
+  state.petName = preset.name; state.petVoice = pickPetVoice(); state.petIntroduced = true;
+  petRenderer.build(state.pet);
+  const index = SCENES.findIndex(scene => scene.id === storyParams.get('scene'));
+  state.sceneIndex = index >= 0 ? index : 0;
+  $('chapter-progress').hidden = false; $('backpack-button').hidden = false;
+  $('pet-stage').hidden = false; $('pet-stage').classList.add('show');
+  document.documentElement.dataset.planetPreview = 'local-only';
+  await renderScene(SCENES[state.sceneIndex]);
+}
+if (localPlanetPreview) void beginPlanetPreview();
