@@ -51,7 +51,10 @@ function storyCast(scene) { return story?.id === 'wow' ? scene.cast : [...scene.
 function syncWowPresentation(lit = false) {
   if (story?.id !== 'wow') return;
   if (!wowPresentation) wowPresentation = createWowPresentation(stage);
-  wowPresentation.set(wowVisualState(story.scenes[state.sceneIndex], state, lit));
+  const visualState = wowVisualState(story.scenes[state.sceneIndex], state, lit);
+  stage.onCuriosityTheme = applyEnvironmentTheme;
+  stage.setCuriosityProgress(visualState.progress);
+  wowPresentation.set(visualState);
 }
 
 async function handleWowAnswer(raw) {
@@ -130,13 +133,16 @@ function setWorld(worldId, cast, options) {
   wowPresentation?.dispose(); wowPresentation = null;
   stage.setScene(worldId, cast, options);
   const environment = stage.world?.atmosphere;
-  if (environment) {
+  if (environment) applyEnvironmentTheme(environment);
+  scheduleFraming();
+}
+
+function applyEnvironmentTheme(environment) {
+    document.body.dataset.curiosity = String(Boolean(environment.curiosity));
     document.body.dataset.period = environment.period;
     for (const key of ['base', 'glow', 'horizon']) document.body.style.setProperty(`--sky-${key}`, environment[key]);
     for (const key of ['ink', 'muted', 'accent', 'paper']) document.body.style.setProperty(`--${key}`, environment[key]);
     document.querySelector('meta[name="theme-color"]').content = environment.base;
-  }
-  scheduleFraming();
 }
 
 function setStoryMenu(open, restoreFocus = false) {

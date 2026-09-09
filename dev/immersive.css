@@ -109,6 +109,19 @@ body[data-view=story] .ending blockquote { margin: 14px 0 18px; font-size: 18px;
 body[data-view=story] .notice { top: 142px; bottom: auto; background: color-mix(in srgb, var(--ink) 92%, transparent); }
 .transition { background: var(--sky-base); }
 
+/* Keep dialogue readable while the WOW sky passes through grey dawn. */
+body[data-curiosity=true] .topbar { background: linear-gradient(to bottom, var(--paper), transparent); }
+body[data-curiosity=true] .scene-caption {
+  padding: 10px 14px; margin-left: -14px; border-radius: 16px;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+}
+body[data-curiosity=true] .story-panel::before {
+  background: linear-gradient(to top, var(--paper) 20%, color-mix(in srgb, var(--paper) 96%, transparent) 55%, transparent);
+}
+body[data-curiosity=true] .notice { background: #26394ef5; color: #fff8ed; }
+body[data-view=story] .text-form input { color: var(--ink); }
+body[data-view=story] .text-form input::placeholder { color: var(--muted); opacity: 1; }
+
 @media(max-width: 680px) {
   body[data-view=story] .topbar { height: calc(64px + env(safe-area-inset-top)); padding: calc(9px + env(safe-area-inset-top)) 16px 9px; }
   body[data-view=story] .scene-caption { left: 23px; top: calc(78px + env(safe-area-inset-top)); }

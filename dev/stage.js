@@ -8,6 +8,7 @@ import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 const clamp = THREE.MathUtils.clamp;
 const UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_PITCH = .25;
+const blendHex = (from, to, progress) => `#${[1, 3, 5].map(index => Math.round(THREE.MathUtils.lerp(parseInt(from.slice(index, index + 2), 16), parseInt(to.slice(index, index + 2), 16), progress)).toString(16).padStart(2, '0')).join('')}`;
 const boxCorners = box => [0, 1, 2, 3, 4, 5, 6, 7].map(index => new THREE.Vector3(
   index & 1 ? box.max.x : box.min.x,
   index & 2 ? box.max.y : box.min.y,
@@ -257,7 +258,48 @@ export class DioramaStage {
     if (!this.lightingInitialized) { this.updateLighting(1, true); this.lightingInitialized = true; }
   }
 
+  setCuriosityProgress(progress) {
+    const target = clamp(Number(progress) || 0, 0, 1);
+    if (!this.curiosity) {
+      this.curiosity = { progress: target, target };
+      this.scene.fog = new THREE.Fog('#46566b', 20.2, 28.8);
+      this.updateLighting(1, true);
+    } else this.curiosity.target = target;
+  }
+
   updateLighting(dt, immediate = false) {
+    if (this.curiosity) {
+      const current = this.curiosity;
+      if (!immediate && current.applied && current.progress === current.target) return;
+      current.progress = immediate || this.reduced ? current.target : THREE.MathUtils.lerp(current.progress, current.target, 1 - Math.exp(-dt * 1.8));
+      if (Math.abs(current.progress - current.target) < .0001) current.progress = current.target;
+      const clarity = THREE.MathUtils.smoothstep(current.progress, 0, 1);
+      const blend = (from, to) => blendHex(from, to, clarity);
+      const mix = (from, to) => THREE.MathUtils.lerp(from, to, clarity);
+      this.hemisphere.color.set(blend('#91adc9', '#fff5dc'));
+      this.hemisphere.groundColor.set(blend('#34445b', '#a7b28d'));
+      this.sun.color.set(blend('#bed3f0', '#ffedc5'));
+      this.rim.color.set(blend('#a7c1ed', '#e2edf0'));
+      this.hemisphere.intensity = mix(.78, 2.0);
+      this.sun.intensity = mix(.38, 2.4);
+      this.rim.intensity = mix(.48, .65);
+      this.renderer.toneMappingExposure = mix(.76, 1.08);
+      this.scene.fog.color.set(blend('#46566b', '#e4e9db'));
+      this.scene.fog.near = mix(20.2, 40);
+      this.scene.fog.far = mix(28.8, 90);
+      const starMaterial = this.space.children[0]?.material;
+      if (starMaterial) starMaterial.opacity = mix(.65, .08);
+      const dark = clarity < .5;
+      this.onCuriosityTheme?.({
+        curiosity: true,
+        period: clarity < .2 ? 'night' : clarity < .8 ? 'dusk' : 'day',
+        base: blend('#152033', '#f6eedc'), glow: blend('#263e55', '#fff2cf'), horizon: blend('#34485e', '#dce9d9'),
+        ink: dark ? '#fff8ed' : '#35434a', muted: dark ? '#d9e2e9' : '#5c686b',
+        paper: dark ? '#28394e' : '#fff8eb', accent: dark ? '#66838c' : '#647958',
+      });
+      current.applied = true;
+      return;
+    }
     const target = this.lightingTarget;
     if (!target) return;
     const blend = immediate || this.reduced ? 1 : 1 - Math.exp(-dt * 3.2);
@@ -273,6 +315,8 @@ export class DioramaStage {
   }
 
   setScene(worldId, cast = [], { studio = false } = {}) {
+    this.curiosity = null;
+    this.scene.fog = null;
     this.clearInvention();
     if (this.world) { this.scene.remove(this.world.group); this.world.dispose(); }
     for (const actor of this.actors.values()) { this.scene.remove(actor.group); actor.dispose(); }
@@ -456,6 +500,7 @@ export class DioramaStage {
       focus: { target: this.target.toArray(), ...this.characterFocus, projectedActors, projectedInvention: this.invention ? projectedBounds(this.invention) : null },
       safeViewport: viewport ? { ...viewport, insets: { ...viewport.insets } } : null,
       lighting: { period: this.world?.atmosphere?.period || 'day', sky: this.hemisphere.color.getHexString(), bounce: this.hemisphere.groundColor.getHexString(), sun: this.sun.color.getHexString(), rim: this.rim.color.getHexString(), hemisphereIntensity: this.hemisphere.intensity, sunIntensity: this.sun.intensity, rimIntensity: this.rim.intensity, exposure: this.renderer.toneMappingExposure },
+      curiosity: this.curiosity ? { progress: this.curiosity.progress, target: this.curiosity.target, fogNear: this.scene.fog.near, fogFar: this.scene.fog.far } : null,
       planet: this.world?.planet ? { radius: this.world.planet.radius, center: this.world.planet.center.toArray() } : null,
       actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray(), grounding: actor.group.userData.grounding })),
       invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [],

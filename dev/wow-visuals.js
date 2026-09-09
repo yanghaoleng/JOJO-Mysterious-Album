@@ -27,7 +27,7 @@ function sculpture() {
     const result = mesh(parent, name, new THREE.CylinderGeometry(radius, radius, delta.length(), 12), material, start.add(end).multiplyScalar(.5).toArray());
     result.quaternion.setFromUnitVectors(UP, delta.normalize()); return result;
   };
-  return { group, mat, mesh, ball, rod, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
+  return { group, mat, mesh, ball, rod, ownMaterial(value) { materials.add(value); return value; }, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
     geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());
     group.removeFromParent();
   } };
@@ -209,7 +209,7 @@ export function createWowPresentation(stage) {
   const s = sculpture(), { group, mat, mesh, ball, rod } = s;
   group.name = 'wow-story-props';
   stage.scene.add(group);
-  const nodes = {}, fogMaterials = [], tokens = [];
+  const nodes = {}, fogMaterials = [], tokens = [], fogVolumes = [];
   const brass = mat('#caa564', {}, 'paint'), cream = mat('#f3e7cf'), dark = mat('#666b72', {}, 'ink');
   const teal = mat('#85a9a9', {}, 'paint'), wood = mat('#b99572', {}, 'wood');
   const glow = mat('#fff1b1', { emissive: '#ffe091', emissiveIntensity: .65 }, 'ink');
@@ -268,13 +268,63 @@ export function createWowPresentation(stage) {
   rod(key,'key-tooth-b',brass,[0,.35,0],[.14,.35,0],.045);
 
   const mist=node('mist');
-  [[-2.1,.48,-.4,.6], [2,.6,-.8,.7], [.1,.52,-1.5,.66]].forEach(([x,y,z,r],i)=>{
-    const fog=mat('#bfc4c5',{transparent:true,opacity:.12,depthWrite:false});fogMaterials.push(fog);
-    ball(mist,`mist-${i}`,fog,[x,y,z],[r*1.7,r*.46,r]);
+  const mistNight=new THREE.Color('#46566b'), mistDawn=new THREE.Color('#a8b6c0');
+  // Real volumes occupy the middle and far ground. The centre-front opening
+  // keeps MOMO's face readable, while depth testing lets near objects emerge
+  // through the banks. A soft silhouette avoids opaque-looking clay clouds.
+  const mistVertex=`
+    varying vec3 vMistNormal;
+    varying vec3 vMistView;
+    varying vec3 vMistLocal;
+    #include <fog_pars_vertex>
+    void main() {
+      vMistNormal=normalize(normalMatrix*normal);
+      vMistLocal=position;
+      vec4 mvPosition=modelViewMatrix*vec4(position,1.0);
+      vMistView=-mvPosition.xyz;
+      gl_Position=projectionMatrix*mvPosition;
+      #include <fog_vertex>
+    }`;
+  const mistFragment=`
+    uniform vec3 uColor;
+    uniform float uOpacity;
+    uniform float uTime;
+    varying vec3 vMistNormal;
+    varying vec3 vMistView;
+    varying vec3 vMistLocal;
+    #include <fog_pars_fragment>
+    void main() {
+      float facing=max(0.0,dot(normalize(vMistNormal),normalize(vMistView)));
+      float wisps=.83+.10*sin(vMistLocal.x*4.1+vMistLocal.y*3.2+uTime*.075)
+        +.07*sin(vMistLocal.z*5.0-vMistLocal.x*3.3-uTime*.055);
+      float alpha=uOpacity*pow(facing,1.15)*wisps;
+      gl_FragColor=vec4(uColor,alpha);
+      #include <fog_fragment>
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`;
+  [
+    [0,1.40,-1.25,1.70,1.06,.75,.40],
+    [-1.42,1.10,-1.00,1.35,.82,.72,.34],
+    [1.50,1.10,-.97,1.50,.85,.76,.36],
+    [-.45,2.04,-2.20,1.60,.70,.70,.38],
+    [1.75,2.05,-2.05,1.50,.76,.76,.34],
+    [-1.32,.58,.35,.78,.49,.59,.24],
+    [1.32,.61,.47,.87,.55,.62,.25],
+    [.65,.22,-.33,1.65,.35,.70,.26],
+  ].forEach(([x,y,z,sx,sy,sz,density],i)=>{
+    const fog=s.ownMaterial(new THREE.ShaderMaterial({
+      uniforms:{...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),uColor:{value:mistNight.clone()},uOpacity:{value:density},uTime:{value:0}},
+      vertexShader:mistVertex,fragmentShader:mistFragment,transparent:true,depthWrite:false,fog:true,
+    }));
+    fog.userData.density=density;fogMaterials.push(fog);
+    const volume=ball(mist,`mist-${i}`,fog,[x,y,z],[sx,sy,sz]);
+    volume.castShadow=false;volume.receiveShadow=false;
+    volume.userData.basePosition=[x,y,z];fogVolumes.push(volume);
   });
   stage.style?.apply(group);
-  let targetLight=0, light=0, live=false, lastTime=0, frame=0;
-  let state={chapter:1,scene:0,kind:'observe',props:[],colors:[],visual:null,lit:false};
+  let targetProgress=0, progress=0, live=false, lastTime=0, frame=0, initialized=false, lastWorld=null;
+  let state={chapter:1,scene:0,kind:'observe',props:[],colors:[],visual:null,lit:false,progress:0};
   const anchor=(name,x,z,y=0,scale=1)=>{
     const value=nodes[name];
     value.position.copy(stage.world?.surfacePoint?.(x,z,y)||new THREE.Vector3(x,y,z));
@@ -282,33 +332,54 @@ export function createWowPresentation(stage) {
     value.scale.setScalar(scale);
   };
   function paintLight() {
-    fogMaterials.forEach(material=>{material.opacity=.135*(1-light);});
-    beamMaterial.opacity=.13*light;
-    glow.emissiveIntensity=.25+light*.7;
-    lamp.intensity=light*.7;
+    const clarity=THREE.MathUtils.smoothstep(progress,0,1);
+    const remaining=Math.pow(1-clarity,1.15);
+    fogMaterials.forEach(material=>{
+      material.uniforms.uOpacity.value=material.userData.density*remaining;
+      material.uniforms.uColor.value.copy(mistNight).lerp(mistDawn,clarity*.8);
+    });
+    fogVolumes.forEach(volume=>{
+      const [x,y,z]=volume.userData.basePosition;
+      volume.position.set(x+Math.sign(x)*clarity*.32,y+clarity*.12,z);
+    });
+    const torchOn=torch.visible&&(state.lit||progress>0||state.chapter>1);
+    // Finding the torch opens a small warm pool. Only conversation progress
+    // disperses the chapter's fog and gradually extends that pool of light.
+    beamMaterial.opacity=torchOn ? .075+.11*clarity : 0;
+    glow.emissiveIntensity=.2+(torchOn?.4:0)+clarity*.65;
+    lamp.intensity=torchOn?.24+clarity*.76:0;
+    lamp.distance=2.1+clarity*1.6;
     doorGlow.emissiveIntensity=state.visual?.shape?.length ? .48 : .1;
     doorGlow.color.set(state.visual ? '#f5e0b1' : '#c1c6c3');
+    group.userData.progress=progress;
+    group.userData.mistDensity=remaining;
   }
   function animate(now) {
     if(!live)return;
     const dt=Math.min(.06,(now-lastTime)/1000||.016);lastTime=now;
     if(!document.hidden){
-      light=THREE.MathUtils.lerp(light,targetLight,1-Math.exp(-dt*3));
+      progress=THREE.MathUtils.lerp(progress,targetProgress,1-Math.exp(-dt*2.4));
       paintLight();
+      if(!stage.reduced)fogMaterials.forEach(material=>{material.uniforms.uTime.value=now/1000;});
       if(key.visible&&!stage.reduced)key.rotation.y=Math.sin(now*.0008)*.2;
     }
     frame=requestAnimationFrame(animate);
   }
   function set(next={}) {
-    state={...state,...next};
+    const chapterChanged=next.chapter!==undefined&&next.chapter!==state.chapter;
+    state={...state,...next,...(chapterChanged&&next.progress===undefined?{progress:0}:{})};
     if(group.parent!==stage.scene)stage.scene.add(group);
     const props=new Set(state.props||[]);
     torch.visible=props.has('torch');radio.visible=props.has('radio');jar.visible=props.has('jar');
     door.visible=state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6);
     key.visible=Boolean(state.visual);
-    // A retained colour or a passed introduction means the light was earned.
-    targetLight=state.lit||(state.colors?.length>0)||(props.has('torch')&&(state.chapter>1||state.scene>1))?1:0;
-    if(stage.reduced){light=targetLight;paintLight();}
+    const requested=Number(state.progress);
+    targetProgress=Number.isFinite(requested)?THREE.MathUtils.clamp(requested,0,1):0;
+    // A newly mounted world starts at its saved chapter progress immediately.
+    // This also prevents one bright frame from the preceding chapter, while
+    // accepted answers within the same world still produce a gradual reveal.
+    if(!initialized||chapterChanged||lastWorld!==stage.world||stage.reduced)progress=targetProgress;
+    initialized=true;lastWorld=stage.world;
     tokens.forEach((token,i)=>{token.visible=i<(state.colors?.length||0);});
     if(state.visual){
       const shape=['star','moon','leaf','heart','cloud','fish'].includes(state.visual.shape)?state.visual.shape:'star';
@@ -328,8 +399,8 @@ export function createWowPresentation(stage) {
     anchor('jar',spot.x+1.45,spot.z+1.3,0,.76);
     anchor('door',spot.x+1.1,spot.z-.65,0,.7);
     anchor('key',spot.x+.95,spot.z+.6,.03,.75);
-    anchor('mist',0,0,0,1);
-    group.userData.state={chapter:state.chapter,scene:state.scene,props:[...props],colors:state.colors?.length||0,key:state.visual?.shape||null,lit:!!targetLight};
+    anchor('mist',spot.x,spot.z,0,1);
+    group.userData.state={chapter:state.chapter,scene:state.scene,props:[...props],colors:state.colors?.length||0,key:state.visual?.shape||null,lit:!!state.lit,progress:targetProgress};
     paintLight();
     if(!live){live=true;frame=requestAnimationFrame(animate);}
   }

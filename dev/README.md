@@ -71,3 +71,5 @@ node dev/tools/verify-voice.mjs
 `wow-story.js` 适配同一份 `src/wow-story-data.js`，以独立 `jma.dev.clay.v1.story.wow` 保存记录；不会读写原版好奇光存档。`wow-visuals.js` 提供六种实体MOMO、星星窗、三道具、六种钥匙形状与随回应变化的光。复用 `/api/wow-turn` 的AI短回应与受限形状/颜色映射；断网时采用同一安全规则的本地回应，并标示来源。完成后可下载保留原话的HTML纪念册。
 
 角色站立时按真实足底几何和球面曲率计算接触位置，随体型、摆动和迈步更新；显式跳跃高度单独保留。`verify-grounding.mjs` 检查56种角色、两种尺寸与2352个动作姿态，避免固定抬高造成的悬空。新增MOMO通过 `config.createActor({scale})` 接入舞台。
+
+每章从夜色与迷雾开始。只有本章已经接纳的回答推进光照和能见度，重复、等待或取消不增加进度；收集本章颜色时进入清晨，下一章重回浓雾。八层柔边实体雾与场景深度雾共同遮挡中远景，MOMO面部仍可辨认。按保存进度恢复明暗，减少动态模式直接应用目标状态。`node dev/tools/verify-wow-atmosphere.mjs` 检查六章进度、光照、雾距离、恢复与隔离。
