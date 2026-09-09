@@ -8,7 +8,7 @@
   <meta name="description" content="在萌萌星的立体小世界里，和新伙伴一起听故事、想办法。">
   <title>萌萌星 · 立体故事工坊</title>
   <link rel="icon" href="../favicon.ico">
-  <link rel="stylesheet" href="./app.css?v=20260906-planet">
+  <link rel="stylesheet" href="./app.css?v=20260909-read-along">
   <link rel="stylesheet" href="./immersive.css?v=20260909-curiosity-fog">
 </head>
 <body data-view="home">
@@ -53,8 +53,9 @@
         <span class="speaking-bars" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
       <div class="story-start" id="story-start"><button class="primary" id="start-story">开始对话</button><p id="resume-note"></p></div>
+      <p class="heard" id="heard" aria-live="polite" hidden></p>
+      <p class="heard voice-feedback" id="voice-feedback" role="status" hidden></p>
       <div class="answer-dock" id="answer-dock" hidden>
-        <p class="heard" id="heard" hidden></p>
         <div class="answer-controls">
           <button class="mic-control" id="mic-button" data-state="off" aria-label="打开麦克风回答" aria-pressed="false"><i data-lucide="mic"></i><span id="mic-label">和它说说</span><span class="voice-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>
           <button class="reply-more" id="reply-more" aria-label="更多回答方式" aria-expanded="false" aria-controls="reply-options"><span aria-hidden="true">···</span></button>
@@ -91,6 +92,6 @@
   <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <div id="transition" class="transition" aria-hidden="true"></div>
-  <script type="module" src="./app.bundle.js?v=20260909-props-doubao-child"></script>
+  <script type="module" src="./app.bundle.js?v=20260909-read-tap-transcript"></script>
 </body>
 </html>

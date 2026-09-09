@@ -222,6 +222,7 @@ export function createWowPresentation(stage) {
   const beamMaterial = mat('#fff3b3', { transparent: true, opacity: .04, depthWrite: false, side: THREE.DoubleSide, emissive: '#ffe6a4', emissiveIntensity: .5 });
   const beam = mesh(torch, 'curiosity-light', new THREE.ConeGeometry(.75,1.8,28,1,true), beamMaterial,[0,1.83,0]);
   beam.rotation.z = Math.PI;
+  beam.userData.tapIgnore = true;
   beam.castShadow = false; beam.receiveShadow = false;
   const lamp = new THREE.PointLight('#ffe4a1',0,3.3,1.5); lamp.position.set(0,1.2,0); torch.add(lamp);
 
@@ -268,6 +269,7 @@ export function createWowPresentation(stage) {
   rod(key,'key-tooth-b',brass,[0,.35,0],[.14,.35,0],.045);
 
   const mist=node('mist');
+  mist.userData.tapIgnore = true;
   const mistNight=new THREE.Color('#46566b'), mistDawn=new THREE.Color('#a8b6c0');
   // Real volumes occupy the middle and far ground. The centre-front opening
   // keeps MOMO's face readable, while depth testing lets near objects emerge
@@ -338,6 +340,15 @@ export function createWowPresentation(stage) {
   };
   [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
   tokens.forEach((token,i)=>registerMotion(token,`color-${i}`,.028,i*1.19,true));
+  const unregisterTaps = [];
+  [['torch','stretch'],['radio','wiggle'],['jar','puff'],['door','twist'],['key','hop']].forEach(([name,mode]) => {
+    const unregister = stage.registerTapObject?.(nodes[name], { name: `wow-${name}`, mode });
+    if (unregister) unregisterTaps.push(unregister);
+  });
+  tokens.forEach((token,i) => {
+    const unregister = stage.registerTapObject?.(token, { name: `wow-color-${i}`, mode: ['hop','puff','twist'][i%3] });
+    if (unregister) unregisterTaps.push(unregister);
+  });
   const anchor=(name,x,z,y=0,scale=1)=>{
     const value=nodes[name];
     value.position.copy(stage.world?.surfacePoint?.(x,z,y)||new THREE.Vector3(x,y,z));
@@ -456,5 +467,5 @@ export function createWowPresentation(stage) {
     moveProps();
     if(!live){live=true;frame=requestAnimationFrame(animate);}
   }
-  return {set,dispose(){live=false;cancelAnimationFrame(frame);s.dispose();}};
+  return {set,dispose(){live=false;cancelAnimationFrame(frame);unregisterTaps.forEach(unregister=>unregister());s.dispose();}};
 }

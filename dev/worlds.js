@@ -1,6 +1,7 @@
 import * as THREE from '../vendor/three.module.js';
 import { createPlanetSurface } from './planet.js';
 import { WORLD_ENVIRONMENTS } from './environments.js';
+import { attachTapRange, createBatchedTapTarget, createObjectTapTarget } from './tap-feedback.js';
 
 /** Independently modelled, material-batched miniature worlds for the /dev edition. */
 export const WORLD_CATALOG = [
@@ -50,6 +51,8 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   const extraGeometries = new Set();
   const animators = [];
   const reactions = [];
+  const tapTargets = [];
+  let elementNumber = 0;
   let elapsed = 0;
   let reactionAt = -100;
   let reactionName = '';
@@ -111,6 +114,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   };
   const part = (x = 0, y = 0, z = 0, parent = staticRoot, rotation = 0, surface = parent.userData.handcraftedSurface) => {
     const node = new THREE.Group(); node.position.set(x, y, z); node.rotation.y = rotation;
+    node.userData.tapElement = true;
     if (surface) node.userData.handcraftedSurface = surface;
     parent.add(node); return node;
   };
@@ -135,6 +139,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     return item;
   };
   const flower = (x, z, color = '#f1d296', size = 0.16, parent = staticRoot) => {
+    parent = part(x, 0, z, parent); parent.userData.tapMode = 'wiggle'; x = 0; z = 0;
     rod(foliage('#829367'), [x, 0.02, z], [x + 0.015, 0.25, z], 0.022, parent);
     for (let i = 0; i < 5; i++) {
       const a = i * Math.PI * 0.4;
@@ -143,16 +148,19 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     ball(foliage('#bb8b47'), x, 0.285, z, size * 0.28, 0.045, size * 0.28, parent);
   };
   const grass = (x, z, size = 1, color = palette[1], parent = staticRoot) => {
+    parent = part(x, 0, z, parent); parent.userData.tapMode = 'stretch'; x = 0; z = 0;
     [-0.12, 0, 0.12].forEach((offset, n) => {
       const blade = ball(foliage(color), x + offset * size, 0.16 * size, z, 0.055 * size, (0.2 + (n % 2) * 0.07) * size, 0.07 * size, parent);
       blade.rotation.z = -offset * 3;
     });
   };
   const bush = (x, z, size = 1, parent = staticRoot) => {
+    parent = part(x, 0, z, parent); parent.userData.tapMode = 'puff'; x = 0; z = 0;
     [[0, 0.35, 0, 0.55], [-0.33, 0.25, 0.12, 0.35], [0.3, 0.25, 0.06, 0.4]].forEach(([dx, dy, dz, r]) => ball(foliage(palette[1]), x + dx * size, dy * size, z + dz * size, r * size, r * size * 0.8, r * size, parent));
   };
   const tree = (x, z, height = 2.9, fruit = false, color = '#7f9f65') => {
     const node = part(x, 0, z, staticRoot, 0, 'wood');
+    node.userData.tapMode = 'wiggle';
     rod('#927052', [0, 0, 0], [-0.08, height * 0.72, 0], 0.16, node);
     rod('#927052', [0, height * 0.38, 0], [-0.65, height * 0.73, 0.05], 0.08, node);
     rod('#927052', [0, height * 0.5, 0], [0.6, height * 0.83, 0], 0.09, node);
@@ -163,6 +171,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   };
   const apple = (x, y, z, size = 0.16, parent = staticRoot) => {
     const node = part(x, y, z, parent, 0, 'paper');
+    node.userData.tapMode = 'hop';
     ball('#c96a55', -size * 0.22, 0, 0, size * 0.78, size, size * 0.85, node);
     ball('#d7785e', size * 0.24, 0, 0, size * 0.78, size * 0.98, size * 0.85, node);
     rod(wood('#806349'), [0, size * 0.65, 0], [size * 0.1, size * 1.35, 0], 0.025, node);
@@ -181,6 +190,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   };
   const clouds = (x, y, z, scale = 1, parent = staticRoot, color = '#f1eee7') => {
     const node = part(x, y, z, parent, 0, 'paper');
+    node.userData.tapMode = 'puff';
     [[0, 0, 0, 0.76], [-0.63, -0.12, 0, 0.49], [0.65, -0.15, 0.04, 0.47], [-0.18, 0.34, -0.04, 0.5]].forEach(([dx, dy, dz, r]) => ball(color, dx * scale, dy * scale, dz * scale, r * scale, r * scale * 0.65, r * scale * 0.7, node));
     return node;
   };
@@ -253,6 +263,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     const a = i * Math.PI * 2 / 16;
     const spark = mesh(sparkleGeo, clay('#f2d498', true), [Math.cos(a) * 2.25, 0.12, Math.sin(a) * 2.1], [1, 1, 1], liveRoot);
     spark.visible = false; sparks.push({ mesh: spark, angle: a });
+    spark.userData.tapIgnore = true;
   }
   animators.push(time => {
     const age = time - reactionAt;
@@ -301,8 +312,9 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     box('#c49b6e', 0, 0.58, 0, 1.46, 0.16, 0.81, table);
     [-0.51, 0.51].forEach(x => [-0.25, 0.25].forEach(z => box('#9d7754', x, 0.27, z, 0.11, 0.55, 0.11, table)));
     for (let i = 0; i < 3; i++) {
-      ball(paper('#d49e5b'), -0.39 + i * 0.4, 0.78, 0, 0.17, 0.14, 0.3, table);
-      [-0.09, 0.08].forEach(z => rod(paper('#f0cc8a'), [-0.48 + i * 0.4, 0.88, z], [-0.33 + i * 0.4, 0.88, z + 0.04], 0.017, table));
+      const bread = part(-.39 + i * .4, .64, 0, table); bread.userData.tapMode = ['hop', 'puff', 'stretch'][i];
+      ball(paper('#d49e5b'), 0, .14, 0, .17, .14, .3, bread);
+      [-.09, .08].forEach(z => rod(paper('#f0cc8a'), [-.09, .24, z], [.06, .24, z + .04], .017, bread));
     }
     const sketch = part(-2.7, 0.7, 1.52, staticRoot, 0, 'wood');
     sketch.rotation.x = -0.16;
@@ -335,7 +347,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
       if (radius > 4.49) creekVertices.setXYZ(i, x / radius * 4.49, creekVertices.getY(i), z / radius * 4.49);
     }
     extraGeometries.add(creekGeo);
-    mesh(creekGeo, water('#75aaa5'), [0, 0.014, 0]);
+    mesh(creekGeo, water('#75aaa5'), [0, 0.014, 0]).userData.tapSurface = true;
     [[-3.75, 1.62], [-3.1, 1.23], [2.8, 0.87], [3.55, 0.76], [-1.84, 2.23], [2.3, 2.15]].forEach(([x, z], i) => pebble(x, z, 0.85 + (i % 3) * 0.18));
     for (let i = 0; i < 6; i++) {
       const ripple = torus(water('#b9dcce'), -3 + i * 1.12, 0.026, 1.95 + Math.sin(i) * 0.35, 0.2, 0.014, liveRoot);
@@ -711,7 +723,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     riverGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     riverGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     riverGeometry.setIndex(indices); extraGeometries.add(riverGeometry);
-    mesh(riverGeometry, water('#81b7b3'), [0, 0, 0], [1, 1, 1], backsideRoot);
+    mesh(riverGeometry, water('#81b7b3'), [0, 0, 0], [1, 1, 1], backsideRoot).userData.tapSurface = true;
   }
 
   // Long terrain triangles need subdivision before curving, otherwise their
@@ -719,6 +731,18 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   function batchStatic(root, curved = false) {
     root.updateMatrixWorld(true);
     const batches = new Map();
+    const owners = new Map();
+    const targetForOwner = owner => {
+      if (owners.has(owner)) return owners.get(owner);
+      const origin = owner.getWorldPosition(new THREE.Vector3());
+      const normal = curved ? surfaceNormal(origin.x, origin.z) : origin.clone().sub(center).normalize();
+      const foot = curved
+        ? surfacePoint(origin.x, origin.z, Math.max(0, new THREE.Box3().setFromObject(owner).min.y))
+        : normal.clone().multiplyScalar(radius).add(center);
+      const target = createBatchedTapTarget({ name: owner.name || `${id}-element-${elementNumber++}`, mode: owner.userData.tapMode, position: foot, quaternion: new THREE.Quaternion().setFromUnitVectors(up, normal), surface: { radius, center } });
+      owners.set(owner, target); tapTargets.push(target);
+      return target;
+    };
     const normalMatrix = new THREE.Matrix3();
     const p = new THREE.Vector3(); const n = new THREE.Vector3();
     const mappedPoint = new THREE.Vector3(); const mappedNormal = new THREE.Vector3();
@@ -756,8 +780,15 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     root.traverse(item => {
       if (!item.isMesh) return;
       const key = item.material.uuid;
-      if (!batches.has(key)) batches.set(key, { material: item.material, position: [], normal: [] });
+      if (!batches.has(key)) batches.set(key, { material: item.material, position: [], normal: [], ranges: [] });
       const batch = batches.get(key);
+      const lineage = [];
+      if (!item.userData.tapSurface) {
+        for (let owner = item; owner && owner !== root; owner = owner.parent) if (owner.userData.tapElement) lineage.push(targetForOwner(owner));
+        if (!lineage.length) lineage.push(targetForOwner(item));
+        lineage.forEach((target, index) => { target.parent = lineage[index + 1]; });
+      }
+      const start = batch.position.length / 3;
       const pos = item.geometry.getAttribute('position');
       const normals = item.geometry.getAttribute('normal');
       const indices = item.geometry.index;
@@ -765,14 +796,16 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
       for (let i = 0, count = indices ? indices.count : pos.count; i < count; i += 3) {
         emitTriangle(batch, ...[0, 1, 2].map(offset => readVertex(pos, normals, indices ? indices.getX(i + offset) : i + offset, item.matrixWorld)));
       }
+      batch.ranges.push({ lineage, start, count: batch.position.length / 3 - start });
     });
     root.clear();
-    batches.forEach(({ material, position, normal }) => {
+    batches.forEach(({ material, position, normal, ranges }) => {
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3));
-      geo.computeBoundingSphere(); extraGeometries.add(geo);
-      mesh(geo, material, [0, 0, 0], [1, 1, 1], root);
+      geo.computeBoundingSphere(); geo.boundingSphere.radius += 1.4; extraGeometries.add(geo);
+      const merged = mesh(geo, material, [0, 0, 0], [1, 1, 1], root);
+      ranges.forEach(({ lineage, start, count }) => lineage.forEach((target, index) => attachTapRange(merged, target, start, count, index === 0)));
     });
   }
   batchStatic(staticRoot, true);
@@ -801,12 +834,21 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     Object.assign(anchor.userData.planarPosition, { x, y, z });
   });
   placeDynamicAnchors();
+  // Keep the original dynamic object (and its position-based animator) intact.
+  // A separate offset parent composes the tap motion after its usual movement.
+  for (const { object } of dynamicAnchors) {
+    if (object.userData.tapIgnore) continue;
+    const elements = [object];
+    object.traverse(child => { if (child !== object && child.userData.tapElement) elements.push(child); });
+    elements.forEach(element => tapTargets.push(createObjectTapTarget(element, { name: element.name || `${id}-element-${elementNumber++}`, mode: element.userData.tapMode, surface: { radius, center } })));
+  }
   let meshes = 0; let triangles = 0;
   group.traverse(item => { if (item.isMesh) { meshes++; triangles += (item.geometry.index?.count || item.geometry.getAttribute('position').count) / 3; } });
   group.userData = { worldId: id, modelSource: 'independently-modelled-dev-planets', meshes, triangles, planetRadius: radius, period: environment.atmosphere.period, secondaryAnchors };
 
   return {
     group,
+    tapTargets,
     planet: { radius, center: center.clone() },
     atmosphere: environment.atmosphere,
     surfacePoint,

@@ -268,6 +268,103 @@ class WowSpeechTests(unittest.TestCase):
                 serve.tts_audio("旧故事配额", voice, preset)
             legacy.assert_not_called()
 
+    def test_json_speech_keeps_exact_audio_and_absolute_provider_character_times(self):
+        self.upstream.side_effect = None
+        words = [
+            {"word": "你", "startTime": .525, "endTime": .715, "confidence": .78},
+            {"word": "好，", "startTime": .715, "endTime": 1.065},
+            {"word": "星", "startTime": 2.57, "endTime": 2.645},
+            {"word": "星。", "startTime": 2.645, "endTime": 2.975},
+        ]
+        events = [
+            {"data": base64.b64encode(b"first-audio").decode()},
+            {"sentence": {"text": "你好，星星。", "words": []}},
+            {"sentence": {"text": "星星。", "words": words[2:]}},
+            {"data": base64.b64encode(b"second-audio").decode()},
+            {"sentence": {"text": "你好，", "words": words[:2]}},
+            {"sentence": {"text": "你好，", "words": words[:2]}},
+            {"code": 20000000},
+        ]
+        # Provider subtitles may arrive out of order, after audio, and without a final newline.
+        self.upstream.return_value = io.BytesIO("\n".join("data: " + json.dumps(event) for event in events).encode())
+        body = {"text": "你好，星星。", "speechProfile": "wow-child", "responseFormat": "json"}
+        for _ in range(2):
+            status, headers, raw = self.post(body)
+            payload = json.loads(raw)
+            self.assertEqual(status, 200)
+            self.assertEqual(headers["Content-Type"], "application/json; charset=utf-8")
+            self.assertEqual(headers["X-TTS-Voice"], "wow-child")
+            self.assertEqual(base64.b64decode(payload["audio"]), b"first-audiosecond-audio")
+            self.assertEqual(payload["text"], body["text"])
+            self.assertEqual(payload["alignment"], serve.speech_alignment(words))
+            self.assertEqual(payload["alignment"][2]["start"], 2.57)
+            self.assertEqual(payload["alignmentSource"], "provider")
+            self.assertEqual(payload["alignmentUnit"], "seconds")
+            self.assertEqual(payload["granularity"], "character-or-word")
+        self.assertEqual(self.upstream.call_count, 1)
+        request = json.loads(self.upstream.call_args.args[0].data)["req_params"]
+        self.assertTrue(request["audio_params"]["enable_subtitle"])
+        self.assertNotIn("enable_timestamp", request["audio_params"])
+        self.assertNotIn("cache_config", json.loads(request["additions"]))
+
+    def test_json_and_raw_cache_entries_do_not_mix_audio_with_other_timing(self):
+        aligned = serve.AlignedSpeechAudio(b"timed-audio", [{"text": "星", "start": .3, "end": .7}])
+        with patch("serve.volc_seed_tts", side_effect=[b"raw-audio", aligned]) as seed:
+            raw_body = {"text": "星", "speechProfile": "wow-child"}
+            self.assertEqual(self.post(raw_body)[2], b"raw-audio")
+            for _ in range(2):
+                response = json.loads(self.post(dict(raw_body, responseFormat="json"))[2])
+                self.assertEqual(base64.b64decode(response["audio"]), b"timed-audio")
+                self.assertEqual(response["alignment"], aligned.alignment)
+            self.assertEqual(self.post(raw_body)[2], b"raw-audio")
+            self.assertEqual(seed.call_count, 2)
+            self.assertEqual(seed.call_args.kwargs, {"with_timestamps": True})
+
+    def test_missing_subtitles_preserve_audio_without_fabricating_progress(self):
+        self.upstream.side_effect = None
+        self.upstream.return_value = sse_audio(b"readable-audio")
+        status, _, raw = self.post({"text": "没有字幕。", "speechProfile": "wow-child", "responseFormat": "json"})
+        response = json.loads(raw)
+        self.assertEqual(status, 200)
+        self.assertEqual(base64.b64decode(response["audio"]), b"readable-audio")
+        self.assertEqual(response["alignment"], [])
+        self.assertEqual(response["alignmentSource"], "none")
+
+    def test_invalid_alignment_is_rejected_and_original_word_ranges_are_preserved(self):
+        words = [
+            None, {}, {"word": "坏", "startTime": -1, "endTime": 2},
+            {"word": "坏", "startTime": "nan", "endTime": 2},
+            {"word": "坏", "startTime": 1, "endTime": "inf"},
+            {"word": "坏", "startTime": 1, "endTime": 1},
+            {"word": "2019", "startTime": "0.3", "endTime": "1.2", "confidence": .8},
+            {"word": "hello", "startTime": 2, "endTime": 3, "confidence": float("nan")},
+        ]
+        self.assertEqual(serve.speech_alignment(words), [
+            {"text": "2019", "start": .3, "end": 1.2, "confidence": .8},
+            {"text": "hello", "start": 2, "end": 3},
+        ])
+
+    def test_ordinary_fish_json_has_no_fake_subtitles_or_routing_change(self):
+        with patch("serve.fish_tts", return_value=b"fish-audio") as fish, patch("serve.volc_seed_tts") as seed:
+            status, _, raw = self.post({"text": "普通故事", "responseFormat": "json"})
+            payload = json.loads(raw)
+            self.assertEqual(status, 200)
+            self.assertEqual(payload["provider"], "fish")
+            self.assertEqual(payload["alignment"], [])
+            self.assertEqual(base64.b64decode(payload["audio"]), b"fish-audio")
+            fish.assert_called_once()
+            seed.assert_not_called()
+
+    def test_legacy_volc_profile_uses_its_own_timestamp_flag(self):
+        self.upstream.side_effect = None
+        self.upstream.return_value = sse_audio(b"old-voice")
+        with patch.dict(os.environ, {"PET_TTS_PROVIDER": "volc"}):
+            status, _, raw = self.post({"text": "普通故事", "responseFormat": "json"})
+        self.assertEqual(status, 200)
+        params = json.loads(self.upstream.call_args.args[0].data)["req_params"]["audio_params"]
+        self.assertTrue(params["enable_timestamp"])
+        self.assertNotIn("enable_subtitle", params)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -22,3 +22,12 @@ body[data-view=studio] #experience{display:grid;grid-template-columns:minmax(0,1
 .speech-card{border-color:#fff9ed;background:#fcf8ee;box-shadow:0 8px 24px #736e5408}
 .camera-reset{background:#fcf8eec7}
 @media(max-width:680px){body[data-view=home] .world-viewport{height:clamp(300px,43dvh,480px)}body[data-view=story] .world-viewport{height:clamp(365px,51dvh,550px)}body[data-view=studio] .world-viewport{height:43dvh;background:#f3ecdf}.stage-hint{letter-spacing:.025em}}
+
+/* Each grapheme stays inline with the sentence's original metrics and wrapping.
+   Playback only paints these spans; it never dims the sentence or pulses it. */
+.read-along__visual{display:inline;color:inherit}
+.read-along__char{display:inline;color:inherit;border-radius:.16em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.read-along__char.is-read{color:var(--ink);text-decoration-line:underline;text-decoration-color:color-mix(in srgb,var(--ink) 24%,transparent);text-decoration-thickness:.065em;text-underline-offset:.17em}
+.read-along__char.is-current{color:#3d3426;background:#f4dda0;box-shadow:inset 0 -.095em 0 #b68c35;text-decoration:none}
+body[data-period=night] .read-along__char.is-current{color:#35302a;background:#f4dc9d;box-shadow:inset 0 -.095em 0 #b68c35}
+@media(forced-colors:active){.read-along__char.is-read{color:CanvasText;text-decoration-color:CanvasText}.read-along__char.is-current{color:HighlightText;background:Highlight;forced-color-adjust:none;box-shadow:none;text-decoration:underline}}

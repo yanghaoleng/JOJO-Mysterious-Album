@@ -4,6 +4,7 @@ import { createDocumentCharacter } from '../src/story-npcs/factory.js';
 import { createWorld } from './worlds.js';
 import { createActorGrounding } from './planet.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
+import { TapFeedback, createObjectTapTarget, firstTapHit } from './tap-feedback.js';
 
 const clamp = THREE.MathUtils.clamp;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -21,6 +22,7 @@ export class DioramaStage {
     this.onTouch = onTouch;
     this.actors = new Map();
     this.actorFrames = new Map();
+    this.tapFeedback = new TapFeedback();
     this.viewportInsets = { top: 0, bottom: 0, left: 0, right: 0 };
     this.style = createStorybookStyle();
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,7 +35,7 @@ export class DioramaStage {
     this.renderer.toneMappingExposure = STORYBOOK_PALETTE.exposure;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.domElement.setAttribute('aria-label', '可以拖动旋转、点击角色的立体场景');
+    this.renderer.domElement.setAttribute('aria-label', '可以拖动旋转、点击角色和小物件的立体场景');
     this.renderer.domElement.setAttribute('role', 'img');
     container.append(this.renderer.domElement);
     this.camera = new THREE.OrthographicCamera(-8, 8, 7, -7, .1, 100);
@@ -91,6 +93,7 @@ export class DioramaStage {
         this.invention.position.y = this.invention.userData.restY + Math.sin(time * 1.4) * .10;
         this.invention.rotation.y += dt * .12;
       }
+      this.tapFeedback.update(dt);
       this.renderer.render(this.scene, this.camera);
     });
   }
@@ -98,15 +101,16 @@ export class DioramaStage {
   installPointer() {
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', event => {
+      if (event.button !== undefined && event.button !== 0) return;
       this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
-      if (this.pointers.size === 2) {
+      if (this.pointers.size >= 2) {
         const [a, b] = [...this.pointers.values()];
         this.pinch = { distance: a.distanceTo(b), zoom: this.zoom };
         this.drag = null;
         canvas.setPointerCapture(event.pointerId);
         return;
       }
-      this.drag = { x: event.clientX, y: event.clientY, yaw: this.yaw, pitch: this.pitch, moved: false };
+      this.drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: this.yaw, pitch: this.pitch, moved: false };
       canvas.setPointerCapture(event.pointerId);
     });
     canvas.addEventListener('pointermove', event => {
@@ -116,7 +120,7 @@ export class DioramaStage {
         this.zoom = clamp(this.pinch.zoom * a.distanceTo(b) / Math.max(1, this.pinch.distance), .7, 1.8);
         this.resize(); return;
       }
-      if (!this.drag) return;
+      if (!this.drag || this.drag.id !== event.pointerId) return;
       const dx = event.clientX - this.drag.x;
       const dy = event.clientY - this.drag.y;
       this.drag.moved ||= Math.hypot(dx, dy) > 7;
@@ -125,12 +129,13 @@ export class DioramaStage {
       this.updateCamera();
     });
     canvas.addEventListener('pointerup', event => {
-      if (this.drag && !this.drag.moved && !this.pinch) this.pick(event);
+      if (this.drag?.id === event.pointerId && !this.drag.moved && !this.pinch && Math.hypot(event.clientX - this.drag.x, event.clientY - this.drag.y) <= 7) this.pick(event);
       this.pointers.delete(event.pointerId);
       this.pinch = null;
       this.drag = null;
     });
     canvas.addEventListener('pointercancel', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
+    canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
       event.preventDefault();
       this.zoom = clamp(this.zoom - event.deltaY * .001, .7, 1.8);
@@ -142,21 +147,19 @@ export class DioramaStage {
     const bounds = this.renderer.domElement.getBoundingClientRect();
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects([...this.actors.values()].map(actor => actor.group), true);
-    if (!hits.length) return;
-    const blockers = this.world ? this.raycaster.intersectObject(this.world.group, true) : [];
-    const visibleBlocker = blockers.find(hit => {
-      if (!hit.object.visible || hit.object.material?.transparent) return false;
-      for (let parent = hit.object.parent; parent; parent = parent.parent) if (!parent.visible) return false;
-      return true;
-    });
-    if (visibleBlocker && visibleBlocker.distance < hits[0].distance - .025) return;
-    let object = hits[0].object;
-    while (object && !object.userData.actorId) object = object.parent;
-    if (object) {
-      this.actors.get(object.userData.actorId)?.setAction('wave');
-      this.onTouch(object.userData.actorId);
+    this.scene.updateMatrixWorld(true);
+    const selected = firstTapHit(this.raycaster.intersectObjects(this.scene.children, true));
+    if (selected?.target) this.tapFeedback.trigger(selected.target, this.reduced);
+    else if (selected?.actorId) {
+      this.actors.get(selected.actorId)?.setAction('wave');
+      this.onTouch(selected.actorId);
     }
+  }
+
+  registerTapObject(object, options = {}) {
+    const target = createObjectTapTarget(object, { surface: this.world?.planet, ...options });
+    this.tapFeedback.add(target);
+    return () => this.tapFeedback.remove(target);
   }
 
   resize() {
@@ -318,12 +321,16 @@ export class DioramaStage {
     this.curiosity = null;
     this.scene.fog = null;
     this.clearInvention();
-    if (this.world) { this.scene.remove(this.world.group); this.world.dispose(); }
+    if (this.world) {
+      this.world.tapTargets?.forEach(target => this.tapFeedback?.remove(target));
+      this.scene.remove(this.world.group); this.world.dispose();
+    }
     for (const actor of this.actors.values()) { this.scene.remove(actor.group); actor.dispose(); }
     this.actors.clear();
     this.actorFrames.clear();
     this.studio = studio;
     this.world = createWorld(worldId);
+    this.world.tapTargets.forEach(target => this.tapFeedback?.add(target));
     this.setLighting(this.world.atmosphere);
     this.style.apply(this.world.group);
     this.scene.add(this.world.group);
@@ -531,11 +538,13 @@ export class DioramaStage {
       planet: this.world?.planet ? { radius: this.world.planet.radius, center: this.world.planet.center.toArray() } : null,
       actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray(), grounding: actor.group.userData.grounding })),
       invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [],
+      taps: this.tapFeedback?.stats(),
     };
   }
 
   dispose() {
     this.renderer.setAnimationLoop(null);
+    this.tapFeedback.clear();
     this.resizeObserver.disconnect();
     this.world?.dispose();
     for (const actor of this.actors.values()) actor.dispose();

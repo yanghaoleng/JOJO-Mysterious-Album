@@ -1438,7 +1438,41 @@ def fish_tts(text, voice, preset=None):
         return result.read()
 
 
-def volc_seed_tts(text, voice, preset=None):
+class AlignedSpeechAudio(bytes):
+    """Keep provider timing attached to the exact audio, including in the cache."""
+    def __new__(cls, audio, alignment):
+        result = super().__new__(cls, audio)
+        result.alignment = alignment
+        return result
+
+
+def speech_alignment(words):
+    """Accept real session-relative seconds only; never invent character timing."""
+    alignment = []
+    seen = set()
+    for item in words:
+        if not isinstance(item, dict) or not isinstance(item.get("word"), str):
+            continue
+        text = item["word"]
+        try:
+            start, end = float(item["startTime"]), float(item["endTime"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not text or not math.isfinite(start) or not math.isfinite(end) or start < 0 or end <= start:
+            continue
+        key = (text, start, end)
+        if key in seen:
+            continue
+        seen.add(key)
+        entry = {"text": text, "start": start, "end": end}
+        confidence = item.get("confidence")
+        if isinstance(confidence, (int, float)) and math.isfinite(confidence) and 0 <= confidence <= 1:
+            entry["confidence"] = confidence
+        alignment.append(entry)
+    return sorted(alignment, key=lambda entry: (entry["start"], entry["end"]))
+
+
+def volc_seed_tts(text, voice, preset=None, with_timestamps=False):
     """Use the current Seed / Doubao V3 SSE transport.
 
     The speech console still issues an app id plus access token for older
@@ -1470,6 +1504,9 @@ def volc_seed_tts(text, voice, preset=None):
                     "bit_rate": 64000,
                     "speech_rate": speech_rate,
                     "loudness_rate": 0,
+                    # TTS 2.0 subtitles map to original text. TTS 1.0 uses the
+                    # older timestamp switch and may return normalized text.
+                    **({"enable_subtitle" if resource_id in {"seed-tts-2.0", "seed-icl-2.0"} else "enable_timestamp": True} if with_timestamps else {}),
                 },
                 "additions": json.dumps({"post_process": {"pitch": pitch}}, ensure_ascii=False),
             },
@@ -1490,6 +1527,7 @@ def volc_seed_tts(text, voice, preset=None):
         },
     )
     chunks = []
+    words = []
     try:
         upstream = urllib.request.urlopen(req, timeout=preset.get("timeout", 45))
     except urllib.error.HTTPError as exc:
@@ -1513,9 +1551,13 @@ def volc_seed_tts(text, voice, preset=None):
                 raise RuntimeError(f"tts_v3_{code}")
             if payload.get("data"):
                 chunks.append(base64.b64decode(payload["data"]))
+            sentence = payload.get("sentence")
+            if with_timestamps and isinstance(sentence, dict) and isinstance(sentence.get("words"), list):
+                words.extend(sentence["words"])
     if not chunks:
         raise RuntimeError("tts_v3_empty")
-    return b"".join(chunks)
+    audio = b"".join(chunks)
+    return AlignedSpeechAudio(audio, speech_alignment(words)) if with_timestamps else audio
 
 
 def volc_tts_v1(text, voice, preset=None):
@@ -1541,13 +1583,14 @@ def volc_tts_v1(text, voice, preset=None):
     return base64.b64decode(payload["data"])
 
 
-def tts_audio(text, voice, preset=None):
+def tts_audio(text, voice, preset=None, with_timestamps=False):
+    options = {"with_timestamps": True} if with_timestamps else {}
     if voice == "wow-child":
-        return wow_child_tts_audio(text, preset or WOW_CHILD_TTS_PRESET), "volc-seed-v3"
+        return wow_child_tts_audio(text, preset or WOW_CHILD_TTS_PRESET, **options), "volc-seed-v3"
     provider = os.environ.get("PET_TTS_PROVIDER", "fish").strip().lower()
     if provider == "volc":
         try:
-            return volc_seed_tts(text, voice, preset), "volc-seed-v3"
+            return volc_seed_tts(text, voice, preset, **options), "volc-seed-v3"
         except Exception as exc:
             if str(exc) == "tts_quota_exceeded":
                 raise
@@ -1555,9 +1598,10 @@ def tts_audio(text, voice, preset=None):
     return fish_tts(text, voice, preset), "fish"
 
 
-def wow_child_tts_audio(text, preset):
+def wow_child_tts_audio(text, preset, with_timestamps=False):
     """Reuse recent identical lines and coalesce retries without storing text."""
-    key = hashlib.sha256(json.dumps([text, preset], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    cache_input = [text, preset, "subtitle-v1"] if with_timestamps else [text, preset]
+    key = hashlib.sha256(json.dumps(cache_input, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     with _WOW_SPEECH_LOCK:
         now = time.monotonic()
         for old_key, (created, _) in list(_WOW_SPEECH_CACHE.items()):
@@ -1577,7 +1621,7 @@ def wow_child_tts_audio(text, preset):
         if not _WOW_SPEECH_SLOTS.acquire(timeout=1):
             raise RuntimeError("tts_busy")
         try:
-            audio = volc_seed_tts(text, "wow-child", preset)
+            audio = volc_seed_tts(text, "wow-child", preset, **({"with_timestamps": True} if with_timestamps else {}))
         finally:
             _WOW_SPEECH_SLOTS.release()
         with _WOW_SPEECH_LOCK:
@@ -1657,9 +1701,19 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.write_sse("done", {"ok": True})
         self.close_connection = True
 
-    def respond_audio(self, data, provider, npc_id="", voice="star", speech_rate=1):
+    def respond_audio(self, data, provider, npc_id="", voice="star", speech_rate=1, text=None):
+        content_type = "audio/mpeg"
+        if text is not None:
+            alignment = getattr(data, "alignment", [])
+            data = json.dumps({
+                "audio": base64.b64encode(data).decode("ascii"), "mimeType": "audio/mpeg", "text": text,
+                "alignment": alignment, "alignmentUnit": "seconds",
+                "alignmentSource": "provider" if alignment else "none", "granularity": "character-or-word",
+                "provider": provider, "voice": voice, "speechRate": speech_rate,
+            }, ensure_ascii=False).encode("utf-8")
+            content_type = "application/json; charset=utf-8"
         self.send_response(200)
-        self.send_header("Content-Type", "audio/mpeg")
+        self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-TTS-Provider", provider)
@@ -1858,9 +1912,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 if not text:
                     self.respond_json(400, {"error": "text_required"})
                     return
-                audio, provider = tts_audio(text, voice, preset)
+                with_timestamps = payload.get("responseFormat") == "json"
+                audio, provider = tts_audio(text, voice, preset, **({"with_timestamps": True} if with_timestamps else {}))
                 rate = preset["fish_speed"] if provider == "fish" else preset["volc_speed"]
-                self.respond_audio(audio, provider, profile["id"] if profile else "", voice, rate)
+                self.respond_audio(audio, provider, profile["id"] if profile else "", voice, rate, text=text if with_timestamps else None)
                 return
             if path == "/api/moon-director":
                 story_id = str(payload.get("storyId", "")).strip()[:32]

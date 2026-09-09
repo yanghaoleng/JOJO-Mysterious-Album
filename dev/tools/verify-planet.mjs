@@ -124,7 +124,9 @@ for (const definition of WORLD_CATALOG) {
     assert.equal(waterTriangles, 112 * 4 * 2, `${definition.id} lost cross-river subdivision`);
   }
   const poses = () => anchors.map(anchor => {
-    const object = anchor.children[0]; const planar = object.position;
+    const child = anchor.children[0];
+    const object = child.userData.tapOffset ? child.children[0] : child;
+    const planar = object.position;
     const expected = world.surfacePoint(planar.x, planar.z, planar.y);
     object.getWorldPosition(position);
     assert.ok(position.distanceTo(expected) < 1e-8, `${definition.id}/${anchor.name} drifted away from its radial anchor`);

@@ -7,11 +7,15 @@ import { moonRequest, sceneRequest } from './story-api.js';
 import { describeInvention } from './inventions.js';
 import { mountProductIcons } from '../vendor/ui-icons.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
-import { localResult } from '../src/wow-local-turn.js';
+import { localResult, PRIVATE } from '../src/wow-local-turn.js';
 import { WOW_PROPS, wowVisualState } from './wow-story.js';
 import { createWowPresentation } from './wow-visuals.js';
+import { ReadAlong } from './read-along.js';
 
 const $ = id => document.getElementById(id);
+const reading = new ReadAlong($('speech-text'));
+const endingReading = new ReadAlong($('ending-line'));
+let spokenLineVersion = 0;
 const STORAGE = 'jma.dev.clay.v1';
 const COLORS = [
   { id: 'cream', name: '奶油白', color: '#eee3d5', hints: ['白', '奶油'] },
@@ -73,9 +77,9 @@ async function handleWowAnswer(raw) {
   const fallback = localResult(payload);
   if (!fallback.accepted) { notify(fallback.reaction); return; }
   busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
-  $('heard').hidden = true; $('answer-dock').hidden = true;
+  $('answer-dock').hidden = true;
   $('speaker').textContent = scene.cast[0].name;
-  $('speech-text').textContent = scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……';
+  reading.setText(scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
   syncWowPresentation(true);
   const controller = new AbortController(); wowRequest = controller;
   let result;
@@ -113,10 +117,26 @@ const voice = new StoryVoice({
     $('mic-label').textContent = labels[value] || labels.off;
     $('mic-button').setAttribute('aria-label', voice.enabled || voice.opening ? '暂停麦克风' : '打开麦克风回答');
   },
-  onAnswer: text => handleAnswer(text),
+  onAnswer: text => handleAnswer(text, 'voice'),
   onLevel: level => $('mic-button').style.setProperty('--level', level.toFixed(2)),
-  onError: message => { notify(message); if (['question', 'setup'].includes(phase)) setReplyMode('choices'); },
+  onCapture: update => showVoiceFeedback(update),
+  onError: message => notify(message),
 });
+
+function showVoiceFeedback({ state: captureState, text, message }) {
+  const labels = {
+    listening: '麦克风已打开，等你说话', receiving: '收到声音了，继续说吧',
+    transcribing: '声音已收到，正在转成文字…', transcript: '已识别，伙伴正在听你的想法',
+    quiet: '暂时没有检测到说话声，可以靠近一点再试', paused: '麦克风已暂停',
+  };
+  const el = $('voice-feedback');
+  el.textContent = message || labels[captureState] || '';
+  el.dataset.state = captureState;
+  el.hidden = !el.textContent;
+  if (text) { $('heard').textContent = PRIVATE.test(text) ? '听见你的话了，个人信息就不展示啦。' : `你说：“${text}”`; $('heard').hidden = false; }
+  if (captureState === 'transcribing') $('mic-label').textContent = '正在转写';
+  if (captureState === 'receiving') $('mic-label').textContent = '听到声音';
+}
 
 function resumeListening() {
   voice.listen(['question', 'setup'].includes(phase) && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden);
@@ -186,11 +206,28 @@ async function speakLine(line, token = epoch) {
   const info = speakerInfo(line.speaker);
   const text = story?.id === 'wow' ? line.text.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。') : line.text;
   $('speaker').textContent = info.name + (line.source === 'local' ? ' · 本地回应' : line.source === 'ai' ? ' · AI 回应' : '');
-  $('speech-text').textContent = text;
+  const display = phase === 'complete' ? endingReading : reading;
+  const version = ++spokenLineVersion;
+  display.setText(text);
   $('speech-card').dataset.speaking = 'true';
   stage.speak(line.speaker, true);
   const chunks = Array.from(text).reduce((parts, char) => { if (!parts.length || parts.at(-1).length + char.length > 110) parts.push(''); parts[parts.length - 1] += char; return parts; }, []);
-  for (const chunk of chunks) { if (token !== epoch) return; await voice.say(chunk, info.voice, () => {}, info.characterId); }
+  let offset = 0, cancelled = false;
+  for (const chunk of chunks) {
+    if (token !== epoch) return;
+    const chunkOffset = offset;
+    await voice.say(chunk, info.voice, () => {}, info.characterId, progress => {
+      if (token !== epoch || version !== spokenLineVersion) return;
+      display.update({
+        start: progress.start < 0 ? -1 : chunkOffset + progress.start,
+        end: progress.end < 0 ? -1 : chunkOffset + progress.end,
+        spokenEnd: chunkOffset + progress.spokenEnd,
+      });
+      if (progress.status === 'cancelled') { cancelled = true; display.clear(); }
+    });
+    if (cancelled) break;
+    offset += chunk.length;
+  }
   if (token === epoch) {
     $('speech-card').dataset.speaking = 'false'; stage.speak(line.speaker, false);
   }
@@ -218,6 +255,8 @@ function showView(view) {
 
 function route() {
   epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
+  spokenLineVersion++; reading.clear(); endingReading.clear();
+  $('heard').hidden = true; $('voice-feedback').hidden = true;
   setStoryMenu(false);
   $('transition').classList.remove('closed');
   if ($('bag-dialog').open) $('bag-dialog').close();
@@ -234,6 +273,7 @@ function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ t
 
 function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
+  $('heard').hidden = true; $('voice-feedback').hidden = true;
   story = selected; state = savedState() || defaultState(); phase = 'ready';
   showView('story');
   document.title = `${story.title} · 萌萌星`;
@@ -241,7 +281,7 @@ function openStory(selected) {
   $('chapter-name').textContent = story.age || '';
   $('objective').textContent = story.subtitle;
   $('speaker').textContent = story.scenes[0].cast[0].name;
-  $('speech-text').textContent = story.premise || story.subtitle;
+  reading.setText(story.premise || story.subtitle);
   $('speech-card').dataset.speaking = 'false';
   $('answer-dock').hidden = true; $('story-start').hidden = false;
   $('resume-note').textContent = state.setupDone && !state.completed ? '上次走到的地方还在，继续一起走。' : '说出你的想法，也可以随时点选。';
@@ -327,7 +367,6 @@ async function choose(choice, customResult) {
   const wasSetup = phase === 'setup', token = epoch;
   busy = true; phase = 'responding'; voice.listen(false); $('answer-dock').hidden = true;
   setReplyMode(null);
-  $('heard').hidden = true;
   if (wasSetup) {
     let response;
     if (setupStep === 0) { state.companion.type = choice.id; response = `好，${choice.label}来陪你。`; }
@@ -379,7 +418,7 @@ async function enterScene(index) {
   const chapter = story.chapters.find(item => item.number === scene.chapter);
   $('chapter-name').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${chapter?.title || ''}`;
   $('objective').textContent = scene.objective;
-  $('speech-text').textContent = ''; $('speaker').textContent = '';
+  reading.setText(''); $('speaker').textContent = '';
   $('transition').classList.remove('closed');
   if (circularTransition) await wait(reduced ? 0 : 480);
   if (token !== epoch) return;
@@ -412,14 +451,14 @@ function rememberInvention(text, visual) {
   return result;
 }
 
-async function handleAnswer(raw) {
+async function handleAnswer(raw, source = 'text') {
   if (busy || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
+  $('heard').textContent = PRIVATE.test(text) ? '听见你的话了，个人信息就不展示啦。' : `${source === 'voice' ? '你说' : '你的想法'}：“${text}”`; $('heard').hidden = false;
   if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(text);
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
-  $('heard').textContent = `${shownText ? '你的想法' : '听见了'}：${text}`; $('heard').hidden = false;
   if (phase === 'setup') {
     const choice = matchChoice(text, pendingChoices);
     if (choice) await choose(choice);
@@ -469,10 +508,10 @@ async function finishStory() {
   stage.act('celebrate'); $('answer-dock').hidden = true; $('story-start').hidden = true; $('speech-card').hidden = true;
   $('ending').hidden = false; $('ending-title').textContent = story.ending.title;
   const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。');
-  $('ending-text').textContent = story.ending.text; $('ending-line').textContent = endingLine;
+  $('ending-text').textContent = story.ending.text;
   $('save-memory').textContent = '收进我的图鉴'; $('save-memory').disabled = false;
-  if (story.id === 'wow') { $('save-memory').textContent = '下载我的旅程'; await speakLine({ speaker: 'wow', text: endingLine }, token); }
-  else { await voice.say(endingLine, 'bubble', () => stage.speak('companion', true)); if (token === epoch) stage.speak('companion', false); }
+  if (story.id === 'wow') $('save-memory').textContent = '下载我的旅程';
+  await speakLine({ speaker: story.id === 'wow' ? 'wow' : 'companion', text: endingLine }, token);
 }
 
 function updateBag() {

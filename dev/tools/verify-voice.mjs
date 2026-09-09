@@ -8,6 +8,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { StoryVoice, requestJSON } from '../voice.js';
+import { speechTimeline, readingAt } from '../speech-timing.js';
 
 const settle = async () => { for (let step = 0; step < 24; step++) await Promise.resolve(); };
 const deferred = () => {
@@ -464,4 +465,102 @@ check('18 WOW quota errors stay explicit, and slower child TTS gets fifteen seco
   assert.ok(voice.utterance.fallback);
   voice.skip(); await pending;
   assert.equal(env.clock.timers.size, 0);
+});
+
+check('19 reading uses audio time, respects silence and cannot run ahead when output is suspended', async env => {
+  const progress = [], voice = env.voice();
+  env.fetch = async (_path, options) => {
+    assert.equal(JSON.parse(options.body).responseFormat, 'json');
+    return { ok: true, headers: { get: () => 'application/json' }, json: async () => ({
+      audio: 'AAAA', alignmentUnit: 'seconds', alignment: [
+        { text: '星', start: .5, end: .8 }, { text: '星。', start: 1.1, end: 1.4 },
+      ],
+    }) };
+  };
+  const pending = voice.say('星星。', 'bubble', () => {}, '', event => progress.push(event));
+  await settle(); const context = voice.context, source = env.sources.at(-1);
+  assert.equal(progress.at(-1).start, -1);
+  context.currentTime = .605; await env.clock.advance(32);
+  assert.equal(progress.at(-1).start, 0);
+  context.state = 'suspended'; await env.clock.advance(1200);
+  assert.equal(progress.at(-1).start, 0, 'wall-clock time must not move the highlight');
+  context.state = 'running'; context.currentTime = .905; await env.clock.advance(32);
+  assert.equal(progress.at(-1).start, -1, 'punctuation pause has no active character');
+  assert.equal(progress.at(-1).spokenEnd, 1);
+  context.currentTime = 1.205; await env.clock.advance(32);
+  assert.equal(progress.at(-1).start, 1, 'the second repeated character is distinct');
+  source.onended(); await pending;
+  assert.equal(progress.at(-1).status, 'ended');
+  assert.equal(progress.at(-1).spokenEnd, 3);
+  const count = progress.length; await env.clock.advance(500);
+  assert.equal(progress.length, count);
+});
+
+check('20 skipping aligned audio clears progress and a late request cannot repaint the next line', async env => {
+  const progress = [], network = deferred(), voice = env.voice();
+  env.fetch = () => network.promise;
+  const pending = voice.say('先不读这句。', 'bubble', () => {}, '', event => progress.push(event));
+  voice.skip(); await pending;
+  assert.equal(progress.at(-1).status, 'cancelled');
+  const count = progress.length;
+  network.resolve(env.ttsResponse()); await settle(); await env.clock.advance(100);
+  assert.equal(env.sources.length, 0);
+  assert.equal(progress.length, count);
+});
+
+check('21 alignment preserves UTF-16, punctuation, repeated words and provider word ranges', () => {
+  const text = '🙂星，星！MOMO有12颗星。𠮷';
+  const timeline = speechTimeline(text, [
+    {text:'星，',start:.2,end:.4},{text:'星！',start:.5,end:.7},
+    {text:'MOMO',start:.8,end:1},{text:'有',start:1.1,end:1.2},
+    {text:'12',start:1.3,end:1.6},{text:'颗',start:1.7,end:1.8},
+    {text:'星。',start:1.9,end:2},{text:'𠮷',start:2.1,end:2.3},
+  ], 2.5);
+  assert.deepEqual(timeline.map(cue => text.slice(cue.start,cue.end)), ['星','星','MOMO','有','12','颗','星','𠮷']);
+  assert.equal(timeline[0].start, 2);
+  assert.equal(timeline[1].start, 4);
+  assert.equal(readingAt(timeline, .45).start, -1);
+  assert.deepEqual(speechTimeline('你好', [{text:'错',start:0,end:1},{text:'你',start:-1,end:1},{text:'好',start:0,end:9}],2), []);
+});
+
+check('22 ASR statuses distinguish quiet input, received audio, processing and empty results', async env => {
+  const events = [], voice = env.voice({ onCapture: event => events.push(event) });
+  voice.listen(true); await voice.enable();
+  await env.clock.advance(8000);
+  assert.equal(events.at(-1).state, 'quiet');
+  env.fetch = async () => ({ok:true,json:async()=>({transcript:''})});
+  speechFrames(voice); const pending = voice.submitRecording();
+  assert.equal(events.at(-1).state, 'transcribing');
+  await pending;
+  assert.ok(events.some(event => event.state === 'receiving'));
+  assert.equal(events.at(-1).state, 'empty');
+  await env.clock.advance(9000);
+  assert.equal(events.at(-1).state, 'empty', 'the reason persists until another attempt');
+  assert.equal(voice.recording, true);
+});
+
+check('23 a successful transcript is retained when story handling fails', async env => {
+  const events = [], voice = env.voice({ onCapture: event => events.push(event), onAnswer: async () => { throw new Error('story failure'); } });
+  voice.listen(true); await voice.enable();
+  env.fetch = async () => ({ok:true,json:async()=>({transcript:'我看到了星星'})});
+  speechFrames(voice); await voice.submitRecording();
+  assert.ok(events.some(event => event.state === 'transcript' && event.text === '我看到了星星'));
+  assert.equal(events.some(event => event.state === 'error'), false);
+  assert.match(env.errors.at(-1), /文字已经识别/);
+  assert.equal(voice.recording, true);
+});
+
+check('24 ASR service errors preserve the status and timeout has its own cause', async env => {
+  const events = [], voice = env.voice({ onCapture: event => events.push(event) });
+  voice.listen(true); await voice.enable();
+  env.fetch = async () => ({ok:false,status:503,json:async()=>({error:'asr_not_configured'})});
+  speechFrames(voice); await voice.submitRecording();
+  assert.equal(events.at(-1).state, 'error');
+  assert.match(events.at(-1).message, /尚未配置/);
+  env.fetch = (_path,{signal}) => new Promise((_yes,no)=>signal.addEventListener('abort',()=>no(new Error('aborted'))));
+  speechFrames(voice); const pending = voice.submitRecording();
+  await env.clock.advance(18000); await pending;
+  assert.match(events.at(-1).message, /超时/);
+  voice.pause();
+  assert.equal(events.at(-1).state, 'paused');
 });
