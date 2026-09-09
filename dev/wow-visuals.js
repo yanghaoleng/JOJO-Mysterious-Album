@@ -324,13 +324,62 @@ export function createWowPresentation(stage) {
   });
   stage.style?.apply(group);
   let targetProgress=0, progress=0, live=false, lastTime=0, frame=0, initialized=false, lastWorld=null;
+  let motionTime=0;
   let state={chapter:1,scene:0,kind:'observe',props:[],colors:[],visual:null,lit:false,progress:0};
+  const motions=new Map();
+  const rollAxis=new THREE.Vector3(0,0,1), rollRotation=new THREE.Quaternion(), yawRotation=new THREE.Quaternion();
+  const registerMotion=(object,name,amount,phase,token=false)=>{
+    const diagnostics={factor:1,roll:0,entries:0,entering:false};
+    object.userData.wowMotion=diagnostics;
+    motions.set(object,{
+      name,amount,phase,token,position:object.position.clone(),quaternion:object.quaternion.clone(),scale:object.scale.clone(),
+      seen:false,shown:false,age:Infinity,diagnostics,
+    });
+  };
+  [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
+  tokens.forEach((token,i)=>registerMotion(token,`color-${i}`,.028,i*1.19,true));
   const anchor=(name,x,z,y=0,scale=1)=>{
     const value=nodes[name];
     value.position.copy(stage.world?.surfacePoint?.(x,z,y)||new THREE.Vector3(x,y,z));
     value.quaternion.setFromUnitVectors(UP,stage.world?.surfaceNormal?.(x,z)||UP);
     value.scale.setScalar(scale);
+    const motion=motions.get(value);
+    if(motion){motion.position.copy(value.position);motion.quaternion.copy(value.quaternion);motion.scale.copy(value.scale);}
   };
+  function reveal(object,visible,seed){
+    const motion=motions.get(object);
+    object.visible=visible;
+    if(seed){
+      // A reload restores the saved display directly; replaying an already
+      // collected item would make it look newly earned all over again.
+      motion.seen=visible;motion.age=Infinity;
+    }else if(visible&&!motion.shown&&!motion.seen){
+      motion.seen=true;motion.age=stage.reduced?Infinity:0;
+      if(!stage.reduced)motion.diagnostics.entries++;
+    }
+    motion.shown=visible;
+  }
+  function moveProps(dt=0){
+    if(!stage.reduced)motionTime+=dt;
+    for(const [object,motion] of motions){
+      if(!motion.shown)continue;
+      if(stage.reduced)motion.age=Infinity;
+      else if(Number.isFinite(motion.age))motion.age+=dt;
+      const t=Math.min(1,motion.age/.65), u=t-1;
+      // Ease-out with a single restrained overshoot. Every prop's local
+      // origin is its foot, so growing and rocking keep that foot anchored.
+      const factor=stage.reduced||t>=1?1:Math.max(.001,1+2.4*u*u*u+1.4*u*u);
+      const roll=stage.reduced?0:Math.sin(motionTime*.77+motion.phase)*motion.amount;
+      const yaw=!stage.reduced&&motion.name==='key'?Math.sin(motionTime*.63+motion.phase)*.14:0;
+      object.position.copy(motion.position);
+      if(motion.token&&!stage.reduced)object.position.x+=Math.sin(motionTime*.64+motion.phase)*.009;
+      object.scale.copy(motion.scale).multiplyScalar(factor);
+      object.quaternion.copy(motion.quaternion)
+        .multiply(yawRotation.setFromAxisAngle(UP,yaw))
+        .multiply(rollRotation.setFromAxisAngle(rollAxis,roll));
+      Object.assign(motion.diagnostics,{factor,roll,entering:t<1});
+    }
+  }
   function paintLight() {
     const clarity=THREE.MathUtils.smoothstep(progress,0,1);
     const remaining=Math.pow(1-clarity,1.15);
@@ -356,23 +405,25 @@ export function createWowPresentation(stage) {
   }
   function animate(now) {
     if(!live)return;
-    const dt=Math.min(.06,(now-lastTime)/1000||.016);lastTime=now;
+    const elapsed=(now-lastTime)/1000||.016;
+    const dt=Math.min(.06,elapsed), motionDt=Math.min(.2,elapsed);lastTime=now;
     if(!document.hidden){
       progress=THREE.MathUtils.lerp(progress,targetProgress,1-Math.exp(-dt*2.4));
       paintLight();
       if(!stage.reduced)fogMaterials.forEach(material=>{material.uniforms.uTime.value=now/1000;});
-      if(key.visible&&!stage.reduced)key.rotation.y=Math.sin(now*.0008)*.2;
+      moveProps(motionDt);
     }
     frame=requestAnimationFrame(animate);
   }
   function set(next={}) {
     const chapterChanged=next.chapter!==undefined&&next.chapter!==state.chapter;
+    const seedMotion=!initialized||chapterChanged||lastWorld!==stage.world||next.immediate===true;
     state={...state,...next,...(chapterChanged&&next.progress===undefined?{progress:0}:{})};
     if(group.parent!==stage.scene)stage.scene.add(group);
     const props=new Set(state.props||[]);
-    torch.visible=props.has('torch');radio.visible=props.has('radio');jar.visible=props.has('jar');
-    door.visible=state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6);
-    key.visible=Boolean(state.visual);
+    reveal(torch,props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
+    reveal(door,state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6),seedMotion);
+    reveal(key,Boolean(state.visual),seedMotion);
     const requested=Number(state.progress);
     targetProgress=Number.isFinite(requested)?THREE.MathUtils.clamp(requested,0,1):0;
     // A newly mounted world starts at its saved chapter progress immediately.
@@ -380,7 +431,7 @@ export function createWowPresentation(stage) {
     // accepted answers within the same world still produce a gradual reveal.
     if(!initialized||chapterChanged||lastWorld!==stage.world||stage.reduced)progress=targetProgress;
     initialized=true;lastWorld=stage.world;
-    tokens.forEach((token,i)=>{token.visible=i<(state.colors?.length||0);});
+    tokens.forEach((token,i)=>{reveal(token,i<(state.colors?.length||0),seedMotion);});
     if(state.visual){
       const shape=['star','moon','leaf','heart','cloud','fish'].includes(state.visual.shape)?state.visual.shape:'star';
       if(keyHead.userData.shape!==shape){
@@ -402,6 +453,7 @@ export function createWowPresentation(stage) {
     anchor('mist',spot.x,spot.z,0,1);
     group.userData.state={chapter:state.chapter,scene:state.scene,props:[...props],colors:state.colors?.length||0,key:state.visual?.shape||null,lit:!!state.lit,progress:targetProgress};
     paintLight();
+    moveProps();
     if(!live){live=true;frame=requestAnimationFrame(animate);}
   }
   return {set,dispose(){live=false;cancelAnimationFrame(frame);s.dispose();}};

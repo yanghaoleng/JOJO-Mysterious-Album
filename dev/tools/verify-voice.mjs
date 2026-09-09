@@ -108,10 +108,10 @@ function harness() {
   for (const [key, value] of Object.entries(overrides)) {
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
-  env.voice = () => {
+  env.voice = (options = {}) => {
     const voice = new StoryVoice({
       onState: state => env.states.push(state), onLevel: () => {},
-      onError: error => env.errors.push(error), onAnswer: answer => env.answers.push(answer),
+      onError: error => env.errors.push(error), onAnswer: answer => env.answers.push(answer), ...options,
     });
     env.voices.push(voice); return voice;
   };
@@ -331,4 +331,137 @@ check('10 legacy AbortSignal: timed requests, caller cancellation, and TTS all w
     voice.skip(); await speech;
     assert.equal(env.clock.timers.size, 0);
   } finally { Object.defineProperty(globalThis, 'AbortSignal', descriptor); }
+});
+
+function frames(voice, seconds, level) {
+  for (let index = 0; index < Math.ceil(seconds * voice.context.sampleRate / 2048); index++) {
+    voice.capture({ token: voice.captureToken, samples: new Float32Array(2048).fill(level) });
+  }
+}
+
+check('11 soft first answer: low-volume speech reaches ASR and listening resumes', async env => {
+  const voice = await env.open(); const requests = [];
+  env.fetch = async (path, options) => {
+    requests.push({ path, body: JSON.parse(options.body), type: options.headers['Content-Type'] });
+    return { ok: true, json: async () => ({ transcript: '我听见小小的鼓声' }) };
+  };
+  frames(voice, .3, 0); frames(voice, .8, .008); frames(voice, 1.2, 0); await settle();
+  assert.equal(requests.length, 1, 'quiet speech must not be discarded by a fixed .014 gate');
+  assert.equal(requests[0].path, '/api/asr');
+  assert.equal(requests[0].type, 'application/json');
+  assert.deepEqual(Object.keys(requests[0].body), ['pcm']);
+  const pcm = Buffer.from(requests[0].body.pcm, 'base64');
+  assert.ok(pcm.length / 32000 < 2.5);
+  assert.ok([...new Int16Array(pcm.buffer, pcm.byteOffset, pcm.length / 2)].some(value => value > 200));
+  assert.deepEqual(env.answers, ['我听见小小的鼓声']);
+  assert.equal(voice.recording, true);
+});
+
+check('12 a long silent wait keeps bounded pre-roll and preserves the next first word', async env => {
+  const voice = await env.open(); const requests = []; const token = voice.captureToken;
+  env.fetch = async (_path, options) => {
+    requests.push(Buffer.from(JSON.parse(options.body).pcm, 'base64').length);
+    return { ok: true, json: async () => ({ transcript: '小灯你好' }) };
+  };
+  frames(voice, 120, 0);
+  assert.equal(voice.recording, true);
+  assert.equal(voice.captureToken, token, 'waiting does not continually reset the worklet');
+  assert.equal(requests.length, 0);
+  assert.ok(voice.samples <= voice.context.sampleRate * .4, 'do not send minutes of leading silence');
+  frames(voice, .7, .007); frames(voice, 1.2, 0); await settle();
+  assert.equal(requests.length, 1);
+  assert.ok(requests[0] / 32000 < 2.5);
+  assert.deepEqual(env.answers, ['小灯你好']);
+});
+
+check('13 repeated listen(true) cannot erase an answer that is already being captured', async env => {
+  const voice = await env.open();
+  frames(voice, .4, .008);
+  const token = voice.captureToken, samples = voice.samples;
+  voice.listen(true); voice.listen(true);
+  assert.equal(voice.captureToken, token);
+  assert.equal(voice.samples, samples);
+});
+
+check('14 steady quiet noise and short clicks never become child answers', async env => {
+  const voice = await env.open(); let requests = 0;
+  env.fetch = async () => { requests++; return { ok: true, json: async () => ({ transcript: 'noise' }) }; };
+  frames(voice, 45, .002);
+  assert.equal(voice.voiced, 0);
+  frames(voice, .08, .03); frames(voice, 1.2, 0); await settle();
+  assert.equal(requests, 0);
+  assert.equal(voice.recording, true);
+});
+
+check('15 empty, failed, and timed-out ASR all restore listening without stale answers', async env => {
+  const voice = await env.open();
+  for (const mode of ['empty', 'failure', 'timeout']) {
+    env.fetch = async (_path, { signal }) => {
+      if (mode === 'failure') throw new Error('Offline');
+      if (mode === 'timeout') return new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new Error('Aborted')), { once: true }));
+      return { ok: true, json: async () => ({ transcript: '' }) };
+    };
+    speechFrames(voice); const pending = voice.submitRecording();
+    if (mode === 'timeout') await env.clock.advance(18000);
+    await pending;
+    assert.equal(voice.asrController, null);
+    assert.equal(voice.recording, true);
+  }
+  assert.equal(env.errors.length, 3);
+  assert.deepEqual(env.answers, []);
+});
+
+check('16 a cancelled old ASR cannot clear a newer in-flight recording', async env => {
+  const voice = await env.open(), oldRequest = deferred(), newRequest = deferred(); let count = 0;
+  env.fetch = () => ++count === 1 ? oldRequest.promise : newRequest.promise;
+  speechFrames(voice); const old = voice.submitRecording();
+  voice.listen(false); voice.listen(true);
+  speechFrames(voice); const current = voice.submitRecording(); const controller = voice.asrController;
+  oldRequest.resolve({ ok: true, json: async () => ({ transcript: '旧回答' }) }); await old;
+  assert.equal(voice.asrController, controller);
+  assert.equal(voice.recording, false);
+  assert.deepEqual(env.answers, []);
+  newRequest.resolve({ ok: true, json: async () => ({ transcript: '新的首句' }) }); await current;
+  assert.deepEqual(env.answers, ['新的首句']);
+  assert.equal(voice.recording, true);
+});
+
+check('17 WOW alone requests the child profile and never substitutes system speech', async env => {
+  let profile = 'wow-child'; const voice = env.voice({ speechProfile: () => profile }); const requests = [];
+  let synthetic = 0;
+  window.SpeechSynthesisUtterance = class {};
+  window.speechSynthesis = { speak() { synthetic++; }, cancel() {} };
+  env.fetch = async (_path, options) => { requests.push(options); throw new Error('TTS unavailable'); };
+  const child = voice.say('你好，我是小小的星星。', 'bubble', () => {}, 'npc-test'); await settle();
+  assert.equal(JSON.parse(requests[0].body).speechProfile, 'wow-child');
+  assert.equal(JSON.parse(requests[0].body).realtime, true);
+  assert.equal(requests[0].headers['X-Conversation-Speech'], 'seed-realtime');
+  assert.equal(synthetic, 0);
+  assert.match(env.errors.at(-1), /豆包童声.*点一下对话框/);
+  assert.ok(voice.utterance.fallback);
+  voice.skip(); await child;
+  profile = '';
+  const other = voice.say('其他故事保持原来的后备声音。'); await settle();
+  assert.equal(Object.hasOwn(JSON.parse(requests[1].body), 'speechProfile'), false);
+  assert.equal(synthetic, 1);
+  voice.skip(); await other;
+  assert.equal(env.clock.timers.size, 0);
+});
+
+check('18 WOW quota errors stay explicit, and slower child TTS gets fifteen seconds', async env => {
+  const voice = env.voice({ speechProfile: 'wow-child' });
+  env.fetch = async () => ({ ok: false, json: async () => ({ error: 'tts_quota_exceeded' }) });
+  const quota = voice.say('当前语音额度暂不可用。'); await settle();
+  assert.match(env.errors.at(-1), /豆包语音额度暂不可用/);
+  voice.skip(); await quota;
+  env.fetch = (_path, { signal }) => new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new Error('Aborted')), { once: true }));
+  const pending = voice.say('慢一点也会等声音准备好。'); await settle();
+  await env.clock.advance(14999);
+  assert.equal(env.errors.length, 1);
+  await env.clock.advance(1);
+  assert.equal(env.errors.length, 2);
+  assert.match(env.errors.at(-1), /豆包童声暂时没准备好/);
+  assert.ok(voice.utterance.fallback);
+  voice.skip(); await pending;
+  assert.equal(env.clock.timers.size, 0);
 });

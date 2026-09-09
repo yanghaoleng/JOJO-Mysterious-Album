@@ -327,33 +327,60 @@ export class DioramaStage {
     this.setLighting(this.world.atmosphere);
     this.style.apply(this.world.group);
     this.scene.add(this.world.group);
+    this.worldId = worldId;
+    this.setCast(cast, { preserveCamera: false });
+  }
+
+  // Changing a speaker is not a new world. Keep matching actors, the planet,
+  // atmosphere and orbit alive; replace only a genuinely different sculpt.
+  setCast(cast = [], { preserveCamera = true } = {}) {
+    const studio = this.studio;
+    const wanted = new Set(cast.map(config => config.id));
+    for (const [id, actor] of this.actors) {
+      if (wanted.has(id)) continue;
+      this.scene.remove(actor.group); actor.dispose();
+      this.actors.delete(id); this.actorFrames.delete(id);
+    }
     const spots = this.world.characterSpots || [{ x: -1.6, y: .05, z: 1.5 }, { x: 1.3, y: .05, z: 1 }, { x: 0, y: .05, z: 2.6 }];
     cast.forEach((config, index) => {
-      const actor = typeof config.createActor === 'function'
-        ? config.createActor({ scale: studio ? 1.3 : .78 })
-        : config.characterId
-        ? createDocumentCharacter({ characterId: config.characterId, scale: studio ? 1.3 : .78 })
-        : createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
-      const restBounds = new THREE.Box3().setFromObject(actor.group);
-      restBounds.min.divide(actor.group.scale); restBounds.max.divide(actor.group.scale);
-      this.actorFrames.set(config.id, restBounds);
-      this.style.apply(actor.group);
+      const modelKey = config.modelKey ?? config.createActor ?? (config.characterId ? `document:${config.characterId}` : `clay:${config.type || 'rabbit'}`);
+      let actor = this.actors.get(config.id);
+      if (actor && actor.castModelKey !== modelKey) {
+        this.scene.remove(actor.group); actor.dispose();
+        this.actors.delete(config.id); this.actorFrames.delete(config.id); actor = null;
+      }
+      if (!actor) {
+        actor = typeof config.createActor === 'function'
+          ? config.createActor({ scale: studio ? 1.3 : .78 })
+          : config.characterId
+          ? createDocumentCharacter({ characterId: config.characterId, scale: studio ? 1.3 : .78 })
+          : createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
+        actor.castModelKey = modelKey;
+        const restBounds = new THREE.Box3().setFromObject(actor.group);
+        restBounds.min.divide(actor.group.scale); restBounds.max.divide(actor.group.scale);
+        this.actorFrames.set(config.id, restBounds);
+        this.style.apply(actor.group);
+        this.actors.set(config.id, actor);
+        this.scene.add(actor.group);
+      } else if (config.color) actor.setColor?.(config.color);
       const spot = studio ? { x: 0, y: .08, z: 1.2 } : spots[index % spots.length];
-      const normal = this.world.surfaceNormal?.(spot.x, spot.z) || UP.clone();
-      actor.group.position.copy(this.world.surfacePoint?.(spot.x, spot.z, spot.y) || new THREE.Vector3(spot.x, spot.y, spot.z));
-      actor.group.quaternion.setFromUnitVectors(UP, normal);
-      actor.group.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(UP, spot.rotation || (index % 2 ? -.22 : .18)));
-      actor.group.userData.surfaceNormal = normal.toArray();
-      actor.group.userData.surfaceHeight = spot.y;
+      const rotation = spot.rotation ?? (index % 2 ? -.22 : .18);
+      const spotKey = `${spot.x},${spot.y},${spot.z},${rotation}`;
+      if (actor.castSpotKey !== spotKey) {
+        const normal = this.world.surfaceNormal?.(spot.x, spot.z) || UP.clone();
+        actor.group.position.copy(this.world.surfacePoint?.(spot.x, spot.z, spot.y) || new THREE.Vector3(spot.x, spot.y, spot.z));
+        actor.group.quaternion.setFromUnitVectors(UP, normal);
+        actor.group.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(UP, rotation));
+        actor.group.userData.surfaceNormal = normal.toArray();
+        actor.group.userData.surfaceHeight = spot.y;
+        this.applyActorGrounding(actor, spot);
+        actor.castSpotKey = spotKey;
+      }
       actor.group.userData.actorId = config.id;
       actor.group.userData.actorName = config.name;
       actor.group.userData.manner = config.manner;
-      this.applyActorGrounding(actor, spot);
-      this.actors.set(config.id, actor);
-      this.scene.add(actor.group);
     });
-    this.worldId = worldId;
-    this.resetCamera();
+    if (!preserveCamera) this.resetCamera();
   }
 
   applyActorGrounding(actor, spot) {

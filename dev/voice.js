@@ -21,8 +21,8 @@ export async function requestJSON(path, body, timeout = 12000, signal) {
 }
 
 export class StoryVoice {
-  constructor({ onState, onAnswer, onLevel, onError }) {
-    Object.assign(this, { onState, onAnswer, onLevel, onError });
+  constructor({ onState, onAnswer, onLevel, onError, speechProfile = '' }) {
+    Object.assign(this, { onState, onAnswer, onLevel, onError, speechProfile });
     this.enabled = false;
     this.wanted = false;
     this.sequence = 0;
@@ -90,7 +90,10 @@ export class StoryVoice {
   }
 
   listen(wanted) {
-    this.wanted = Boolean(wanted);
+    const next = Boolean(wanted);
+    // Repeated UI updates must not throw away the beginning of a quiet answer.
+    if (next && this.wanted && this.recording) return;
+    this.wanted = next;
     if (!this.wanted) this.cancelASR();
     this.refreshListening();
   }
@@ -104,6 +107,7 @@ export class StoryVoice {
     this.captureToken++;
     this.processor?.port.postMessage({ type: 'capture', enabled: this.recording, token: this.captureToken });
     this.chunks = []; this.samples = 0; this.voiced = 0; this.lastSound = performance.now();
+    this.speechStarted = false; this.silentSeconds = 0; this.noiseFloor = .001;
     this.onLevel(0);
     if (allowed && tail > 0) this.resumeTimer = setTimeout(() => this.refreshListening(), tail + 5);
     if (!this.utterance && !this.asrController) this.onState(this.recording ? 'listening' : 'off');
@@ -140,9 +144,26 @@ export class StoryVoice {
     const rms = Math.sqrt(chunk.reduce((sum, value) => sum + value * value, 0) / chunk.length);
     this.onLevel(Math.min(1, rms * 15));
     this.chunks.push(chunk); this.samples += chunk.length;
-    if (rms > .014) { this.lastSound = performance.now(); this.voiced += chunk.length / this.context.sampleRate; }
+    const seconds = chunk.length / this.context.sampleRate;
+    // The previous fixed .014 gate discarded soft first words before ASR saw them.
+    // Learn the quiet floor only from sub-threshold frames, never from the child.
+    const threshold = Math.max(.0045, Math.min(.014, this.noiseFloor * 3));
+    if (rms > threshold) {
+      this.speechStarted = true; this.silentSeconds = 0;
+      this.lastSound = performance.now(); this.voiced += seconds;
+    } else {
+      this.silentSeconds += seconds;
+      if (!this.speechStarted) this.noiseFloor = this.noiseFloor * .95 + rms * .05;
+    }
+    if (!this.speechStarted) {
+      // Keep a short lead-in, however long the child takes before speaking.
+      const preRoll = this.context.sampleRate * .35;
+      while (this.chunks.length > 1 && this.samples - this.chunks[0].length >= preRoll) this.samples -= this.chunks.shift().length;
+      return;
+    }
     const elapsed = this.samples / this.context.sampleRate;
-    if ((this.voiced > .25 && performance.now() - this.lastSound > 1100) || elapsed > 18) void this.submitRecording();
+    // Audio duration stays correct when message delivery is delayed or batched.
+    if (this.silentSeconds >= 1.1 || elapsed >= 18) void this.submitRecording();
   }
 
   async submitRecording() {
@@ -187,18 +208,26 @@ export class StoryVoice {
   async say(text, voice = 'sprout', onStart = () => {}, npcId = '') {
     this.skip();
     this.cancelASR();
-    const session = { controller: new AbortController(), source: null, finish: null, settled: false };
+    const configuredProfile = typeof this.speechProfile === 'function' ? this.speechProfile() : this.speechProfile;
+    const speechProfile = configuredProfile === 'wow-child' ? 'wow-child' : '';
+    const session = { controller: new AbortController(), source: null, finish: null, settled: false, speechProfile };
     this.utterance = session;
     this.refreshListening();
     this.onState('speaking');
     const done = new Promise(resolve => { session.finish = resolve; });
-    session.timeout = setTimeout(() => this.finish(session), 24000);
+    session.timeout = setTimeout(() => this.finish(session), speechProfile ? 36000 : 24000);
     onStart();
     void (async () => {
       try {
-        session.requestTimeout = setTimeout(() => session.controller.abort(), 9000);
-        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true }), signal: session.controller.signal });
-        if (!response.ok) throw new Error('tts_unavailable');
+        session.requestTimeout = setTimeout(() => session.controller.abort(), speechProfile ? 15000 : 9000);
+        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true, ...(speechProfile ? { speechProfile } : {}) }), signal: session.controller.signal });
+        if (!response.ok) {
+          if (speechProfile) {
+            const error = await response.json().catch(() => null);
+            session.quotaExceeded = error?.error === 'tts_quota_exceeded';
+          }
+          throw new Error('tts_unavailable');
+        }
         const bytes = await response.arrayBuffer();
         clearTimeout(session.requestTimeout);
         if (this.utterance !== session) return;
@@ -221,6 +250,13 @@ export class StoryVoice {
       } catch {
         clearTimeout(session.requestTimeout);
         if (this.utterance !== session) return;
+        if (session.speechProfile === 'wow-child') {
+          this.onError(session.quotaExceeded
+            ? '豆包语音额度暂不可用，文字还在。点一下对话框可以继续。'
+            : '豆包童声暂时没准备好，文字还在。点一下对话框可以继续。');
+          session.fallback = setTimeout(() => this.finish(session), Math.max(2200, Math.min(12000, text.length * 170)));
+          return;
+        }
         try {
           if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) throw new Error('speech_unavailable');
           const speech = new window.SpeechSynthesisUtterance(text);

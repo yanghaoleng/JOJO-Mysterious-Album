@@ -18,12 +18,23 @@ const VOICES = {
   caring: { referenceId: '57744207b298418194abd366d4596c8b', fishSpeed: 0.95, volcSpeed: 0.95, pitch: 1.03, speaker: 'ICL_zh_female_yilin_tob' },
 };
 
+// This story needs a child speaking to the reader, independently of the
+// character's normal NPC voice or the site's default TTS provider.
+const WOW_CHILD_VOICE = {
+  speaker: 'zh_male_naiqimengwa_uranus_bigtts',
+  resourceId: 'seed-tts-2.0',
+  volcSpeed: .94,
+  pitch: 1,
+};
+
+const quotaError = payload => Number(payload?.code) === 45000292 || /quota/i.test(String(payload?.message || payload?.msg || ''));
+
 async function volcSeedTts(text, preset, voice) {
   const appId = process.env.VOLC_SPEECH_APP_ID;
   const accessToken = process.env.VOLC_SPEECH_ACCESS_TOKEN;
-  const resourceId = process.env.VOLC_TTS_RESOURCE_ID || 'volc.service_type.10029';
+  const resourceId = preset.resourceId || process.env.VOLC_TTS_RESOURCE_ID || 'volc.service_type.10029';
   const voiceEnv = `VOLC_TTS_SPEAKER_${voice.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
-  const speaker = process.env[voiceEnv] || preset.speaker || process.env.VOLC_TTS_SPEAKER_ID;
+  const speaker = voice === 'wow-child' ? preset.speaker : process.env[voiceEnv] || preset.speaker || process.env.VOLC_TTS_SPEAKER_ID;
   if (!appId || !accessToken || !resourceId || !speaker) throw new Error('tts_not_configured');
   const requestId = crypto.randomUUID();
   const speechRate = Math.max(-50, Math.min(100, Math.round((preset.volcSpeed - 1) * 100)));
@@ -43,31 +54,36 @@ async function volcSeedTts(text, preset, voice) {
       req_params: {
         text,
         speaker,
-        sample_rate: 24000,
-        audio_params: { format: 'mp3', bit_rate: 64000, speech_rate: speechRate, loudness_rate: 0 },
+        audio_params: { format: 'mp3', sample_rate: 24000, bit_rate: 64000, speech_rate: speechRate, loudness_rate: 0 },
         additions: JSON.stringify({ post_process: { pitch } }),
       },
     }),
     signal: AbortSignal.timeout(45000),
   });
-  if (!upstream.ok) throw new Error(`volc_http_${upstream.status}`);
+  if (!upstream.ok) {
+    const detail = await upstream.text();
+    if (/quota|45000292/i.test(detail)) throw new Error('tts_quota_exceeded');
+    throw new Error(`volc_http_${upstream.status}`);
+  }
   const reader = upstream.body?.getReader();
   if (!reader) throw new Error('volc_stream_unavailable');
   const decoder = new TextDecoder();
   let buffer = '';
   const chunks = [];
+  const consumeLine = line => {
+    if (!line.startsWith('data:')) return;
+    const payload = JSON.parse(line.slice(5).trim());
+    if (quotaError(payload)) throw new Error('tts_quota_exceeded');
+    if (![0, 20000000].includes(payload.code || 0)) throw new Error(`volc_code_${payload.code || 'unknown'}`);
+    if (payload.data) chunks.push(Buffer.from(payload.data, 'base64'));
+  };
   while (true) {
     const { value, done } = await reader.read();
     buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
     const lines = buffer.split(/\r?\n/);
     buffer = lines.pop() || '';
-    for (const line of lines) {
-      if (!line.startsWith('data:')) continue;
-      const payload = JSON.parse(line.slice(5).trim());
-      if (![0, 20000000].includes(payload.code || 0)) throw new Error(`volc_code_${payload.code || 'unknown'}`);
-      if (payload.data) chunks.push(Buffer.from(payload.data, 'base64'));
-    }
-    if (done) break;
+    for (const line of lines) consumeLine(line);
+    if (done) { if (buffer.trim()) consumeLine(buffer); break; }
   }
   if (!chunks.length) throw new Error('volc_empty');
   return Buffer.concat(chunks);
@@ -89,6 +105,7 @@ async function volcTtsV1(text, preset, voice) {
   });
   if (!upstream.ok) throw new Error(`volc_http_${upstream.status}`);
   const payload = await upstream.json();
+  if (quotaError(payload)) throw new Error('tts_quota_exceeded');
   if (payload.code !== 3000 || !payload.data) throw new Error(`volc_code_${payload.code || 'unknown'}`);
   return Buffer.from(payload.data, 'base64');
 }
@@ -126,14 +143,15 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
   const text = String(request.body?.text || '').trim().replace(/[<>]/g, '').slice(0, 120);
   const profile = npcProfile(request.body?.npcId);
+  const wowChild = request.body?.speechProfile === 'wow-child';
   const requestedVoice = profile && Object.hasOwn(VOICES, profile.voiceKey) ? profile.voiceKey : request.body?.voice;
-  const voice = Object.hasOwn(VOICES, requestedVoice) ? requestedVoice : 'star';
+  const voice = wowChild ? 'wow-child' : Object.hasOwn(VOICES, requestedVoice) ? requestedVoice : 'star';
   if (!text) return response.status(400).json({ error: 'text_required' });
 
   try {
-    const preset = { ...VOICES[voice] };
-    if (profile) preset.volcSpeed = preset.fishSpeed = npcSpeechRate(profile, preset.volcSpeed);
-    const provider = (process.env.PET_TTS_PROVIDER || 'fish').toLowerCase();
+    const preset = { ...(wowChild ? WOW_CHILD_VOICE : VOICES[voice]) };
+    if (profile && !wowChild) preset.volcSpeed = preset.fishSpeed = npcSpeechRate(profile, preset.volcSpeed);
+    const provider = wowChild ? 'volc' : (process.env.PET_TTS_PROVIDER || 'fish').toLowerCase();
     let audio;
     let actualProvider = provider;
     if (provider === 'volc') {
@@ -141,6 +159,7 @@ export default async function handler(request, response) {
         audio = await volcSeedTts(text, preset, voice);
         actualProvider = 'volc-seed-v3';
       } catch (error) {
+        if (wowChild || error?.message === 'tts_quota_exceeded') throw error;
         console.warn('Seed V3 TTS unavailable; using legacy voice fallback', error?.message || 'unknown');
         audio = await volcTtsV1(text, preset, voice);
         actualProvider = 'volc-v1-fallback';
@@ -158,7 +177,11 @@ export default async function handler(request, response) {
     return response.status(200).send(audio);
   } catch (error) {
     const unavailable = error?.message === 'tts_not_configured';
+    const quota = error?.message === 'tts_quota_exceeded';
     console.error('TTS request failed', error?.name || 'Error', error?.message || 'unknown');
-    return response.status(unavailable ? 503 : 502).json({ error: unavailable ? 'tts_not_configured' : 'tts_unavailable' });
+    return response.status(quota ? 429 : unavailable ? 503 : 502).json({
+      error: quota ? 'tts_quota_exceeded' : unavailable ? 'tts_not_configured' : 'tts_unavailable',
+      ...(quota ? { message: '语音服务用量已耗尽，请稍后再试。' } : {}),
+    });
   }
 }

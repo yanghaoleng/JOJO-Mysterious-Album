@@ -22,7 +22,7 @@ const COLORS = [
 ];
 const EXPRESSIONS = { happy: '开心', curious: '好奇', sad: '有点难过', surprised: '惊喜' };
 const ACTIONS = { idle: '放松', wave: '打招呼', hop: '跳一跳', listen: '认真听', talk: '说句话', walk: '迈小步' };
-let wowPresentation = null, wowRequest = null;
+let wowPresentation = null, wowRequest = null, mountedStoryScene = null;
 let stage, story, state, phase = 'home', epoch = 0, busy = false, pendingChoices = [], setupStep = 0;
 let shownChoices = false, shownText = false, replyOpen = false, menuOpen = false, noticeTimer, frameRequest;
 let studio = { type: 'dog', color: '#c99561', name: '小团', size: 100, expression: 'happy', action: 'idle', world: 'orchard' };
@@ -47,7 +47,14 @@ function savedState() {
   return { ...defaultState(), ...saved, wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
 }
 function persist() { store(`story.${story.id}`, state); }
-function storyCast(scene) { return story?.id === 'wow' ? scene.cast : [...scene.cast, { ...state.companion, id:'companion' }]; }
+function storyCast(scene) {
+  if (story?.id !== 'wow') return [...scene.cast, { ...state.companion, id: 'companion' }];
+  // Each source scene owns a factory closure, but the sculpt stays the same
+  // through its chapter. Only the opening window becomes a different actor.
+  const modelKey = scene.chapter === 1 && scene.chapterScene < 3 ? 'wow:window' : `wow:momo:${scene.chapter}`;
+  return scene.cast.map(actor => ({ ...actor, modelKey }));
+}
+function rememberMountedScene(scene) { mountedStoryScene = { storyId: story.id, chapter: scene.chapter, world: scene.world }; }
 function syncWowPresentation(lit = false) {
   if (story?.id !== 'wow') return;
   if (!wowPresentation) wowPresentation = createWowPresentation(stage);
@@ -98,6 +105,7 @@ function downloadWowMemory() {
   notify('旅程已整理好，可以打开下载的纪念册阅读或打印。');
 }
 const voice = new StoryVoice({
+  speechProfile: () => story?.id === 'wow' ? 'wow-child' : '',
   onState(value) {
     $('mic-button').dataset.state = value;
     $('mic-button').setAttribute('aria-pressed', String(Boolean(voice.enabled || voice.opening)));
@@ -130,6 +138,7 @@ function scheduleFraming() {
 }
 
 function setWorld(worldId, cast, options) {
+  mountedStoryScene = null;
   wowPresentation?.dispose(); wowPresentation = null;
   stage.setScene(worldId, cast, options);
   const environment = stage.world?.atmosphere;
@@ -242,6 +251,7 @@ function openStory(selected) {
     $('start-story').textContent = '查看我的旅程';
   }
   setWorld(story.scenes[state.sceneIndex].world, storyCast(story.scenes[state.sceneIndex]));
+  rememberMountedScene(story.scenes[state.sceneIndex]);
   syncWowPresentation();
   if (story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
@@ -346,23 +356,32 @@ async function choose(choice, customResult) {
 
 async function enterScene(index) {
   const token = epoch;
+  const scene = story.scenes[index];
+  const sameChapter = mountedStoryScene?.storyId === story.id && mountedStoryScene.chapter === scene.chapter;
+  const keepWorld = sameChapter && mountedStoryScene.world === scene.world && stage.worldId === scene.world;
+  const circularTransition = !sameChapter;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   busy = true; phase = 'transition'; voice.listen(false); $('answer-dock').hidden = true;
-  $('transition').classList.add('closed'); await wait(matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 540);
+  if (circularTransition) {
+    $('transition').classList.add('closed');
+    await wait(reduced ? 0 : 540);
+  } else $('transition').classList.remove('closed');
   if (token !== epoch) return;
   state.sceneIndex = index; persist();
-  const scene = story.scenes[index];
   if (scene.wow?.prop && !state.inventory.some(item => item.id === scene.wow.prop)) state.inventory.push({ ...WOW_PROPS[scene.wow.prop] });
   if (scene.wow) { persist(); updateBag(); }
-  setWorld(scene.world, storyCast(scene));
+  if (keepWorld) stage.setCast(storyCast(scene));
+  else setWorld(scene.world, storyCast(scene));
+  rememberMountedScene(scene);
   syncWowPresentation();
-  if (story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
+  if (!keepWorld && story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);
   $('chapter-name').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${chapter?.title || ''}`;
   $('objective').textContent = scene.objective;
   $('speech-text').textContent = ''; $('speaker').textContent = '';
   $('transition').classList.remove('closed');
-  await wait(matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 480);
+  if (circularTransition) await wait(reduced ? 0 : 480);
   if (token !== epoch) return;
   phase = 'narrating'; await dialogue(scene.dialogue, token);
   if (token !== epoch) return;

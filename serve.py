@@ -26,6 +26,8 @@ import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
+from collections import OrderedDict
+from concurrent.futures import Future
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -313,6 +315,14 @@ TTS_VOICES = {
     "smart": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.06, "volc_speed": 1.06, "pitch": 1.02, "speaker": "ICL_zh_male_shenmi_v1_tob"},
     "caring": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.95, "volc_speed": 0.95, "pitch": 1.03, "speaker": "ICL_zh_female_yilin_tob"},
 }
+WOW_CHILD_TTS_PRESET = {
+    "speaker": "zh_male_naiqimengwa_uranus_bigtts", "resource_id": "seed-tts-2.0",
+    "volc_speed": .94, "fish_speed": .94, "pitch": 1.0, "timeout": 12,
+}
+_WOW_SPEECH_CACHE = OrderedDict()
+_WOW_SPEECH_PENDING = {}
+_WOW_SPEECH_LOCK = threading.Lock()
+_WOW_SPEECH_SLOTS = threading.BoundedSemaphore(2)
 
 
 def analytics_connection():
@@ -1380,7 +1390,9 @@ def character_call_result(character_name, mode, topic, topic_context, message, h
     return result
 
 
-def npc_tts_settings(npc_id, requested_voice):
+def npc_tts_settings(npc_id, requested_voice, speech_profile=""):
+    if speech_profile == "wow-child":
+        return None, "wow-child", dict(WOW_CHILD_TTS_PRESET)
     profile = npc_profile(npc_id)
     voice = profile.get("voiceKey") if profile and profile.get("voiceKey") in TTS_VOICES else requested_voice
     voice = voice if isinstance(voice, str) and voice in TTS_VOICES else "star"
@@ -1437,10 +1449,10 @@ def volc_seed_tts(text, voice, preset=None):
     """
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
-    resource_id = os.environ.get("VOLC_TTS_RESOURCE_ID", "volc.service_type.10029")
     preset = preset if preset is not None else TTS_VOICES.get(voice, TTS_VOICES["star"])
+    resource_id = preset.get("resource_id") or os.environ.get("VOLC_TTS_RESOURCE_ID", "volc.service_type.10029")
     voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
-    speaker = os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
+    speaker = preset["speaker"] if voice == "wow-child" else os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
     if not app_id or not token or not resource_id or not speaker:
         raise RuntimeError("tts_not_configured")
     request_id = str(uuid.uuid4())
@@ -1452,9 +1464,9 @@ def volc_seed_tts(text, voice, preset=None):
             "req_params": {
                 "text": text,
                 "speaker": speaker,
-                "sample_rate": 24000,
                 "audio_params": {
                     "format": "mp3",
+                    "sample_rate": 24000,
                     "bit_rate": 64000,
                     "speech_rate": speech_rate,
                     "loudness_rate": 0,
@@ -1478,7 +1490,14 @@ def volc_seed_tts(text, voice, preset=None):
         },
     )
     chunks = []
-    with urllib.request.urlopen(req, timeout=45) as result:
+    try:
+        upstream = urllib.request.urlopen(req, timeout=preset.get("timeout", 45))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read(8192).decode("utf-8", "replace")
+        if re.search(r"quota|45000292", detail, re.I):
+            raise RuntimeError("tts_quota_exceeded") from exc
+        raise
+    with upstream as result:
         for raw_line in result:
             line = raw_line.decode("utf-8", "replace").strip()
             if not line.startswith("data:"):
@@ -1489,6 +1508,8 @@ def volc_seed_tts(text, voice, preset=None):
                 continue
             code = payload.get("code", 0)
             if code not in (0, 20000000):
+                if code == 45000292 or "quota" in str(payload.get("message", "")).lower():
+                    raise RuntimeError("tts_quota_exceeded")
                 raise RuntimeError(f"tts_v3_{code}")
             if payload.get("data"):
                 chunks.append(base64.b64decode(payload["data"]))
@@ -1521,13 +1542,56 @@ def volc_tts_v1(text, voice, preset=None):
 
 
 def tts_audio(text, voice, preset=None):
+    if voice == "wow-child":
+        return wow_child_tts_audio(text, preset or WOW_CHILD_TTS_PRESET), "volc-seed-v3"
     provider = os.environ.get("PET_TTS_PROVIDER", "fish").strip().lower()
     if provider == "volc":
         try:
             return volc_seed_tts(text, voice, preset), "volc-seed-v3"
-        except Exception:
+        except Exception as exc:
+            if str(exc) == "tts_quota_exceeded":
+                raise
             return volc_tts_v1(text, voice, preset), "volc-v1-fallback"
     return fish_tts(text, voice, preset), "fish"
+
+
+def wow_child_tts_audio(text, preset):
+    """Reuse recent identical lines and coalesce retries without storing text."""
+    key = hashlib.sha256(json.dumps([text, preset], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    with _WOW_SPEECH_LOCK:
+        now = time.monotonic()
+        for old_key, (created, _) in list(_WOW_SPEECH_CACHE.items()):
+            if now - created > 3600:
+                del _WOW_SPEECH_CACHE[old_key]
+        if key in _WOW_SPEECH_CACHE:
+            _WOW_SPEECH_CACHE.move_to_end(key)
+            return _WOW_SPEECH_CACHE[key][1]
+        future = _WOW_SPEECH_PENDING.get(key)
+        owner = future is None
+        if owner:
+            future = Future()
+            _WOW_SPEECH_PENDING[key] = future
+    if not owner:
+        return future.result(timeout=14)
+    try:
+        if not _WOW_SPEECH_SLOTS.acquire(timeout=1):
+            raise RuntimeError("tts_busy")
+        try:
+            audio = volc_seed_tts(text, "wow-child", preset)
+        finally:
+            _WOW_SPEECH_SLOTS.release()
+        with _WOW_SPEECH_LOCK:
+            _WOW_SPEECH_CACHE[key] = (time.monotonic(), audio)
+            while len(_WOW_SPEECH_CACHE) > 128 or sum(len(item[1]) for item in _WOW_SPEECH_CACHE.values()) > 16_000_000:
+                _WOW_SPEECH_CACHE.popitem(last=False)
+        future.set_result(audio)
+        return audio
+    except Exception as exc:
+        future.set_exception(exc)
+        raise
+    finally:
+        with _WOW_SPEECH_LOCK:
+            _WOW_SPEECH_PENDING.pop(key, None)
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -1539,7 +1603,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
 
     def write_sse(self, event, payload):
         data = f"event: {event}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n".encode("utf-8")
@@ -1601,7 +1668,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.send_header("X-Speech-Rate", str(speech_rate))
         self.send_header("Speech-Rate", str(speech_rate))
         self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
 
     def read_json(self, limit=32_768):
         declared = int(self.headers.get("Content-Length", "0"))
@@ -1784,7 +1854,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 return
             if path == "/api/tts":
                 text = str(payload.get("text", "")).strip().replace("<", "").replace(">", "")[:120]
-                profile, voice, preset = npc_tts_settings(payload.get("npcId"), payload.get("voice", "star"))
+                profile, voice, preset = npc_tts_settings(payload.get("npcId"), payload.get("voice", "star"), payload.get("speechProfile", ""))
                 if not text:
                     self.respond_json(400, {"error": "text_required"})
                     return
@@ -1835,6 +1905,9 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 return
             self.respond_json(200, director_result(idea))
         except RuntimeError as exc:
+            if path == "/api/tts" and str(exc) in {"tts_quota_exceeded", "tts_busy"}:
+                self.respond_json(429, {"error": str(exc)})
+                return
             expected = {
                 "/api/tts": "tts_not_configured",
                 "/api/asr": "asr_not_configured",
