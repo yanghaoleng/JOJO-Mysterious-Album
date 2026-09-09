@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f9edc8"><meta name="robots" content="noindex,nofollow">
+  <title>黄色四巨头 · 萌萌星</title>
+  <link rel="icon" href="../favicon.ico"><link rel="stylesheet" href="./yellow-four.css">
+</head>
+<body>
+  <header><a href="./" class="back" aria-label="返回立体故事工坊">↖ <span>萌萌星</span></a><span class="edition">特别同框 · 04 FRIENDS</span></header>
+  <main>
+    <div class="title"><p>今天，黄得很整齐。</p><h1>黄色<span>4</span>巨头</h1><p class="intro">一个颜色，四种可爱。</p></div>
+    <section class="scene" aria-label="黄色四巨头互动合照">
+      <div id="stage"></div><p id="loading" role="status">四位朋友正在集合…</p>
+      <span class="scene-stamp" aria-hidden="true">ALL TOGETHER<br>NOW.</span>
+      <button id="reset" class="reset" aria-label="恢复正面视角">↺</button>
+      <p class="hint">拖动转一转 · 点点它们打招呼 · 双指缩放</p>
+    </section>
+    <div class="members" role="group" aria-label="和谁打招呼">
+      <button data-actor="bull"><span>01</span><b>黄牛</b><small>紫角大哥</small></button>
+      <button data-actor="round"><span>02</span><b>圆滚滚</b><small>快乐担当</small></button>
+      <button data-actor="jiaojiao"><span>03</span><b>叫叫</b><small>披风小队长</small></button>
+      <button data-actor="kangaroo"><span>04</span><b>袋鼠</b><small>长腿选手</small></button>
+    </div>
+    <div class="controls" role="group" aria-label="合照动作">
+      <button data-pose="group" aria-pressed="true">搭肩合照</button><button data-pose="wave" aria-pressed="false">一起挥手</button><button data-pose="hop" aria-pressed="false">开心蹦蹦</button>
+      <button id="save" class="save">保存合照 <span aria-hidden="true">↓</span></button>
+    </div>
+    <p id="notice" role="status" aria-live="polite">四巨头，集合完毕。</p>
+  </main>
+  <script type="module" src="./yellow-four.bundle.js"></script>
+</body>
+</html>
