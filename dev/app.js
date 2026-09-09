@@ -10,6 +10,7 @@ import { getNpc } from '../src/story-npcs/catalog.js';
 import { localResult, PRIVATE } from '../src/wow-local-turn.js';
 import { WOW_PROPS, wowVisualState } from './wow-story.js';
 import { createWowPresentation } from './wow-visuals.js';
+import { chapterDecorationProgress, chapterLayoutOptions, newJourneySeed, savedJourneySeed } from './journey-layout.js';
 import { ReadAlong } from './read-along.js';
 
 const $ = id => document.getElementById(id);
@@ -43,12 +44,12 @@ function notify(message) {
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { $('notice').dataset.visible = 'false'; }, 4200);
 }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], firstWords: '', completed: false });
+const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
 function savedState() {
   const saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || saved.sceneIndex < 0 || saved.sceneIndex >= story.scenes.length || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
   const type = CHARACTER_CATALOG.some(item => item.id === saved.companion?.type) ? saved.companion.type : 'rabbit';
-  return { ...defaultState(), ...saved, wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
+  return { ...defaultState(), ...saved, ...(story.id === 'wow' ? { journeySeed: savedJourneySeed(saved) } : {}), wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
 }
 function persist() { store(`story.${story.id}`, state); }
 function storyCast(scene) {
@@ -64,7 +65,7 @@ function syncWowPresentation(lit = false) {
   if (!wowPresentation) wowPresentation = createWowPresentation(stage);
   const visualState = wowVisualState(story.scenes[state.sceneIndex], state, lit);
   stage.onCuriosityTheme = applyEnvironmentTheme;
-  stage.setCuriosityProgress(visualState.progress);
+  stage.setCuriosityProgress(visualState.progress, { decorationProgress: chapterDecorationProgress(story.scenes[state.sceneIndex].chapter, state) });
   wowPresentation.set(visualState);
 }
 
@@ -160,7 +161,9 @@ function scheduleFraming() {
 function setWorld(worldId, cast, options) {
   mountedStoryScene = null;
   wowPresentation?.dispose(); wowPresentation = null;
-  stage.setScene(worldId, cast, options);
+  const scene = story?.id === 'wow' && state ? story.scenes[state.sceneIndex] : null;
+  const decorations = scene && !options?.studio ? chapterLayoutOptions(scene.chapter, state.journeySeed) : null;
+  stage.setScene(worldId, cast, { ...options, decorations });
   const environment = stage.world?.atmosphere;
   if (environment) applyEnvironmentTheme(environment);
   scheduleFraming();
@@ -238,6 +241,7 @@ async function dialogue(lines, token = epoch) {
 }
 
 function showView(view) {
+  stage?.setCameraDriftEnabled(view === 'story');
   document.body.dataset.view = view;
   $('home-panel').hidden = view !== 'home';
   $('story-panel').hidden = view !== 'story';
@@ -275,6 +279,7 @@ function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
   $('heard').hidden = true; $('voice-feedback').hidden = true;
   story = selected; state = savedState() || defaultState(); phase = 'ready';
+  if (story.id === 'wow') persist();
   showView('story');
   document.title = `${story.title} · 萌萌星`;
   $('scene-title').textContent = story.title;

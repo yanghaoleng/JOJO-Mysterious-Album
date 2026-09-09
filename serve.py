@@ -1991,6 +1991,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 clean = clean[: -len("index")]
             self.send_response(308)
             self.send_header("Location", urlunsplit(parts._replace(path=clean)))
+            self.send_header("Content-Length", "0")
             self.end_headers()
             return None
         return super().send_head()
@@ -2007,7 +2008,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         if os.environ.get("APP_ENV") == "production":
             path = urlsplit(self.path).path
-            if path.startswith("/api/") or path in {"/", "/index.html", "/Data", "/data.html"}:
+            # Entry documents must pick up the current versioned modules after
+            # release, including extensionless /wow-story and /dev/ routes.
+            is_html = any(header.lower().startswith(b"content-type: text/html") for header in getattr(self, "_headers_buffer", ()))
+            if is_html or path.endswith(".html") or path.startswith("/api/") or path in {"/", "/Data"}:
                 self.send_header("Cache-Control", "no-store, must-revalidate")
             else:
                 self.send_header("Cache-Control", "public, max-age=604800")

@@ -2,6 +2,7 @@ import * as THREE from '../vendor/three.module.js';
 import { createPlanetSurface } from './planet.js';
 import { WORLD_ENVIRONMENTS } from './environments.js';
 import { attachTapRange, createBatchedTapTarget, createObjectTapTarget } from './tap-feedback.js';
+import { makeDecorationLayout } from './journey-layout.js';
 
 /** Independently modelled, material-batched miniature worlds for the /dev edition. */
 export const WORLD_CATALOG = [
@@ -32,7 +33,7 @@ function seededRandom(seed) {
   return () => { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; };
 }
 
-export function createWorld(requestedId, { seed = 1 } = {}) {
+export function createWorld(requestedId, { seed = 1, decorations = null } = {}) {
   const id = PALETTES[requestedId] ? requestedId : 'orchard';
   const palette = PALETTES[id];
   const environment = WORLD_ENVIRONMENTS[id];
@@ -132,6 +133,8 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   const pebble = (x, z, scale = 1, color = palette[2], parent = staticRoot) => {
     const pebbleMesh = ball(stone(color), x, 0.12 * scale, z, 0.32 * scale, 0.15 * scale, 0.23 * scale, parent);
     pebbleMesh.rotation.y = rng() * Math.PI;
+    pebbleMesh.userData.naturalDecoration = true;
+    return pebbleMesh;
   };
   const leaf = (x, y, z, size, color, parent = staticRoot, angle = 0) => {
     const item = ball(foliage(color), x, y, z, size * 0.55, size * 0.12, size, parent);
@@ -140,27 +143,34 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   };
   const flower = (x, z, color = '#f1d296', size = 0.16, parent = staticRoot) => {
     parent = part(x, 0, z, parent); parent.userData.tapMode = 'wiggle'; x = 0; z = 0;
+    parent.userData.naturalDecoration = true;
     rod(foliage('#829367'), [x, 0.02, z], [x + 0.015, 0.25, z], 0.022, parent);
     for (let i = 0; i < 5; i++) {
       const a = i * Math.PI * 0.4;
       ball(foliage(color), x + Math.cos(a) * size * 0.63, 0.25, z + Math.sin(a) * size * 0.63, size * 0.57, 0.045, size * 0.54, parent);
     }
     ball(foliage('#bb8b47'), x, 0.285, z, size * 0.28, 0.045, size * 0.28, parent);
+    return parent;
   };
   const grass = (x, z, size = 1, color = palette[1], parent = staticRoot) => {
     parent = part(x, 0, z, parent); parent.userData.tapMode = 'stretch'; x = 0; z = 0;
+    parent.userData.naturalDecoration = true;
     [-0.12, 0, 0.12].forEach((offset, n) => {
       const blade = ball(foliage(color), x + offset * size, 0.16 * size, z, 0.055 * size, (0.2 + (n % 2) * 0.07) * size, 0.07 * size, parent);
       blade.rotation.z = -offset * 3;
     });
+    return parent;
   };
   const bush = (x, z, size = 1, parent = staticRoot) => {
     parent = part(x, 0, z, parent); parent.userData.tapMode = 'puff'; x = 0; z = 0;
+    parent.userData.naturalDecoration = true;
     [[0, 0.35, 0, 0.55], [-0.33, 0.25, 0.12, 0.35], [0.3, 0.25, 0.06, 0.4]].forEach(([dx, dy, dz, r]) => ball(foliage(palette[1]), x + dx * size, dy * size, z + dz * size, r * size, r * size * 0.8, r * size, parent));
+    return parent;
   };
   const tree = (x, z, height = 2.9, fruit = false, color = '#7f9f65') => {
     const node = part(x, 0, z, staticRoot, 0, 'wood');
     node.userData.tapMode = 'wiggle';
+    node.userData.naturalDecoration = true;
     rod('#927052', [0, 0, 0], [-0.08, height * 0.72, 0], 0.16, node);
     rod('#927052', [0, height * 0.38, 0], [-0.65, height * 0.73, 0.05], 0.08, node);
     rod('#927052', [0, height * 0.5, 0], [0.6, height * 0.83, 0], 0.09, node);
@@ -191,6 +201,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   const clouds = (x, y, z, scale = 1, parent = staticRoot, color = '#f1eee7') => {
     const node = part(x, y, z, parent, 0, 'paper');
     node.userData.tapMode = 'puff';
+    node.userData.naturalDecoration = true;
     [[0, 0, 0, 0.76], [-0.63, -0.12, 0, 0.49], [0.65, -0.15, 0.04, 0.47], [-0.18, 0.34, -0.04, 0.5]].forEach(([dx, dy, dz, r]) => ball(color, dx * scale, dy * scale, dz * scale, r * scale, r * scale * 0.65, r * scale * 0.7, node));
     return node;
   };
@@ -331,6 +342,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     tree(-3.15, 0.24, 2.3, false, '#9fa778');
     for (let i = 0; i < 3; i++) {
       const puff = ball('#f2ece0', -0.94, 3.6 + i * 0.32, -2.6, 0.12 + i * 0.06, 0.11 + i * 0.04, 0.12, liveRoot);
+      puff.userData.naturalDecoration = true;
       animators.push(time => { puff.position.x = -0.94 + Math.sin(time * 0.6 + i) * 0.08; puff.scale.setScalar(0.11 + i * 0.045 + Math.sin(time + i) * 0.02); });
     }
   }
@@ -449,6 +461,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     ball(stone('#91c1b5'), 2.78, 0.11, -1.65, 1.15, 0.23, 1.21);
     const coral = (x, z, color, scale = 1) => {
       const node = part(x, 0, z, staticRoot, 0, 'stone'); node.scale.setScalar(scale);
+      node.userData.naturalDecoration = true;
       rod(color, [0, 0.03, 0], [0, 1.26, 0], 0.115, node);
       [[-0.47, 0.95, 0.01], [0.52, 1.38, -0.05], [-0.17, 1.71, -0.06]].forEach((p, i) => {
         rod(color, [0, 0.53 + i * 0.17, 0], p, 0.085, node);
@@ -469,10 +482,12 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     animators.push(time => { bolt.rotation.y = 0.3 + Math.sin(time * 0.5) * 0.05; const age = time - reactionAt; bolt.position.y = 0.07 + (age < 3 ? Math.sin(age / 3 * Math.PI) * 0.45 : 0); });
     for (let i = 0; i < 9; i++) {
       const bubble = ball(clay('#b9deda', false, true), 0, 0, 0, 0.12 + (i % 3) * 0.06, undefined, undefined, liveRoot);
+      bubble.userData.naturalDecoration = true;
       const x = (i % 2 ? -1 : 1) * (2.65 + rng() * 0.7); const z = -1.6 + rng() * 2.3;
       animators.push(time => { bubble.position.set(x + Math.sin(time * 0.55 + i) * 0.13, 0.3 + ((time * 0.23 + i * 0.43) % 2.9), z); });
     }
     const soundBubble = part(2.2, 1.82, -1.07, liveRoot);
+    soundBubble.userData.naturalDecoration = true;
     ball(clay('#c8e6db', false, true), 0, 0, 0, 0.39, 0.39, 0.39, soundBubble);
     torus(ink('#d8eee2'), 0, 0, 0, 0.39, 0.013, soundBubble, [0, 0, 0]);
     ball(clay('#efd5a1', true), 0, 0, 0, 0.085, 0.085, 0.085, soundBubble);
@@ -484,6 +499,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     });
     [[-3.6, -0.5], [3.3, 1.72], [-2.7, 2.26]].forEach(([x, z]) => grass(x, z, 1.9, '#6fa697'));
     const star = part(1.9, 0.045, 2.46, staticRoot, 0.4, 'stone');
+    star.userData.naturalDecoration = true;
     for (let i = 0; i < 5; i++) {
       const a = i * Math.PI * 0.4;
       const ray = ball('#d5ab88', Math.sin(a) * 0.15, 0, Math.cos(a) * 0.15, 0.11, 0.06, 0.28, star); ray.rotation.y = a;
@@ -618,6 +634,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     }
     for (let i = 0; i < 11; i++) {
       const firefly = part(-2.9 + i * 0.56, 0.6 + (i % 4) * 0.33, -1.1 + Math.cos(i) * 0.35, liveRoot);
+      firefly.userData.naturalDecoration = true;
       ball(clay('#e9d997', true), 0, 0, 0, 0.04, 0.057, 0.04, firefly);
       [-1, 1].forEach(s => ball(paint('#d8d9bd'), s * 0.047, 0.02, 0, 0.041, 0.012, 0.025, firefly));
       const y = firefly.position.y; const x = firefly.position.x;
@@ -649,6 +666,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     const normal = new THREE.Vector3(Math.sin(polar) * Math.cos(longitude), Math.cos(polar), Math.sin(polar) * Math.sin(longitude));
     const terrainSurface = ['moon', 'observatory', 'reef'].includes(id) ? 'stone' : id === 'pocket' ? 'paint' : id === 'cloud' ? 'paper' : 'foliage';
     const anchor = part(0, 0, 0, backsideRoot, 0, terrainSurface);
+    anchor.userData.naturalDecoration = true;
     anchor.position.copy(normal).multiplyScalar(radius).add(center);
     anchor.quaternion.setFromUnitVectors(up, normal);
     anchor.name = `radial-terrain-${i}`;
@@ -726,6 +744,55 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
     mesh(riverGeometry, water('#81b7b3'), [0, 0, 0], [1, 1, 1], backsideRoot).userData.tapSurface = true;
   }
 
+  let decorationLayout = null;
+  if (decorations) {
+    // WOW grows its own seeded nature. Buildings, paths, workstations and
+    // story props remain authored anchors; other editions keep every original.
+    for (const root of [staticRoot, liveRoot, backsideRoot]) {
+      const remove = [];
+      root.traverse(object => { if (object.userData.naturalDecoration) remove.push(object); });
+      remove.forEach(object => object.removeFromParent());
+    }
+    secondaryAnchors.length = 0;
+    decorationLayout = makeDecorationLayout(id, decorations);
+    for (const item of decorationLayout.items) {
+      let parent = staticRoot, x = item.x || 0, z = item.z || 0;
+      if (item.region === 'back') {
+        parent = part(0, 0, 0, backsideRoot); parent.userData.tapElement = false;
+        const normal = new THREE.Vector3(...item.normal);
+        parent.position.copy(normal).multiplyScalar(radius).add(center);
+        parent.quaternion.setFromUnitVectors(up, normal);
+        secondaryAnchors.push({ point: parent.position.toArray(), normal: normal.toArray() });
+      }
+      let object;
+      if (item.kind === 'grass' || item.kind === 'seaweed') object = grass(x, z, item.size * .95, item.kind === 'seaweed' ? '#76a99b' : palette[1], parent);
+      else if (item.kind === 'flower') object = flower(x, z, ['#edd49e', '#e6bdb0', '#e9e0bd'][Math.floor(item.phase) % 3], .14 * item.size, parent);
+      else if (item.kind === 'stone') object = pebble(x, z, item.size * .65, palette[2], parent);
+      else if (item.kind === 'bush') object = bush(x, z, item.size * .38, parent);
+      else if (item.kind === 'cloud') object = clouds(x, .11, z, item.size * .22, parent, '#f0ecdf');
+      else {
+        object = part(x, 0, z, parent);
+        if (item.kind === 'coral') {
+          object.userData.tapMode = 'stretch';
+          for (const side of [-1, 0, 1]) {
+            const height = (.3 + (side === 0 ? .16 : 0)) * item.size;
+            rod(paint(side === 0 ? '#cda7ad' : '#d6b29a'), [0, .015, 0], [side * .12 * item.size, height, 0], .035 * item.size, object);
+            ball(paint('#e2c4b4'), side * .12 * item.size, height, 0, .043 * item.size, .05 * item.size, .04 * item.size, object);
+          }
+        } else {
+          object.userData.tapMode = 'twist';
+          for (let i = 0; i < 5; i++) {
+            const angle = i * Math.PI * .4;
+            const ray = ball(paint('#d9c385'), Math.sin(angle) * .07 * item.size, .065, Math.cos(angle) * .07 * item.size, .045 * item.size, .035 * item.size, .15 * item.size, object);
+            ray.rotation.y = angle;
+          }
+        }
+      }
+      object.name = item.id;
+      object.userData.decoration = item;
+    }
+  }
+
   // Long terrain triangles need subdivision before curving, otherwise their
   // chords disappear into the sphere. Static work happens only at creation.
   function batchStatic(root, curved = false) {
@@ -740,6 +807,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
         ? surfacePoint(origin.x, origin.z, Math.max(0, new THREE.Box3().setFromObject(owner).min.y))
         : normal.clone().multiplyScalar(radius).add(center);
       const target = createBatchedTapTarget({ name: owner.name || `${id}-element-${elementNumber++}`, mode: owner.userData.tapMode, position: foot, quaternion: new THREE.Quaternion().setFromUnitVectors(up, normal), surface: { radius, center } });
+      target.decoration = owner.userData.decoration || null;
       owners.set(owner, target); tapTargets.push(target);
       return target;
     };
@@ -849,6 +917,7 @@ export function createWorld(requestedId, { seed = 1 } = {}) {
   return {
     group,
     tapTargets,
+    decorationLayout,
     planet: { radius, center: center.clone() },
     atmosphere: environment.atmosphere,
     surfacePoint,

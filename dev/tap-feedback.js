@@ -25,6 +25,7 @@ export function firstTapHit(hits) {
   for (const hit of hits) {
     if (!visibleHit(hit)) continue;
     const target = targetForHit(hit);
+    if (target?.reveal && !target.reveal.visible) continue;
     const material = Array.isArray(hit.object.material) ? hit.object.material[hit.face?.materialIndex || 0] : hit.object.material;
     if (target) {
       if (!glassHit && material?.transparent) { glassHit = { target, hit }; continue; }
@@ -151,12 +152,60 @@ function resetTarget(target) {
   target.age = Infinity;
 }
 
+function paintTarget(target, pose) {
+  const points = target.type === 'object' ? objectPoints(target) : target.points ||= batchPoints(target);
+  preserveContact(target, points, pose);
+  const transform = target.frame.clone().multiply(pose).multiply(target.inverse);
+  if (target.type === 'object') {
+    const parent = target.wrapper.parent;
+    target.wrapper.matrix.copy(parent.matrixWorld).invert().multiply(transform).multiply(parent.matrixWorld);
+    target.wrapper.matrixWorldNeedsUpdate = true;
+  } else {
+    const normals = new THREE.Matrix3().getNormalMatrix(transform), point = new THREE.Vector3(), normal = new THREE.Vector3();
+    for (const part of target.parts) {
+      const positions = part.geometry.attributes.position, directions = part.geometry.attributes.normal;
+      for (let i = 0; i < part.count; i++) {
+        point.fromArray(part.position, i * 3).applyMatrix4(transform); positions.setXYZ(part.start + i, point.x, point.y, point.z);
+        normal.fromArray(part.normal, i * 3).applyNormalMatrix(normals); directions.setXYZ(part.start + i, normal.x, normal.y, normal.z);
+      }
+      positions.needsUpdate = true; directions.needsUpdate = true;
+    }
+  }
+}
+
 export class TapFeedback {
-  constructor() { this.targets = new Set(); this.active = new Set(); this.last = null; }
-  add(target) { this.targets.add(target); return target; }
-  remove(target) { resetTarget(target); this.targets.delete(target); this.active.delete(target); }
+  constructor() { this.targets = new Set(); this.active = new Set(); this.ambient = new Set(); this.clock = 0; this.last = null; }
+  add(target) {
+    this.targets.add(target);
+    if (target.decoration) {
+      target.reveal = { visible: false, initialized: false, age: Infinity, entries: 0, factor: 0, breathing: 0, bornAt: this.clock };
+      this.ambient.add(target);
+      paintTarget(target, matrix().makeScale(.000001, .000001, .000001));
+    }
+    return target;
+  }
+  remove(target) { resetTarget(target); this.targets.delete(target); this.active.delete(target); this.ambient.delete(target); }
+  setRevealProgress(targets, progress, { immediate = false, reduced = false } = {}) {
+    for (const target of targets) {
+      const reveal = target.reveal;
+      if (!reveal) continue;
+      const visible = progress + 1e-8 >= target.decoration.at;
+      reveal.reduced = reduced;
+      if (!reveal.initialized || immediate || !visible) {
+        reveal.visible = visible; reveal.age = Infinity; reveal.bornAt = this.clock;
+        reveal.factor = visible ? 1 : 0; reveal.breathing = 0; reveal.initialized = true;
+        this.active.delete(target); resetTarget(target);
+        if (!visible) paintTarget(target, matrix().makeScale(.000001, .000001, .000001));
+      } else if (!reveal.visible) {
+        reveal.visible = true; reveal.age = reduced ? Infinity : -target.decoration.delay;
+        reveal.bornAt = this.clock; reveal.entries += reduced ? 0 : 1;
+        reveal.factor = reduced ? 1 : 0; reveal.breathing = 0;
+        if (reduced) resetTarget(target);
+      }
+    }
+  }
   trigger(target, reduced = false) {
-    if (!this.targets.has(target)) return false;
+    if (!this.targets.has(target) || target.reveal && !target.reveal.visible) return false;
     const contains = (parent, child) => { for (let ancestor = child; ancestor; ancestor = ancestor.parent) if (ancestor === parent) return true; return false; };
     for (const active of this.active) if (contains(active, target) || contains(target, active)) { resetTarget(active); this.active.delete(active); }
     resetTarget(target);
@@ -168,31 +217,34 @@ export class TapFeedback {
   }
   update(dt) {
     const elapsed = Number.isFinite(dt) ? Math.max(0, Math.min(dt, .1)) : 0;
-    const point = new THREE.Vector3(), normal = new THREE.Vector3();
-    for (const target of this.active) {
-      target.age += elapsed;
-      const pose = feedbackPose(target.mode, target.age, target.reduced);
-      if (pose.complete) { resetTarget(target); this.active.delete(target); continue; }
-      const points = target.type === 'object' ? objectPoints(target) : target.points;
-      preserveContact(target, points, pose.matrix);
-      const transform = target.frame.clone().multiply(pose.matrix).multiply(target.inverse);
-      if (target.type === 'object') {
-        const parent = target.wrapper.parent;
-        target.wrapper.matrix.copy(parent.matrixWorld).invert().multiply(transform).multiply(parent.matrixWorld);
-        target.wrapper.matrixWorldNeedsUpdate = true;
-      } else {
-        const normals = new THREE.Matrix3().getNormalMatrix(transform);
-        for (const part of target.parts) {
-          const positions = part.geometry.attributes.position, directions = part.geometry.attributes.normal;
-          for (let i = 0; i < part.count; i++) {
-            point.fromArray(part.position, i * 3).applyMatrix4(transform); positions.setXYZ(part.start + i, point.x, point.y, point.z);
-            normal.fromArray(part.normal, i * 3).applyNormalMatrix(normals); directions.setXYZ(part.start + i, normal.x, normal.y, normal.z);
-          }
-          positions.needsUpdate = true; directions.needsUpdate = true;
-        }
+    this.clock += elapsed;
+    const work = new Set(this.active);
+    for (const target of this.ambient) if (target.reveal.visible) work.add(target);
+    for (const target of work) {
+      let pose = matrix(), tapping = this.active.has(target), changing = tapping;
+      if (tapping) {
+        target.age += elapsed;
+        const tap = feedbackPose(target.mode, target.age, target.reduced);
+        if (tap.complete) { target.age = Infinity; this.active.delete(target); tapping = false; }
+        else pose = tap.matrix;
       }
+      const reveal = target.reveal;
+      if (reveal) {
+        if (Number.isFinite(reveal.age)) reveal.age += elapsed;
+        const t = Math.min(1, Math.max(0, reveal.age / .7)), u = t - 1;
+        const factor = t >= 1 ? 1 : Math.max(.000001, 1 + 2.25 * u ** 3 + 1.25 * u ** 2);
+        if (t >= 1) reveal.age = Infinity;
+        const phase = (this.clock + target.decoration.phase) % target.decoration.period;
+        const breathing = reveal.reduced || Number.isFinite(reveal.age) || this.clock - reveal.bornAt < 2 || phase > 1.8 ? 0 : Math.sin(phase / 1.8 * Math.PI) ** 2;
+        changing ||= factor !== reveal.factor || breathing !== reveal.breathing;
+        reveal.factor = factor; reveal.breathing = breathing;
+        pose.multiply(matrix().makeScale(factor * (1 + .007 * breathing), factor * (1 + .018 * breathing), factor * (1 + .007 * breathing)));
+      }
+      if (!changing) continue;
+      if (!tapping && (!reveal || reveal.factor === 1 && reveal.breathing === 0)) resetTarget(target);
+      else paintTarget(target, pose);
     }
   }
   clear() { for (const target of [...this.targets]) this.remove(target); }
-  stats() { return { targets: this.targets.size, active: this.active.size, last: this.last }; }
+  stats() { return { targets: this.targets.size, active: this.active.size, last: this.last, decorations: [...this.ambient].map(target => ({ id: target.name, kind: target.decoration.kind, step: target.decoration.step, region: target.decoration.region, visible: target.reveal.visible, entering: Number.isFinite(target.reveal.age), entries: target.reveal.entries, factor: target.reveal.factor, breathing: target.reveal.breathing })) }; }
 }

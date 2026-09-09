@@ -5,6 +5,7 @@ import { createWorld } from './worlds.js';
 import { createActorGrounding } from './planet.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 import { TapFeedback, createObjectTapTarget, firstTapHit } from './tap-feedback.js';
+import { createCameraDrift } from './camera-drift.js';
 
 const clamp = THREE.MathUtils.clamp;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -26,6 +27,8 @@ export class DioramaStage {
     this.viewportInsets = { top: 0, bottom: 0, left: 0, right: 0 };
     this.style = createStorybookStyle();
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.cameraDrift = createCameraDrift({ reduced: this.reduced });
+    this.cameraDriftEnabled = false;
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
     this.renderer.setClearColor('#f3ecdf', 0);
@@ -94,6 +97,9 @@ export class DioramaStage {
         this.invention.rotation.y += dt * .12;
       }
       this.tapFeedback.update(dt);
+      const previousOffset = this.cameraDrift.offset;
+      const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
+      if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();
       this.renderer.render(this.scene, this.camera);
     });
   }
@@ -102,6 +108,7 @@ export class DioramaStage {
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', event => {
       if (event.button !== undefined && event.button !== 0) return;
+      this.cameraDrift?.pause();
       this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
       if (this.pointers.size >= 2) {
         const [a, b] = [...this.pointers.values()];
@@ -138,6 +145,7 @@ export class DioramaStage {
     canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
       event.preventDefault();
+      this.cameraDrift?.pause();
       this.zoom = clamp(this.zoom - event.deltaY * .001, .7, 1.8);
       this.resize();
     }, { passive: false });
@@ -165,6 +173,7 @@ export class DioramaStage {
   resize() {
     const { width, height } = this.container.getBoundingClientRect();
     if (!width || !height) return;
+    if (this.safeViewport && (width !== this.safeViewport.canvasWidth || height !== this.safeViewport.canvasHeight)) this.cameraDrift?.pause();
     this.renderer.setSize(width, height);
     // Insets are CSS pixels, not device pixels. Keep at least a small usable
     // rectangle while a sheet is animating or the container is being resized.
@@ -197,20 +206,32 @@ export class DioramaStage {
 
   updateCamera() {
     const radius = 23;
+    const offset = this.cameraDrift?.offset || { yaw: 0, pitch: 0 };
+    const yaw = this.yaw + offset.yaw, pitch = this.pitch + offset.pitch;
     this.camera.position.set(
-      Math.sin(this.yaw) * Math.cos(this.pitch) * radius + this.target.x,
-      Math.sin(this.pitch) * radius + this.target.y,
-      Math.cos(this.yaw) * Math.cos(this.pitch) * radius + this.target.z,
+      Math.sin(yaw) * Math.cos(pitch) * radius + this.target.x,
+      Math.sin(pitch) * radius + this.target.y,
+      Math.cos(yaw) * Math.cos(pitch) * radius + this.target.z,
     );
     this.camera.lookAt(this.target);
     this.camera.updateMatrixWorld();
   }
 
+  setCameraDriftEnabled(enabled) {
+    this.cameraDriftEnabled = Boolean(enabled);
+    this.cameraDrift.update(0, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced });
+    this.updateCamera();
+  }
+
   setViewportInsets(insets = {}) {
+    let changed = false;
     for (const side of ['top', 'bottom', 'left', 'right']) {
       const value = Number(insets[side] ?? 0);
-      this.viewportInsets[side] = Number.isFinite(value) ? Math.max(0, value) : 0;
+      const next = Number.isFinite(value) ? Math.max(0, value) : 0;
+      changed ||= next !== this.viewportInsets[side];
+      this.viewportInsets[side] = next;
     }
+    if (changed) this.cameraDrift?.pause();
     this.resize();
   }
 
@@ -247,7 +268,7 @@ export class DioramaStage {
     this.resize();
   }
 
-  resetCamera() { this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+  resetCamera() { this.cameraDrift?.reset(); this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
 
   setLighting(atmosphere = {}) {
     const settings = { ...STORYBOOK_PALETTE, ...atmosphere.lighting };
@@ -261,8 +282,9 @@ export class DioramaStage {
     if (!this.lightingInitialized) { this.updateLighting(1, true); this.lightingInitialized = true; }
   }
 
-  setCuriosityProgress(progress) {
+  setCuriosityProgress(progress, { decorationProgress = progress } = {}) {
     const target = clamp(Number(progress) || 0, 0, 1);
+    this.tapFeedback?.setRevealProgress(this.world?.tapTargets || [], clamp(Number(decorationProgress) || 0, 0, 1), { immediate: !this.curiosity, reduced: this.reduced });
     if (!this.curiosity) {
       this.curiosity = { progress: target, target };
       this.scene.fog = new THREE.Fog('#46566b', 20.2, 28.8);
@@ -317,7 +339,7 @@ export class DioramaStage {
     if (starMaterial) starMaterial.opacity = THREE.MathUtils.lerp(starMaterial.opacity, target.stars, blend);
   }
 
-  setScene(worldId, cast = [], { studio = false } = {}) {
+  setScene(worldId, cast = [], { studio = false, decorations = null } = {}) {
     this.curiosity = null;
     this.scene.fog = null;
     this.clearInvention();
@@ -329,7 +351,7 @@ export class DioramaStage {
     this.actors.clear();
     this.actorFrames.clear();
     this.studio = studio;
-    this.world = createWorld(worldId);
+    this.world = createWorld(worldId, { seed: decorations?.seed || 1, decorations });
     this.world.tapTargets.forEach(target => this.tapFeedback?.add(target));
     this.setLighting(this.world.atmosphere);
     this.style.apply(this.world.group);
@@ -530,6 +552,7 @@ export class DioramaStage {
       world: this.worldId, actors: [...this.actors.keys()],
       calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,
       camera: this.camera.position.toArray(), orbit: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom },
+      cameraDrift: this.cameraDrift ? { ...this.cameraDrift.state, offset: this.cameraDrift.offset } : null,
       frame: { projection: this.camera.projectionMatrix.toArray(), view: this.camera.matrixWorldInverse.toArray() },
       focus: { target: this.target.toArray(), ...this.characterFocus, projectedActors, projectedInvention: this.invention ? projectedBounds(this.invention) : null },
       safeViewport: viewport ? { ...viewport, insets: { ...viewport.insets } } : null,
@@ -539,6 +562,7 @@ export class DioramaStage {
       actorSurfaces: [...this.actors].map(([id, actor]) => ({ id, foot: actor.group.position.toArray(), normal: actor.group.userData.surfaceNormal, height: actor.group.userData.surfaceHeight, up: UP.clone().applyQuaternion(actor.group.quaternion).toArray(), grounding: actor.group.userData.grounding })),
       invention: Boolean(this.invention), upgrades: this.invention?.userData.upgrades || [],
       taps: this.tapFeedback?.stats(),
+      decorationLayout: this.world?.decorationLayout,
     };
   }
 
