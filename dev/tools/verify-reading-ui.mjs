@@ -5,6 +5,7 @@
  */
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import {phraseRanges,speechTimeline,readingAt} from '../speech-timing.js';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const fixture = JSON.parse(await readFile(process.env.READ_ALONG_FIXTURE, 'utf8'));
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -30,6 +31,7 @@ try {
   await page.waitForFunction(() => window.__DEV_STORY__?.status.phase === 'ready');
   await page.locator('#start-story').click();
   await page.waitForFunction(() => window.__READING_QA__.starts.length > 0);
+  await page.waitForTimeout(1000);
   const samples = [];
   for (let i = 0; i < 34; i++) {
     samples.push(await page.evaluate(() => {
@@ -41,12 +43,12 @@ try {
     }));
     await page.waitForTimeout(120);
   }
-  const spoken = value => value.replace(/[^\p{L}\p{N}]/gu, '');
+  const phrases=phraseRanges(fixture.text),timeline=speechTimeline(fixture.text,fixture.alignment);
+  const expectedAt=time=>{const cue=readingAt(timeline,time);return (cue.start>=0 ? phrases.find(p=>p.start<cue.end && p.end>cue.start) : phrases.find(p=>p.start<cue.spokenEnd && p.end>cue.spokenEnd))?.text || '';};
   const checked = samples.filter(sample => !fixture.alignment.some(cue => Math.abs(sample.time - cue.start)<.09 || Math.abs(sample.time - cue.end)<.09));
   assert.ok(checked.length > 6);
   for (const sample of checked) {
-    const cue = fixture.alignment.find(cue => sample.time >= cue.start && sample.time < cue.end);
-    assert.equal(sample.text, cue ? spoken(cue.text) : '', `playback ${sample.time.toFixed(3)}s`);
+    assert.equal(sample.text, expectedAt(sample.time), `playback ${sample.time.toFixed(3)}s`);
   }
   assert.ok(samples.some(sample => sample.text.length > 0));
   assert.ok(samples.some(sample => sample.read > 0));
@@ -68,7 +70,8 @@ try {
   await page.locator('#start-story').click();
   await page.waitForFunction(() => window.__READING_QA__.starts.length === 2);
   await page.waitForFunction(() => document.querySelector('#speech-text .is-current'));
-  assert.equal(await page.locator('#speech-text .is-current').first().textContent(), spoken(fixture.alignment[0].text));
+  await page.waitForTimeout(1000);
+  assert.equal(await page.locator('#speech-text .is-current').first().textContent(), phrases[0].text);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({passed:true,actualAudioBytes:Buffer.from(fixture.audio,'base64').length,timedSamples:checked.length,

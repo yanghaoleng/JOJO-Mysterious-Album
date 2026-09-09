@@ -36,3 +36,24 @@ export function readingAt(timeline, elapsed) {
   }
   return { start: -1, end: -1, spokenEnd };
 }
+
+// Keep punctuation with its preceding short clause; cap unpunctuated passages
+// without splitting graphemes. UTF-16 ranges still match the provider timeline.
+export function phraseRanges(text) {
+  const glyphs = [...new Intl.Segmenter('zh', { granularity: 'grapheme' }).segment(text)];
+  const phrases = [];
+  let start = 0, count = 0, pendingBoundary = false;
+  for (let i = 0; i < glyphs.length; i++) {
+    const { segment, index } = glyphs[i]; count++;
+    const punctuation = /[，,。！？!?；;：:\n]/u.test(segment);
+    pendingBoundary ||= punctuation;
+    const next = glyphs[i + 1]?.segment || '';
+    const closing = /[”’」』"）)]/u.test(next);
+    const wordContinues = /[a-zA-Z0-9]/u.test(segment) && /[a-zA-Z0-9]/u.test(next);
+    if (i === glyphs.length - 1 || (!closing && (pendingBoundary || (count >= 16 && !wordContinues)))) {
+      const end = index + segment.length;
+      phrases.push({ text: text.slice(start, end), start, end }); start = end; count = 0; pendingBoundary = false;
+    }
+  }
+  return phrases;
+}

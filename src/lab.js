@@ -33,12 +33,12 @@ import {
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
-import { createVoiceInput } from './voice-input-control.js?v=20260909-shared-voice';
+import { createVoiceInput } from './voice-input-control.js?v=20260910-lyric-motion';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
   skipSpeechBubble,
-} from '../vendor/calligraph-bubble.js?v=20260827-user-bubble';
+} from '../vendor/calligraph-bubble.js?v=20260910-lyric-motion';
 import {
   CHARACTER_CARD_FIELDS,
   baseCharacterCard,

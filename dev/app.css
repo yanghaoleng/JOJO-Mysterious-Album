@@ -23,11 +23,11 @@ body[data-view=studio] #experience{display:grid;grid-template-columns:minmax(0,1
 .camera-reset{background:#fcf8eec7}
 @media(max-width:680px){body[data-view=home] .world-viewport{height:clamp(300px,43dvh,480px)}body[data-view=story] .world-viewport{height:clamp(365px,51dvh,550px)}body[data-view=studio] .world-viewport{height:43dvh;background:#f3ecdf}.stage-hint{letter-spacing:.025em}}
 
-/* Each grapheme stays inline with the sentence's original metrics and wrapping.
-   Playback only paints these spans; it never dims the sentence or pulses it. */
+/* Lyric-style focus stays on a short clause, never a single highlighted box. */
 .read-along__visual{display:inline;color:inherit}
-.read-along__char{display:inline;color:inherit;border-radius:.16em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.read-along__char.is-read{color:var(--ink);text-decoration-line:underline;text-decoration-color:color-mix(in srgb,var(--ink) 24%,transparent);text-decoration-thickness:.065em;text-underline-offset:.17em}
-.read-along__char.is-current{color:#3d3426;background:#f4dda0;box-shadow:inset 0 -.095em 0 #b68c35;text-decoration:none}
-body[data-period=night] .read-along__char.is-current{color:#35302a;background:#f4dc9d;box-shadow:inset 0 -.095em 0 #b68c35}
-@media(forced-colors:active){.read-along__char.is-read{color:CanvasText;text-decoration-color:CanvasText}.read-along__char.is-current{color:HighlightText;background:Highlight;forced-color-adjust:none;box-shadow:none;text-decoration:underline}}
+.read-along__phrase{display:inline;opacity:.55;font-weight:650;transition:opacity 280ms ease,text-shadow 280ms ease;color:inherit}
+.read-along__phrase .calligraph-glyph::before{font-weight:850}
+.read-along__phrase.is-read{opacity:.7}
+.read-along__phrase.is-current{opacity:1;font-weight:850;color:inherit;background:none;text-shadow:0 0 12px currentColor,0 0 24px color-mix(in srgb,currentColor 28%,transparent)}
+@media(prefers-reduced-motion:reduce){.read-along__phrase{transition:none}}
+@media(forced-colors:active){.read-along__phrase{opacity:1}.read-along__phrase.is-current{color:Highlight;text-shadow:none;text-decoration:underline}}

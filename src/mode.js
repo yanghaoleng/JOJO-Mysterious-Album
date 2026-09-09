@@ -18,8 +18,8 @@ mountAppNavigation(navigationSlot, {
 
 function ensureLab() {
   labPromise ||= Promise.all([
-    import('./lab.js?v=20260909-shared-voice'),
-    import('../vendor/calligraph-bubble.js?v=20260827-user-bubble'),
+    import('./lab.js?v=20260910-lyric-motion'),
+    import('../vendor/calligraph-bubble.js?v=20260910-lyric-motion'),
   ]).then(([module]) => {
     labModule = module;
     return module;

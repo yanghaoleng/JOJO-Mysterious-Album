@@ -21,12 +21,12 @@ import { trackAnalytics } from './analytics.js';
 import { installUISFX, playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { mountAppNavigation } from './app-navigation.js?v=20260828-style-editor';
 import { SeedRealtimeSpeech } from './seed-realtime-speech.js?v=20260909-wow-child-profile';
-import { createVoiceInput } from './voice-input-control.js?v=20260909-shared-voice';
+import { createVoiceInput } from './voice-input-control.js?v=20260910-lyric-motion';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
   skipSpeechBubble,
-} from '../vendor/calligraph-bubble.js?v=20260827-user-bubble';
+} from '../vendor/calligraph-bubble.js?v=20260910-lyric-motion';
 
 installUISFX();
 

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {build} from 'esbuild';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const compiled=await build({entryPoints:['src/voice-input-control.js'],bundle:true,format:'iife',globalName:'VoiceInput',write:false});
-const css=await readFile('src/voice-input-control.css','utf8');
+const css=(await readFile('src/text-motion.css','utf8'))+(await readFile('src/voice-input-control.css','utf8')).replace(/@import[^;]+;/g,'');
 const browser=await chromium.launch({channel:'chrome',headless:true});
 const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
 page.on('pageerror',error=>errors.push(error.message));
@@ -26,17 +26,23 @@ try {
  const quiet=await measure();await page.waitForTimeout(250);assert.deepEqual(await measure(),quiet,'silence has no animated fake volume');assert.ok(quiet.every(bar=>bar.animation==='none'));
  await page.evaluate(()=>input.setLevel(.8));await page.waitForFunction(()=>parseFloat(getComputedStyle(document.querySelector('.voice-input-control__wave i')).transform.split(',')[3])>.2);const loud=await measure();assert.notDeepEqual(loud,quiet,'actual input level changes bars');
  await page.evaluate(()=>input.setActivity(true));await page.waitForTimeout(80);const activity=await measure();await page.waitForTimeout(200);assert.deepEqual(await measure(),activity,'WebSpeech activity stays steady and invents no volume');assert.equal(await page.locator('#mic').getAttribute('data-level-source'),'activity');
- await page.evaluate(()=>input.setActivity(false));await page.waitForTimeout(80);assert.deepEqual(await measure(),quiet);
- await page.evaluate(()=>input.setTranscript('我的电话是13800138000',{interim:true}));assert.match(await page.locator('#transcript').textContent(),/已遮蔽/);assert.equal(await page.locator('#transcript').getAttribute('aria-live'),'off');
+ await page.evaluate(()=>input.setActivity(false));await page.waitForFunction(()=>getComputedStyle(document.querySelector('.voice-input-control__wave i')).transform==='matrix(1, 0, 0, 0.16, 0, 0)');assert.deepEqual(await measure(),quiet);
+ await page.evaluate(()=>input.setTranscript('我的电话是13800138000',{interim:true}));assert.match(await page.locator('#transcript').getAttribute('aria-label'),/已遮蔽/);assert.equal(await page.locator('#transcript').getAttribute('aria-live'),'off');
  await page.evaluate(()=>input.setTranscript('我的电话是13800138000'));assert.equal(await page.locator('#transcript').getAttribute('aria-live'),'polite');
+ await page.waitForTimeout(950);
  const text=await page.locator('#transcript').textContent();for(const state of ['transcribing','thinking','speaking','listening','error']){await page.evaluate(state=>input.setState(state),state);assert.equal(await page.locator('#transcript').textContent(),text);assert.equal(await page.locator('#transcript').isVisible(),true);}
  await page.evaluate(()=>input.setState('error',{message:'暂时没有连上，请重试。'}));assert.equal(await page.locator('#status').textContent(),'暂时没有连上，请重试。');
  for(const width of [320,390,844]){
   await page.setViewportSize({width,height:844});
   await page.evaluate(()=>input.setTranscript('我想造一把有蓝色星星和弯弯月亮的钥匙，打开门看看朋友。'.repeat(6)));
+  await page.waitForTimeout(950);
   const size=await page.locator('.voice-input-transcript__text').evaluate(el=>({full:el.textContent,scroll:el.scrollHeight,client:el.clientHeight,overflow:document.documentElement.scrollWidth>innerWidth}));
   assert.ok(size.full.length>160);assert.ok(size.scroll>size.client);assert.equal(size.overflow,false,`no overflow at ${width}`);
  }
+ const style=await page.evaluate(()=>({hint:getComputedStyle(document.querySelector('#status')).fontSize,background:getComputedStyle(document.querySelector('#status')).backgroundColor,color:getComputedStyle(document.querySelector('#transcript')).color}));
+ assert.deepEqual(style,{hint:'10px',background:'rgba(0, 0, 0, 0)',color:'rgb(66, 66, 66)'});
+ await page.evaluate(()=>input.setTranscript('新的话正在出现'));await page.waitForTimeout(45);const arriving=await page.locator('.voice-input-transcript__text').textContent();assert.ok(arriving.length<9 && arriving.length>0,'characters enter in sequence');
+ await page.evaluate(()=>input.clearTranscript());await page.waitForTimeout(950);assert.equal(await page.locator('.voice-input-transcript__text').textContent(),'','clearing cancels unfinished entrance');
  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>input.setState('transcribing'));
  assert.ok((await page.locator('.voice-input-control__thinking i').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).animationName))).every(name=>name==='none'));
  await page.evaluate(()=>input.reset());assert.equal(await page.locator('#transcript').isVisible(),false);assert.equal(await page.locator('#status').isVisible(),false);

@@ -1,5 +1,7 @@
+import { createTextMotion } from '../vendor/calligraph-bubble.js?v=20260910-lyric-motion';
+
 /** Shared presentation only: callers keep ownership of microphone/ASR/TTS. */
-export const VOICE_INPUT_VERSION = '20260909-shared-voice';
+export const VOICE_INPUT_VERSION = '20260910-lyric-motion';
 const aliases = { off: 'setup', idle: 'setup', recording: 'listening', processing: 'transcribing', streaming: 'thinking' };
 const states = {
   setup: { visual: 'permission', label: '开始对话', description: '允许麦克风并开始对话' },
@@ -71,7 +73,7 @@ export function createVoiceInput({ button, transcript, status, sanitize = text =
   mountVoiceInputControl(button);
   const clean = value => String(sanitize(String(value ?? '')) ?? '').trim();
   let current = { state: 'setup', transcript: '', interim: false, message: '', level: 0, levelSource: 'measured', activity: false };
-  let textNode;
+  let textNode, textMotion;
   if (transcript) {
     transcript.classList.add('voice-input-transcript');
     transcript.setAttribute('role', 'status');
@@ -83,6 +85,8 @@ export function createVoiceInput({ button, transcript, status, sanitize = text =
     textNode = document.createElement('span');
     textNode.className = 'voice-input-transcript__text';
     transcript.replaceChildren(textNode);
+    textNode.setAttribute('aria-hidden', 'true');
+    textMotion = createTextMotion(textNode);
     transcript.hidden = true;
     transcript.dataset.voiceControlVersion = VOICE_INPUT_VERSION;
   }
@@ -131,7 +135,7 @@ export function createVoiceInput({ button, transcript, status, sanitize = text =
     return api;
   }
   function setTranscript(value, { interim = false } = {}) {
-    const text = clean(value), finalizing = current.interim && !interim;
+    const text = clean(value), previousText = current.transcript, finalizing = current.interim && !interim;
     current.transcript = text;
     current.interim = Boolean(interim);
     if (!transcript) return api;
@@ -139,12 +143,14 @@ export function createVoiceInput({ button, transcript, status, sanitize = text =
     transcript.setAttribute('aria-live', interim ? 'off' : 'polite');
     transcript.dataset.interim = String(Boolean(interim));
     transcript.hidden = !text;
-    if (textNode.textContent !== text || finalizing) {
-      textNode.textContent = text;
+    transcript.setAttribute('aria-label', text);
+    if (previousText !== text || finalizing) {
+      textMotion.setText(text);
       // Keep the current spoken end in view as an interim phrase grows.
       textNode.scrollTop = textNode.scrollHeight;
     }
-    transcript.classList.toggle('voice-input-transcript--entering', entering);
+    if (entering) transcript.classList.add('voice-input-transcript--entering');
+    else if (!text) transcript.classList.remove('voice-input-transcript--entering');
     return api;
   }
   function clearTranscript() { return setTranscript(''); }
