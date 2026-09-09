@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f9f8f3">
+  <title>第一束好奇光 · 哇呜星故事</title>
+  <meta name="description" content="跟着自己的第一句话，陪六位MOMO找回六种颜色。">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/src/wow-story.css?v=20260909">
+  <script type="module" src="/src/wow-story.js?v=20260909"></script>
+</head>
+<body>
+  <header class="story-header">
+    <a class="back" href="/wow" aria-label="返回故事介绍">← <span>哇呜星</span></a>
+    <div class="chapter-heading"><p id="chapter-number">第一章</p><h1 id="chapter-title">是谁在咚咚响？</h1></div>
+    <button class="small-button" id="open-book" type="button">我的旅程</button>
+  </header>
+  <main id="story-main">
+    <p id="storage-warning" class="storage-warning" role="status" hidden>这台设备暂时无法保存进度。离开前，请在“我的旅程”中下载纪念册。</p>
+    <div class="story-progress"><span id="place">咕噜咕噜肚子星</span><span id="scene-count">1 / 10</span><progress id="progress" max="41" value="0" aria-label="故事进度"></progress></div>
+    <section class="experience" aria-label="互动故事">
+      <div class="scene-panel">
+        <canvas id="wow-stage" width="1100" height="650" role="img" aria-label="灰色小窗里传来轻轻的鼓声"></canvas>
+        <div class="scene-caption"><span id="stage-note">有一个小小的声音，正在等你。</span><span id="color-count">0 / 6 种颜色</span></div>
+        <div id="inventory" class="inventory" aria-label="我的道具"></div>
+      </div>
+      <section class="dialogue-panel" aria-labelledby="speaker">
+        <div class="speaker-row"><span id="speaker">星星窗</span><button id="read-aloud" type="button" class="text-button" aria-label="朗读当前故事">听一听</button></div>
+        <p class="story-line" id="story-line" aria-live="polite"></p>
+        <div id="response-area">
+          <form id="answer-form">
+            <label for="answer" id="prompt">你想对小窗说的第一句话是什么？</label>
+            <div class="answer-field"><input id="answer" name="answer" type="text" maxlength="160" autocomplete="off" placeholder="你好，我在这里……"><button id="send-answer" type="submit" aria-label="寄出这句话">寄出 →</button></div>
+          </form>
+          <div class="voice-row"><button id="record" class="voice-button" type="button"><i data-lucide="mic" aria-hidden="true"></i><span>用声音说</span></button><span id="voice-note">也可以打字，或试试下面的说法。</span></div>
+          <div id="suggestions" class="suggestions" aria-label="可以这样说"></div>
+          <p id="status" role="status" aria-live="polite"></p>
+        </div>
+        <div id="reply" class="reply" hidden><p class="your-words" id="your-words"></p><p id="reaction" aria-live="polite"></p><span id="response-source"></span><button id="next-scene" class="primary-button" type="button">继续听故事 →</button></div>
+        <div class="quiet-row"><span>不用想好才开口，也可以歇一会儿。</span><button id="rest" type="button" class="text-button">歇一会儿</button></div>
+      </section>
+    </section>
+  </main>
+  <dialog id="voice-consent" aria-labelledby="consent-title"><form method="dialog"><h2 id="consent-title">和大人一起，打开收音机</h2><p>点一下开始说话，再点一下结束。声音会发送到本站的语音服务转成文字，不保存录音。寄出前可以修改文字。</p><p>故事中的文字会交给 AI 回应；旅程记录只留在这台设备。请不要说真实姓名、学校、住址或电话。</p><div class="dialog-actions"><button value="cancel" class="small-button">先用文字</button><button value="allow" class="primary-button">同意并打开麦克风</button></div></form></dialog>
+  <dialog id="book-dialog" aria-labelledby="book-title"><div class="dialog-top"><h2 id="book-title">我的哇呜旅程</h2><button id="close-book" class="text-button" type="button">关闭</button></div><p class="book-intro">你的原话、自己造的钥匙、一起找回的颜色。保存在这台设备。</p><div id="book-content"></div><div class="dialog-actions"><button id="download-book" class="primary-button" type="button">下载旅程纪念册</button><button id="restart" class="text-button" type="button">重新开始</button></div><p id="download-status" role="status"></p><div id="restart-confirm" hidden><p>重新开始会清除这台设备上的本次旅程。可以先下载纪念册。</p><button id="confirm-restart" class="small-button" type="button">清除并重新开始</button><button id="cancel-restart" class="text-button" type="button">保留旅程</button></div></dialog>
+  <dialog id="rest-dialog"><h2>小灯会留着光，等你回来。</h2><p>不用一直说话。已经找到的颜色都会留下。</p><button id="resume" class="primary-button" type="button">我回来啦</button><a class="text-button" href="/wow">回故事介绍</a></dialog>
+  <noscript><p class="noscript">这段互动故事需要开启 JavaScript。也可以<a href="/docs/WOW-STORYLINE.md">阅读完整故事脚本</a>。</p></noscript>
+</body>
+</html>

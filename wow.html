@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbfcf8">
+  <meta name="description" content="哇呜！第一束好奇光。一颗靠好奇心发光的小星球，六位等待被听见的 MOMO。带上好奇手电筒，让你的问题成为故事的一部分。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="哇呜！第一束好奇光｜萌萌星的奇妙图鉴">
+  <meta property="og:description" content="你问一句，星球亮一格。和 MOMO 一起，出发去找回六种颜色。">
+  <meta property="og:url" content="https://jma.mikeywa.site/wow">
+  <meta property="og:image" content="https://jma.mikeywa.site/assets/wow/first-light.webp">
+  <link rel="canonical" href="https://jma.mikeywa.site/wow">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="preload" href="/assets/wow/first-light.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="/src/wow.css">
+  <script type="module" src="/src/wow.js"></script>
+  <title>哇呜！第一束好奇光｜萌萌星的奇妙图鉴</title>
+</head>
+<body data-analytics-page="wow">
+  <a class="skip-link" href="#main">跳到故事介绍</a>
+  <header class="site-header shell">
+    <a class="brand" href="/" aria-label="返回萌萌星的奇妙图鉴">
+      <img src="/assets/icons/apple-touch-icon.png" alt="" width="40" height="40">
+      <span>萌萌星的奇妙图鉴</span>
+    </a>
+    <nav aria-label="故事导航">
+      <a href="#journey">六个小世界</a>
+      <a href="#parents">给家长</a>
+      <a class="nav-start" href="/wow-story">开启第一章 <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">全新故事 · 哇呜！第一束好奇光</p>
+        <h1 id="hero-title">你问一句，<br>星球<span class="highlight">亮一格。</span></h1>
+        <p class="hero-description">带上好奇心，去一颗褪色的小星球。<br>你的每个问题，都会被认真听见。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/wow-story">开启第一章 <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="#try-light">先试着点亮它 <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+      <figure class="hero-art">
+        <img src="/assets/wow/first-light.webp" alt="孩子用好奇手电筒点亮水彩小星球，圆滚滚的 MOMO 在光里等待回应" width="1536" height="1024" fetchpriority="high" decoding="async">
+      </figure>
+    </section>
+
+    <section class="invitation shell" aria-labelledby="invitation-title">
+      <div class="invitation-body">
+        <h2 id="invitation-title">“唔姆……<br>有人听见我吗？”</h2>
+        <div>
+          <p>在宇宙的一个哈欠里，藏着哇呜星。这里的每一个“为什么”，都会变成一点光。</p>
+          <p>可最近，灰灰雾来了。它是“没什么好玩的”“我不想问了”的心情，让颜色慢慢变淡。</p>
+          <p>雾里的小团子叫 <strong>MOMO</strong>，是被遗忘的问题。陪它说说话，世界就从这一句，重新亮起来。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="try-section" id="try-light" aria-labelledby="try-title">
+      <div class="try-layout shell">
+        <div class="planet-stage" id="planet-stage">
+          <canvas id="curiosity-planet" width="900" height="760" role="img" aria-label="还没有点亮的小星球，等待你的第一个问题">小星球会随着每次提交问题，点亮一种颜色。</canvas>
+          <div class="planet-caption" aria-hidden="true"><span id="light-count">0</span><span> / 6 种颜色</span></div>
+          <div class="light-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="try-copy">
+          <h2 id="try-title">先问一句，<br>看看会发生什么。</h2>
+          <p class="section-description">不必想一个很厉害的问题。<br>你刚刚有点好奇的事，就很好。</p>
+          <form id="question-form" novalidate>
+            <label for="curiosity-question">你想问什么？</label>
+            <div class="question-field">
+              <textarea id="curiosity-question" name="question" rows="2" maxlength="120" placeholder="比如：云朵会不会怕痒？" aria-describedby="demo-note question-error"></textarea>
+              <button class="question-submit" type="submit">让它亮起来 <span aria-hidden="true">↗</span></button>
+            </div>
+            <p id="question-error" class="field-error" role="alert" hidden></p>
+          </form>
+          <div class="example-questions" aria-label="试试这些问题">
+            <button type="button" data-question="星星会打哈欠吗？">星星会打哈欠吗？</button>
+            <button type="button" data-question="我的肚子为什么咕噜叫？">肚子为什么咕噜叫？</button>
+          </div>
+          <div class="demo-response" aria-live="polite" aria-atomic="true">
+            <p id="response-label">星球在等你的第一句。</p>
+            <p id="response-question" hidden></p>
+          </div>
+          <div class="demo-footnote">
+            <p id="demo-note">这里是即时光效演示，问题只用于本页展示。完整故事从第一章开始。</p>
+            <button type="button" id="reset-light" hidden>重新点亮</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="journey shell section-space" id="journey" aria-labelledby="journey-title">
+      <div class="section-heading">
+        <p class="eyebrow">六个小世界，六次被需要</p>
+        <h2 id="journey-title">每扇门后，<br>都有一个等你开口的朋友。</h2>
+        <p class="section-description">从听见肚子里的声音，到说出一个大胆的愿望。<br>带着自己的问题，慢慢走进它们的世界。</p>
+      </div>
+
+      <div class="chapter-tabs" role="tablist" aria-label="预览六章故事">
+        <button class="chapter-tab" id="chapter-tab-0" role="tab" aria-selected="true" aria-controls="chapter-preview" tabindex="0" data-chapter="0"><span class="chapter-orb orb-yellow" aria-hidden="true"></span><span class="chapter-order">第一章</span><strong>肚子星</strong></button>
+        <button class="chapter-tab" id="chapter-tab-1" role="tab" aria-selected="false" aria-controls="chapter-preview" tabindex="-1" data-chapter="1"><span class="chapter-orb orb-blue" aria-hidden="true"></span><span class="chapter-order">第二章</span><strong>海洋星</strong></button>
+        <button class="chapter-tab" id="chapter-tab-2" role="tab" aria-selected="false" aria-controls="chapter-preview" tabindex="-1" data-chapter="2"><span class="chapter-orb orb-white" aria-hidden="true"></span><span class="chapter-order">第三章</span><strong>天气星</strong></button>
+        <button class="chapter-tab" id="chapter-tab-3" role="tab" aria-selected="false" aria-controls="chapter-preview" tabindex="-1" data-chapter="3"><span class="chapter-orb orb-green" aria-hidden="true"></span><span class="chapter-order">第四章</span><strong>时间星</strong></button>
+        <button class="chapter-tab" id="chapter-tab-4" role="tab" aria-selected="false" aria-controls="chapter-preview" tabindex="-1" data-chapter="4"><span class="chapter-orb orb-pink" aria-hidden="true"></span><span class="chapter-order">第五章</span><strong>影子星</strong></button>
+        <button class="chapter-tab" id="chapter-tab-5" role="tab" aria-selected="false" aria-controls="chapter-preview" tabindex="-1" data-chapter="5"><span class="chapter-orb orb-gold" aria-hidden="true"></span><span class="chapter-order">第六章</span><strong>小星星</strong></button>
+      </div>
+
+      <article class="chapter-preview" id="chapter-preview" role="tabpanel" aria-labelledby="chapter-tab-0" tabindex="0" style="--chapter-color:#ecd271;--chapter-tint:#f8f4df">
+        <div class="chapter-place">
+          <p class="chapter-theme" id="preview-theme">从“感受”出发</p>
+          <h3 id="preview-world">咕噜咕噜<br>肚子星</h3>
+          <p class="chapter-color"><span id="preview-color-dot" aria-hidden="true"></span><span id="preview-color">这一站的颜色：暖暖黄</span></p>
+        </div>
+        <div class="chapter-meeting">
+          <p class="momo-name" id="preview-momo">你会遇见鼓鼓</p>
+          <p id="preview-description">它的肚子里像藏着一面小鼓，咕噜咕噜响。鼓鼓有点不好意思，也不知道这声音在说什么。</p>
+          <blockquote id="preview-question">“肚子咕噜叫，是不是在跟我说话？”</blockquote>
+          <p class="chapter-invitation" id="preview-invitation">先听一听，再说说你自己的感觉。</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="equipment shell section-space" aria-labelledby="equipment-title">
+      <div class="equipment-heading">
+        <p class="eyebrow">第一章，慢慢认识你的装备</p>
+        <h2 id="equipment-title">先遇见奇妙，<br>再知道它的名字。</h2>
+        <p class="section-description">每件道具都在需要它的时候出现。<br>用一次，你就知道它为什么在这里。</p>
+      </div>
+      <ol class="equipment-list">
+        <li>
+          <span class="equipment-verb">照一照</span>
+          <div><h3>好奇手电筒</h3><p>一小束光，先照见雾里藏着什么。它靠你的好奇心发光。</p></div>
+        </li>
+        <li>
+          <span class="equipment-verb">寄句话</span>
+          <div><h3>唔姆收音机</h3><p>把你的话送到 MOMO 身边。原来，小小的声音也能走很远。</p></div>
+        </li>
+        <li>
+          <span class="equipment-verb">留一色</span>
+          <div><h3>颜色罐</h3><p>当第一种颜色亮起来，把它收好。这是你和朋友一起走过的证明。</p></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="parent-section shell section-space" id="parents" aria-labelledby="parents-title">
+      <div class="parent-heading">
+        <p class="eyebrow">写给一起读故事的大人</p>
+        <h2 id="parents-title">这里珍惜的，<br>是“我想问问看”。</h2>
+        <p class="section-description">灰灰雾是可以理解的心情，MOMO 是可以陪伴的朋友。<br>孩子可以想一想、换个说法，也可以先听你说。</p>
+      </div>
+      <div class="parent-details">
+        <details>
+          <summary>现在，可以体验到什么？<span aria-hidden="true">+</span></summary>
+          <div><p>完整六章互动故事已经可以体验。第一章会逐步交代星球的规则与三件道具；之后用输入、语音转文字和轻互动，陪不同的 MOMO 走一段路。</p><p>每一章都有预先编写的故事。AI 会给孩子的表达一个简短回应，并把钥匙描述转成页面支持的形状与颜色；服务暂时不可用时，会提示使用本地回应。完成后，可以下载这次旅程的纪念册。</p></div>
+        </details>
+        <details>
+          <summary>需要答对，才能继续吗？<span aria-hidden="true">+</span></summary>
+          <div><p>不需要标准答案。这里鼓励孩子表达感受、提出问题和试试自己的想法。暂时不想说话时，也可以使用文字或页面提供的选项继续。</p></div>
+        </details>
+        <details>
+          <summary>孩子说的话，会存在哪里？<span aria-hidden="true">+</span></summary>
+          <div><p>旅程文本与进度保存在当前浏览器的本机存储中，换设备或清理浏览器后不会自动恢复。</p><p>使用语音时，录音会通过本站服务转成文字。使用故事内的 AI 回应时，输入或转写的文字也会通过本站服务处理。可以直接打字，不使用麦克风。下载纪念册后，请由家长决定是否分享。</p></div>
+        </details>
+        <details>
+          <summary>纪念册和 AI 绘本是什么关系？<span aria-hidden="true">+</span></summary>
+          <div><p>现在可下载的是根据本次旅程文字整理的纪念册。实时生成专属插画、AI 定制整本绘本与成长评估，仍属于后续创意方向，当前体验不提供这些功能。</p><p>我们先把最重要的一件事做具体：让孩子说的话，在故事里留下痕迹。</p></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <img src="/assets/intro/lighthouse-seed.webp" alt="" width="512" height="512" loading="lazy" decoding="async">
+      <div>
+        <p class="eyebrow">哇呜！第一束好奇光</p>
+        <h2 id="closing-title">那颗小星球，<br>还想听你多说一句。</h2>
+        <a class="button button-primary" href="/wow-story">开启第一章 <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="brand" href="/">萌萌星的奇妙图鉴 <span aria-hidden="true">↗</span></a>
+    <p>每个小小的为什么，都值得被听见。</p>
+    <a href="/docs/WOW-STORYLINE.md">阅读故事脚本</a>
+  </footer>
+</body>
+</html>

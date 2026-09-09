@@ -32,6 +32,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 from volc_asr import transcribe_pcm
+from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
 
 
 ROOT = Path(__file__).resolve().parent
@@ -1643,6 +1644,9 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlsplit(self.path).path
+        if path == "/api/wow-turn":
+            self.respond_json(405, {"error": "method_not_allowed"})
+            return
         if path == "/api/health":
             self.respond_json(
                 200,
@@ -1690,6 +1694,19 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = urlsplit(self.path).path
+        if path == "/api/wow-turn":
+            try:
+                payload = validate_wow_payload(self.read_json(4096))
+            except (ValueError, TypeError) as error:
+                code = str(error)
+                self.respond_json(413 if code == "body_too_large" else 400,
+                                  {"error": code if code in {"body_too_large", "answer_required"} else "invalid_wow_turn"})
+                return
+            if not wow_turn_allowed(self.client_key()):
+                self.respond_json(429, {"error": "wow_rate_limited"})
+                return
+            self.respond_json(200, wow_turn_result(payload))
+            return
         if path == "/api/analytics/collect":
             try:
                 collect_analytics(self.read_json())
