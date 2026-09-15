@@ -3,7 +3,7 @@ import { createWowCharacter } from './wow-visuals.js';
 
 const WORLDS = ['bakery', 'reef', 'cloud', 'home', 'meadow', 'observatory'];
 const KINDS = ['gugu', 'fish', 'cloud', 'clock', 'shadow', 'star'];
-const FIRST_TITLES = ['窗里的一声咚', '第一束光', '光里的小星球', '寄出一声问候', '认识鼓鼓', '听听身体的话', '一把自己的钥匙', '点心花园', '第一滴暖暖黄', '海螺那边的声音'];
+const FIRST_TITLES = ['星星窗的小房间', '房间里的咚咚声', '第一束光', '光照见哇呜星', '寄出一声问候', '认识鼓鼓', '听听身体的话', '一把自己的钥匙', '点心花园', '第一滴暖暖黄', '海螺那边的声音'];
 export const WOW_PROPS = {
   torch: { id: 'torch', name: '好奇手电筒', description: '把你的话变成光。停下来时，也会留着光等你。' },
   radio: { id: 'radio', name: '唔姆收音机', description: '把问候寄给MOMO，听它慢慢说完。' },
@@ -15,14 +15,14 @@ export const WOW_DEV_STORY = {
   premise: '窗后有个小小的声音。先靠近一点，听它说完。',
   chapters: WOW_STORY.chapters.map(chapter => ({ number: chapter.id, title: chapter.title })),
   scenes: WOW_STORY.chapters.flatMap(chapter => chapter.scenes.map((source, chapterScene) => {
-    const kind = chapter.id === 1 && chapterScene < 3 ? 'window' : KINDS[chapter.id - 1];
+    const kind = chapter.id === 1 && chapterScene < 4 ? 'window' : KINDS[chapter.id - 1];
     const narrator = source.speaker === '星星窗';
     return {
       id: source.id, chapter: chapter.id, chapterScene, world: WORLDS[chapter.id - 1],
       title: chapter.id === 1 ? FIRST_TITLES[chapterScene] : chapter.world,
       objective: source.prompt, question: source.prompt, questionSpeaker: narrator ? 'guide' : 'wow',
       wow: { kind: source.kind, prop: source.prop, color: chapter.color, colorName: chapter.colorName, momo: chapter.momo },
-      cast: [{ id: 'wow', name: kind === 'window' ? '星星窗' : chapter.id === 1 && chapterScene === 3 ? 'MOMO' : chapter.momo,
+      cast: [{ id: 'wow', name: kind === 'window' ? '星星窗' : chapter.id === 1 && chapterScene === 4 ? 'MOMO' : chapter.momo,
         voice: 'bubble', createActor: ({scale}) => createWowCharacter({kind, color:chapter.color, scale}) }],
       dialogue: [{ speaker: narrator ? 'guide' : 'wow', text: source.text }],
       choices: source.suggestions.map((label, i) => ({ id: `${source.id}-${i}`, label })), closing: [],

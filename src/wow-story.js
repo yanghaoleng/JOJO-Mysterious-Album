@@ -13,7 +13,7 @@ const props = {
   radio: ['唔姆收音机', '先听一听，再把你想说的话寄给MOMO。'],
   jar: ['颜色罐', '已经找到的颜色都会留下，随时可以在“我的旅程”里看。'],
 };
-const freshState = () => ({ version: 1, chapter: 0, scene: 0, entries: [], props: [], colors: [], firstWords: '', pending: null, done: false });
+const freshState = () => ({ version: 2, chapter: 0, scene: 0, entries: [], props: [], colors: [], playerName: '', firstWords: '', pending: null, done: false });
 let state = readState();
 let busy = false;
 let speechController = null;
@@ -36,12 +36,13 @@ mountProductIcons();
 function readState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE));
-    if (!saved || saved.version !== 1 || !Number.isInteger(saved.chapter) || !chapters[saved.chapter] || !Number.isInteger(saved.scene) || !chapters[saved.chapter].scenes[saved.scene]) return freshState();
+    if (!saved || saved.version !== 2 || !Number.isInteger(saved.chapter) || !chapters[saved.chapter] || !Number.isInteger(saved.scene) || !chapters[saved.chapter].scenes[saved.scene]) return freshState();
     if (!Array.isArray(saved.entries) || !Array.isArray(saved.props) || !Array.isArray(saved.colors)) return freshState();
     const ids = new Set(chapters.flatMap(ch => ch.scenes.map(scene => scene.id)));
     saved.entries = saved.entries.filter(e => e && ids.has(e.id) && typeof e.answer === 'string' && typeof e.reaction === 'string').slice(0, total);
     saved.props = saved.props.filter(p => Object.hasOwn(props, p));
     saved.colors = saved.colors.filter(c => c && chapters.some(ch => ch.id === c.id && ch.color === c.color));
+    saved.playerName = String(saved.playerName || '').slice(0, 12);
     saved.firstWords = String(saved.firstWords || '').slice(0, 160);
     const currentId = chapters[saved.chapter].scenes[saved.scene].id;
     saved.pending = saved.pending && saved.entries.find(e => e.id === currentId) || null;
@@ -55,7 +56,11 @@ function save() {
 }
 const currentChapter = () => chapters[state.chapter];
 const currentScene = () => currentChapter().scenes[state.scene];
-function expand(value) { return String(value).replaceAll('{firstWords}', state.firstWords || '你好，我在这里。'); }
+function expand(value) {
+  return String(value)
+    .replaceAll('{playerName}', state.playerName || '小伙伴')
+    .replaceAll('{firstWords}', state.firstWords || '你好，我在这里。');
+}
 function currentVisual() { return [...state.entries].reverse().find(e => e.chapter === currentChapter().id && e.kind === 'create')?.visual || null; }
 function updateStage(lit = !!state.pending) {
   const chapter = currentChapter(), scene = currentScene();
@@ -81,9 +86,10 @@ function render() {
   $('color-count').textContent = `${state.colors.length} / 6 种颜色`;
   $('stage-note').textContent = state.chapter === 0 && state.scene < 4 ? '有一个小小的声音，正在等你。' : state.pending?.kind === 'create' ? '你说的想法，长成了这把钥匙。' : `${chapter.momo}和你，一起慢慢发现。`;
   $('suggestions').replaceChildren(...scene.suggestions.map(text => {
+    const suggestion = expand(text);
     const button = document.createElement('button');
-    button.type = 'button'; button.textContent = text;
-    button.addEventListener('click', () => submitAnswer(text));
+    button.type = 'button'; button.textContent = suggestion;
+    button.addEventListener('click', () => submitAnswer(suggestion));
     return button;
   }));
   $('inventory').replaceChildren(...state.props.map(prop => {
@@ -116,6 +122,18 @@ async function submitAnswer(raw) {
   if (!answer) { $('status').textContent = '先写一句话，或者试试下面的说法。'; $('answer').focus(); return; }
   stopSpeech();
   const scene = currentScene();
+  if (scene.kind === 'nickname') {
+    const name = answer.replace(/^(?:我叫|叫我|你叫我|我的名字是)\s*/u, '').trim().slice(0, 12);
+    if (!name) { $('status').textContent = '给自己起一个短短的冒险昵称吧，比如“小星星”。'; $('answer').focus(); return; }
+    state.playerName = name;
+    const entry = { id:scene.id, chapter:currentChapter().id, kind:scene.kind, answer:name, reaction:`好，${name}，我记住啦。我们一起看看房间。`, source:'local', visual:{shape:'star',color:'#efd36e'} };
+    state.entries.push(entry);
+    state.pending = entry;
+    save(); render();
+    if (readAutomatically) void speak(entry.reaction);
+    $('next-scene').focus({preventScroll:true});
+    return;
+  }
   const payload = {chapter:currentChapter().id,kind:scene.kind,answer,prompt:scene.prompt,momo:currentChapter().momo};
   const fallback = localResult(payload);
   if (!fallback.accepted) { $('status').textContent = fallback.reaction; return; }

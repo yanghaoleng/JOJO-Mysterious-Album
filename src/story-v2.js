@@ -134,7 +134,7 @@ function configureStoryPage() {
     const restart = document.createElement('button'); restart.type = 'button'; restart.className = 'secondary-action'; restart.textContent = '重新开始';
     restart.addEventListener('click', () => {
       if (!confirm('重新开始会清除这台设备的本次旅程。可以先下载纪念册。确定重新开始吗？')) return;
-      const fresh = { version: 1, chapter: 0, scene: 0, entries: [], props: [], colors: [], firstWords: '', pending: null, done: false };
+      const fresh = { version: 2, chapter: 0, scene: 0, entries: [], props: [], colors: [], playerName: '', firstWords: '', pending: null, done: false };
       if (!writeWowProgress(fresh)) { toast('暂时无法清除本机记录，请稍后重试。'); return; }
       location.reload();
     });
@@ -1964,7 +1964,7 @@ function updateWowAtmosphere(scene) {
   const progress = wowFogProgress(state.wow, scene.chapter);
   document.body.dataset.wowBeat = String(scene.wow.beatIndex);
   document.body.dataset.wowChapter = String(scene.chapter);
-  document.body.dataset.wowMomo = scene.chapter === 1 && scene.wow.beatIndex < 3 ? 'hidden' : 'visible';
+  document.body.dataset.wowMomo = scene.chapter === 1 && scene.wow.beatIndex < 4 ? 'hidden' : 'visible';
   document.body.style.setProperty('--wow-fog-opacity', String(.56 * (1 - progress)));
   document.body.style.setProperty('--wow-world-saturation', String(.18 + .82 * progress));
   document.body.style.setProperty('--wow-world-brightness', String(.66 + .34 * progress));
@@ -1977,7 +1977,7 @@ async function renderWowScene(scene) {
   updateWowAtmosphere(scene);
   const previous = displayedStoryScene;
   const newActor = !previous || previous.npc.templateId !== scene.npc.templateId;
-  const firstAppearance = scene.chapter === 1 && scene.wow.beatIndex === 3;
+  const firstAppearance = scene.chapter === 1 && scene.wow.beatIndex === 4;
   displayedStoryScene = scene;
   leavePlanetStage();
   renderStoryBackdrop(scene);
@@ -1986,14 +1986,17 @@ async function renderWowScene(scene) {
   const chapter = CHAPTERS[scene.chapter - 1];
   $('chapter-label').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${scene.wow.beatIndex + 1}/${scene.wow.beatCount} ${chapter.title}`;
   $('scene-title').textContent = scene.name;
-  $('scene-objective').textContent = scene.objective;
+  const expand = value => String(value)
+    .replaceAll('{playerName}', state.wow.playerName || '小伙伴')
+    .replaceAll('{firstWords}', state.wow.firstWords || '你好，我在这里。');
+  $('scene-objective').textContent = expand(scene.objective);
   $('choice-result').hidden = true;
   $('reward-row').hidden = true;
   $('npc-speech').hidden = true;
   $('npc-name').textContent = scene.npc.name;
   $('npc-wrap').setAttribute('aria-label', `触摸${scene.npc.name}`);
-  $('npc-wrap').setAttribute('aria-hidden', String(scene.chapter === 1 && scene.wow.beatIndex < 3));
-  $('npc-wrap').tabIndex = scene.chapter === 1 && scene.wow.beatIndex < 3 ? -1 : 0;
+  $('npc-wrap').setAttribute('aria-hidden', String(scene.chapter === 1 && scene.wow.beatIndex < 4));
+  $('npc-wrap').tabIndex = scene.chapter === 1 && scene.wow.beatIndex < 4 ? -1 : 0;
   $('npc-wrap').dataset.templateId = scene.npc.templateId;
   $('npc-companions').hidden = true;
   if (newActor) renderSceneCast(scene);
@@ -2019,10 +2022,9 @@ async function renderWowScene(scene) {
     presentDialogueSequence([{ kind: 'npc', text: state.wow.pending.reaction, voice: scene.npc.voice }], () => advanceWowScene(scene));
     return;
   }
-  const expand = value => value.replaceAll('{firstWords}', state.wow.firstWords || '你好，我在这里。');
   presentDialogueSequence([
     { kind: 'npc', text: expand(scene.wow.text), voice: scene.npc.voice, delayBefore: newActor || firstAppearance ? 580 : 0 },
-    { kind: 'npc', text: scene.dialogue, voice: scene.npc.voice },
+    { kind: 'npc', text: expand(scene.dialogue), voice: scene.npc.voice },
   ], () => {
     state.busy = false;
     guideVoiceSession.processing = false;
@@ -2053,10 +2055,18 @@ async function submitWowAnswer(scene, answer) {
   state.busy = true;
   showLiveAnswer(answer);
   setGuideVoiceUi('thinking', `${scene.npc.name}正在认真听你的想法`);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 13000);
-  const result = await requestWowTurn(scene, answer, controller.signal);
-  clearTimeout(timer);
+  let result;
+  if (scene.wow.kind === 'nickname') {
+    const nickname = answer.replace(/^(?:我叫|叫我|你叫我|我的名字是)\s*/u, '').trim().slice(0, 12);
+    result = /^个人信息/u.test(answer) || !nickname
+      ? { accepted:false, reaction:'给自己起一个短短的冒险昵称吧，比如“小星星”。', source:'local', visual:{shape:'star', color:'#efd36e'} }
+      : { accepted:true, reaction:`好，${nickname}，我记住啦。我们一起看看房间。`, source:'local', visual:{shape:'star', color:'#efd36e'}, nickname };
+  } else {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 13000);
+    result = await requestWowTurn(scene, answer, controller.signal);
+    clearTimeout(timer);
+  }
   if (SCENES[state.sceneIndex]?.id !== scene.id) return;
   if (!result.accepted) {
     presentDialogueSequence([{ kind: 'npc', text: result.reaction, voice: scene.npc.voice }], () => {
@@ -2065,10 +2075,11 @@ async function submitWowAnswer(scene, answer) {
     });
     return;
   }
-  const entry = { id: scene.id, chapter: scene.chapter, kind: scene.wow.kind, answer, reaction: result.reaction, source: result.source, visual: result.visual };
+  const entry = { id: scene.id, chapter: scene.chapter, kind: scene.wow.kind, answer: result.nickname || answer, reaction: result.reaction, source: result.source, visual: result.visual };
   state.wow.entries = [...state.wow.entries.filter(item => item.id !== entry.id), entry];
   state.wow.pending = entry;
-  if (!state.wow.firstWords) state.wow.firstWords = answer;
+  if (result.nickname) state.wow.playerName = result.nickname;
+  else if (!state.wow.firstWords) state.wow.firstWords = answer;
   if (scene.wow.kind === 'create') {
     const visual = wowInvention(result.visual, scene.chapter);
     state.inventions.push({ scene: scene.id, answer, visual });

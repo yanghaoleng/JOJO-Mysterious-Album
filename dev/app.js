@@ -50,19 +50,19 @@ function notify(message) {
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { $('notice').dataset.visible = 'false'; }, 4200);
 }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
+const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], playerName: '', firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
 function savedState() {
   const saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || saved.sceneIndex < 0 || saved.sceneIndex >= story.scenes.length || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
   const type = CHARACTER_CATALOG.some(item => item.id === saved.companion?.type) ? saved.companion.type : 'rabbit';
-  return { ...defaultState(), ...saved, ...(story.id === 'wow' ? { journeySeed: savedJourneySeed(saved) } : {}), wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
+  return { ...defaultState(), ...saved, ...(story.id === 'wow' ? { journeySeed: savedJourneySeed(saved) } : {}), wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], playerName: String(saved.playerName || '').slice(0,12), firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
 }
 function persist() { store(`story.${story.id}`, state); }
 function storyCast(scene) {
   if (story?.id !== 'wow') return [...scene.cast, { ...state.companion, id: 'companion' }];
   // Each source scene owns a factory closure, but the sculpt stays the same
   // through its chapter. Only the opening window becomes a different actor.
-  const modelKey = scene.chapter === 1 && scene.chapterScene < 3 ? 'wow:window' : `wow:momo:${scene.chapter}`;
+  const modelKey = scene.chapter === 1 && scene.chapterScene < 4 ? 'wow:window' : `wow:momo:${scene.chapter}`;
   return scene.cast.map(actor => ({ ...actor, modelKey }));
 }
 function rememberMountedScene(scene) { mountedStoryScene = { storyId: story.id, chapter: scene.chapter, world: scene.world }; }
@@ -81,7 +81,11 @@ async function handleWowAnswer(raw) {
   if (!answer) return;
   const scene = story.scenes[state.sceneIndex], token = epoch;
   const payload = { chapter:scene.chapter, kind:scene.wow.kind, answer, prompt:scene.question, momo:scene.wow.momo };
-  const fallback = localResult(payload);
+  const nickname = scene.wow.kind === 'nickname' ? answer.replace(/^(?:我叫|叫我|你叫我|我的名字是)\s*/u, '').trim().slice(0, 12) : '';
+  if (scene.wow.kind === 'nickname' && (/\d{7,}|学校|住址|地址|电话|手机|身份证/u.test(answer) || !nickname)) { notify('给自己起一个短短的冒险昵称吧，比如“小星星”。'); return; }
+  const fallback = scene.wow.kind === 'nickname'
+    ? { accepted:true, reaction:`好，${nickname}，我记住啦。我们一起看看房间。`, source:'local', visual:{shape:'star', color:'#efd36e'} }
+    : localResult(payload);
   if (!fallback.accepted) { notify(fallback.reaction); return; }
   busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
   renderVoiceInput();
@@ -90,7 +94,7 @@ async function handleWowAnswer(raw) {
   syncWowPresentation(true);
   const controller = new AbortController(); wowRequest = controller;
   let result;
-  try { result = await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
+  try { result = scene.wow.kind === 'nickname' ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
   catch { if (controller.signal.aborted || token !== epoch) return; result = fallback; }
   finally { if (wowRequest === controller) wowRequest = null; }
   if (token !== epoch || controller.signal.aborted) return;
@@ -98,9 +102,10 @@ async function handleWowAnswer(raw) {
   if (!result.accepted) { phase='question';busy=false;notify(result.reaction);renderAnswerOptions();resumeListening();return; }
   const shapes = ['star','moon','leaf','heart','cloud','fish'];
   const visual = {shape:shapes.includes(result.visual?.shape)?result.visual.shape:fallback.visual.shape,color:/^#[0-9a-f]{6}$/i.test(result.visual?.color || '')?result.visual.color:fallback.visual.color};
-  const entry = {id:scene.id,chapter:scene.chapter,answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
+  const entry = {id:scene.id,chapter:scene.chapter,kind:scene.wow.kind,answer:nickname || answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
   state.wowEntries = [...state.wowEntries.filter(item=>item.id!==scene.id),entry];
-  if (!state.firstWords) state.firstWords = answer;
+  if (nickname) state.playerName = nickname;
+  else if (!state.firstWords) state.firstWords = answer;
   if (scene.wow.kind === 'create') state.inventions = [...state.inventions.filter(item=>item.chapter!==scene.chapter),{chapter:scene.chapter,scene:scene.title,visual:{...visual,kind:'wow-key',name:`第${scene.chapter}把想象钥匙`,details:answer}}];
   if (scene.wow.kind === 'color' && !state.inventory.some(item=>item.id===`wow-color-${scene.chapter}`)) state.inventory.push({id:`wow-color-${scene.chapter}`,name:scene.wow.colorName,color:scene.wow.color,description:answer});
   persist(); updateBag(); syncWowPresentation(true); stage.actors.get('wow')?.setExpression('happy');
@@ -235,7 +240,7 @@ function speakerInfo(id) {
 async function speakLine(line, token = epoch) {
   if (token !== epoch) return;
   const info = speakerInfo(line.speaker);
-  const text = story?.id === 'wow' ? line.text.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。') : line.text;
+  const text = story?.id === 'wow' ? line.text.replaceAll('{playerName}', state.playerName || '小伙伴').replaceAll('{firstWords}', state.firstWords || '你好，我在这里。') : line.text;
   $('speaker').textContent = info.name + (line.source === 'local' ? ' · 本地回应' : line.source === 'ai' ? ' · AI 回应' : '');
   const display = phase === 'complete' ? endingReading : reading;
   const version = ++spokenLineVersion;

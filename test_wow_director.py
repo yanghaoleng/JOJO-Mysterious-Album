@@ -43,7 +43,7 @@ class WowContractTests(unittest.TestCase):
     def test_all_story_prompts_and_suggestions_are_accepted(self):
         cases = node_eval("""
             const {WOW_STORY}=await import('./src/wow-story-data.js');
-            const cases=WOW_STORY.chapters.flatMap(ch=>ch.scenes.flatMap(scene=>[...scene.suggestions,'这里有一颗小星星'].map(answer=>({chapter:ch.id,kind:scene.kind,answer,prompt:scene.prompt,momo:ch.momo}))));
+            const cases=WOW_STORY.chapters.flatMap(ch=>ch.scenes.filter(scene=>scene.kind!=='nickname').flatMap(scene=>[...scene.suggestions,'这里有一颗小星星'].map(answer=>({chapter:ch.id,kind:scene.kind,answer,prompt:scene.prompt,momo:ch.momo}))));
             if(cases.some(value=>!wow.localResult(wow.validatePayload(value)).accepted)) throw new Error('story suggestion refused');
             console.log(JSON.stringify(cases));
         """)

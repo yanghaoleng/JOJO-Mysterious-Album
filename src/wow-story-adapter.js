@@ -37,7 +37,7 @@ for (const chapter of WOW_STORY.chapters) {
 
 export const WOW_BLUEPRINT = {
   slug: 'wow', id: 'wow-first-light', title: WOW_STORY.title, analytics: 'wow', onboarding: 'direct',
-  intro: '一声轻轻的咚咚，从窗里传来。你的第一句话，会走多远？',
+  intro: '从星星窗的小房间出发，说出一个冒险昵称，和鼓鼓一起找到第一束好奇光。',
   cover: './assets/story/covers/moon-plan.webp?v=20260901-moon',
   guide: { id: 'river-otter', name: '星星窗', voice: 'moss', template: storyCharacterTemplateById('river-otter'), entrance: 'door' },
   initialPet: { templateId: 'honey-bear', name: '鼓鼓', palette: 'moss', feature: 'soft-tail', intro: '', entrance: 'left' },
@@ -46,11 +46,11 @@ export const WOW_BLUEPRINT = {
   items,
   scenes: WOW_STORY.chapters.flatMap(chapter => chapter.scenes.map((beat, beatIndex) => {
     const actor = WOW_CAST[chapter.id - 1];
-    const sceneId = chapter.id === 1 ? beatIndex < 3 ? 'castle-window' : beatIndex < 7 ? 'meadow' : beatIndex < 9 ? 'breakfast-table' : 'seaside' : actor.sceneId;
+    const sceneId = chapter.id === 1 ? beatIndex < 4 ? 'castle-window' : beatIndex < 8 ? 'meadow' : beatIndex < 10 ? 'breakfast-table' : 'seaside' : actor.sceneId;
     return {
-      id: beat.id, chapter: chapter.id, name: chapter.id === 1 && beatIndex < 3 ? ['窗里的咚咚声', '一句话，一格光', '雾后的小耳朵'][beatIndex] : chapter.world, place: sceneId, sceneId, mode: 'wow',
+      id: beat.id, chapter: chapter.id, name: chapter.id === 1 && beatIndex < 4 ? ['星星窗的小房间', '房间里的咚咚声', '一句话，一格光', '光照见哇呜星'][beatIndex] : chapter.world, place: sceneId, sceneId, mode: 'wow',
       objective: beat.prompt,
-      npc: { ...actor, name: chapter.id === 1 && beatIndex < 3 ? '星星窗' : chapter.id === 1 && beatIndex === 3 ? 'MOMO' : chapter.momo, intro: '' },
+      npc: { ...actor, name: chapter.id === 1 && beatIndex < 4 ? '星星窗' : chapter.id === 1 && beatIndex === 4 ? 'MOMO' : chapter.momo, intro: '' },
       cast: [], conversation: [{ speaker: 'npc', text: actorCopy[beat.id] || beat.text }],
       dialogue: beat.prompt, choices: [], reward: beat.reward ? `wow-color-${chapter.id}` : null,
       final: chapter.id === 6 && beatIndex === chapter.scenes.length - 1,
@@ -61,11 +61,11 @@ export const WOW_BLUEPRINT = {
 };
 
 export function readWowProgress(storage) {
-  const empty = { version: 1, chapter: 0, scene: 0, entries: [], props: [], colors: [], firstWords: '', pending: null, done: false };
+  const empty = { version: 2, chapter: 0, scene: 0, entries: [], props: [], colors: [], playerName: '', firstWords: '', pending: null, done: false };
   try {
     const target = storage || globalThis.localStorage;
     const saved = JSON.parse(target.getItem(WOW_PROGRESS_KEY));
-    if (!saved || saved.version !== 1 || !Array.isArray(saved.entries)) return empty;
+    if (!saved || saved.version !== 2 || !Array.isArray(saved.entries)) return empty;
     if (!Number.isInteger(saved.chapter) || saved.chapter < 0 || !Number.isInteger(saved.scene) || saved.scene < 0) return empty;
     const chapter = WOW_STORY.chapters[saved.chapter];
     if (!chapter?.scenes[saved.scene]) return empty;
@@ -76,7 +76,8 @@ export function readWowProgress(storage) {
       ...empty, ...saved, entries: unique,
       props: [...new Set((saved.props || []).filter(id => ['torch', 'radio', 'jar'].includes(id)))],
       colors: (saved.colors || []).filter(c => WOW_STORY.chapters.some(ch => ch.id === c?.id && ch.color === c?.color)),
-      firstWords: String(saved.firstWords || unique[0]?.answer || ''),
+      playerName: String(saved.playerName || '').slice(0, 12),
+      firstWords: String(saved.firstWords || unique.find(entry => entry.kind !== 'nickname')?.answer || ''),
       pending: saved.pending ? unique.find(e => e.id === chapter.scenes[saved.scene].id) || null : null,
       done: saved.done === true && unique.length === WOW_BLUEPRINT.scenes.length,
     };
