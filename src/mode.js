@@ -84,7 +84,7 @@ function showHome({ updateUrl = true } = {}) {
   modeNote.textContent = originalModeNote;
   if (updateUrl) updateModeUrl(null);
   window.dispatchEvent(new CustomEvent('mengmeng:mode', { detail: { mode: 'choose' } }));
-  requestAnimationFrame(() => gate.querySelector('[data-mode-choice="doudou"]')?.focus());
+  if (updateUrl) requestAnimationFrame(() => gate.querySelector('.landing-brand')?.focus({ preventScroll: true }));
 }
 
 for (const button of gate.querySelectorAll('button[data-mode-choice]')) {
