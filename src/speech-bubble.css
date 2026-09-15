@@ -44,6 +44,8 @@
   max-height: calc(2em * var(--bubble-line-height));
   display: -webkit-box;
   overflow: hidden;
+  contain: paint;
+  clip-path: inset(0);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -54,6 +56,19 @@
   letter-spacing: 0;
   text-align: center;
   align-self: center;
+}
+
+/* Calligraph moves individual glyph layers while they enter. Keep those
+   layers inside the same two-line paint box as the bubble text. */
+.character-bubble__text .calligraph-text {
+  display: inline;
+  max-width: 100%;
+}
+
+.character-bubble__text .calligraph-glyph {
+  display: inline-block;
+  vertical-align: baseline;
+  line-height: inherit;
 }
 
 .mengmeng-calligraph,

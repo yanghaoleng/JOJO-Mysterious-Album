@@ -914,6 +914,10 @@ body[data-phase="interview"] .live-answer-bubble {
   display: grid;
   place-items: center;
 }
+.backpack-sticker {
+  object-fit: contain;
+  filter: drop-shadow(0 4px 5px rgba(49, 59, 44, .16));
+}
 .backpack-label { align-self: end; color: var(--moss-deep); font-size: 10px; font-weight: 780; text-align: left; }
 .backpack-quick-items { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .backpack-quick-items img,

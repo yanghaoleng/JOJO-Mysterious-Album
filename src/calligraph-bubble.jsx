@@ -173,7 +173,10 @@ function BubbleLetters({ initialText, bubbleKey, target }) {
     return restartBubbleEntrance(shell, reduced);
   }, [message.entranceRevision, reduced, shell]);
 
-  return <EntranceText text={message.text} instant={message.instant} />;
+  // Completed bubbles should settle immediately. Keeping the entrance animation
+  // running after TTS has finished can paint transformed glyphs beyond the
+  // compact 2D bubble's clipped line box, which shows up as tiny dark marks.
+  return <EntranceText text={message.text} instant={message.instant || message.complete} />;
 }
 
 export function mountSpeechBubble(target) {
