@@ -1,4 +1,4 @@
-import { WOW_STORY } from './wow-story-data.js';
+import { WOW_STORY } from './wow-story-data.js?v=20260915-wow-room';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { localResult, SHAPES, PRIVATE } from './wow-local-turn.js';
 

@@ -11,7 +11,7 @@ import {
   glossPlacement,
 } from './gloss-character-renderer.js?v=20260828-style-editor-v2';
 import { storyBySlug } from './story-blueprints.js?v=20260909-wow-original-2d';
-import { readWowProgress, writeWowProgress, wowSceneIndex, wowFogProgress, wowInvention, requestWowTurn, downloadWowJourney, wowVisibleWords, WOW_CAST } from './wow-story-adapter.js';
+import { readWowProgress, writeWowProgress, wowSceneIndex, wowFogProgress, wowInvention, requestWowTurn, downloadWowJourney, wowVisibleWords, WOW_CAST } from './wow-story-adapter.js?v=20260915-wow-room';
 import { paintSceneCanvas, sceneById } from './lab-scenes.js?v=20260901-grounded-guide';
 import { storyCharacterTemplateById } from './story-character-templates.js';
 import { createLegacyDocumentNpc } from './story-npcs/legacy-adapter.js';
