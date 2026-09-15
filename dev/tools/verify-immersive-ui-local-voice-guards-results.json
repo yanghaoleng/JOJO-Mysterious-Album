@@ -1,0 +1,272 @@
+{
+  "base": "http://127.0.0.1:8913/dev/",
+  "session": "dev-immersive-qa-94217",
+  "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-local-QWqq3Q",
+  "scope": "silent-device-voice-guards",
+  "checkedAt": "2026-09-06T02:29:31.415Z",
+  "complete": true,
+  "passed": true,
+  "issues": [],
+  "failure": null,
+  "closed": true,
+  "method": "real UI and AudioWorklet; synthetic silent MediaStream and one-second silent-WAV TTS timing fixture; source guard routing assertions; no physical microphone, ASR, or synthesis-quality claim",
+  "rows": [
+    {
+      "event": "voice-guard-source-routing",
+      "functions": [
+        "setupQuestion",
+        "enterScene"
+      ],
+      "sharedGuard": true
+    },
+    {
+      "event": "voice-guard-real-worklet-fixture",
+      "label": "silent-fixture-setup-menu",
+      "fixture": "zero-valued WebAudio MediaStream and one-second silent-WAV TTS timing; real AudioWorklet and UI progression; no physical microphone or ASR utterance",
+      "before": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 0,
+        "voicedSeconds": 0
+      },
+      "openedPhase": "responding",
+      "blocked": {
+        "bag": false,
+        "fixtureCalls": 1,
+        "menu": true,
+        "phase": "setup",
+        "scene": 0,
+        "setupStep": 1,
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "live"
+          }
+        ],
+        "ttsFixtureCalls": 2,
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      },
+      "resumed": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 6144,
+        "voicedSeconds": 0
+      },
+      "released": {
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "ended"
+          }
+        ],
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "voice-guard-real-worklet-fixture",
+      "label": "silent-fixture-setup-bag",
+      "fixture": "zero-valued WebAudio MediaStream and one-second silent-WAV TTS timing; real AudioWorklet and UI progression; no physical microphone or ASR utterance",
+      "before": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 0,
+        "voicedSeconds": 0
+      },
+      "openedPhase": "responding",
+      "blocked": {
+        "bag": true,
+        "fixtureCalls": 1,
+        "menu": false,
+        "phase": "setup",
+        "scene": 0,
+        "setupStep": 1,
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "live"
+          }
+        ],
+        "ttsFixtureCalls": 2,
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      },
+      "resumed": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 4096,
+        "voicedSeconds": 0
+      },
+      "released": {
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "ended"
+          }
+        ],
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "voice-guard-real-worklet-fixture",
+      "label": "silent-fixture-scene-menu",
+      "fixture": "zero-valued WebAudio MediaStream and one-second silent-WAV TTS timing; real AudioWorklet and UI progression; no physical microphone or ASR utterance",
+      "before": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 0,
+        "voicedSeconds": 0
+      },
+      "openedPhase": "responding",
+      "blocked": {
+        "bag": false,
+        "fixtureCalls": 1,
+        "menu": true,
+        "phase": "question",
+        "scene": 1,
+        "setupStep": 0,
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "live"
+          }
+        ],
+        "ttsFixtureCalls": 8,
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      },
+      "resumed": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 6144,
+        "voicedSeconds": 0
+      },
+      "released": {
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "ended"
+          }
+        ],
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "voice-guard-real-worklet-fixture",
+      "label": "silent-fixture-scene-bag",
+      "fixture": "zero-valued WebAudio MediaStream and one-second silent-WAV TTS timing; real AudioWorklet and UI progression; no physical microphone or ASR utterance",
+      "before": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 0,
+        "voicedSeconds": 0
+      },
+      "openedPhase": "responding",
+      "blocked": {
+        "bag": true,
+        "fixtureCalls": 1,
+        "menu": false,
+        "phase": "question",
+        "scene": 1,
+        "setupStep": 0,
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "live"
+          }
+        ],
+        "ttsFixtureCalls": 8,
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      },
+      "resumed": {
+        "contextState": "running",
+        "enabled": true,
+        "opening": false,
+        "recording": true,
+        "samples": 6144,
+        "voicedSeconds": 0
+      },
+      "released": {
+        "tracks": [
+          {
+            "enabled": false,
+            "readyState": "ended"
+          }
+        ],
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "browser-errors",
+      "errors": "",
+      "console": ""
+    }
+  ]
+}

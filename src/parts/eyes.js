@@ -183,11 +183,10 @@ export const Eyes = {
         return;
       }
       if (type === 'sleepy') {
-        // half a lid, a flat pupil under it, and the bag below
-        pupil(s, ecx + gzx * r * .3, cy0 + gzy * r * .2 + r * .1, r * .3, P.glint, { squash: .62 });
+        // A soft, drowsy lid over a readable round bead.
+        pupil(s, ecx + gzx * r * .3, cy0 + gzy * r * .16 + r * .2, Math.max(r * .5, S * .035), P.glint, { squash: .88 });
         s.stroke([[ecx - r * 1.0, cy0 - r * .18], [ecx, cy0 - r * .34], [ecx + r * 1.0, cy0 - r * .2]],
           lashW * 1.05, { taper: .25, alpha: .95 });
-        if (s.chance(.6)) s.sline([[ecx - r * .55, cy0 + r * .55], [ecx + r * .5, cy0 + r * .48]], 1.1, .35);
         return;
       }
 
@@ -221,8 +220,7 @@ export const Eyes = {
         pupil(s, px, py, rr * .2, P.glint);
       } else if (type === 'dot') {
         // the dot IS the pupil, so a glance just nudges it
-        if (s.chance(.35)) s.sline(circlePts(ecx, cy0, rr * .55, rr * .57, 14), 1.2, .5);
-        pupil(s, ecx + gzx * rr * .3, cy0 + gzy * rr * .3, rr * .3, P.glint);
+        pupil(s, ecx + gzx * rr * .3, cy0 + gzy * rr * .3, Math.max(rr * .5, S * .035), P.glint);
         lashFlicks(rr * .6);
       } else {
         pupil(s, px, py, rr * s.jr(.3, .4), P.glint);

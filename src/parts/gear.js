@@ -92,12 +92,12 @@ function handSlot(id, label, sd, chance) {
     // AT THE SHOULDER, not the hand — see the header
     bones: (P, F) => [{
       name: sd > 0 ? 'gearR' : 'gearL',
-      x: sd * F.B.shoulderX / U, y: -F.B.shoulderY / U, side: sd,
+      x: (sd * F.B.shoulderX + (F.B.shoulderCenterX ?? 0)) / U, y: -F.B.shoulderY / U, side: sd,
     }],
     size: (P, F) => {
       const g = F.B.grip(sd);
       const px = heldPx(F);
-      const dx = Math.abs(g[0] - sd * F.B.shoulderX) + px;
+      const dx = Math.abs(g[0] - (sd * F.B.shoulderX + (F.B.shoulderCenterX ?? 0))) + px;
       const dy = Math.abs(g[1] - F.B.shoulderY) + px;
       return [(dx * 2.4) / U, (dy * 2.4) / U];
     },

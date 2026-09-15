@@ -1,0 +1,83 @@
+{
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "immersive-production-bounded-final",
+  "kind": "one-bounded-independent-navigation-no-story-start-or-microphone",
+  "checkedAt": "2026-09-06T02:55:17.683Z",
+  "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-load-xkWb6N",
+  "open": "✓ 不见了的回声 · 萌萌星\n  https://jma.mikeywa.site/dev/?story=echo",
+  "snapshot": "- link \"返回故事工坊\" [ref=e1]\n- link \"萌萌星\" [ref=e2]\n- button \"故事菜单\" [expanded=false, ref=e3]\n- heading \"不见了的回声\" [level=1, ref=e5]\n- button \"听角色说话，轻点可跳过这一句\" [ref=e4]\n- button \"开始对话\" [ref=e6]",
+  "raw": {
+    "bodyHTML": "\n  <header class=\"topbar\">\n    <a href=\"./\" id=\"home-link\" class=\"icon-control\" aria-label=\"返回故事工坊\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-lucide=\"house\" aria-hidden=\"true\" class=\"lucide lucide-house\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"></path><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path></svg></a>\n    <a class=\"wordmark\" href=\"./\">萌萌星<span>立体故事工坊</span></a>\n    <div class=\"story-tools\" id=\"story-tools\">\n      <button id=\"open-story-menu\" class=\"icon-control\" aria-label=\"故事菜单\" aria-expanded=\"false\" aria-controls=\"story-menu\"><span aria-hidden=\"true\">···</span></button>\n      <div id=\"story-menu\" class=\"story-menu\" role=\"group\" aria-label=\"故事工具\" hidden=\"\">\n        <p id=\"objective\">听完一句小小的话，陪小回声找到家。</p>\n        <button id=\"bag-button\" class=\"quiet-button\" aria-haspopup=\"dialog\">小小背包 <span id=\"bag-count\">0</span></button>\n        <button id=\"scene-reset\" class=\"quiet-button\">回到伙伴身边</button>\n        <button id=\"restart\" class=\"quiet-button\" aria-label=\"重新开始当前故事\">重新开始</button>\n      </div>\n    </div>\n    <a class=\"original-link\" id=\"original-link\" href=\"../\" hidden=\"\">原版图鉴</a>\n  </header>\n\n  <main id=\"experience\">\n    <div class=\"world-viewport\" id=\"world-viewport\">\n      <div id=\"stage\" class=\"stage\"><canvas data-engine=\"three.js r160\" width=\"1280\" height=\"633\" aria-label=\"可以拖动旋转、点击角色的立体场景\" role=\"img\" style=\"display: block; width: 1280px; height: 633px;\"></canvas></div>\n      <div class=\"stage-loading is-ready\" id=\"stage-loading\"><span></span><p>小世界正在展开</p></div>\n      <div class=\"scene-caption\" id=\"scene-caption\"><span id=\"chapter-name\">4～7 岁</span><h1 id=\"scene-title\">不见了的回声</h1></div>\n      <button class=\"camera-reset\" id=\"camera-reset\" aria-label=\"恢复正面视角\" hidden=\"\">回到伙伴</button>\n      <p class=\"stage-hint\" id=\"stage-hint\" hidden=\"\">轻轻转动世界 · 和伙伴打个招呼</p>\n    </div>\n\n    <section id=\"home-panel\" class=\"home-panel\" hidden=\"\">\n      <p class=\"eyebrow\">把故事，捧在手心</p>\n      <h1>今天，<br>一起去哪里？</h1>\n      <p class=\"home-intro\">选一个小世界，和你的伙伴慢慢出发。</p>\n      <nav class=\"story-list\" id=\"story-list\" aria-label=\"选择故事\"><a class=\"story-link\" href=\"?story=doudou\"><strong>送豆豆回家</strong><small>4～6 岁 · 听线索，慢慢走，一起把小狗送到家。</small><b aria-hidden=\"true\">↗</b></a><a class=\"story-link\" href=\"?story=moon\"><strong>登月计划</strong><small>10 岁以上 · 带着一个点子出发，沿路把它改成真的。</small><b aria-hidden=\"true\">↗</b></a><a class=\"story-link\" href=\"?story=echo\"><strong>不见了的回声</strong><small>4～7 岁 · 听完一句小小的话，陪小回声找到家。</small><b aria-hidden=\"true\">↗</b></a></nav>\n      <a href=\"?mode=studio\" class=\"studio-entry\"><span>角色模拟器</span><small>捏一个新朋友</small><b aria-hidden=\"true\">↗</b></a>\n    </section>\n\n    <section class=\"story-panel\" id=\"story-panel\">\n      <button type=\"button\" class=\"speech-card\" id=\"speech-card\" aria-label=\"听角色说话，轻点可跳过这一句\" data-speaking=\"false\">\n        <span class=\"speaker\" id=\"speaker\">河湾</span>\n        <span class=\"speech-text\" id=\"speech-text\" aria-live=\"polite\">小回声说到一半就不见了。听听贝亮了一下，新的路藏在声音里。</span>\n        <span class=\"speaking-bars\" aria-hidden=\"true\"><i></i><i></i><i></i></span>\n      </button>\n      <div class=\"story-start\" id=\"story-start\"><button class=\"primary\" id=\"start-story\">开始对话</button><p id=\"resume-note\">说出你的想法，也可以随时点选。</p></div>\n      <div class=\"answer-dock\" id=\"answer-dock\" hidden=\"\">\n        <p class=\"heard\" id=\"heard\" hidden=\"\"></p>\n        <div class=\"answer-controls\">\n          <button class=\"mic-control\" id=\"mic-button\" data-state=\"off\" aria-label=\"打开麦克风回答\" aria-pressed=\"false\" style=\"--level: 0.00;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-lucide=\"mic\" aria-hidden=\"true\" class=\"lucide lucide-mic\"><path d=\"M12 19v3\"></path><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"></path><rect x=\"9\" y=\"2\" width=\"6\" height=\"13\" rx=\"3\"></rect></svg><span id=\"mic-label\">和它说说</span><span class=\"voice-meter\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i></span></button>\n          <button class=\"reply-more\" id=\"reply-more\" aria-label=\"更多回答方式\" aria-expanded=\"false\" aria-controls=\"reply-options\"><span aria-hidden=\"true\">···</span></button>\n        </div>\n        <div class=\"reply-options\" id=\"reply-options\" role=\"group\" aria-label=\"其他回答方式\" hidden=\"\">\n          <div class=\"reply-tabs\">\n            <button class=\"quiet-button\" id=\"show-choices\" aria-expanded=\"false\" aria-controls=\"choices\">看看办法</button>\n            <button class=\"quiet-button\" id=\"show-text\" aria-expanded=\"false\" aria-controls=\"text-form\">写下来</button>\n            <button class=\"quiet-button\" id=\"close-replies\" aria-label=\"收起回答方式\">收起</button>\n          </div>\n          <div class=\"choices\" id=\"choices\" hidden=\"\"></div>\n          <form id=\"text-form\" class=\"text-form\" hidden=\"\"><label for=\"answer-input\" class=\"sr-only\">你的想法</label><input id=\"answer-input\" maxlength=\"180\" placeholder=\"把你的想法写在这里\" autocomplete=\"off\" enterkeyhint=\"send\"><button class=\"primary\" type=\"submit\">告诉它</button></form>\n        </div>\n      </div>\n      <div class=\"ending\" id=\"ending\" hidden=\"\"><h2 id=\"ending-title\"></h2><p id=\"ending-text\"></p><blockquote id=\"ending-line\"></blockquote><button id=\"save-memory\" class=\"primary\">收进我的图鉴</button><a href=\"./\" class=\"quiet-button\">再去一个小世界</a></div>\n    </section>\n\n    <section class=\"studio-panel\" id=\"studio-panel\" hidden=\"\">\n      <h1>角色模拟器</h1><p class=\"panel-intro\">转一转，捏一捏，看看它怎样表达。</p>\n      <div class=\"studio-tabs\" role=\"tablist\" aria-label=\"角色编辑\"><button role=\"tab\" id=\"tab-character\" data-tab=\"character\" aria-selected=\"true\" aria-controls=\"character-controls\">伙伴</button><button role=\"tab\" id=\"tab-performance\" data-tab=\"performance\" aria-selected=\"false\" aria-controls=\"performance-controls\">表演</button><button role=\"tab\" id=\"tab-world\" data-tab=\"world\" aria-selected=\"false\" aria-controls=\"world-controls\">场景</button></div>\n      <div id=\"character-controls\" role=\"tabpanel\" aria-labelledby=\"tab-character\">\n        <div id=\"character-types\" class=\"type-grid\"><button class=\"type-button\" data-type=\"dog\" title=\"垂耳朵的小狗，带着一只邮差包。\">豆豆</button><button class=\"type-button\" data-type=\"rabbit\" title=\"长耳朵的小兔，戴着一条蓝围巾。\">雪团</button><button class=\"type-button\" data-type=\"otter\" title=\"圆鼻子的小水獭，口袋里藏着小贝壳。\">阿獭</button><button class=\"type-button\" data-type=\"owl\" title=\"心形脸的小猫头鹰，背着一本小书。\">咕咕</button><button class=\"type-button\" data-type=\"cat\" title=\"尖耳朵的小猫，卷尾巴上有一道奶油色。\">月牙</button><button class=\"type-button\" data-type=\"bear\" title=\"圆耳朵的小熊，围着蜂蜜色小领巾。\">蜜糖</button><button class=\"type-button\" data-type=\"frog\" title=\"圆眼睛的小青蛙，戴着一片荷叶。\">小荷</button></div>\n        <label class=\"field-label\" for=\"character-name\">伙伴昵称</label><input id=\"character-name\" maxlength=\"10\" value=\"小团\" autocomplete=\"off\">\n        <fieldset class=\"color-field\"><legend>换一身颜色</legend><div id=\"color-swatches\" class=\"color-swatches\"><button class=\"color-swatch\" data-color=\"#eee3d5\" aria-label=\"奶油白\" style=\"background: rgb(238, 227, 213);\"></button><button class=\"color-swatch\" data-color=\"#c99561\" aria-label=\"蜂蜜金\" style=\"background: rgb(201, 149, 97);\"></button><button class=\"color-swatch\" data-color=\"#93af83\" aria-label=\"嫩叶绿\" style=\"background: rgb(147, 175, 131);\"></button><button class=\"color-swatch\" data-color=\"#90b6c5\" aria-label=\"晴空蓝\" style=\"background: rgb(144, 182, 197);\"></button><button class=\"color-swatch\" data-color=\"#d7a9a5\" aria-label=\"桃花粉\" style=\"background: rgb(215, 169, 165);\"></button></div></fieldset>\n        <label class=\"slider-label\" for=\"character-size\">高矮 <output id=\"size-output\">100%</output></label><input id=\"character-size\" type=\"range\" min=\"75\" max=\"125\" value=\"100\">\n      </div>\n      <div id=\"performance-controls\" role=\"tabpanel\" aria-labelledby=\"tab-performance\" hidden=\"\"><p class=\"field-label\">此刻的表情</p><div class=\"control-grid\" id=\"expressions\"><button data-expression=\"happy\">开心</button><button data-expression=\"curious\">好奇</button><button data-expression=\"sad\">有点难过</button><button data-expression=\"surprised\">惊喜</button></div><p class=\"field-label\">让它动起来</p><div class=\"control-grid\" id=\"actions\"><button data-action=\"idle\">放松</button><button data-action=\"wave\">打招呼</button><button data-action=\"hop\">跳一跳</button><button data-action=\"listen\">认真听</button><button data-action=\"talk\">说句话</button><button data-action=\"walk\">迈小步</button></div><button class=\"secondary full\" id=\"preview-voice\">听它打个招呼</button></div>\n      <div id=\"world-controls\" role=\"tabpanel\" aria-labelledby=\"tab-world\" hidden=\"\"><div id=\"world-options\" class=\"world-options\"><button data-world=\"orchard\">红苹果园</button><button data-world=\"bakery\">阿暖面包房</button><button data-world=\"bridge\">吱呀小木桥</button><button data-world=\"home\">豆豆的家</button><button data-world=\"observatory\">望远镜山丘</button><button data-world=\"reef\">海底维修站</button><button data-world=\"pocket\">巨人的口袋</button><button data-world=\"cloud\">云层导航站</button><button data-world=\"moon\">月球接引区</button><button data-world=\"meadow\">萤火草地</button><button data-world=\"cove\">听听贝河湾</button></div></div>\n      <div class=\"studio-actions\"><button id=\"save-character\" class=\"primary\">保存伙伴</button><button id=\"download-character\" class=\"secondary\">导出模型</button></div>\n      <div id=\"saved-characters\" class=\"saved-characters\"></div>\n    </section>\n  </main>\n\n  <dialog id=\"bag-dialog\"><div class=\"dialog-top\"><h2>一路带着的东西</h2><button class=\"quiet-button\" id=\"close-bag\" autofocus=\"\">关闭</button></div><div id=\"bag-content\"></div></dialog>\n  <div id=\"notice\" class=\"notice\" role=\"status\" aria-live=\"polite\"></div>\n  <div id=\"transition\" class=\"transition\" aria-hidden=\"true\"></div>\n  <script type=\"module\" src=\"./app.bundle.js?v=20260906-handcrafted\"></script>\n\n\n",
+    "navigation": [
+      {
+        "domContentLoaded": 615.1999999880791,
+        "duration": 616.9000000059605,
+        "load": 616.9000000059605,
+        "responseStart": 156.5
+      }
+    ],
+    "phase": "ready",
+    "ready": "complete",
+    "resources": [
+      {
+        "duration": 49.10000002384186,
+        "transfer": 4831,
+        "url": "https://jma.mikeywa.site/dev/app.css?v=20260906-planet"
+      },
+      {
+        "duration": 51.69999998807907,
+        "transfer": 2790,
+        "url": "https://jma.mikeywa.site/dev/immersive.css?v=20260906-handcrafted"
+      },
+      {
+        "duration": 204.5,
+        "transfer": 51438,
+        "url": "https://jma.mikeywa.site/dev/app.bundle.js?v=20260906-handcrafted"
+      },
+      {
+        "duration": 153.40000000596046,
+        "transfer": 263340,
+        "url": "https://jma.mikeywa.site/vendor/three.module.js"
+      }
+    ],
+    "url": "https://jma.mikeywa.site/dev/?story=echo",
+    "visibility": "visible",
+    "voice": {
+      "contextState": "closed",
+      "enabled": false,
+      "opening": false,
+      "recording": false,
+      "samples": 0,
+      "voicedSeconds": 0
+    }
+  },
+  "screenshot": "✓ Screenshot saved to /var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-load-xkWb6N/independent-load.png",
+  "errors": "",
+  "console": "",
+  "network": "[AC0CFA1899CF9E70DD05BE1B0B93C99E] GET https://jma.mikeywa.site/dev/?story=echo (Document) 200\n[152.2] GET https://jma.mikeywa.site/dev/app.css?v=20260906-planet (Stylesheet) 200\n[152.3] GET https://jma.mikeywa.site/dev/immersive.css?v=20260906-handcrafted (Stylesheet) 200\n[152.4] GET https://jma.mikeywa.site/dev/app.bundle.js?v=20260906-handcrafted (Script) 200\n[152.8] GET https://jma.mikeywa.site/vendor/three.module.js (Script) 200\n[152.9] GET https://jma.mikeywa.site/favicon.ico (Other) 200",
+  "close": "✓ Browser closed",
+  "closed": true,
+  "elapsedMs": 2254,
+  "independentReloadProbe": {
+    "count": 12,
+    "elapsedMs": [
+      165,
+      252,
+      149,
+      245,
+      156,
+      157,
+      158,
+      156,
+      189,
+      151,
+      154,
+      172
+    ],
+    "allDocumentComplete": true,
+    "allStoryReady": true,
+    "observedScriptErrors": "",
+    "sessionClosed": true,
+    "note": "Prior separate same-host pure navigation probe; did not start a story or activate microphone."
+  }
+}

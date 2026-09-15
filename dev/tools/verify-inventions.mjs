@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { describeInvention } from '../inventions.js';
+const rocket = describeInvention('带导航灯和防水气泡的火箭', null, 'observatory');
+assert.equal(rocket.kind, 'rocket');
+assert.deepEqual(rocket.upgrades, ['navigation', 'float']);
+const ladder = describeInvention('装一架折叠梯', rocket, 'pocket', { kind: 'ladder', name: '新梯子' });
+assert.equal(ladder.kind, 'rocket');
+assert.equal(ladder.name, rocket.name);
+assert.ok(ladder.upgrades.includes('ladder'));
+assert.ok(ladder.upgrades.includes('navigation'));
+const next = describeInvention('改成传送门', ladder, 'cloud');
+assert.equal(next.kind, 'portal');
+assert.deepEqual(next.upgrades, []);
+const sails = describeInvention('加桨和借风的小帆', ladder, 'reef');
+assert.ok(sails.upgrades.includes('paddles') && sails.upgrades.includes('sail'));
+assert.notEqual(describeInvention('用降落伞', null, 'moon', { kind: 'parachute' }).kind, 'parachute');
+console.log('PASS: inventions retain their body and visible additions; intentional replacements and airless landing remain coherent.');

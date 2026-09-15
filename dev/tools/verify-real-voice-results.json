@@ -1,0 +1,606 @@
+{
+  "checkedAt": "2026-09-05T14:09:20.759Z",
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "dev-live-voice",
+  "method": "Explicit prerecorded MediaStream fixture; real AudioWorklet, VAD, PCM16, upstream ASR, UI response; no physical microphone",
+  "passed": true,
+  "log": [
+    {
+      "event": "fixture",
+      "path": "/tmp/jma-dev-voice-bn6nQ4/answer.wav",
+      "sha256": "a4d078924be3944b9ca961677d9ad64408c75a1f2a16c1e67880253cf29d5a54",
+      "encoding": 1,
+      "channels": 1,
+      "sampleRate": 48000,
+      "bits": 16,
+      "duration": 7.568,
+      "peak": 0.729217529296875,
+      "hardwareMicrophone": false
+    },
+    {
+      "event": "first-question",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 126,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 53,
+          "invention": false,
+          "triangles": 58032,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      },
+      "speech": "选个伙伴吧。小兔、小狗，还是小猫？"
+    },
+    {
+      "event": "enabled",
+      "fixture": {
+        "calls": 1,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "running",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": false,
+            "trackEnabled": true,
+            "trackState": "live"
+          }
+        ]
+      },
+      "micState": "listening",
+      "speech": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 126,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 53,
+          "invention": false,
+          "triangles": 58032,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": true,
+          "samples": 6144,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "paused",
+      "fixture": {
+        "calls": 1,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "closed",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          }
+        ]
+      },
+      "micState": "off",
+      "speech": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 126,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 53,
+          "invention": false,
+          "triangles": 58032,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "resumed",
+      "fixture": {
+        "calls": 2,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "closed",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          },
+          {
+            "contextState": "running",
+            "id": 2,
+            "peak": 0,
+            "played": false,
+            "stopped": false,
+            "trackEnabled": true,
+            "trackState": "live"
+          }
+        ]
+      },
+      "micState": "listening",
+      "speech": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 126,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 53,
+          "invention": false,
+          "triangles": 58032,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": true,
+          "samples": 10240,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "captured-by-real-worklet",
+      "fixture": {
+        "calls": 2,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "closed",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          },
+          {
+            "contextState": "running",
+            "id": 2,
+            "peak": 0.3644215166568756,
+            "played": true,
+            "stopped": false,
+            "trackEnabled": true,
+            "trackState": "live"
+          }
+        ]
+      },
+      "micState": "listening",
+      "speech": "选个伙伴吧。小兔、小狗，还是小猫？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 126,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 53,
+          "invention": false,
+          "triangles": 58032,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": true,
+          "samples": 98304,
+          "voicedSeconds": 0.2986666666666667
+        }
+      }
+    },
+    {
+      "event": "real-asr",
+      "response": {
+        "finishedAt": 1788617353734,
+        "path": "/api/asr",
+        "pcmBytes": 126976,
+        "response": {
+          "provider": "volc",
+          "transcript": "我想要一只小猫。"
+        },
+        "startedAt": 1788617352303,
+        "status": 200
+      },
+      "fixture": [
+        {
+          "contextState": "closed",
+          "id": 1,
+          "peak": 0,
+          "played": false,
+          "stopped": true,
+          "trackEnabled": false,
+          "trackState": "ended"
+        },
+        {
+          "contextState": "running",
+          "id": 2,
+          "peak": 0.729217529296875,
+          "played": true,
+          "stopped": false,
+          "trackEnabled": false,
+          "trackState": "live"
+        }
+      ]
+    },
+    {
+      "event": "voice-advanced-page",
+      "fixture": {
+        "calls": 2,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          },
+          {
+            "finishedAt": 1788617353734,
+            "path": "/api/asr",
+            "pcmBytes": 126976,
+            "response": {
+              "provider": "volc",
+              "transcript": "我想要一只小猫。"
+            },
+            "startedAt": 1788617352303,
+            "status": 200
+          },
+          {
+            "finishedAt": 1788617354510,
+            "path": "/api/tts",
+            "startedAt": 1788617353751,
+            "status": 200
+          },
+          {
+            "finishedAt": 1788617357444,
+            "path": "/api/tts",
+            "startedAt": 1788617356596,
+            "status": 200
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "closed",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          },
+          {
+            "contextState": "running",
+            "id": 2,
+            "peak": 0.729217529296875,
+            "played": true,
+            "stopped": false,
+            "trackEnabled": true,
+            "trackState": "live"
+          }
+        ]
+      },
+      "micState": "listening",
+      "speech": "你想让伙伴穿上什么颜色？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "setup",
+        "sceneIndex": 0,
+        "setupStep": 1,
+        "stage": {
+          "actors": [
+            "guide",
+            "companion"
+          ],
+          "calls": 130,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 59,
+          "invention": false,
+          "triangles": 57644,
+          "upgrades": [],
+          "world": "cove"
+        },
+        "storyId": "doudou",
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "running",
+          "enabled": true,
+          "opening": false,
+          "recording": true,
+          "samples": 2048,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "exited-and-released",
+      "fixture": {
+        "calls": 2,
+        "requests": [
+          {
+            "error": "AbortError",
+            "path": "/api/tts",
+            "startedAt": 1788617347758
+          },
+          {
+            "finishedAt": 1788617353734,
+            "path": "/api/asr",
+            "pcmBytes": 126976,
+            "response": {
+              "provider": "volc",
+              "transcript": "我想要一只小猫。"
+            },
+            "startedAt": 1788617352303,
+            "status": 200
+          },
+          {
+            "finishedAt": 1788617354510,
+            "path": "/api/tts",
+            "startedAt": 1788617353751,
+            "status": 200
+          },
+          {
+            "finishedAt": 1788617357444,
+            "path": "/api/tts",
+            "startedAt": 1788617356596,
+            "status": 200
+          }
+        ],
+        "streams": [
+          {
+            "contextState": "closed",
+            "id": 1,
+            "peak": 0,
+            "played": false,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          },
+          {
+            "contextState": "closed",
+            "id": 2,
+            "peak": 0.729217529296875,
+            "played": true,
+            "stopped": true,
+            "trackEnabled": false,
+            "trackState": "ended"
+          }
+        ]
+      },
+      "micState": "off",
+      "speech": "你想让伙伴穿上什么颜色？",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "home",
+        "sceneIndex": 0,
+        "setupStep": 1,
+        "stage": {
+          "actors": [
+            "dog",
+            "rabbit",
+            "frog"
+          ],
+          "calls": 156,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 70,
+          "invention": false,
+          "triangles": 94098,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    }
+  ]
+}

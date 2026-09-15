@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { LabPlanetStage } from './lab-planet-stage.js';
+import { getScene3DEnabled, setScene3DEnabled, subscribeScene3D } from './scene-mode.js';
 import { PAPER, Sketch } from './sketch.js';
 import { addPaper } from './paper.js';
 import { setHand, setRender, U } from './part.js';
@@ -31,15 +33,12 @@ import {
 import { trackAnalytics } from './analytics.js';
 import { playUISFX } from './ui-sfx.js?v=20260831-always-on';
 import { SeedRealtimeSpeech, setConversationAudioSession } from './seed-realtime-speech.js?v=20260827-ios-clean-audio';
-import {
-  setVoiceInputControlLevel,
-  setVoiceInputControlState,
-} from './voice-input-control.js?v=20260828-waveform-loader';
+import { createVoiceInput } from './voice-input-control.js?v=20260910-lyric-motion';
 import {
   mountSpeechBubble,
   setSpeechBubbleText,
   skipSpeechBubble,
-} from '../vendor/calligraph-bubble.js?v=20260827-user-bubble';
+} from '../vendor/calligraph-bubble.js?v=20260910-lyric-motion';
 import {
   CHARACTER_CARD_FIELDS,
   baseCharacterCard,
@@ -401,6 +400,7 @@ let face;
 let recipe;
 let animator;
 let environment;
+let labPlanetStage = null;
 let sceneId = readSceneId();
 let characterBase = { x: 0, y: -1.02, scale: 1.08 };
 let resizeObserver;
@@ -463,6 +463,13 @@ const callState = {
   bubbleId: 0,
   returnFocus: null,
 };
+const callVoiceInput = createVoiceInput({
+  button: $('character-call-mic'),
+  transcript: $('character-call-live'),
+  status: $('character-call-status'),
+});
+let callVoiceMode = 'setup';
+let callVoiceLabel = '开启麦克风并持续聆听';
 const pointerRaycaster = new THREE.Raycaster();
 const pointerNdc = new THREE.Vector2();
 const pointerHeadWorld = new THREE.Vector3();
@@ -1205,10 +1212,11 @@ function positionBubble() {
   const rect = preview?.getBoundingClientRect();
   if (!bubble || !rect?.width || !rect?.height) return;
   face.group.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
+  const viewCamera = labPlanetStage?.camera || camera;
+  viewCamera.updateMatrixWorld(true);
   bubbleAnchorWorld.copy(bubbleAnchorLocal);
   face.group.localToWorld(bubbleAnchorWorld);
-  bubbleAnchorWorld.project(camera);
+  bubbleAnchorWorld.project(viewCamera);
   const rawX = (bubbleAnchorWorld.x * .5 + .5) * rect.width;
   const rawY = (-bubbleAnchorWorld.y * .5 + .5) * rect.height;
   const halfWidth = Math.max(56, Math.min(bubbleMetrics.width * .5, rect.width * .5 - 11));
@@ -1220,6 +1228,7 @@ function positionBubble() {
 }
 
 function setEnvironment(id, { speak = true } = {}) {
+  labPlanetStage?.releaseActors();
   const config = sceneById(id);
   sceneId = config.id;
   try { localStorage.setItem(SCENE_KEY, sceneId); } catch { /* scene remains in memory */ }
@@ -1236,12 +1245,14 @@ function setEnvironment(id, { speak = true } = {}) {
     applyCharacterPlacement(0);
   }
   applySceneSpatialMetadata(config);
+  syncLabPlanetScene();
   refreshSceneControls();
   refreshCharacterEditorAppearance();
   if (speak && speaker) speaker.speak(config.line, { offlineKey: `scene-${config.id}` });
 }
 
 function buildNow() {
+  labPlanetStage?.releaseActors();
   if (face) {
     face.group.userData.softShadow?.userData.dispose?.();
     scene.remove(face.group);
@@ -1308,6 +1319,61 @@ function buildNow() {
   positionBubble();
   try { localStorage.setItem(RECIPE_KEY, JSON.stringify(recipe)); } catch { /* recipe remains in memory */ }
   refreshControls();
+  syncLabPlanetScene();
+}
+
+function refreshSceneModeControl() {
+  const enabled = getScene3DEnabled();
+  const control = $('lab-scene-3d');
+  if (control) { control.checked = enabled; control.setAttribute('aria-checked', String(enabled)); }
+  document.querySelector('.lab-preview')?.classList.toggle('is-planet', Boolean(labPlanetStage));
+  if ($('lab-planet-reset')) $('lab-planet-reset').hidden = !labPlanetStage;
+}
+
+function releaseLabPlanet() {
+  const oldStage = labPlanetStage;
+  labPlanetStage = null;
+  oldStage?.dispose();
+  if ($('lab-planet-stage')) $('lab-planet-stage').hidden = true;
+  if ($('lab-stage')) $('lab-stage').style.visibility = '';
+  refreshSceneModeControl();
+}
+
+function syncLabPlanetViewport() {
+  labPlanetStage?.setViewportInsets({ top: callState.active ? 145 : 86, bottom: callState.active ? 180 : 42, left: 18, right: 18 });
+}
+
+function syncLabPlanetScene() {
+  if (!active || !face || !getScene3DEnabled()) {
+    releaseLabPlanet();
+    if (active && renderer) { animationLoop.last = 0; renderer.setAnimationLoop(animationLoop); }
+    return;
+  }
+  const host = $('lab-planet-stage');
+  host.hidden = false;
+  try {
+    if (!labPlanetStage) {
+      labPlanetStage = new LabPlanetStage(host, () => {
+        const point = labPlanetStage?.getActorScreenPoint('lab-character', .65);
+        const rect = host.getBoundingClientRect();
+        if (point?.visible) respondToCharacterTap({ clientX: rect.left + point.x, clientY: rect.top + point.y });
+      });
+    }
+    // Only one loop updates the original animator and expression canvases.
+    renderer.setAnimationLoop(null);
+    labPlanetStage.setLabScene(sceneId, {
+      id: 'lab-character', holder: face.group, character: { name: characterTemplateById(activeTemplateId)?.name || '角色' },
+      update(time, dt) { animator?.update(time, dt); applyCharacterPlacement(time); positionBubble(); },
+    });
+    syncLabPlanetViewport();
+    $('lab-stage').style.visibility = 'hidden';
+    refreshSceneModeControl();
+  } catch (error) {
+    releaseLabPlanet();
+    renderer.setAnimationLoop(animationLoop);
+    console.error('Lab planet unavailable', error);
+    showStatus('这个设备暂时无法打开 3D 场景，已保留原来的绘本场景。');
+  }
 }
 
 function rebuild() {
@@ -1320,7 +1386,7 @@ function rebuild() {
 }
 
 function animationLoop(now) {
-  if (!active) return;
+  if (!active || labPlanetStage) return;
   const t = now / 1000;
   const dt = Math.min(.05, animationLoop.last ? (now - animationLoop.last) / 1000 : .016);
   animationLoop.last = now;
@@ -1438,6 +1504,11 @@ function renderSceneCards() {
 }
 
 function initScenePicker() {
+  $('lab-scene-3d').addEventListener('change', event => setScene3DEnabled(event.target.checked));
+  $('lab-planet-reset').addEventListener('click', () => labPlanetStage?.resetView());
+  $('lab-planet-stage').addEventListener('inkplanet:viewchange', positionBubble);
+  subscribeScene3D(() => { syncLabPlanetScene(); refreshSceneModeControl(); });
+  refreshSceneModeControl();
   const groups = $('scene-groups');
   for (const name of SCENE_GROUPS) {
     const button = document.createElement('button');
@@ -1529,10 +1600,11 @@ function pointGazeAt(clientX, clientY, { releaseAfter = 0 } = {}) {
   const preview = document.querySelector('.lab-preview');
   const rect = preview?.getBoundingClientRect();
   if (!rect?.width || !rect?.height) return;
-  scene.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
+  const viewCamera = labPlanetStage?.camera || camera;
+  (labPlanetStage?.scene || scene).updateMatrixWorld(true);
+  viewCamera.updateMatrixWorld(true);
   face.headGroup.getWorldPosition(pointerHeadWorld);
-  pointerHeadWorld.project(camera);
+  pointerHeadWorld.project(viewCamera);
   const headX = rect.left + (pointerHeadWorld.x * .5 + .5) * rect.width;
   const headY = rect.top + (-pointerHeadWorld.y * .5 + .5) * rect.height;
   const x = (clientX - headX) / (rect.width * .34);
@@ -2006,7 +2078,10 @@ function setCharacterCallStatus(state, text) {
   const overlay = $('character-call');
   if (!overlay) return;
   overlay.dataset.state = state;
-  $('character-call-status').textContent = text;
+  callVoiceInput.setState(callVoiceMode, {
+    message: text, label: callVoiceLabel, disabled: false,
+    pressed: callState.micEnabled && !callState.micPaused,
+  });
 }
 
 function renderCharacterCallCard() {
@@ -2028,6 +2103,12 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   const message = { role, content: String(text || '').trim().slice(0, 220) };
   callState.messages.push(message);
   callState.messages = callState.messages.slice(-12);
+  if (role === 'user') {
+    // The same bubble owns interim and final words. History is still sent to
+    // the character, but never renders a second copy of the child's sentence.
+    setCharacterCallLive(message.content);
+    return { message, node: null, bubbleKey: null };
+  }
   const node = document.createElement('p');
   const bubbleKey = `call-${role}-${++callState.bubbleId}`;
   const initialText = message.content || (pending ? '正在想…' : '我在认真听。');
@@ -2045,8 +2126,13 @@ function appendCharacterCallMessage(role, text, { pending = false } = {}) {
   node.appendChild(content);
   const transcript = $('character-call-transcript');
   transcript.appendChild(node);
-  while (transcript.children.length > 2) transcript.firstElementChild?.remove();
+  while (transcript.children.length > 1) transcript.firstElementChild?.remove();
   mountSpeechBubble(content);
+  // A fast first token can arrive before the mounted bubble subscribes to
+  // updates. Replay the latest text after its first paint, never an old copy.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (node.isConnected) setSpeechBubbleText(bubbleKey, message.content || initialText, { complete: true, enter: false });
+  }));
   return { message, node, bubbleKey };
 }
 
@@ -2120,22 +2206,22 @@ function applyCharacterCallTool(payload) {
 }
 
 function setCharacterCallMic(state, label) {
-  const button = $('character-call-mic');
-  if (!button) return;
-  setVoiceInputControlState(button, state);
-  button.setAttribute('aria-label', label);
+  callVoiceMode = state === 'idle' ? 'setup' : state;
+  callVoiceLabel = label;
+  callVoiceInput.setState(callVoiceMode, {
+    label, message: $('character-call-status').textContent, disabled: false,
+    pressed: callState.micEnabled && !callState.micPaused,
+  });
 }
 
-function setCharacterCallLive(text = '') {
-  const live = $('character-call-live');
-  if (!live) return;
+function setCharacterCallLive(text = '', { interim = false } = {}) {
   const value = String(text || '').trim().slice(0, 180);
-  const shouldEnter = live.hidden;
-  live.hidden = !value;
-  if (value) setSpeechBubbleText('call-user-live', value, { complete: true, enter: shouldEnter });
+  if (value) callVoiceInput.setTranscript(value, { interim });
+  else callVoiceInput.clearTranscript();
 }
 
 function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
+  callVoiceInput.setActivity(false);
   clearTimeout(callState.recognitionRestartTimer);
   callState.recognitionRestartTimer = 0;
   const recognition = callState.recognition;
@@ -2149,7 +2235,6 @@ function stopCharacterCallRecognition({ releaseMedia = false } = {}) {
     callState.micEnabled = false;
     callState.micPaused = false;
     setConversationAudioSession('auto');
-    setVoiceInputControlLevel($('character-call-mic'), 0);
     setCharacterCallMic('idle', '开启麦克风并持续聆听');
   }
 }
@@ -2248,6 +2333,7 @@ function startCharacterCall(config) {
   const overlay = $('character-call');
   document.body.classList.add('character-call-active');
   preview.classList.add('is-calling');
+  syncLabPlanetViewport();
   for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = true;
   overlay.hidden = false;
   $('character-call-name').textContent = config.name;
@@ -2282,6 +2368,7 @@ function endCharacterCall() {
   callState.busy = false;
   document.body.classList.remove('character-call-active');
   document.querySelector('.lab-preview')?.classList.remove('is-calling');
+  syncLabPlanetViewport();
   for (const element of document.querySelectorAll('.lab-header, .lab-workbench, .lab-notebook, .editor-resize-handle')) element.inert = false;
   $('character-call').hidden = true;
   $('character-call-transcript').innerHTML = '';
@@ -2362,7 +2449,6 @@ async function sendCharacterCall(messageText, { interrupt = false } = {}) {
   const topicContext = turnTopic === 'growth' ? growthTopicContext() : {};
   speaker?.cancel();
   callState.busy = true;
-  setCharacterCallLive('');
   setCharacterCallMic('thinking', '角色正在思考');
   appendCharacterCallMessage('user', message);
   const history = callState.messages.slice(0, -1);
@@ -2451,14 +2537,16 @@ function startCharacterCallRecognition() {
     setCharacterCallStatus('listening', `${callState.template.name}正在听`);
     animator?.setPose('sit');
   };
-  // iOS Safari owns its recognition microphone session.  Deliberately avoid
-  // opening a second getUserMedia stream only for a meter: that has previously
-  // stolen the speech output session. Native sound/speech callbacks still make
-  // the shared waveform visibly answer the user's voice.
-  recognition.onsoundstart = () => setVoiceInputControlLevel($('character-call-mic'), .38);
-  recognition.onsoundend = () => setVoiceInputControlLevel($('character-call-mic'), .12);
-  recognition.onspeechstart = () => setVoiceInputControlLevel($('character-call-mic'), .92);
-  recognition.onspeechend = () => setVoiceInputControlLevel($('character-call-mic'), .18);
+  // WebSpeech owns this microphone. These real browser events report voice
+  // activity, not amplitude: the shared component shows steady active bars.
+  // Do not add a second getUserMedia stream for a meter; that can steal iOS's
+  // speech output session. Story PCM inputs separately use measured setLevel.
+  recognition.onsoundstart = recognition.onspeechstart = () => {
+    if (callState.recognition === recognition) callVoiceInput.setActivity(true);
+  };
+  recognition.onsoundend = recognition.onspeechend = () => {
+    if (callState.recognition === recognition) callVoiceInput.setActivity(false);
+  };
   recognition.onresult = event => {
     let interim = '';
     let complete = '';
@@ -2467,13 +2555,12 @@ function startCharacterCallRecognition() {
       if (event.results[index].isFinal) complete += text;
       else interim += text;
     }
-    setCharacterCallLive((complete || interim).trim());
-    if ((complete || interim).trim()) setVoiceInputControlLevel($('character-call-mic'), complete.trim() ? .84 : .62);
+    const heard = (complete || interim).trim();
+    if (heard) setCharacterCallLive(heard, { interim: !complete.trim() });
     if (complete.trim()) {
       const message = complete.trim();
       if (message === callState.lastRecognizedTurn) return;
       callState.lastRecognizedTurn = message;
-      setCharacterCallLive('');
       // A completed user utterance is an intentional barge-in: stop only the
       // character's output, then replace the outstanding response.  The mic
       // itself remains live, so Safari does not have to churn audio sessions.
@@ -2483,6 +2570,7 @@ function startCharacterCallRecognition() {
   };
   recognition.onerror = event => {
     if (callState.recognition !== recognition) return;
+    callVoiceInput.setActivity(false);
     callState.recognition = null;
     if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
       stopCharacterCallRecognition({ releaseMedia: true });
@@ -2498,12 +2586,12 @@ function startCharacterCallRecognition() {
   recognition.onend = () => {
     if (callState.recognition !== recognition) return;
     callState.recognition = null;
-    setCharacterCallLive('');
-    setVoiceInputControlLevel($('character-call-mic'), .08);
+    callVoiceInput.setActivity(false);
     scheduleCharacterCallRecognition(260);
   };
   try { recognition.start(); } catch {
     if (callState.recognition === recognition) callState.recognition = null;
+    callVoiceInput.setActivity(false);
     scheduleCharacterCallRecognition(520);
   }
 }
@@ -2519,7 +2607,6 @@ async function beginCharacterCallRecognition() {
     } else {
       callState.micPaused = true;
       stopCharacterCallRecognition();
-      setCharacterCallLive('');
       animator?.setPose('idle');
       setCharacterCallStatus('paused', '持续聆听已暂停');
       setCharacterCallMic('paused', '继续持续聆听');
@@ -2534,7 +2621,7 @@ async function beginCharacterCallRecognition() {
     return;
   }
   setCharacterCallStatus('permission', '正在请求麦克风权限');
-  setCharacterCallMic('thinking', '正在请求麦克风权限');
+  setCharacterCallMic('requesting', '正在请求麦克风权限');
   try {
     // Do not keep an extra getUserMedia stream alive just to preflight
     // permission.  On iOS Safari that stream can steal the audio session and
@@ -2572,6 +2659,13 @@ function resetActiveCharacterCard() {
 }
 
 function initCharacterCalling() {
+  // Keep the character's answer above the one shared input bubble even when
+  // a long transcript wraps or the debug panel changes the available width.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(([entry]) => {
+      $('character-call').style.setProperty('--call-voice-height', `${Math.ceil(entry.contentRect.height)}px`);
+    }).observe($('character-call-voice'));
+  }
   $('character-call-end').addEventListener('click', endCharacterCall);
   $('character-call').querySelectorAll('[data-call-mode]').forEach(button => {
     button.addEventListener('click', () => setCharacterCallMode(button.dataset.callMode));
@@ -3023,6 +3117,7 @@ export async function activateLab() {
   active = true;
   animationLoop.last = 0;
   renderer.setAnimationLoop(animationLoop);
+  syncLabPlanetScene();
   refreshProfile();
   refreshControls();
   refreshEditorGate();
@@ -3033,9 +3128,20 @@ export async function activateLab() {
 
 export function deactivateLab() {
   active = false;
+  releaseLabPlanet();
   if (renderer) renderer.setAnimationLoop(null);
   if (callState.active) endCharacterCall();
   speaker?.cancel();
 }
+
+// Read-only diagnostics for browser regression, never a second state store.
+window.__lab = Object.freeze({
+  get stage() { return labPlanetStage; }, get face() { return face; },
+  get scene() { return scene; }, get sceneId() { return sceneId; },
+  get active() { return active; }, get scene3DEnabled() { return getScene3DEnabled(); },
+  get animator() { return animator; }, get recipe() { return recipe; },
+});
+window.addEventListener('pagehide', () => { releaseLabPlanet(); renderer?.setAnimationLoop(null); });
+window.addEventListener('pageshow', () => { if (active) syncLabPlanetScene(); });
 
 export { VOICE_PRESETS, QUESTIONS, ACTION_PRESETS, INTERACTION_SCRIPTS, CHARACTER_TEMPLATES };

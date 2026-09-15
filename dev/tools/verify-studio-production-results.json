@@ -1,0 +1,934 @@
+{
+  "base": "https://jma.mikeywa.site/dev/?mode=studio",
+  "session": "dev-studio-qa",
+  "artifactPrefix": "/tmp/dev-studio-qa-production-2026-09-05T14-10-07-596Z",
+  "checkedAt": "2026-09-05T14:10:28.998Z",
+  "complete": true,
+  "method": "actual agent-browser clicks, keyboard slider, mouse drag, real model download; diagnostics read only",
+  "rows": [
+    {
+      "event": "character",
+      "type": "dog",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 72,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 43,
+          "invention": false,
+          "triangles": 60862,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#c99561",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "dog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "rabbit",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 72,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 43,
+          "invention": false,
+          "triangles": 61054,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#eee3d5",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "rabbit",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "otter",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 81,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 48,
+          "invention": false,
+          "triangles": 61820,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#99735b",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "otter",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "owl",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 82,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 48,
+          "invention": false,
+          "triangles": 63658,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#b19a7f",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "owl",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "cat",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 76,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 49,
+          "invention": false,
+          "triangles": 60666,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#bf9980",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "cat",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "bear",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 70,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 39,
+          "invention": false,
+          "triangles": 60302,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#c39666",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "bear",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "character",
+      "type": "frog",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 66,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 34,
+          "invention": false,
+          "triangles": 58882,
+          "upgrades": [],
+          "world": "orchard"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "idle",
+          "color": "#93af83",
+          "expression": "happy",
+          "name": "小团",
+          "size": 100,
+          "type": "frog",
+          "world": "orchard"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "color",
+      "color": "#eee3d5",
+      "label": "奶油白",
+      "state": {
+        "action": "idle",
+        "color": "#eee3d5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#c99561",
+      "label": "蜂蜜金",
+      "state": {
+        "action": "idle",
+        "color": "#c99561",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#93af83",
+      "label": "嫩叶绿",
+      "state": {
+        "action": "idle",
+        "color": "#93af83",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#90b6c5",
+      "label": "晴空蓝",
+      "state": {
+        "action": "idle",
+        "color": "#90b6c5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "color",
+      "color": "#d7a9a5",
+      "label": "桃花粉",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 100,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "size-minimum",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 75,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "size-maximum",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "happy",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "happy",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "curious",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "curious",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "sad",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "sad",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "expression",
+      "expression": "surprised",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "idle",
+      "state": {
+        "action": "idle",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "wave",
+      "state": {
+        "action": "wave",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "hop",
+      "state": {
+        "action": "hop",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "listen",
+      "state": {
+        "action": "listen",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "talk",
+      "state": {
+        "action": "talk",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "action",
+      "action": "walk",
+      "state": {
+        "action": "walk",
+        "color": "#d7a9a5",
+        "expression": "surprised",
+        "name": "小团",
+        "size": 125,
+        "type": "frog",
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "world",
+      "id": "orchard",
+      "label": "红苹果园",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 66,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 33,
+        "invention": false,
+        "triangles": 58946,
+        "upgrades": [],
+        "world": "orchard"
+      }
+    },
+    {
+      "event": "world",
+      "id": "bakery",
+      "label": "阿暖面包房",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 81,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 47,
+        "invention": false,
+        "triangles": 36214,
+        "upgrades": [],
+        "world": "bakery"
+      }
+    },
+    {
+      "event": "world",
+      "id": "bridge",
+      "label": "吱呀小木桥",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 82,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 23,
+        "invention": false,
+        "triangles": 34450,
+        "upgrades": [],
+        "world": "bridge"
+      }
+    },
+    {
+      "event": "world",
+      "id": "home",
+      "label": "豆豆的家",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 71,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 40,
+        "invention": false,
+        "triangles": 52270,
+        "upgrades": [],
+        "world": "home"
+      }
+    },
+    {
+      "event": "world",
+      "id": "observatory",
+      "label": "望远镜山丘",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 70,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 37,
+        "invention": false,
+        "triangles": 28342,
+        "upgrades": [],
+        "world": "observatory"
+      }
+    },
+    {
+      "event": "world",
+      "id": "reef",
+      "label": "海底维修站",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 71,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 28,
+        "invention": false,
+        "triangles": 33782,
+        "upgrades": [],
+        "world": "reef"
+      }
+    },
+    {
+      "event": "world",
+      "id": "pocket",
+      "label": "巨人的口袋",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 69,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 27,
+        "invention": false,
+        "triangles": 33706,
+        "upgrades": [],
+        "world": "pocket"
+      }
+    },
+    {
+      "event": "world",
+      "id": "cloud",
+      "label": "云层导航站",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 64,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 25,
+        "invention": false,
+        "triangles": 41078,
+        "upgrades": [],
+        "world": "cloud"
+      }
+    },
+    {
+      "event": "world",
+      "id": "moon",
+      "label": "月球接引区",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 58,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 25,
+        "invention": false,
+        "triangles": 30874,
+        "upgrades": [],
+        "world": "moon"
+      }
+    },
+    {
+      "event": "world",
+      "id": "meadow",
+      "label": "萤火草地",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 90,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 27,
+        "invention": false,
+        "triangles": 60158,
+        "upgrades": [],
+        "world": "meadow"
+      }
+    },
+    {
+      "event": "world",
+      "id": "cove",
+      "label": "听听贝河湾",
+      "stage": {
+        "actors": [
+          "studio"
+        ],
+        "calls": 66,
+        "camera": [
+          5.484156973829626,
+          12.27726684771148,
+          19.071724828617505
+        ],
+        "geometries": 20,
+        "invention": false,
+        "triangles": 37454,
+        "upgrades": [],
+        "world": "cove"
+      }
+    },
+    {
+      "event": "camera-drag-and-reset",
+      "beforeCamera": [
+        5.484156973829626,
+        12.27726684771148,
+        19.071724828617505
+      ],
+      "rotated": [
+        -12.937417713276012,
+        14.200329432672198,
+        13.342106099798098
+      ],
+      "reset": [
+        5.484156973829626,
+        12.27726684771148,
+        19.071724828617505
+      ]
+    },
+    {
+      "event": "save-and-reload",
+      "selected": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      },
+      "stored": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      },
+      "restored": {
+        "action": "listen",
+        "color": "#90b6c5",
+        "expression": "curious",
+        "name": "巡游小獭",
+        "size": 117,
+        "type": "otter",
+        "world": "cove"
+      }
+    },
+    {
+      "event": "desktop-layout",
+      "body": 1280,
+      "document": 1280,
+      "viewport": 1280,
+      "visibleOutliers": []
+    },
+    {
+      "event": "real-download-and-parse",
+      "file": "/tmp/dev-studio-qa-production-2026-09-05T14-10-07-596Z-export.json",
+      "bytes": 230142,
+      "meshes": 59,
+      "triangles": 20254,
+      "bones": 0,
+      "invalid": 0,
+      "checkedValues": 99298,
+      "maxVertexDelta": 0,
+      "rootUserData": {
+        "author": "Codex · 小小陶土剧场",
+        "source": "dev/models.js",
+        "modelVersion": 1,
+        "species": "otter",
+        "usesSkeleton": false,
+        "color": "#90b6c5",
+        "restHeight": 2.2,
+        "triangles": 20254,
+        "meshes": 59,
+        "action": "listen",
+        "expression": "curious",
+        "actorId": "studio",
+        "actorName": "巡游小獭",
+        "creator": "萌萌星立体故事工坊",
+        "recipe": {
+          "type": "otter",
+          "color": "#90b6c5",
+          "name": "巡游小獭",
+          "size": 117,
+          "expression": "curious",
+          "action": "listen",
+          "world": "cove"
+        }
+      }
+    },
+    {
+      "event": "mobile-layout",
+      "body": 390,
+      "document": 390,
+      "viewport": 390,
+      "visibleOutliers": []
+    },
+    {
+      "event": "mobile-controls",
+      "state": {
+        "busy": false,
+        "completed": false,
+        "inventions": [],
+        "inventory": [],
+        "phase": "studio",
+        "setupStep": 0,
+        "stage": {
+          "actors": [
+            "studio"
+          ],
+          "calls": 73,
+          "camera": [
+            5.484156973829626,
+            12.27726684771148,
+            19.071724828617505
+          ],
+          "geometries": 40,
+          "invention": false,
+          "triangles": 33748,
+          "upgrades": [],
+          "world": "moon"
+        },
+        "storyId": null,
+        "studio": {
+          "action": "wave",
+          "color": "#90b6c5",
+          "expression": "happy",
+          "name": "巡游小獭",
+          "size": 117,
+          "type": "otter",
+          "world": "moon"
+        },
+        "voice": {
+          "contextState": "closed",
+          "enabled": false,
+          "opening": false,
+          "recording": false,
+          "samples": 0,
+          "voicedSeconds": 0
+        }
+      }
+    },
+    {
+      "event": "page-errors",
+      "errors": ""
+    }
+  ]
+}

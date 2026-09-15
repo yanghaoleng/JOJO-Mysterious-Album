@@ -1,0 +1,3369 @@
+{
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "immersive-production-ccda97c-retry1",
+  "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e",
+  "scope": "full-world-viewport-matrix",
+  "checkedAt": "2026-09-06T02:41:57.129Z",
+  "complete": false,
+  "passed": false,
+  "issues": [],
+  "failure": "Error: spawnSync /Users/jojo/.npm-global/bin/agent-browser ETIMEDOUT\n    at Object.spawnSync (node:internal/child_process:1120:20)\n    at spawnSync (node:child_process:868:24)\n    at execFileSync (node:child_process:911:15)\n    at command (file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:31:30)\n    at file:///Users/jojo/Documents/ChatGPT/%E8%90%8C%E8%90%8C%E6%98%9F%E7%9A%84%E5%A5%87%E5%A6%99%E5%9B%BE%E9%89%B4/dev/tools/verify-immersive-ui.mjs:305:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)",
+  "closed": true,
+  "method": "real browser UI and keyboard; synthetic session-only legacy saves; always-rejected media-device fixture; independent DOM occlusion vs projected model bounds; no full-sphere requirement",
+  "rows": [
+    {
+      "event": "view",
+      "label": "1280x900-orchard-ready",
+      "world": "orchard",
+      "phase": "ready",
+      "period": "day",
+      "radius": 5.6,
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 160.640625,
+        "left": 340,
+        "right": 940,
+        "top": 721.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 701.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 533.171875,
+        "insets": {
+          "bottom": 198.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 542.4889874917833,
+          "foot": {
+            "x": 536.2853893100305,
+            "y": 514.459083289243
+          },
+          "head": {
+            "x": 489.064026035197,
+            "y": 346.1106081573879
+          },
+          "height": 229.84007814638457,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 420.02778717329903,
+          "right": 595.851403238385,
+          "top": 312.64890934539875,
+          "width": 175.823616065086
+        },
+        {
+          "bottom": 542.5758644538806,
+          "foot": {
+            "x": 638.1986928374929,
+            "y": 521.7070449657991
+          },
+          "head": {
+            "x": 630.6889641612714,
+            "y": 356.03833601850823
+          },
+          "height": 206.22118680514643,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 578.4980351551807,
+          "right": 689.7815902479557,
+          "top": 336.3546776487342,
+          "width": 111.28355509277505
+        },
+        {
+          "bottom": 553.564553958842,
+          "foot": {
+            "x": 762.8884008524656,
+            "y": 530.5800925676341
+          },
+          "head": {
+            "x": 804.0159753887153,
+            "y": 368.37246403748
+          },
+          "height": 208.796347027109,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 715.8613512567242,
+          "right": 845.6328739636643,
+          "top": 344.768206931733,
+          "width": 129.77152270694012
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 489.064026035197,
+              "y": 346.1106081573879
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 512.6747076726137,
+              "y": 430.2848457233154
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 536.2853893100305,
+              "y": 514.459083289243
+            }
+          ]
+        },
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 630.6889641612714,
+              "y": 356.03833601850823
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.4438284993821,
+              "y": 438.8726904921537
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.1986928374929,
+              "y": 521.7070449657991
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 804.0159753887153,
+              "y": 368.37246403748
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 783.4521881205904,
+              "y": 449.47627830255703
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 762.8884008524656,
+              "y": 530.5800925676341
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-orchard-ready.png"
+    },
+    {
+      "event": "menu-keyboard-dialog",
+      "label": "1280x900-orchard",
+      "before": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "after": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "dialogFocus": [
+        {
+          "id": "",
+          "inside": false,
+          "tag": "BODY"
+        },
+        {
+          "id": "close-bag",
+          "inside": true,
+          "tag": "BUTTON"
+        },
+        {
+          "id": "",
+          "inside": false,
+          "tag": "BODY"
+        },
+        {
+          "id": "close-bag",
+          "inside": true,
+          "tag": "BUTTON"
+        }
+      ],
+      "focused": "open-story-menu"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-orchard-question",
+      "world": "orchard",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.6,
+      "reply": "none",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 163.640625,
+        "left": 340,
+        "right": 940,
+        "top": 718.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 698.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 530.171875,
+        "insets": {
+          "bottom": 201.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 539.6435575337151,
+          "foot": {
+            "x": 536.8689606622702,
+            "y": 512.5107157954255
+          },
+          "head": {
+            "x": 489.91329799256425,
+            "y": 345.10948760039656
+          },
+          "height": 223.08871337158752,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 427.38989802618335,
+          "right": 597.0292534978183,
+          "top": 316.5548441621276,
+          "width": 169.639355471635
+        },
+        {
+          "bottom": 540.8955110365831,
+          "foot": {
+            "x": 638.2088282586224,
+            "y": 519.7178953413982
+          },
+          "head": {
+            "x": 630.7413545982505,
+            "y": 354.98135508144077
+          },
+          "height": 207.7002170457579,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 578.8696640649184,
+          "right": 690.5138213650193,
+          "top": 333.1952939908252,
+          "width": 111.64415730010091
+        },
+        {
+          "bottom": 552.6691470855294,
+          "foot": {
+            "x": 762.1969442699942,
+            "y": 528.5410169361543
+          },
+          "head": {
+            "x": 803.0931061429095,
+            "y": 367.246082620395
+          },
+          "height": 209.46240735521127,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 715.9150779948875,
+          "right": 856.3656948299974,
+          "top": 343.20673973031813,
+          "width": 140.45061683510994
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 489.91329799256425,
+              "y": 345.10948760039656
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 513.3911293274173,
+              "y": 428.810101697911
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 536.8689606622702,
+              "y": 512.5107157954255
+            }
+          ]
+        },
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 630.7413545982505,
+              "y": 354.98135508144077
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.4750914284364,
+              "y": 437.3496252114195
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.2088282586224,
+              "y": 519.7178953413982
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 803.0931061429095,
+              "y": 367.246082620395
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 782.6450252064519,
+              "y": 447.89354977827463
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 762.1969442699942,
+              "y": 528.5410169361543
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-orchard-question.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-orchard-choices",
+      "world": "orchard",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.6,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 294.640625,
+        "left": 340,
+        "right": 940,
+        "top": 587.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 567.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 399.171875,
+        "insets": {
+          "bottom": 332.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 448.04324238160103,
+          "foot": {
+            "x": 562.3515763767356,
+            "y": 427.43200189872783
+          },
+          "head": {
+            "x": 526.9981734642669,
+            "y": 301.39388994510415
+          },
+          "height": 166.39806475774827,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 480.0009707825966,
+          "right": 606.8958622109478,
+          "top": 281.64517762385276,
+          "width": 126.89489142835124
+        },
+        {
+          "bottom": 448.65985675574825,
+          "foot": {
+            "x": 638.6514083146097,
+            "y": 432.8583617425569
+          },
+          "head": {
+            "x": 633.0290703463354,
+            "y": 308.8265208294942
+          },
+          "height": 155.86134077162848,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 593.9928146086206,
+          "right": 678.5038695798033,
+          "top": 292.7985159841198,
+          "width": 84.51105497118272
+        },
+        {
+          "bottom": 457.51206648915235,
+          "foot": {
+            "x": 732.0033401687407,
+            "y": 439.50138102820233
+          },
+          "head": {
+            "x": 762.7944824093869,
+            "y": 318.06076074101054
+          },
+          "height": 157.20179138762722,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 697.1398518996641,
+          "right": 802.8815440075078,
+          "top": 300.3102751015251,
+          "width": 105.74169210784372
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 526.9981734642669,
+              "y": 301.39388994510415
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 544.6748749205012,
+              "y": 364.412945921916
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 562.3515763767356,
+              "y": 427.43200189872783
+            }
+          ]
+        },
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 633.0290703463354,
+              "y": 308.8265208294942
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 635.8402393304725,
+              "y": 370.8424412860255
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.6514083146097,
+              "y": 432.8583617425569
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 762.7944824093869,
+              "y": 318.06076074101054
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 747.3989112890638,
+              "y": 378.7810708846064
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 732.0033401687407,
+              "y": 439.50138102820233
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-orchard-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-orchard-text",
+      "world": "orchard",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.6,
+      "reply": "text",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 241.640625,
+        "left": 340,
+        "right": 940,
+        "top": 640.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 620.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 452.171875,
+        "insets": {
+          "bottom": 279.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 485.4530826989984,
+          "foot": {
+            "x": 552.0418158205016,
+            "y": 461.8531609561704
+          },
+          "head": {
+            "x": 511.9943688841124,
+            "y": 319.08035311861937
+          },
+          "height": 188.250069458927,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 457.7550734211303,
+          "right": 601.7828033436757,
+          "top": 297.2030132400714,
+          "width": 144.0277299225454
+        },
+        {
+          "bottom": 485.59194646785016,
+          "foot": {
+            "x": 638.4723492079889,
+            "y": 468.0000051069737
+          },
+          "head": {
+            "x": 632.1035059597056,
+            "y": 327.49985071768634
+          },
+          "height": 174.91792586181185,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 587.9979727173674,
+          "right": 682.5324572953144,
+          "top": 310.6740206060383,
+          "width": 94.53448457794708
+        },
+        {
+          "bottom": 495.62168563755466,
+          "foot": {
+            "x": 744.2190731257364,
+            "y": 475.5250505176791
+          },
+          "head": {
+            "x": 779.0985057519571,
+            "y": 337.96016577618127
+          },
+          "height": 177.2070871968062,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 704.7824700986753,
+          "right": 823.29304001864,
+          "top": 318.4145984407485,
+          "width": 118.51056991996472
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 511.9943688841124,
+              "y": 319.08035311861937
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 532.018092352307,
+              "y": 390.4667570373949
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 552.0418158205016,
+              "y": 461.8531609561704
+            }
+          ]
+        },
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 632.1035059597056,
+              "y": 327.49985071768634
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 635.2879275838472,
+              "y": 397.74992791233
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.4723492079889,
+              "y": 468.0000051069737
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 779.0985057519571,
+              "y": 337.96016577618127
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 761.6587894388467,
+              "y": 406.7426081469302
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 744.2190731257364,
+              "y": 475.5250505176791
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-orchard-text.png"
+    },
+    {
+      "event": "menu-keyboard-dialog",
+      "label": "1280x900-orchard",
+      "before": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "after": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "dialogFocus": [
+        {
+          "id": "",
+          "inside": false,
+          "tag": "BODY"
+        },
+        {
+          "id": "close-bag",
+          "inside": true,
+          "tag": "BUTTON"
+        },
+        {
+          "id": "",
+          "inside": false,
+          "tag": "BODY"
+        },
+        {
+          "id": "close-bag",
+          "inside": true,
+          "tag": "BUTTON"
+        }
+      ],
+      "focused": "open-story-menu"
+    },
+    {
+      "event": "pointer-isolation-and-real-reset",
+      "label": "1280x900-orchard",
+      "positiveControl": {
+        "id": "doudou",
+        "point": {
+          "x": 513.3911293274173,
+          "y": 428.810101697911
+        }
+      },
+      "notices": 1,
+      "before": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "rotated": {
+        "pitch": 0.33,
+        "yaw": -0.13999999999999996,
+        "zoom": 1
+      },
+      "reset": {
+        "pitch": 0.25,
+        "yaw": 0.28,
+        "zoom": 1
+      },
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-orchard-pointer-reset.png"
+    },
+    {
+      "event": "keyboard-collapsed-layers",
+      "label": "1280x900-orchard",
+      "tabbed": [
+        "",
+        "home-link",
+        "",
+        "open-story-menu",
+        "speech-card",
+        "mic-button",
+        "reply-more"
+      ]
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "label": "1280x900-orchard",
+      "story": "doudou",
+      "index": 0,
+      "byteIdentical": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bakery-ready",
+      "world": "bakery",
+      "phase": "ready",
+      "period": "day",
+      "radius": 4.5,
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 160.640625,
+        "left": 340,
+        "right": 940,
+        "top": 721.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 701.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 533.171875,
+        "insets": {
+          "bottom": 198.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 537.7609842765652,
+          "foot": {
+            "x": 534.1792470076252,
+            "y": 508.7429590291255
+          },
+          "head": {
+            "x": 477.0555612654716,
+            "y": 347.1699059437202
+          },
+          "height": 224.22918168395148,
+          "id": "anuan",
+          "insideSafeViewport": true,
+          "left": 414.0517472598317,
+          "right": 584.8359388308121,
+          "top": 313.5318025926137,
+          "width": 170.7841915709804
+        },
+        {
+          "bottom": 543.2807175265131,
+          "foot": {
+            "x": 633.0990259275155,
+            "y": 513.3070558426309
+          },
+          "head": {
+            "x": 624.0060154014559,
+            "y": 354.3638807890352
+          },
+          "height": 220.65567068259884,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 543.6227526995092,
+          "right": 705.4759834144554,
+          "top": 322.6250468439142,
+          "width": 161.85323071494622
+        },
+        {
+          "bottom": 549.5252879705994,
+          "foot": {
+            "x": 754.3102518039027,
+            "y": 524.4035362943035
+          },
+          "head": {
+            "x": 803.9327580931147,
+            "y": 370.697112350316
+          },
+          "height": 204.97497980085365,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 710.7330397352051,
+          "right": 844.5813406114189,
+          "top": 344.55030816974573,
+          "width": 133.84830087621378
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "anuan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 477.0555612654716,
+              "y": 347.1699059437202
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 505.6174041365484,
+              "y": 427.9564324864229
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 534.1792470076252,
+              "y": 508.7429590291255
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 624.0060154014559,
+              "y": 354.3638807890352
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 628.5525206644857,
+              "y": 433.83546831583305
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 633.0990259275155,
+              "y": 513.3070558426309
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 803.9327580931147,
+              "y": 370.697112350316
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 779.1215049485087,
+              "y": 447.55032432230973
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 754.3102518039027,
+              "y": 524.4035362943035
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bakery-ready.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bakery-question",
+      "world": "bakery",
+      "phase": "question",
+      "period": "day",
+      "radius": 4.5,
+      "reply": "none",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 163.640625,
+        "left": 340,
+        "right": 940,
+        "top": 718.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 698.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 530.171875,
+        "insets": {
+          "bottom": 201.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 534.9643985708452,
+          "foot": {
+            "x": 534.7746689979114,
+            "y": 506.8267544710975
+          },
+          "head": {
+            "x": 477.97240129234586,
+            "y": 346.16282503227654
+          },
+          "height": 217.3374285893952,
+          "id": "anuan",
+          "insideSafeViewport": true,
+          "left": 420.91926898866734,
+          "right": 586.2259814270762,
+          "top": 317.62696998145003,
+          "width": 165.3067124384089
+        },
+        {
+          "bottom": 541.279468843728,
+          "foot": {
+            "x": 633.1378556617686,
+            "y": 511.3651704655602
+          },
+          "head": {
+            "x": 624.0960088089206,
+            "y": 353.3163215148947
+          },
+          "height": 224.9979924764807,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 545.4824840095101,
+          "right": 703.7130943088254,
+          "top": 316.28147636724725,
+          "width": 158.23061029931523
+        },
+        {
+          "bottom": 548.5525853169979,
+          "foot": {
+            "x": 753.6670619218188,
+            "y": 522.3992143129858
+          },
+          "head": {
+            "x": 803.0103570863486,
+            "y": 369.5576508266733
+          },
+          "height": 204.19872294986976,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 711.2644088593937,
+          "right": 853.834173903938,
+          "top": 344.35386236712816,
+          "width": 142.56976504454428
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "anuan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 477.97240129234586,
+              "y": 346.16282503227654
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 506.3735351451286,
+              "y": 426.494789751687
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 534.7746689979114,
+              "y": 506.8267544710975
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 624.0960088089206,
+              "y": 353.3163215148947
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 628.6169322353446,
+              "y": 432.34074599022745
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 633.1378556617686,
+              "y": 511.3651704655602
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 803.0103570863486,
+              "y": 369.5576508266733
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 778.3387095040837,
+              "y": 445.9784325698296
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 753.6670619218188,
+              "y": 522.3992143129858
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bakery-question.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bakery-choices",
+      "world": "bakery",
+      "phase": "question",
+      "period": "day",
+      "radius": 4.5,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 294.640625,
+        "left": 340,
+        "right": 940,
+        "top": 587.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 567.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 399.171875,
+        "insets": {
+          "bottom": 332.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 444.36010529296686,
+          "foot": {
+            "x": 560.7747625737421,
+            "y": 423.15248877053807
+          },
+          "head": {
+            "x": 518.0077491325208,
+            "y": 302.1869585659005
+          },
+          "height": 163.21218575947256,
+          "id": "anuan",
+          "insideSafeViewport": true,
+          "left": 475.4639868949743,
+          "right": 599.6251729750059,
+          "top": 281.1479195334943,
+          "width": 124.16118608003154
+        },
+        {
+          "bottom": 449.0126206208021,
+          "foot": {
+            "x": 634.833420724152,
+            "y": 426.5695090001375
+          },
+          "head": {
+            "x": 628.0257209348824,
+            "y": 307.5728998774282
+          },
+          "height": 170.4390730595239,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 567.5716564658123,
+          "right": 687.2720006210607,
+          "top": 278.5735475612782,
+          "width": 119.70034415524832
+        },
+        {
+          "bottom": 454.58854094112337,
+          "foot": {
+            "x": 725.5811037374881,
+            "y": 434.8771544621098
+          },
+          "head": {
+            "x": 762.7321797908975,
+            "y": 319.8011642942743
+          },
+          "height": 154.01392093805538,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 693.4921079182767,
+          "right": 801.4049332186221,
+          "top": 300.574620003068,
+          "width": 107.9128253003454
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "anuan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 518.0077491325208,
+              "y": 302.1869585659005
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 539.3912558531315,
+              "y": 362.66972366821926
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 560.7747625737421,
+              "y": 423.15248877053807
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 628.0257209348824,
+              "y": 307.5728998774282
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 631.4295708295172,
+              "y": 367.0712044387829
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.833420724152,
+              "y": 426.5695090001375
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 762.7321797908975,
+              "y": 319.8011642942743
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 744.1566417641927,
+              "y": 377.3391593781921
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 725.5811037374881,
+              "y": 434.8771544621098
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bakery-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bakery-text",
+      "world": "bakery",
+      "phase": "question",
+      "period": "day",
+      "radius": 4.5,
+      "reply": "text",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 241.640625,
+        "left": 340,
+        "right": 940,
+        "top": 640.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 620.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 452.171875,
+        "insets": {
+          "bottom": 279.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 481.2056695449507,
+          "foot": {
+            "x": 550.2556407453526,
+            "y": 457.0054359623674
+          },
+          "head": {
+            "x": 501.81024199107594,
+            "y": 319.97872133473965
+          },
+          "height": 184.18474663549563,
+          "id": "anuan",
+          "insideSafeViewport": true,
+          "left": 453.00881798725953,
+          "right": 593.3856612825037,
+          "top": 297.0209229094551,
+          "width": 140.3768432952442
+        },
+        {
+          "bottom": 486.00628723759456,
+          "foot": {
+            "x": 634.1474287523481,
+            "y": 460.8761506617207
+          },
+          "head": {
+            "x": 626.4358374030048,
+            "y": 326.0797803872429
+          },
+          "height": 191.9199326799921,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 556.7843844174395,
+          "right": 692.2292217539449,
+          "top": 294.0863545576025,
+          "width": 135.44483733650543
+        },
+        {
+          "bottom": 492.4118524724201,
+          "foot": {
+            "x": 736.9441249876371,
+            "y": 470.28684279872374
+          },
+          "head": {
+            "x": 779.0279309104311,
+            "y": 339.9316512119625
+          },
+          "height": 173.9587116990678,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 700.503185243836,
+          "right": 822.7760382954266,
+          "top": 318.4531407733523,
+          "width": 122.27285305159056
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "anuan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 501.81024199107594,
+              "y": 319.97872133473965
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 526.0329413682143,
+              "y": 388.4920786485535
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 550.2556407453526,
+              "y": 457.0054359623674
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 626.4358374030048,
+              "y": 326.0797803872429
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 630.2916330776765,
+              "y": 393.4779655244818
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.1474287523481,
+              "y": 460.8761506617207
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 779.0279309104311,
+              "y": 339.9316512119625
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 757.9860279490341,
+              "y": 405.1092470053431
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 736.9441249876371,
+              "y": 470.28684279872374
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bakery-text.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "label": "1280x900-bakery",
+      "story": "doudou",
+      "index": 1,
+      "byteIdentical": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bridge-ready",
+      "world": "bridge",
+      "phase": "ready",
+      "period": "day",
+      "radius": 5.9,
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 160.640625,
+        "left": 340,
+        "right": 940,
+        "top": 721.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 701.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 533.171875,
+        "insets": {
+          "bottom": 198.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 539.1979598835649,
+          "foot": {
+            "x": 538.8900055606881,
+            "y": 512.4256438218086
+          },
+          "head": {
+            "x": 495.2228547375199,
+            "y": 348.0372004171023
+          },
+          "height": 223.0704986200571,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 427.8455310720557,
+          "right": 597.6407552809817,
+          "top": 316.12746126350777,
+          "width": 169.79522420892602
+        },
+        {
+          "bottom": 548.3440883472675,
+          "foot": {
+            "x": 638.1559811614147,
+            "y": 520.0007740645271
+          },
+          "head": {
+            "x": 631.2230853965473,
+            "y": 358.4155748202885
+          },
+          "height": 208.9913396714217,
+          "id": "diandian",
+          "insideSafeViewport": true,
+          "left": 550.7791009932166,
+          "right": 714.2965756117108,
+          "top": 339.3527486758458,
+          "width": 163.51747461849413
+        },
+        {
+          "bottom": 549.9256291656654,
+          "foot": {
+            "x": 759.5735370966396,
+            "y": 528.1255289877785
+          },
+          "head": {
+            "x": 797.6055606494759,
+            "y": 369.4081005571144
+          },
+          "height": 202.83199874988924,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 713.3488237998542,
+          "right": 838.0880594952894,
+          "top": 347.0936304157762,
+          "width": 124.73923569543511
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 495.2228547375199,
+              "y": 348.0372004171023
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 517.056430149104,
+              "y": 430.2314221194555
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 538.8900055606881,
+              "y": 512.4256438218086
+            }
+          ]
+        },
+        {
+          "id": "diandian",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 631.2230853965473,
+              "y": 358.4155748202885
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.689533278981,
+              "y": 439.2081744424078
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.1559811614147,
+              "y": 520.0007740645271
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 797.6055606494759,
+              "y": 369.4081005571144
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 778.5895488730578,
+              "y": 448.7668147724464
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 759.5735370966396,
+              "y": 528.1255289877785
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bridge-ready.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bridge-question",
+      "world": "bridge",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.9,
+      "reply": "none",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 163.640625,
+        "left": 340,
+        "right": 940,
+        "top": 718.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 698.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 530.171875,
+        "insets": {
+          "bottom": 201.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 536.2927512670929,
+          "foot": {
+            "x": 539.4589215098235,
+            "y": 510.4887178887493
+          },
+          "head": {
+            "x": 496.0374727925091,
+            "y": 347.0252394968994
+          },
+          "height": 216.06250856980063,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 435.22907318535147,
+          "right": 598.817066623659,
+          "top": 320.2302426972922,
+          "width": 163.58799343830754
+        },
+        {
+          "bottom": 546.9307842083659,
+          "foot": {
+            "x": 638.1663569084772,
+            "y": 518.0212251204018
+          },
+          "head": {
+            "x": 631.2724704917576,
+            "y": 357.3452178655807
+          },
+          "height": 213.40705135809475,
+          "id": "diandian",
+          "insideSafeViewport": true,
+          "left": 552.090926325758,
+          "right": 716.6897780429805,
+          "top": 333.5237328502712,
+          "width": 164.5988517172225
+        },
+        {
+          "bottom": 549.0376133668586,
+          "foot": {
+            "x": 758.9007322693221,
+            "y": 526.1002644575306
+          },
+          "head": {
+            "x": 796.7187609060566,
+            "y": 368.2758919205067
+          },
+          "height": 203.2299041963539,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 713.7974094321053,
+          "right": 848.092572506522,
+          "top": 345.8077091705047,
+          "width": 134.29516307441668
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 496.0374727925091,
+              "y": 347.0252394968994
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 517.7481971511663,
+              "y": 428.7569786928243
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 539.4589215098235,
+              "y": 510.4887178887493
+            }
+          ]
+        },
+        {
+          "id": "diandian",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 631.2724704917576,
+              "y": 357.3452178655807
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.7194137001175,
+              "y": 437.68322149299127
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.1663569084772,
+              "y": 518.0212251204018
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 796.7187609060566,
+              "y": 368.2758919205067
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 777.8097465876893,
+              "y": 447.1880781890186
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 758.9007322693221,
+              "y": 526.1002644575306
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bridge-question.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bridge-choices",
+      "world": "bridge",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.9,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 294.640625,
+        "left": 340,
+        "right": 940,
+        "top": 587.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 567.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 399.171875,
+        "insets": {
+          "bottom": 332.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 445.37945683705055,
+          "foot": {
+            "x": 564.3015846220702,
+            "y": 425.9096188118204
+          },
+          "head": {
+            "x": 531.6091278603704,
+            "y": 302.836279314706
+          },
+          "height": 161.93317542175964,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 486.5004253168202,
+          "right": 609.2149990723591,
+          "top": 283.4462814152909,
+          "width": 122.71457375553882
+        },
+        {
+          "bottom": 453.37019489500113,
+          "foot": {
+            "x": 638.6194311968661,
+            "y": 431.5809212269283
+          },
+          "head": {
+            "x": 633.4289529826098,
+            "y": 310.6062975100053
+          },
+          "height": 161.6869298411076,
+          "id": "diandian",
+          "insideSafeViewport": true,
+          "left": 573.470474404813,
+          "right": 698.0636394922236,
+          "top": 291.68326505389354,
+          "width": 124.59316508741064
+        },
+        {
+          "bottom": 454.9556104288342,
+          "foot": {
+            "x": 729.521588143125,
+            "y": 437.6637133033666
+          },
+          "head": {
+            "x": 757.9951721100771,
+            "y": 318.8361147886353
+          },
+          "height": 153.398600758613,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 695.3013389703294,
+          "right": 797.0659246274864,
+          "top": 301.5570096702212,
+          "width": 101.764585657157
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 531.6091278603704,
+              "y": 302.836279314706
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 547.9553562412203,
+              "y": 364.3729490632632
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 564.3015846220702,
+              "y": 425.9096188118204
+            }
+          ]
+        },
+        {
+          "id": "diandian",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 633.4289529826098,
+              "y": 310.6062975100053
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 636.0241920897379,
+              "y": 371.0936093684668
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.6194311968661,
+              "y": 431.5809212269283
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 757.9951721100771,
+              "y": 318.8361147886353
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 743.758380126601,
+              "y": 378.249914046001
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 729.521588143125,
+              "y": 437.6637133033666
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bridge-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-bridge-text",
+      "world": "bridge",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.9,
+      "reply": "text",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 241.640625,
+        "left": 340,
+        "right": 940,
+        "top": 640.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 620.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 452.171875,
+        "insets": {
+          "bottom": 279.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 482.3975436348015,
+          "foot": {
+            "x": 554.2507361873445,
+            "y": 460.12864362920374
+          },
+          "head": {
+            "x": 517.2175422222281,
+            "y": 320.71425557162394
+          },
+          "height": 182.7712386737121,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 465.4539842190596,
+          "right": 604.1174970808574,
+          "top": 299.6263049610894,
+          "width": 138.66351286179787
+        },
+        {
+          "bottom": 490.9154018760197,
+          "foot": {
+            "x": 638.436126332098,
+            "y": 466.5529525731427
+          },
+          "head": {
+            "x": 632.5564829672269,
+            "y": 329.515937043177
+          },
+          "height": 182.1670261195589,
+          "id": "diandian",
+          "insideSafeViewport": true,
+          "left": 564.205930681251,
+          "right": 705.0934915970256,
+          "top": 308.74837575646075,
+          "width": 140.88756091577466
+        },
+        {
+          "bottom": 492.8501610025533,
+          "foot": {
+            "x": 741.4078067590674,
+            "y": 473.4433866710818
+          },
+          "head": {
+            "x": 773.6619675771527,
+            "y": 338.83846736870544
+          },
+          "height": 173.24059957690622,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 702.5502675961723,
+          "right": 817.9890924739699,
+          "top": 319.6095614256471,
+          "width": 115.43882487779764
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 517.2175422222281,
+              "y": 320.71425557162394
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 535.7341392047863,
+              "y": 390.42144960041384
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 554.2507361873445,
+              "y": 460.12864362920374
+            }
+          ]
+        },
+        {
+          "id": "diandian",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 632.5564829672269,
+              "y": 329.515937043177
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 635.4963046496624,
+              "y": 398.0344448081599
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 638.436126332098,
+              "y": 466.5529525731427
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 773.6619675771527,
+              "y": 338.83846736870544
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 757.5348871681101,
+              "y": 406.1409270198936
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 741.4078067590674,
+              "y": 473.4433866710818
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-bridge-text.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "label": "1280x900-bridge",
+      "story": "doudou",
+      "index": 2,
+      "byteIdentical": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-home-ready",
+      "world": "home",
+      "phase": "ready",
+      "period": "day",
+      "radius": 5.1,
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 160.640625,
+        "left": 340,
+        "right": 940,
+        "top": 721.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 701.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 533.171875,
+        "insets": {
+          "bottom": 198.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 535.1750097754322,
+          "foot": {
+            "x": 534.6515769558725,
+            "y": 510.243680483227
+          },
+          "head": {
+            "x": 484.00980028085985,
+            "y": 346.5981709360026
+          },
+          "height": 216.90838424054755,
+          "id": "yueya",
+          "insideSafeViewport": true,
+          "left": 421.05858575498536,
+          "right": 587.7414581252534,
+          "top": 318.2666255348846,
+          "width": 166.68287237026806
+        },
+        {
+          "bottom": 544.6996256212957,
+          "foot": {
+            "x": 634.210181849616,
+            "y": 516.3272008472703
+          },
+          "head": {
+            "x": 626.1522292567807,
+            "y": 355.3237290619928
+          },
+          "height": 219.6198418486918,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 545.4785704001813,
+          "right": 707.14469775061,
+          "top": 325.0797837726039,
+          "width": 161.66612735042872
+        },
+        {
+          "bottom": 549.5863751994222,
+          "foot": {
+            "x": 756.0881877090686,
+            "y": 525.9971412701294
+          },
+          "head": {
+            "x": 800.183803676508,
+            "y": 368.9911628150071
+          },
+          "height": 204.96202862944523,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 710.970068684836,
+          "right": 840.9382469374082,
+          "top": 344.6243465699769,
+          "width": 129.96817825257222
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "yueya",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 484.00980028085985,
+              "y": 346.5981709360026
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 509.3306886183662,
+              "y": 428.4209257096148
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 534.6515769558725,
+              "y": 510.243680483227
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 626.1522292567807,
+              "y": 355.3237290619928
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 630.1812055531984,
+              "y": 435.8254649546316
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.210181849616,
+              "y": 516.3272008472703
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 800.183803676508,
+              "y": 368.9911628150071
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 778.1359956927884,
+              "y": 447.49415204256826
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 756.0881877090686,
+              "y": 525.9971412701294
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-home-ready.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-home-question",
+      "world": "home",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.1,
+      "reply": "none",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 163.640625,
+        "left": 340,
+        "right": 940,
+        "top": 718.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 698.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 530.171875,
+        "insets": {
+          "bottom": 201.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 532.4381079136778,
+          "foot": {
+            "x": 535.2443412856346,
+            "y": 508.31903181069595
+          },
+          "head": {
+            "x": 484.88751086744594,
+            "y": 345.5943070078688
+          },
+          "height": 213.25655697215905,
+          "id": "yueya",
+          "insideSafeViewport": true,
+          "left": 429.2069331901149,
+          "right": 589.1358127540525,
+          "top": 319.1815509415187,
+          "width": 159.92887956393758
+        },
+        {
+          "bottom": 542.6019976633418,
+          "foot": {
+            "x": 634.2427594390681,
+            "y": 514.368322010044
+          },
+          "head": {
+            "x": 626.2301465554561,
+            "y": 354.2707690063148
+          },
+          "height": 223.93674677911656,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 547.5683248762263,
+          "right": 704.9667852137782,
+          "top": 318.6652508842252,
+          "width": 157.3984603375519
+        },
+        {
+          "bottom": 548.62448384224,
+          "foot": {
+            "x": 755.4349939089883,
+            "y": 523.9838525462815
+          },
+          "head": {
+            "x": 799.2824969242912,
+            "y": 367.8613001634091
+          },
+          "height": 204.5699311742419,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 711.6392329715584,
+          "right": 850.4405885452854,
+          "top": 344.0545526679981,
+          "width": 138.80135557372705
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "yueya",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 484.88751086744594,
+              "y": 345.5943070078688
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 510.0659260765403,
+              "y": 426.9566694092824
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 535.2443412856346,
+              "y": 508.31903181069595
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 626.2301465554561,
+              "y": 354.2707690063148
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 630.2364529972622,
+              "y": 434.31954550817943
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 634.2427594390681,
+              "y": 514.368322010044
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 799.2824969242912,
+              "y": 367.8613001634091
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 777.3587454166397,
+              "y": 445.9225763548453
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 755.4349939089883,
+              "y": 523.9838525462815
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-home-question.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-home-choices",
+      "world": "home",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.1,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 294.640625,
+        "left": 340,
+        "right": 940,
+        "top": 587.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 567.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 399.171875,
+        "insets": {
+          "bottom": 332.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 442.4369211754889,
+          "foot": {
+            "x": 561.1283836852467,
+            "y": 424.2760397768368
+          },
+          "head": {
+            "x": 523.2142064817023,
+            "y": 301.7589154793559
+          },
+          "height": 159.91105950887368,
+          "id": "yueya",
+          "insideSafeViewport": true,
+          "left": 482.7370900767369,
+          "right": 601.3765676882401,
+          "top": 282.52586166661524,
+          "width": 118.63947761150324
+        },
+        {
+          "bottom": 450.1255368319617,
+          "foot": {
+            "x": 635.6653141784761,
+            "y": 428.83061278449185
+          },
+          "head": {
+            "x": 629.6325352642787,
+            "y": 308.2915132417059
+          },
+          "height": 169.76408153474603,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 569.279758676678,
+          "right": 688.7737468329883,
+          "top": 280.3614552972157,
+          "width": 119.49398815631037
+        },
+        {
+          "bottom": 454.680399376253,
+          "foot": {
+            "x": 726.9121979721472,
+            "y": 436.0702449382527
+          },
+          "head": {
+            "x": 759.9254354108298,
+            "y": 318.52396437695944
+          },
+          "height": 154.46182231403128,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 693.661289484239,
+          "right": 798.898794861699,
+          "top": 300.2185770622217,
+          "width": 105.23750537746002
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "yueya",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 523.2142064817023,
+              "y": 301.7589154793559
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 542.1712950834744,
+              "y": 363.01747762809634
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 561.1283836852467,
+              "y": 424.2760397768368
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 629.6325352642787,
+              "y": 308.2915132417059
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 632.6489247213774,
+              "y": 368.5610630130989
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 635.6653141784761,
+              "y": 428.83061278449185
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 759.9254354108298,
+              "y": 318.52396437695944
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 743.4188166914885,
+              "y": 377.2971046576061
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 726.9121979721472,
+              "y": 436.0702449382527
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-home-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-home-text",
+      "world": "home",
+      "phase": "question",
+      "period": "day",
+      "radius": 5.1,
+      "reply": "text",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 241.640625,
+        "left": 340,
+        "right": 940,
+        "top": 640.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 620.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 452.171875,
+        "insets": {
+          "bottom": 279.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 479.014078544051,
+          "foot": {
+            "x": 550.6562138594495,
+            "y": 458.2781663248866
+          },
+          "head": {
+            "x": 507.7079861186825,
+            "y": 319.4938448763878
+          },
+          "height": 180.30752260985128,
+          "id": "yueya",
+          "insideSafeViewport": true,
+          "left": 461.1067611103523,
+          "right": 594.7836284622313,
+          "top": 298.70655593419974,
+          "width": 133.67686735187897
+        },
+        {
+          "bottom": 487.3277284615437,
+          "foot": {
+            "x": 635.0897767648225,
+            "y": 463.437472242158
+          },
+          "head": {
+            "x": 628.2559963210145,
+            "y": 326.89380755868507
+          },
+          "height": 191.47714745458205,
+          "id": "doudou",
+          "insideSafeViewport": true,
+          "left": 558.439968515677,
+          "right": 693.7830782779225,
+          "top": 295.85058100696165,
+          "width": 135.3431097622455
+        },
+        {
+          "bottom": 492.5655480330357,
+          "foot": {
+            "x": 738.4519551068996,
+            "y": 471.6383457262338
+          },
+          "head": {
+            "x": 775.8485213666577,
+            "y": 338.4848712218589
+          },
+          "height": 174.64835263956763,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 700.6139809931432,
+          "right": 820.1869023838475,
+          "top": 317.9171953934681,
+          "width": 119.57292139070432
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "yueya",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 507.7079861186825,
+              "y": 319.4938448763878
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 529.182099989066,
+              "y": 388.8860056006372
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 550.6562138594495,
+              "y": 458.2781663248866
+            }
+          ]
+        },
+        {
+          "id": "doudou",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 628.2559963210145,
+              "y": 326.89380755868507
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 631.6728865429186,
+              "y": 395.1656399004215
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 635.0897767648225,
+              "y": 463.437472242158
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 775.8485213666577,
+              "y": 338.4848712218589
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 757.1502382367787,
+              "y": 405.0616084740463
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 738.4519551068996,
+              "y": 471.6383457262338
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-home-text.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "label": "1280x900-home",
+      "story": "doudou",
+      "index": 4,
+      "byteIdentical": true
+    },
+    {
+      "event": "view",
+      "label": "1280x900-observatory-ready",
+      "world": "observatory",
+      "phase": "ready",
+      "period": "night",
+      "radius": 4.35,
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 195.28125,
+        "left": 340,
+        "right": 940,
+        "top": 686.71875,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 666.71875,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 498.53125,
+        "insets": {
+          "bottom": 233.28125,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 523.2198284139085,
+          "foot": {
+            "x": 624.680431845135,
+            "y": 493.51095159873705
+          },
+          "head": {
+            "x": 568.9196943700211,
+            "y": 341.4418350179262
+          },
+          "height": 208.82377059912665,
+          "id": "ace",
+          "insideSafeViewport": true,
+          "left": 509.8514704239456,
+          "right": 681.706588888607,
+          "top": 314.3960578147819,
+          "width": 171.85511846466147
+        },
+        {
+          "bottom": 518.987239489325,
+          "foot": {
+            "x": 718.2246458583397,
+            "y": 497.4163315821872
+          },
+          "head": {
+            "x": 709.3152233259757,
+            "y": 347.2629104664975
+          },
+          "height": 191.7940285669356,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 661.8732683638582,
+          "right": 765.540723465284,
+          "top": 327.1932109223894,
+          "width": 103.66745510142584
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "ace",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 568.9196943700211,
+              "y": 341.4418350179262
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 596.8000631075781,
+              "y": 417.4763933083317
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 624.680431845135,
+              "y": 493.51095159873705
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 709.3152233259757,
+              "y": 347.2629104664975
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 713.7699345921577,
+              "y": 422.3396210243424
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 718.2246458583397,
+              "y": 497.4163315821872
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-observatory-ready.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-observatory-question",
+      "world": "observatory",
+      "phase": "question",
+      "period": "night",
+      "radius": 4.35,
+      "reply": "none",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 163.640625,
+        "left": 340,
+        "right": 940,
+        "top": 718.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 698.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 530.171875,
+        "insets": {
+          "bottom": 201.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 544.9990857778228,
+          "foot": {
+            "x": 623.7081342987926,
+            "y": 514.1584783801401
+          },
+          "head": {
+            "x": 564.4083918281573,
+            "y": 352.4378868079125
+          },
+          "height": 218.1521728347946,
+          "id": "ace",
+          "insideSafeViewport": true,
+          "left": 506.42805275480697,
+          "right": 685.0484981205839,
+          "top": 326.84691294302814,
+          "width": 178.6204453657769
+        },
+        {
+          "bottom": 541.5787040962038,
+          "foot": {
+            "x": 723.1893831448418,
+            "y": 518.3117237953737
+          },
+          "head": {
+            "x": 713.7145001778249,
+            "y": 358.6284124471487
+          },
+          "height": 205.0749464022593,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 663.8236853062903,
+          "right": 773.8249674263818,
+          "top": 336.50375769394446,
+          "width": 110.00128212009156
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "ace",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 564.4083918281573,
+              "y": 352.4378868079125
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 594.0582630634749,
+              "y": 433.2981825940263
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 623.7081342987926,
+              "y": 514.1584783801401
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 713.7145001778249,
+              "y": 358.6284124471487
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 718.4519416613334,
+              "y": 438.4700681212612
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 723.1893831448418,
+              "y": 518.3117237953737
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-observatory-question.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-observatory-choices",
+      "world": "observatory",
+      "phase": "question",
+      "period": "night",
+      "radius": 4.35,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 294.640625,
+        "left": 340,
+        "right": 940,
+        "top": 587.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 567.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 399.171875,
+        "insets": {
+          "bottom": 332.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 451.9278024802678,
+          "foot": {
+            "x": 627.7336862141185,
+            "y": 428.67261935037095
+          },
+          "head": {
+            "x": 583.0862982533357,
+            "y": 306.9115173228534
+          },
+          "height": 164.17015117302935,
+          "id": "ace",
+          "insideSafeViewport": true,
+          "left": 540.0366060417144,
+          "right": 674.3615788442387,
+          "top": 287.7576513072385,
+          "width": 134.32497280252426
+        },
+        {
+          "bottom": 449.3904014492947,
+          "foot": {
+            "x": 702.6341449176646,
+            "y": 431.7996406766795
+          },
+          "head": {
+            "x": 695.5004077699712,
+            "y": 311.5724279504674
+          },
+          "height": 155.4189649466819,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 657.6601266437563,
+          "right": 741.4414581496584,
+          "top": 293.97143650261285,
+          "width": 83.78133150590213
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "ace",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 583.0862982533357,
+              "y": 306.9115173228534
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 605.409992233727,
+              "y": 367.79206833661215
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 627.7336862141185,
+              "y": 428.67261935037095
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 695.5004077699712,
+              "y": 311.5724279504674
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 699.0672763438179,
+              "y": 371.68603431357343
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 702.6341449176646,
+              "y": 431.7996406766795
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-observatory-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "1280x900-observatory-text",
+      "world": "observatory",
+      "phase": "question",
+      "period": "night",
+      "radius": 4.35,
+      "reply": "text",
+      "canvas": {
+        "bottom": 900,
+        "height": 900,
+        "left": 0,
+        "right": 1280,
+        "top": 0,
+        "width": 1280
+      },
+      "panel": {
+        "bottom": 882,
+        "height": 241.640625,
+        "left": 340,
+        "right": 940,
+        "top": 640.359375,
+        "width": 600
+      },
+      "safeViewport": {
+        "bottom": 620.359375,
+        "canvasHeight": 900,
+        "canvasWidth": 1280,
+        "height": 452.171875,
+        "insets": {
+          "bottom": 279.640625,
+          "left": 20,
+          "right": 20,
+          "top": 168.1875
+        },
+        "left": 20,
+        "right": 1260,
+        "top": 168.1875,
+        "width": 1240
+      },
+      "actors": [
+        {
+          "bottom": 489.7895673649498,
+          "foot": {
+            "x": 626.1050278056279,
+            "y": 463.2585012479111
+          },
+          "head": {
+            "x": 575.5295880202483,
+            "y": 325.33058283970934
+          },
+          "height": 185.83835925770697,
+          "id": "ace",
+          "insideSafeViewport": true,
+          "left": 526.2388879700496,
+          "right": 678.3121309327283,
+          "top": 303.95120810724285,
+          "width": 152.0732429626787
+        },
+        {
+          "bottom": 486.5799245702262,
+          "foot": {
+            "x": 710.9503863378202,
+            "y": 466.8007124727924
+          },
+          "head": {
+            "x": 702.8694680571181,
+            "y": 330.6103453422544
+          },
+          "height": 175.87333942659757,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 659.8994993638785,
+          "right": 755.2964986460939,
+          "top": 310.7065851436286,
+          "width": 95.39699928221546
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "ace",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 575.5295880202483,
+              "y": 325.33058283970934
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 600.8173079129381,
+              "y": 394.2945420438102
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 626.1050278056279,
+              "y": 463.2585012479111
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 702.8694680571181,
+              "y": 330.6103453422544
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 706.9099271974692,
+              "y": 398.7055289075234
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 710.9503863378202,
+              "y": 466.8007124727924
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-IX2C4e/1280x900-observatory-text.png"
+    }
+  ]
+}

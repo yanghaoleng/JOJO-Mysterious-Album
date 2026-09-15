@@ -1,0 +1,715 @@
+{
+  "base": "https://jma.mikeywa.site/dev/",
+  "session": "immersive-production-ccda97c-390",
+  "artifacts": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx",
+  "scope": "filtered-world-viewport-batch",
+  "filters": {
+    "batch": "390-meadow",
+    "viewports": [
+      [
+        390,
+        844
+      ]
+    ],
+    "worlds": [
+      "meadow"
+    ],
+    "skipFinalChecks": true
+  },
+  "checkedAt": "2026-09-06T02:47:43.839Z",
+  "complete": true,
+  "passed": true,
+  "issues": [],
+  "failure": null,
+  "closed": true,
+  "method": "real browser UI and keyboard; synthetic session-only legacy saves; always-rejected media-device fixture; independent DOM occlusion vs projected model bounds; no full-sphere requirement",
+  "rows": [
+    {
+      "event": "view",
+      "label": "390x844-meadow-ready",
+      "world": "meadow",
+      "phase": "ready",
+      "period": "night",
+      "radius": 6,
+      "canvas": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390,
+        "top": 0,
+        "width": 390
+      },
+      "panel": {
+        "bottom": 828,
+        "height": 181.6875,
+        "left": 15,
+        "right": 375,
+        "top": 646.3125,
+        "width": 360
+      },
+      "safeViewport": {
+        "bottom": 626.3125,
+        "canvasHeight": 844,
+        "canvasWidth": 390,
+        "height": 475.671875,
+        "insets": {
+          "bottom": 217.6875,
+          "left": 20,
+          "right": 20,
+          "top": 150.640625
+        },
+        "left": 20,
+        "right": 370,
+        "top": 150.640625,
+        "width": 350
+      },
+      "actors": [
+        {
+          "bottom": 462.89746779776874,
+          "foot": {
+            "x": 108.96020437618807,
+            "y": 447.6768175013462
+          },
+          "head": {
+            "x": 76.1992205751668,
+            "y": 322.1703036145687
+          },
+          "height": 155.17693352274705,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 44.15255485443367,
+          "right": 141.58887676886135,
+          "top": 307.7205342750217,
+          "width": 97.43632191442768
+        },
+        {
+          "bottom": 467.07930697974,
+          "foot": {
+            "x": 184.6236985249351,
+            "y": 453.57303493033936
+          },
+          "head": {
+            "x": 179.4920833936937,
+            "y": 331.83921461464826
+          },
+          "height": 163.4632970678527,
+          "id": "hewan",
+          "insideSafeViewport": true,
+          "left": 128.0464264077783,
+          "right": 244.03359192014395,
+          "top": 303.6160099118873,
+          "width": 115.98716551236564
+        },
+        {
+          "bottom": 476.1154487472514,
+          "foot": {
+            "x": 277.16419925459553,
+            "y": 459.64319934084546
+          },
+          "head": {
+            "x": 305.6725023850671,
+            "y": 338.49550988618745
+          },
+          "height": 154.4155011424557,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 241.8607431705737,
+          "right": 336.6595715320525,
+          "top": 321.6999476047957,
+          "width": 94.7988283614788
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 76.1992205751668,
+              "y": 322.1703036145687
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 92.57971247567744,
+              "y": 384.92356055795744
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 108.96020437618807,
+              "y": 447.6768175013462
+            }
+          ]
+        },
+        {
+          "id": "hewan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 179.4920833936937,
+              "y": 331.83921461464826
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 182.0578909593144,
+              "y": 392.7061247724938
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 184.6236985249351,
+              "y": 453.57303493033936
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 305.6725023850671,
+              "y": 338.49550988618745
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 291.4183508198313,
+              "y": 399.06935461351645
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 277.16419925459553,
+              "y": 459.64319934084546
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-ready.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-meadow-question",
+      "world": "meadow",
+      "phase": "question",
+      "period": "night",
+      "radius": 6,
+      "reply": "none",
+      "canvas": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390,
+        "top": 0,
+        "width": 390
+      },
+      "panel": {
+        "bottom": 828,
+        "height": 152.34375,
+        "left": 15,
+        "right": 375,
+        "top": 675.65625,
+        "width": 360
+      },
+      "safeViewport": {
+        "bottom": 655.65625,
+        "canvasHeight": 844,
+        "canvasWidth": 390,
+        "height": 505.015625,
+        "insets": {
+          "bottom": 188.34375,
+          "left": 20,
+          "right": 20,
+          "top": 150.640625
+        },
+        "left": 20,
+        "right": 370,
+        "top": 150.640625,
+        "width": 350
+      },
+      "actors": [
+        {
+          "bottom": 477.0898606603499,
+          "foot": {
+            "x": 108.96020437618807,
+            "y": 462.34869250134614
+          },
+          "head": {
+            "x": 76.1992205751668,
+            "y": 336.84217861456875
+          },
+          "height": 152.7559401603528,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 51.478177914505494,
+          "right": 142.24745941447287,
+          "top": 324.33392049999713,
+          "width": 90.76928149996738
+        },
+        {
+          "bottom": 482.0988174654478,
+          "foot": {
+            "x": 184.6236985249351,
+            "y": 468.2449099303394
+          },
+          "head": {
+            "x": 179.4920833936937,
+            "y": 346.51108961464826
+          },
+          "height": 168.38557421825408,
+          "id": "hewan",
+          "insideSafeViewport": true,
+          "left": 128.48170870699195,
+          "right": 244.8333294424021,
+          "top": 313.7132432471937,
+          "width": 116.35162073541014
+        },
+        {
+          "bottom": 491.7560262290251,
+          "foot": {
+            "x": 277.16419925459553,
+            "y": 474.31507434084546
+          },
+          "head": {
+            "x": 305.6725023850671,
+            "y": 353.16738488618745
+          },
+          "height": 155.66893178150582,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 242.4908257177134,
+          "right": 344.9493757436743,
+          "top": 336.0870944475193,
+          "width": 102.4585500259609
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 76.1992205751668,
+              "y": 336.84217861456875
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 92.57971247567744,
+              "y": 399.59543555795744
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 108.96020437618807,
+              "y": 462.34869250134614
+            }
+          ]
+        },
+        {
+          "id": "hewan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 179.4920833936937,
+              "y": 346.51108961464826
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 182.0578909593144,
+              "y": 407.3779997724938
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 184.6236985249351,
+              "y": 468.2449099303394
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 305.6725023850671,
+              "y": 353.16738488618745
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 291.4183508198313,
+              "y": 413.74122961351645
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 277.16419925459553,
+              "y": 474.31507434084546
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-question.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-meadow-choices",
+      "world": "meadow",
+      "phase": "question",
+      "period": "night",
+      "radius": 6,
+      "reply": "choices",
+      "canvas": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390,
+        "top": 0,
+        "width": 390
+      },
+      "panel": {
+        "bottom": 828,
+        "height": 283.34375,
+        "left": 15,
+        "right": 375,
+        "top": 544.65625,
+        "width": 360
+      },
+      "safeViewport": {
+        "bottom": 524.65625,
+        "canvasHeight": 844,
+        "canvasWidth": 390,
+        "height": 374.015625,
+        "insets": {
+          "bottom": 319.34375,
+          "left": 20,
+          "right": 20,
+          "top": 150.640625
+        },
+        "left": 20,
+        "right": 370,
+        "top": 150.640625,
+        "width": 350
+      },
+      "actors": [
+        {
+          "bottom": 406.8051003917128,
+          "foot": {
+            "x": 114.54943016221928,
+            "y": 393.00298843621965
+          },
+          "head": {
+            "x": 83.91663058233466,
+            "y": 275.6494953538841
+          },
+          "height": 142.69734046575903,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 62.28330739983381,
+          "right": 145.74304719697483,
+          "top": 264.1077599259537,
+          "width": 83.45973979714103
+        },
+        {
+          "bottom": 411.4968386813496,
+          "foot": {
+            "x": 185.2977527965379,
+            "y": 398.5161820533216
+          },
+          "head": {
+            "x": 180.49949219511117,
+            "y": 284.6903048307944
+          },
+          "height": 158.1368739777502,
+          "id": "hewan",
+          "insideSafeViewport": true,
+          "left": 132.57845675380057,
+          "right": 241.7179623483688,
+          "top": 253.35996470359945,
+          "width": 109.13950559456823
+        },
+        {
+          "bottom": 420.53214121945655,
+          "foot": {
+            "x": 271.8267358420802,
+            "y": 404.19202289294213
+          },
+          "head": {
+            "x": 298.4831128746622,
+            "y": 290.91420092121757
+          },
+          "height": 145.93411434514326,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 239.18533988413313,
+          "right": 335.6258756422146,
+          "top": 274.5980268743133,
+          "width": 96.4405357580815
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 83.91663058233466,
+              "y": 275.6494953538841
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 99.23303037227696,
+              "y": 334.3262418950519
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 114.54943016221928,
+              "y": 393.00298843621965
+            }
+          ]
+        },
+        {
+          "id": "hewan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 180.49949219511117,
+              "y": 284.6903048307944
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 182.89862249582455,
+              "y": 341.603243442058
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 185.2977527965379,
+              "y": 398.5161820533216
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 298.4831128746622,
+              "y": 290.91420092121757
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 285.1549243583712,
+              "y": 347.5531119070798
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 271.8267358420802,
+              "y": 404.19202289294213
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-choices.png"
+    },
+    {
+      "event": "view",
+      "label": "390x844-meadow-text",
+      "world": "meadow",
+      "phase": "question",
+      "period": "night",
+      "radius": 6,
+      "reply": "text",
+      "canvas": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390,
+        "top": 0,
+        "width": 390
+      },
+      "panel": {
+        "bottom": 828,
+        "height": 230.34375,
+        "left": 15,
+        "right": 375,
+        "top": 597.65625,
+        "width": 360
+      },
+      "safeViewport": {
+        "bottom": 577.65625,
+        "canvasHeight": 844,
+        "canvasWidth": 390,
+        "height": 427.015625,
+        "insets": {
+          "bottom": 266.34375,
+          "left": 20,
+          "right": 20,
+          "top": 150.640625
+        },
+        "left": 20,
+        "right": 370,
+        "top": 150.640625,
+        "width": 350
+      },
+      "actors": [
+        {
+          "bottom": 438.2288679612498,
+          "foot": {
+            "x": 108.96020437618807,
+            "y": 423.34869250134614
+          },
+          "head": {
+            "x": 76.1992205751668,
+            "y": 297.84217861456875
+          },
+          "height": 152.41913454749516,
+          "id": "guoguo",
+          "insideSafeViewport": true,
+          "left": 52.74483310365661,
+          "right": 141.84501695677474,
+          "top": 285.80973341375466,
+          "width": 89.10018385311812
+        },
+        {
+          "bottom": 442.93369996612455,
+          "foot": {
+            "x": 184.6236985249351,
+            "y": 429.2449099303394
+          },
+          "head": {
+            "x": 179.4920833936937,
+            "y": 307.5110896146483
+          },
+          "height": 168.39066258554482,
+          "id": "hewan",
+          "insideSafeViewport": true,
+          "left": 128.125322506832,
+          "right": 244.18854721090767,
+          "top": 274.54303738057973,
+          "width": 116.06322470407568
+        },
+        {
+          "bottom": 452.6710829449218,
+          "foot": {
+            "x": 277.16419925459553,
+            "y": 435.3150743408454
+          },
+          "head": {
+            "x": 305.6725023850671,
+            "y": 314.16738488618745
+          },
+          "height": 155.80486240692824,
+          "id": "companion",
+          "insideSafeViewport": true,
+          "left": 242.12370514077145,
+          "right": 345.5885821868863,
+          "top": 296.86622053799357,
+          "width": 103.46487704611484
+        }
+      ],
+      "actorHits": [
+        {
+          "id": "guoguo",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 76.1992205751668,
+              "y": 297.84217861456875
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 92.57971247567744,
+              "y": 360.59543555795744
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 108.96020437618807,
+              "y": 423.34869250134614
+            }
+          ]
+        },
+        {
+          "id": "hewan",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 179.4920833936937,
+              "y": 307.5110896146483
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 182.0578909593144,
+              "y": 368.37799977249387
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 184.6236985249351,
+              "y": 429.2449099303394
+            }
+          ]
+        },
+        {
+          "id": "companion",
+          "points": [
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 305.6725023850671,
+              "y": 314.16738488618745
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 291.4183508198313,
+              "y": 374.74122961351645
+            },
+            {
+              "canvas": true,
+              "target": "CANVAS",
+              "x": 277.16419925459553,
+              "y": 435.3150743408454
+            }
+          ]
+        }
+      ],
+      "screenshot": "/var/folders/q7/cp2tn_3564s8zt5j8_v6cx980000gn/T/dev-immersive-production-MvO0jx/390x844-meadow-text.png"
+    },
+    {
+      "event": "legacy-save-unchanged",
+      "label": "390x844-meadow",
+      "story": "echo",
+      "index": 1,
+      "byteIdentical": true
+    },
+    {
+      "event": "browser-errors",
+      "errors": "",
+      "console": ""
+    }
+  ]
+}
