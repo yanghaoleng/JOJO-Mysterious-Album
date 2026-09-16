@@ -32,14 +32,18 @@ body[data-view=studio] #experience{display:grid;grid-template-columns:minmax(0,1
 @media(prefers-reduced-motion:reduce){.read-along__phrase{transition:none}}
 @media(forced-colors:active){.read-along__phrase{opacity:1}.read-along__phrase.is-current{color:Highlight;text-shadow:none;text-decoration:underline}}
 
-/* White subtitles on any background: the story speech card and the ending
-   line must stay readable over both the 3D scene and light picture-book
-   panels. A soft dark halo keeps the white glyphs legible everywhere. */
+/* Subtitles on any background: ink-dark text with a soft light halo.
+   The pale glow keeps dark glyphs readable over both the 3D scene and
+   light picture-book panels, and reads naturally on either. */
 #speech-text,.speech-card .speech-text,
 #ending-line,.ending blockquote,.ending p,
 .read-along__visual,.read-along__phrase{
-  color:#fff!important;
-  text-shadow:0 1px 2px rgba(20,20,12,.9),0 0 7px rgba(20,20,12,.6),0 0 16px rgba(20,20,12,.35)!important;
+  color:#393e32!important;
+  text-shadow:0 1px 2px rgba(252,248,238,.92),0 0 6px rgba(252,248,238,.7),0 0 15px rgba(252,248,238,.45)!important;
 }
-.speech-card .speaker{color:#ffffffd9!important;text-shadow:0 1px 2px rgba(20,20,12,.8)!important}
+.read-along__phrase.is-current{
+  color:#E8A33D!important;
+  text-shadow:0 1px 2px rgba(252,248,238,.95),0 0 10px rgba(252,248,238,.8),0 0 22px rgba(252,248,238,.5)!important;
+}
+.speech-card .speaker{color:#4a5143!important;text-shadow:0 1px 2px rgba(252,248,238,.88)!important}
 

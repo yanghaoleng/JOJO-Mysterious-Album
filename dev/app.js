@@ -231,7 +231,7 @@ function setReplyMode(mode, restoreFocus = false) {
 
 function speakerInfo(id) {
   if (story?.id === 'wow' && id === 'guide') return { id, name: '星星窗', voice: 'bubble' };
-  if (id === 'companion') return { id, name: state?.companion?.name || '小团', voice: 'bubble' };
+  if (id === 'companion') return { id, name: state?.companion?.name || '小团', voice: story?.companionVoice || 'bubble' };
   const actor = story?.scenes[state.sceneIndex]?.cast.find(actor => actor.id === id);
   const profile = actor?.characterId && getNpc(actor.characterId);
   return profile ? { ...actor, name: profile.name, voice: profile.voiceKey } : actor || { id: 'guide', name: '河湾', voice: 'moss' };
@@ -240,7 +240,7 @@ function speakerInfo(id) {
 async function speakLine(line, token = epoch) {
   if (token !== epoch) return;
   const info = speakerInfo(line.speaker);
-  const text = story?.id === 'wow' ? line.text.replaceAll('{playerName}', state.playerName || '小伙伴').replaceAll('{firstWords}', state.firstWords || '你好，我在这里。') : line.text;
+  const text = line.text.replaceAll('{playerName}', state.playerName || '小伙伴').replaceAll('{firstWords}', state.firstWords || '你好，我在这里。');
   $('speaker').textContent = info.name + (line.source === 'local' ? ' · 本地回应' : line.source === 'ai' ? ' · AI 回应' : '');
   const display = phase === 'complete' ? endingReading : reading;
   const version = ++spokenLineVersion;
@@ -422,6 +422,10 @@ async function choose(choice, customResult) {
     return;
   }
   const scene = story.scenes[state.sceneIndex];
+  if (scene.nickname && !state.playerName && choice.label) {
+    state.playerName = choice.label.replace(/^(?:我叫|叫我|你叫我|我的名字是|我是)\s*/u, '').trim().slice(0, 12) || state.playerName;
+    persist();
+  }
   if (scene.freeInput && !customResult && !scene.final) rememberInvention(choice.label);
   if (choice.reward && !state.inventory.some(item => item.id === choice.reward.id)) state.inventory.push(choice.reward);
   updateBag(); stage.act(choice.action || 'celebrate', choice.expression || 'happy');
@@ -507,6 +511,13 @@ async function handleAnswer(raw, source = 'text') {
     return;
   }
   const scene = story.scenes[state.sceneIndex], token = epoch;
+  if (scene.nickname) {
+    const nickname = text.replace(/^(?:我叫|叫我|你叫我|我的名字是|我是)\s*/u, '').trim().slice(0, 12);
+    if (!nickname || /\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('给自己起一个短短的冒险昵称吧，比如“小星星”。'); return; }
+    state.playerName = nickname; persist();
+    await choose({ speaker: 'companion', result: `好，${nickname}，我记住啦。我们一起看看房间。`, action: 'celebrate', expression: 'happy' });
+    return;
+  }
   busy = true; voice.listen(false); setReplyMode(null); renderVoiceInput();
   try {
     if (scene.freeInput) {
@@ -548,7 +559,7 @@ async function finishStory() {
   phase = 'complete'; busy = false; voice.listen(false); state.completed = true; persist();
   stage.act('celebrate'); $('answer-dock').hidden = true; $('story-start').hidden = true; $('speech-card').hidden = true;
   $('ending').hidden = false; $('ending-title').textContent = story.ending.title;
-  const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。');
+  const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。').replaceAll('{playerName}', state.playerName || '小伙伴');
   $('ending-text').textContent = story.ending.text;
   $('save-memory').textContent = '收进我的图鉴'; $('save-memory').disabled = false;
   if (story.id === 'wow') $('save-memory').textContent = '下载我的旅程';
