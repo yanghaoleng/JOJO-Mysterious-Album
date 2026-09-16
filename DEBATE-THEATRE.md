@@ -154,7 +154,7 @@ Content-Type: application/json
 
 ## 6. 服务端校验与降级
 
-模型输出不能直接进入前端。Node/Vercel 和 Python 本地服务都执行：
+模型输出不能直接进入前端。Node 服务端和 Python 本地服务都执行：
 
 - 清理 HTML 尖括号和多余空白；
 - 限制输入、辩题、发言、共同点和结尾问题长度；
@@ -165,7 +165,7 @@ Content-Type: application/json
 
 当 `ARK_API_KEY` 未配置、上游超时、返回格式错误或校验失败时，接口返回完整的本地降级讨论，页面仍可完成整个流程。
 
-Node/Vercel 实现在 `api/debate.js`，本地 Python 对等实现在 `serve.py`。修改接口时必须同步维护两套实现。
+Node 服务端实现在 `api/debate.js`，本地 Python 对等实现在 `serve.py`。修改接口时必须同步维护两套实现。
 
 ## 7. 儿童安全边界
 
@@ -225,7 +225,7 @@ Node/Vercel 实现在 `api/debate.js`，本地 Python 对等实现在 `serve.py`
 | `src/debate.css` | 页面、预设问题、双角色舞台和响应式布局 |
 | `src/debate.js` | 客户端状态机、接口调用、逐轮播放、TTS 和统计 |
 | `src/debate-character-renderer.js` | 从内置 recipe 构建两个 Three.js 角色并同步动作 |
-| `api/debate.js` | Vercel 版生成、校验、安全与降级接口 |
+| `api/debate.js` | Node 服务端生成、校验、安全与降级接口 |
 | `serve.py` | 本地 Python 版对等接口 |
 | `assets/story/covers/debate-theatre.webp` | 首页绘本封面 |
 | `index.html`、`src/lab.css` | 首页入口和故事卡片样式 |

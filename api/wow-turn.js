@@ -91,8 +91,8 @@ export default async function handler(request, response) {
   } catch (error) {
     return response.status(400).json({ error: error.message === 'answer_required' ? 'answer_required' : 'invalid_wow_turn' });
   }
-  // Vercel replaces this header at its edge; do not trust client X-Real-IP.
-  const client = request.headers?.['x-vercel-forwarded-for'] || request.socket?.remoteAddress || 'unknown';
+  // 生产由 Nginx 置入 X-Real-IP / X-Forwarded-For；本机开发回退到 socket 地址。
+  const client = request.headers?.['x-real-ip'] || String(request.headers?.['x-forwarded-for'] || '').split(',')[0].trim() || request.socket?.remoteAddress || 'unknown';
   if (!wowTurnAllowed(client)) return response.status(429).json({ error: 'wow_rate_limited' });
   return response.status(200).json(await wowTurnResult(payload));
 }

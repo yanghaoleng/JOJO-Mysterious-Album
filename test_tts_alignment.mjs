@@ -1,4 +1,4 @@
-// Exercise the Vercel HTTP contract with a real chunked SSE reader; no external API calls.
+// Exercise the Node HTTP contract with a real chunked SSE reader; no external API calls.
 import assert from 'node:assert/strict';
 import { test, after } from 'node:test';
 import { webcrypto } from 'node:crypto';

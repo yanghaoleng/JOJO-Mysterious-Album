@@ -227,5 +227,5 @@ AI 不直接决定孩子是否通关，也不能创建未注册道具、跳过�
 
 - 火山大模型流式语音识别，通过安全 WebSocket 中继接入。
 - 需要独立的 AppID、Access Token 和 Resource ID，不能复用 Ark API Key。
-- Vercel Serverless 不能直接承担长期 WebSocket 中继。当前腾讯云主机可以新增独立常驻语音中继并由 Nginx 转发，这也更符合中国大陆网络环境；中继需要与现有 8137 站点服务隔离端口和进程。
+- Serverless 平台不能直接承担长期 WebSocket 中继。当前腾讯云主机可以新增独立常驻语音中继并由 Nginx 转发，这也更符合中国大陆网络环境；中继需要与现有 8137 站点服务隔离端口和进程。
 - 若改用豆包 Seed Audio / 大模型 TTS，需要独立 Speaker ID 和 TTS Resource ID。现有宠物音色接口已预留 provider 切换位。

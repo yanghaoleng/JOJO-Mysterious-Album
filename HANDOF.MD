@@ -102,7 +102,6 @@
 
 - 本地入口：`python3 serve.py 8137`
 - 腾讯生产主机：`lhins-qgi1l9jg / 124.221.104.244`，正式入口 `https://jma.mikeywa.site`；当前发布以 `/opt/kindergrimm/current` 原子软链指向为准。
-- Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为独立回滚点，不再承载正式域名。
 - 页面：`http://localhost:8137/`
 - 健康检查：`GET /api/health`
 - AI 接口：`POST /api/director`，服务端使用火山方舟 Doubao Seed 2.0 Mini。
@@ -116,10 +115,10 @@
 - 画像手机回归：390×844 下预览在上、答题在下，进度可见、笔记隐藏、页面水平溢出为 0。
 - 关卡消费回归：写入“宇宙和科学 / 收集图鉴 / 点子发明家 / 小提示”画像后，雾灯花园开场实际出现星空与收集提示，雾门与结局启发映射通过。
 - 离线语音：27 段新增画像问答缓存均生成成功；`assets/voice/star/` 共 155 段，项目 MP3 共 169 段。
-- 本轮 GitHub `main` 与 Vercel `jma` Production 均已完成；正式页面、关键资源哈希、169 段语音健康统计、火山世界导演和 Fish Audio TTS 均已通过线上验收。
+- 本轮 GitHub `main` 已完成；正式页面、关键资源哈希、169 段语音健康统计、火山世界导演和 Fish Audio TTS 均已通过线上验收。
 
 - 2026-08-25 模型配置：世界导演优先使用火山方舟 Doubao Seed 2.0 Mini；Seedream 5.0 Lite 4K 仅保留服务端环境变量预留；健康检查不会返回密钥。
-- Fish Audio 免费模型存在明显延迟波动；Vercel 函数上限设为 90 秒，上游等待 75 秒，避免把正常生成提前判为失败。
+- Fish Audio 免费模型存在明显延迟波动；服务端函数上限设为 90 秒，上游等待 75 秒，避免把正常生成提前判为失败。
 - 生产 TTS 验收：同步最新 Fish Audio 密钥后，`POST /api/tts` 返回 `200 audio/mpeg`，32,599 字节，真实服务端链路可用。
 - 生产健康检查目标：火山方舟与 Fish Audio 均配置，健康接口只返回布尔状态和模型名。
 - DNS 核验：`mikeywa.site` 权威 NS 为 DNSPod（`light.dnspod.net`、`quiet.dnspod.net`），不是 Cloudflare；不能在 Cloudflare 添加一条不会生效的记录。
@@ -155,7 +154,7 @@
 - Fish Audio 缓存：连续脚本、动作和表情均标记为 `cached-fish`；128 个星仔清单项无缺失或短文件，142 个 MP3 格式检查全部通过。
 - 手机竖屏 390x844：气泡、角色、随机印章和两列动作按钮均在视口内，页面水平溢出为 0。
 - 减弱动态：浏览器媒体条件命中后，气泡与脚本反馈动画均为 `none`，核心状态和操作仍可用。
-- 正式环境：`jma.mikeywa.site` 与 `jma-zeta.vercel.app` 均返回 200；线上 `index.html`、`src/lab.js`、`src/lab.css` 和抽样脚本音频与本地 SHA-256 一致。
+- 正式环境：`jma.mikeywa.site` 返回 200；线上 `index.html`、`src/lab.js`、`src/lab.css` 和抽样脚本音频与本地 SHA-256 一致。
 - 正式浏览器回归：1440x1000 和 390x844 均无控制台或页面错误；动作 6 项、表情 5 项、脚本 5 套均可达，手机水平溢出为 0。
 - 正式服务回归：`/api/health` 显示火山方舟与 Fish Audio 均已配置；`/api/director` 使用 Doubao Seed 2.0 Mini 真实返回儿童友好 JSON；`/api/tts` 返回有效星仔 MP3。
 
@@ -216,17 +215,17 @@
 - [x] 实测 `/api/tts` 返回 44.1kHz 单声道 MP3；健康检查明确区分故事 AI、火山语音识别和宠物 TTS 供应方。
 - [x] 在火山旧版豆包语音控制台创建 `kindergrimm_story_voice`（AppID `6570862201`），开通 ASR/TTS 2.0 与大模型兼容能力，读取 Access Token 并仅写入被 Git 忽略的服务端环境。
 - [x] 配置 ASR 小时版 Resource ID `volc.bigasr.sauc.duration`、TTS Resource ID `volc.service_type.10029` 与音色 `zh_female_cancan_mars_bigtts`；`PET_TTS_PROVIDER` 已切到 `volc`。
-- [x] 新增 Python 与 Vercel 两套 `/api/asr`，把浏览器 16kHz PCM 安全转给豆包，Token 不进入前端。
+- [x] 新增 Python 与 Node 两套 `/api/asr`，把浏览器 16kHz PCM 安全转给豆包，Token 不进入前端。
 - [x] `/api/tts` 增加豆包/Fish 供应方切换与 `X-TTS-Provider` 验收标记。
 - [x] Safari 交互改为浏览器中间文本即时反馈、豆包句末校准，并保留点选和视觉降级；访谈不再提供打字输入。
 
 ### 当前验证
 
-- Python、Vercel API 和浏览器模块语法检查通过。
+- Python、Node API 和浏览器模块语法检查通过。
 - 本地 `/story-v2` 返回 200，4 个透明 PNG 均返回 `image/png`。
 - 豆包真实回答已验证；输入“鲸鱼、星星、海、慢慢看”能抽取海洋主题、慢节奏和宠物提示。
-- 豆包 TTS 真实返回 `200 audio/mpeg`；Python 路由返回 59,040 字节，Vercel 路由返回 72,480 字节，响应头均标记 `volc`。
-- 豆包 TTS→ASR 回环在 Python 与 Vercel 两套接口都返回“你好，我们一起去找回声。”，证明鉴权、Resource ID、协议与音频格式已通。
+- 豆包 TTS 真实返回 `200 audio/mpeg`；Python 路由返回 59,040 字节，Node 路由返回 72,480 字节，响应头均标记 `volc`。
+- 豆包 TTS→ASR 回环在 Python 与 Node 两套接口都返回“你好，我们一起去找回声。”，证明鉴权、Resource ID、协议与音频格式已通。
 - 本地健康检查为 `storyAi:true`、`speechRecognition:true`、`doubaoTts:true`、`petTtsProvider:volc`。
 - Safari 已实测 `/story-v2` 首屏、豆包自动朗读、自由回答理解、反馈语音与进入第二问；未主动采集杨总现场麦克风音频。
 - 360×800、390×844 与完整 6 场景回归仍未执行。

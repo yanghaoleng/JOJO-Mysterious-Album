@@ -175,7 +175,7 @@
 
 - 双入口主页只加载 `index.html`、实验室基础 CSS、模式逻辑和匿名统计；不在孩子选择前下载 Three.js、角色骨骼、Calligraph 或任何完整场景。
 - 选择角色模拟器后按需加载实验室、Calligraph 和角色图形模块；不见了的回声使用独立页面。离线语音和音乐继续按播放进度单独请求。
-- JavaScript 和 CSS 短缓存一小时，图片与 MP3 缓存七天；HTML、API 和 `/Data` 不缓存。发布保留版本目录与旧 Vercel 回滚点。
+- JavaScript 和 CSS 短缓存一小时，图片与 MP3 缓存七天；HTML、API 和 `/Data` 不缓存。发布保留版本目录。
 
 ## 新版连续故事
 

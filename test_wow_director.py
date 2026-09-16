@@ -158,7 +158,7 @@ class WowContractTests(unittest.TestCase):
             server.server_close()
             thread.join(timeout=2)
 
-    def test_vercel_http_handler(self):
+    def test_node_http_handler(self):
         actual = node_eval("""
             process.env.ARK_API_KEY='';
             const base=JSON.parse(await new Response(process.stdin).text());

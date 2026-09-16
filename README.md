@@ -187,9 +187,9 @@ python3 scripts/generate_star_offline.py
 - `story-v2.html`、`src/story-v2.css`、`src/story-v2.js`：两套连续语音故事、角色入场、头顶气泡、背包与发明绘制。
 - `src/story-blueprints.js`：两套故事的年龄、章节、场景、角色、入场方式、提示与固定安全边界。
 - `src/rig.js`、`src/anim.js`、`src/parts/`：继承 Kindergrimm 的程序化水彩角色、骨骼和动画系统。
-- `api/director.js`：Vercel Serverless 版本的世界导演接口。
+- `api/director.js`：Node 服务端的世界导演接口。
 - `api/story-turn.js`、`api/moon-director.js`：豆豆故事的儿童安全理解接口与登月故事的开放式世界导演。
-- `api/tts.js`、`api/asr.js`：Vercel 版豆包/Fish TTS 代理与豆包 ASR 代理。
+- `api/tts.js`、`api/asr.js`：Node 版豆包/Fish TTS 代理与豆包 ASR 代理。
 - `volc_asr.py`：不依赖第三方 Python 包的豆包 WebSocket 鉴权、协议封装和最终文本解析。
 - `serve.py`：零依赖静态服务、世界导演、豆包语音、Fish Audio 回退、SQLite 统计聚合与后台会话。
 - `assets/voice/`：游戏运行时使用的内置引导语音。
@@ -221,7 +221,7 @@ python3 scripts/generate_star_offline.py
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
 - `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
 
-正式站 `https://jma.mikeywa.site` 部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。HTTP 自动跳转 HTTPS，Let's Encrypt 证书自动续期；Vercel 项目 `jma` 与 `https://jma-zeta.vercel.app` 保留为回滚点。
+正式站 `https://jma.mikeywa.site` 部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。HTTP 自动跳转 HTTPS，Let's Encrypt 证书自动续期。本项目不部署到任何 Serverless 平台，发布只走腾讯云正式站。
 
 ## 语音故事模式
 
@@ -250,7 +250,7 @@ python3 scripts/generate_star_offline.py
 - `src/story-blueprints.js`：章节、场景、NPC、语音行动提示、道具和图鉴员数据。
 - `api/story-turn.js`：儿童安全偏好理解接口。
 - `api/moon-director.js`：登月旅程的儿童安全世界导演与画面配方接口。
-- `api/asr.js`、`volc_asr.py`：Vercel 与 Python 两套安全豆包识别中继。
+- `api/asr.js`、`volc_asr.py`：Node 与 Python 两套安全豆包识别中继。
 - `assets/story/items/`：4 个透明背景的扁平绘本道具图标；功能图标共用同风格的 4×3 透明精灵图。
 
 `GET /api/health` 额外返回 `storyAi`、`speechRecognition`、`doubaoTts` 和 `petTtsProvider`，只显示能力是否配置，不返回任何密钥。

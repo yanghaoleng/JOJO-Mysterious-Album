@@ -6,9 +6,9 @@ src/*.js and reloading can still run the previous build (and a removed
 export shows up as a phantom SyntaxError). Everything is served
 no-store here — this is a scratch drawing tool, not a CDN.
 
-It also mimics Vercel's `cleanUrls` (see vercel.json): `/photo` serves
-photo.html, and `/photo.html` redirects to `/photo`. Production does
-this and dev must agree, or a link that works on one 404s on the other.
+It also implements `cleanUrls`: `/photo` serves photo.html, and
+`/photo.html` redirects to `/photo`. Production does this and dev
+must agree, or a link that works on one 404s on the other.
 """
 import json
 import base64
@@ -239,8 +239,8 @@ STYLE_SOURCE_ROOT = "https://github.com/albertobeiz/kindergrimm"
 SOURCE_STYLE_AUDIT = {
     "sourceRepo": "albertobeiz/kindergrimm",
     "sourceUrl": f"{STYLE_SOURCE_ROOT}/tree/{STYLE_SOURCE_COMMIT}/src/styles",
-    "stylesPage": "https://kindergrimm.vercel.app/styles",
-    "glossPage": "https://kindergrimm.vercel.app/gloss",
+    "stylesPage": f"{STYLE_SOURCE_ROOT}/tree/{STYLE_SOURCE_COMMIT}/src/styles",
+    "glossPage": f"{STYLE_SOURCE_ROOT}/tree/{STYLE_SOURCE_COMMIT}/src/gloss",
     "checkedAt": "2026-08-28",
     "presetCount": 10,
     "message": "已从上游 /styles 收录 9 套 2D 风格，并从 /gloss 收录 1 套独立 3D 风格。",
