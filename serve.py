@@ -299,21 +299,24 @@ GITHUB_RENDER_STYLE_PRESETS.append({
     "source_commit": STYLE_SOURCE_COMMIT, "source_files": "src/gloss",
 })
 TTS_VOICES = {
-    "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.94, "pitch": 1.04, "speaker": "ICL_zh_female_keainvsheng_tob"},
-    "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.08, "speaker": "ICL_zh_female_tiaopigongzhu_tob"},
-    "moss": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.82, "volc_speed": 0.86, "pitch": 0.94, "speaker": "zh_male_lanxiaoyang_mars_bigtts"},
-    "star": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.00, "pitch": 1.00, "speaker": "ICL_zh_male_shuanglangshaonian_tob"},
-    "clever": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 1.02, "speaker": "ICL_zh_male_tiancaitongzhuo_tob"},
-    "bright": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.06, "volc_speed": 1.05, "pitch": 1.07, "speaker": "zh_male_dongmanhaimian_mars_bigtts"},
-    "lively": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.06, "speaker": "ICL_zh_female_huoponvhai_tob"},
-    "sweet": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.98, "volc_speed": 0.98, "pitch": 1.04, "speaker": "zh_female_tianmeixiaoyuan_moon_bigtts"},
-    "clear": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.96, "volc_speed": 0.96, "pitch": 1.00, "speaker": "zh_female_qingchezizi_moon_bigtts"},
-    "neighbor": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.02, "volc_speed": 1.02, "pitch": 0.98, "speaker": "zh_male_linjiananhai_moon_bigtts"},
-    "youth": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 0.97, "speaker": "zh_male_shaonianzixin_moon_bigtts"},
-    "gentle": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.88, "volc_speed": 0.90, "pitch": 0.98, "speaker": "zh_female_wenrouxiaoya_moon_bigtts"},
-    "soft": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.92, "pitch": 1.00, "speaker": "zh_female_linjianvhai_moon_bigtts"},
-    "smart": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.06, "volc_speed": 1.06, "pitch": 1.02, "speaker": "ICL_zh_male_shenmi_v1_tob"},
-    "caring": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.95, "volc_speed": 0.95, "pitch": 1.03, "speaker": "ICL_zh_female_yilin_tob"},
+    # All speakers are Seed TTS 2.0 voices (resource: seed-tts-2.0), the only
+    # Doubao TTS entitlement this account has. Legacy 1.0 voices (mars/moon/ICL)
+    # are retired here because their quota (text_words_lifetime) is exhausted.
+    "sprout": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.94, "pitch": 1.04, "speaker": "zh_female_peiqi_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "bubble": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.08, "speaker": "zh_female_tianmeitaozi_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "moss": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.82, "volc_speed": 0.86, "pitch": 0.94, "speaker": "zh_male_ruyayichen_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "star": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.00, "pitch": 1.00, "speaker": "zh_male_shaonianzixin_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "clever": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 1.02, "speaker": "zh_male_kailangxuezhang_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "bright": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.06, "volc_speed": 1.05, "pitch": 1.07, "speaker": "zh_male_kuailexiaodong_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "lively": {"reference_id": "35e4dae87120478ea72d3eef6ff77ba0", "fish_speed": 1.08, "volc_speed": 1.08, "pitch": 1.06, "speaker": "zh_female_kailangjiejie_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "sweet": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.98, "volc_speed": 0.98, "pitch": 1.04, "speaker": "zh_female_tianmeixiaoyuan_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "clear": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.96, "volc_speed": 0.96, "pitch": 1.00, "speaker": "zh_female_qingxinnvsheng_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "neighbor": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.02, "volc_speed": 1.02, "pitch": 0.98, "speaker": "zh_male_taocheng_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "youth": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.04, "volc_speed": 1.04, "pitch": 0.97, "speaker": "zh_male_yangguangqingnian_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "gentle": {"reference_id": "943fc7f50e6245dabb8362a7e9ceca0a", "fish_speed": 0.88, "volc_speed": 0.90, "pitch": 0.98, "speaker": "zh_female_xinlingjitang_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "soft": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.92, "volc_speed": 0.92, "pitch": 1.00, "speaker": "zh_female_linjianvhai_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "smart": {"reference_id": "0fa0c39f8c8849a482db9da1586d1888", "fish_speed": 1.06, "volc_speed": 1.06, "pitch": 1.02, "speaker": "zh_male_dayi_uranus_bigtts", "resource_id": "seed-tts-2.0"},
+    "caring": {"reference_id": "57744207b298418194abd366d4596c8b", "fish_speed": 0.95, "volc_speed": 0.95, "pitch": 1.03, "speaker": "zh_female_kefunvsheng_uranus_bigtts", "resource_id": "seed-tts-2.0"},
 }
 WOW_CHILD_TTS_PRESET = {
     "speaker": "zh_male_naiqimengwa_uranus_bigtts", "resource_id": "seed-tts-2.0",
