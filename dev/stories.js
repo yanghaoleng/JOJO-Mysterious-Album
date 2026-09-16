@@ -1,5 +1,6 @@
 // The /dev stories are independent of the published story blueprints.
 // Choices are practical suggestions, never a test or a personality score.
+import { GUGU_DEV_STORY } from './gugu-story.js';
 import { WOW_DEV_STORY } from './wow-story.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
 
@@ -481,6 +482,7 @@ const echoScenes = [
 
 export const STORIES = [
   WOW_DEV_STORY,
+  GUGU_DEV_STORY,
   {
     id: 'doudou', title: '送豆豆回家', subtitle: '听线索，慢慢走，一起把小狗送到家。',
     age: '4～6 岁', companion: 'rabbit', companionName: '团团', color: '#91a97b',

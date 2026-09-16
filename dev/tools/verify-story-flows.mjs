@@ -62,7 +62,7 @@ function submit(text) {
 for (const story of stories) {
   const definition = STORIES.find(item => item.id === story);
   if (!definition || definition.scenes.length < 6) throw Error(`Missing six-scene story definition: ${story}`);
-  const setupCount = story === 'moon' ? 0 : 3;
+  const setupCount = ['moon', 'gugu'].includes(story) ? 0 : 3;
   if ((definition.onboarding === 'direct') !== (setupCount === 0)) throw Error(`Unexpected onboarding contract: ${story}`);
   const lastScene = definition.scenes.length - 1;
   command('open', base);
