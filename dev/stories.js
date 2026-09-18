@@ -192,6 +192,7 @@ const moonScenes = [
     choices: [
       { id: 'portal', label: '先试试传送门', hints: ['传送', '门', '穿越'], result: '门亮了！出口偏向海边，我们进入了气泡站。', speaker: 'ace', action: 'launch', expression: 'surprised' },
       { id: 'rocket', label: '先试试小火箭', hints: ['火箭', '飞船', '驾驶舱'], result: '火箭轻轻起飞，绕进了海边的气泡站。', speaker: 'ace', action: 'launch', expression: 'surprised' },
+      { id: 'balloon-ship', label: '造一艘气球飞船', hints: ['造一艘气球飞船'], result: '飞船慢慢升起来，海风把大家带到了气泡站。', speaker: 'ace', action: 'launch', expression: 'happy' },
     ],
     closing: [
       { speaker: 'companion', text: '大家都好好的，发明也跟着来了。' },
@@ -221,6 +222,7 @@ const moonScenes = [
     choices: [
       { id: 'bubbles', label: '加一个气泡推进器', hints: ['气泡', '发动机', '推进', '浮'], result: '气泡推着我们上浮，软软的口袋接住了大家！', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
       { id: 'paddles', label: '加一对划水桨', hints: ['桨', '划水', '划', '翅膀'], result: '小桨推着我们上浮，软软的口袋接住了大家！', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
+      { id: 'float-ring', label: '加一个大浮圈', hints: ['加一个大浮圈'], result: '浮圈鼓起来，把大家托到水面，落进软软的口袋。', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
     ],
     closing: [
       { speaker: 'companion', text: '先是海底，现在是一个超大的口袋。' },
@@ -250,6 +252,7 @@ const moonScenes = [
     choices: [
       { id: 'ladder', label: '装一架折叠梯', hints: ['梯', '伸长', '爬', '折叠'], result: '梯子展开，大家到达袋口，轻风把我们托进云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
       { id: 'sail', label: '装一面借风的小帆', hints: ['帆', '风', '吹', '气球'], result: '小帆鼓起来，大家越过袋口，飘进了柔软云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
+      { id: 'rope', label: '装一条攀爬绳', hints: ['装一条攀爬绳'], result: '绳子挂住袋口，把大家拉上去，轻风托着我们进入云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
     ],
     closing: [
       { speaker: 'companion', text: '袋口变小了，我们真的出来了！' },
@@ -279,6 +282,7 @@ const moonScenes = [
     choices: [
       { id: 'radar', label: '装一个月球导航屏', hints: ['雷达', '屏', '地图', '导航'], result: '屏幕亮出一条路线，我们穿过云层，看见月球了。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
       { id: 'light-line', label: '拉出一条发光航线', hints: ['光', '线', '亮', '指路'], result: '航线从白云里亮起来，带着我们找到前方的月球。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
+      { id: 'moon-compass', label: '装一个月球指南针', hints: ['装一个月球指南针'], result: '指针指向月球，大家顺着它穿过了白云。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
     ],
     closing: [
       { speaker: 'companion', text: '一路改过的零件，都跟着我们来了。' },
@@ -307,6 +311,7 @@ const moonScenes = [
     choices: [
       { id: 'gentle-thruster', label: '用小推进器减速', hints: ['推进', '喷气', '减速', '反推', '慢'], result: '小推进器轻轻工作，发明和大家稳稳落到月面。', speaker: 'yueya', action: 'launch', expression: 'happy' },
       { id: 'low-portal', label: '让出口贴近地面', hints: ['门', '出口', '传送', '贴近'], result: '出口贴着月面打开，发明和大家缓缓滑到地面。', speaker: 'yueya', action: 'launch', expression: 'happy' },
+      { id: 'landing-legs', label: '加上缓冲腿和减速喷口', hints: ['加上缓冲腿和减速喷口'], result: '喷口先让我们慢下来，软软的缓冲腿接住了落地的一小步。', speaker: 'yueya', action: 'launch', expression: 'happy' },
     ],
     closing: [
       { speaker: 'ace', text: '着陆完成，我们真的到月球了。' },
@@ -326,6 +331,7 @@ const moonScenes = [
       { speaker: 'ace', text: '我想把这段路，画在最初的设计纸上。' },
     ],
     question: '最后想留下什么纪念？',
+    inputMode: 'choice',
     freeInput: true,
     inventionHints: ['给这件发明起一个名字', '画下你最喜欢的一次改造', '你想留下的旅行纪念'],
     inventionPrompt: '可以讲讲你最喜欢的零件，也可以给发明起个名字。',
@@ -334,6 +340,7 @@ const moonScenes = [
     choices: [
       { id: 'route-drawing', label: '画出这条弯弯的路线', hints: ['路线', '画', '海底', '路'], result: '弯弯的路线画好了，每一个转弯都有我们的办法。', speaker: 'ace', action: 'celebrate', expression: 'happy' },
       { id: 'group-photo', label: '和发明拍一张合影', hints: ['拍', '照片', '合影', '纪念'], result: '大家和发明站在一起，月球合影拍好了。', speaker: 'yueya', action: 'celebrate', expression: 'happy' },
+      { id: 'travel-badge', label: '做一枚旅行徽章', hints: ['做一枚旅行徽章'], result: '徽章上画着我们的发明，纪念这次弯弯的月球旅程。', speaker: 'ace', action: 'celebrate', expression: 'happy' },
     ],
     closing: [
       { speaker: 'companion', text: '你的办法带我们到了这里。' },

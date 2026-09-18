@@ -1,3 +1,4 @@
+import { AnswerSupport, isVagueAnswer } from './answer-support.js';
 import { DioramaStage } from './stage.js';
 import { CHARACTER_CATALOG } from './models.js';
 import { WORLD_CATALOG } from './worlds.js';
@@ -37,6 +38,22 @@ let wowPresentation = null, wowRequest = null, mountedStoryScene = null;
 let stage, story, state, phase = 'home', epoch = 0, busy = false, pendingChoices = [], setupStep = 0;
 let shownChoices = false, shownText = false, replyOpen = false, menuOpen = false, noticeTimer, frameRequest;
 let studio = { type: 'dog', color: '#c99561', name: '小团', size: 100, expression: 'happy', action: 'idle', world: 'orchard' };
+
+function choiceFirst() {
+  if (phase === 'setup') return true;
+  const scene = story?.scenes[state?.sceneIndex];
+  return scene && (scene.inputMode === 'choice' || (!scene.freeInput && story?.id !== 'wow'));
+}
+const answerSupport = new AnswerSupport({
+  available: () => phase === 'question' && !busy && !choiceFirst() && !shownChoices && !shownText && !menuOpen && !$('bag-dialog').open && !document.hidden,
+  reveal: () => { setReplyMode('choices'); notify('可以继续说，也可以选一个小主意。'); },
+});
+function beginAnswer() {
+  answerSupport.stop();
+  setReplyMode(choiceFirst() ? 'choices' : null);
+  if (!choiceFirst()) answerSupport.start();
+  renderVoiceInput();
+}
 
 function readStorage(key, fallback) {
   try { return JSON.parse(localStorage.getItem(`${STORAGE}.${key}`)) ?? fallback; } catch { return fallback; }
@@ -86,7 +103,8 @@ async function handleWowAnswer(raw) {
   const fallback = scene.wow.kind === 'nickname'
     ? { accepted:true, reaction:`好，${nickname}，我记住啦。我们一起看看房间。`, source:'local', visual:{shape:'star', color:'#efd36e'} }
     : localResult(payload);
-  if (!fallback.accepted) { notify(fallback.reaction); return; }
+  if (!fallback.accepted) { setReplyMode('choices'); notify(fallback.reaction); return; }
+  answerSupport.stop();
   busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
   renderVoiceInput();
   $('speaker').textContent = scene.cast[0].name;
@@ -158,7 +176,8 @@ function renderVoiceInput() {
   $('voice-feedback').dataset.state = capture || mode;
   $('mic-button').dataset.captureState = capture || '';
   $('answer-dock').hidden = document.body.dataset.view !== 'story' || !['question', 'setup', 'responding', 'narrating', 'transition'].includes(phase);
-  $('reply-more').hidden = !answerable;
+  $('reply-more').hidden = !answerable || choiceFirst();
+  $('mic-button').hidden = Boolean(choiceFirst());
   scheduleFraming();
 }
 function resetVoiceInput() {
@@ -166,6 +185,7 @@ function resetVoiceInput() {
   delete $('mic-button').dataset.captureState;
 }
 function showVoiceFeedback(update) {
+  answerSupport.capture(update);
   voiceCapture = update;
   if (update.state === 'receiving') voiceInput.clearTranscript();
   if (update.text) voiceInput.setTranscript(update.text);
@@ -173,7 +193,7 @@ function showVoiceFeedback(update) {
 }
 
 function resumeListening() {
-  voice.listen(['question', 'setup'].includes(phase) && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden);
+  voice.listen(['question', 'setup'].includes(phase) && !choiceFirst() && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden);
 }
 
 function scheduleFraming() {
@@ -196,7 +216,14 @@ function setWorld(worldId, cast, options) {
   wowPresentation?.dispose(); wowPresentation = null;
   const scene = story?.id === 'wow' && state ? story.scenes[state.sceneIndex] : null;
   const decorations = scene && !options?.studio ? chapterLayoutOptions(scene.chapter, state.journeySeed) : null;
-  stage.setScene(worldId, cast, { ...options, decorations });
+  const explorationKey = scene ? `chapter-${scene.chapter}:${worldId}` : worldId;
+  const exploration = ['wow', 'moon'].includes(story?.id) && state && !options?.studio ? {
+    storyId: story.id,
+    saved: state.explorations?.[explorationKey] || (story.id === 'wow' && scene?.chapter === 1 ? state.exploration : null),
+    getName: () => state.playerName,
+    onSave: position => { state.explorations = { ...state.explorations, [explorationKey]: position }; persist(); },
+  } : null;
+  stage.setScene(worldId, cast, { ...options, decorations, exploration });
   const environment = stage.world?.atmosphere;
   if (environment) applyEnvironmentTheme(environment);
   scheduleFraming();
@@ -220,12 +247,13 @@ function setStoryMenu(open, restoreFocus = false) {
 }
 
 function setReplyMode(mode, restoreFocus = false) {
+  if (!mode && !busy && ['setup', 'question'].includes(phase) && choiceFirst()) mode = 'choices';
   if (mode && menuOpen) setStoryMenu(false);
   replyOpen = Boolean(mode);
   shownChoices = mode === 'choices'; shownText = mode === 'text';
   renderAnswerOptions();
   if (shownText) $('answer-input').focus({ preventScroll: true });
-  else if (restoreFocus) $('reply-more').focus({ preventScroll: true });
+  else if (restoreFocus) (choiceFirst() ? $('choices').querySelector('button') : $('reply-more'))?.focus({ preventScroll: true });
   resumeListening();
 }
 
@@ -276,12 +304,12 @@ async function dialogue(lines, token = epoch) {
 function showView(view) {
   stage?.setCameraDriftEnabled(view === 'story');
   document.body.dataset.view = view;
-  $('home-panel').hidden = view !== 'home';
+  $('home-panel')?.toggleAttribute('hidden', view !== 'home');
   $('story-panel').hidden = view !== 'story';
   $('studio-panel').hidden = view !== 'studio';
   $('scene-caption').hidden = view !== 'story';
   $('story-tools').hidden = view !== 'story';
-  $('original-link').hidden = view !== 'home';
+  $('original-link')?.toggleAttribute('hidden', view !== 'home');
   $('stage-hint').hidden = view === 'story';
   $('camera-reset').hidden = view !== 'studio';
   $('ending').hidden = true;
@@ -291,6 +319,7 @@ function showView(view) {
 }
 
 function route() {
+  answerSupport.stop();
   epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
   spokenLineVersion++; reading.clear(); endingReading.clear();
   resetVoiceInput();
@@ -301,9 +330,7 @@ function route() {
   if (params.get('mode') === 'studio') { openStudio(); return; }
   const id = params.get('story');
   if (id && STORIES.some(item => item.id === id)) { openStory(getStory(id)); return; }
-  phase = 'home'; story = null; showView('home');
-  setWorld('orchard', [{ id: 'dog', type: 'dog', name: '豆豆' }, { id: 'rabbit', type: 'rabbit', name: '雪团' }, { id: 'frog', type: 'frog', name: '小荷' }]);
-  document.title = '萌萌星 · 立体故事工坊';
+  location.replace('../');
 }
 
 function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ top: 0, behavior: 'instant' }); }
@@ -374,7 +401,7 @@ async function setupQuestion() {
   await speakLine({ speaker: 'guide', text: SETUP[setupStep].question }, token);
   if (token !== epoch) return;
   phase = 'setup'; busy = false; pendingChoices = SETUP[setupStep].choices;
-  renderAnswerOptions(); resumeListening();
+  renderAnswerOptions(); beginAnswer();
 }
 
 function renderAnswerOptions() {
@@ -405,6 +432,7 @@ async function choose(choice, customResult) {
   if (busy || !['question', 'setup'].includes(phase)) return;
   void voice.unlock();
   const wasSetup = phase === 'setup', token = epoch;
+  answerSupport.stop();
   busy = true; phase = 'responding'; voice.listen(false); renderVoiceInput();
   setReplyMode(null);
   if (wasSetup) {
@@ -471,7 +499,7 @@ async function enterScene(index) {
   await speakLine({ speaker: scene.questionSpeaker || scene.cast[0].id, text: scene.question }, token);
   if (token !== epoch) return;
   phase = 'question'; busy = false; pendingChoices = scene.choices;
-  $('answer-input').value = ''; renderAnswerOptions(); resumeListening();
+  $('answer-input').value = ''; renderAnswerOptions(); beginAnswer();
 }
 
 function matchChoice(text, choices) {
@@ -501,6 +529,7 @@ async function handleAnswer(raw, source = 'text') {
   if (!text) return;
   if (source !== 'voice') { voiceCapture = null; renderVoiceInput(); }
   voiceInput.setTranscript(text);
+  if (isVagueAnswer(text)) { notify('慢慢想，也可以看看下面的小主意。'); return; }
   if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(text);
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
@@ -518,6 +547,7 @@ async function handleAnswer(raw, source = 'text') {
     await choose({ speaker: 'companion', result: `好，${nickname}，我记住啦。我们一起看看房间。`, action: 'celebrate', expression: 'happy' });
     return;
   }
+  answerSupport.stop();
   busy = true; voice.listen(false); setReplyMode(null); renderVoiceInput();
   try {
     if (scene.freeInput) {
@@ -529,7 +559,7 @@ async function handleAnswer(raw, source = 'text') {
         } catch { result = { shouldRespond: true, outcome: scene.inventionResult, visual: fallbackInvention(text) }; }
       }
       if (token !== epoch) return;
-      if (!result.shouldRespond || result.privacyRedirect) { notify(result.listeningPrompt || '再说说你想造什么。'); return; }
+      if (!result.shouldRespond || result.privacyRedirect) { setReplyMode('choices'); notify(result.listeningPrompt || '再说说你想造什么。'); return; }
       if (!scene.final) {
         const visual = describeInvention(text, state.inventions.at(-1)?.visual, scene.world, result.visual);
         rememberInvention(text, visual);
@@ -621,14 +651,6 @@ function download(data, filename, type = 'application/json') {
 }
 
 function initializeControls() {
-  STORIES.forEach(item => {
-    const link = document.createElement('a'); link.className = 'story-link'; link.href = `?story=${item.id}`;
-    const title = document.createElement('strong'); title.textContent = item.title;
-    const subtitle = document.createElement('small'); subtitle.textContent = `${item.age} · ${item.subtitle}`;
-    const arrow = document.createElement('b'); arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
-    link.append(title, subtitle, arrow); $('story-list').append(link);
-    link.onmouseenter = () => { if (phase === 'home') setWorld(item.scenes[0].world, item.scenes[0].cast); };
-  });
   CHARACTER_CATALOG.forEach(item => {
     const button = document.createElement('button'); button.className = 'type-button'; button.dataset.type = item.id; button.textContent = item.name;
     button.title = item.description; button.onclick = () => { studio.type = item.id; studio.color = item.color; rebuildStudio(); }; $('character-types').append(button);
@@ -719,7 +741,7 @@ function initializeControls() {
     setStoryMenu(false);
     if (event.target.closest('#stage')) { event.preventDefault(); event.stopPropagation(); }
   }, true);
-  addEventListener('pagehide', () => { wowRequest?.abort(); wowRequest = null; voice.stop(); });
+  addEventListener('pagehide', () => { answerSupport.stop(); wowRequest?.abort(); wowRequest = null; voice.stop(); });
   addEventListener('pageshow', event => { if (event.persisted && story?.id === 'wow') route(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) voice.pause(); });
 }

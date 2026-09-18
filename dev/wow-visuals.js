@@ -395,7 +395,7 @@ export function createWowPresentation(stage) {
     const clarity=THREE.MathUtils.smoothstep(progress,0,1);
     const remaining=Math.pow(1-clarity,1.15);
     fogMaterials.forEach(material=>{
-      material.uniforms.uOpacity.value=material.userData.density*remaining;
+      material.uniforms.uOpacity.value=material.userData.density*remaining*(stage.exploration ? .16 : 1);
       material.uniforms.uColor.value.copy(mistNight).lerp(mistDawn,clarity*.8);
     });
     fogVolumes.forEach(volume=>{

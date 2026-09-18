@@ -6,7 +6,7 @@ import { StoryVoice } from '../../dev/voice.js';
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
-if (params.get('from') === 'dev') $('back').href = './dev/';
+if (params.get('from') === 'home' || params.get('from') === 'dev') $('back').href = './';
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));

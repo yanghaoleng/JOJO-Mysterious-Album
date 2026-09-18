@@ -33,14 +33,14 @@ function seededRandom(seed) {
   return () => { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; };
 }
 
-export function createWorld(requestedId, { seed = 1, decorations = null } = {}) {
+export function createWorld(requestedId, { seed = 1, decorations = null, radius: requestedRadius } = {}) {
   const id = PALETTES[requestedId] ? requestedId : 'orchard';
-  const palette = PALETTES[id];
+  const palette = requestedRadius && id === 'bakery' ? ['#b6c69a', '#8da47c', '#e0cba5'] : PALETTES[id];
   const environment = WORLD_ENVIRONMENTS[id];
   const rng = seededRandom(seed);
   const group = new THREE.Group();
   group.name = `handmade-planet-${id}`;
-  const surface = createPlanetSurface(environment.radius);
+  const surface = createPlanetSurface(requestedRadius ?? environment.radius);
   const { radius, center, surfacePoint, surfaceNormal } = surface;
   const staticRoot = new THREE.Group();
   const liveRoot = new THREE.Group();

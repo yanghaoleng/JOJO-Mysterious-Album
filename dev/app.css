@@ -32,18 +32,13 @@ body[data-view=studio] #experience{display:grid;grid-template-columns:minmax(0,1
 @media(prefers-reduced-motion:reduce){.read-along__phrase{transition:none}}
 @media(forced-colors:active){.read-along__phrase{opacity:1}.read-along__phrase.is-current{color:Highlight;text-shadow:none;text-decoration:underline}}
 
-/* Subtitles on any background: ink-dark text with a soft light halo.
-   The pale glow keeps dark glyphs readable over both the 3D scene and
-   light picture-book panels, and reads naturally on either. */
-#speech-text,.speech-card .speech-text,
-#ending-line,.ending blockquote,.ending p,
-.read-along__visual,.read-along__phrase{
-  color:#393e32!important;
-  text-shadow:0 1px 2px rgba(252,248,238,.92),0 0 6px rgba(252,248,238,.7),0 0 15px rgba(252,248,238,.45)!important;
+/* White subtitles with a restrained glow and a deep outline-like shadow. */
+#speech-text,.speech-card .speech-text,#ending-line,.ending blockquote,.ending p,
+.read-along__visual,.read-along__phrase,.read-along__phrase.is-current,.speech-card .speaker {
+  color:#fff!important;
+  text-shadow:0 2px 3px #142219,0 3px 9px #142219e6,0 0 2px #fff9,0 0 9px #ffffff65!important;
 }
-.read-along__phrase.is-current{
-  color:#E8A33D!important;
-  text-shadow:0 1px 2px rgba(252,248,238,.95),0 0 10px rgba(252,248,238,.8),0 0 22px rgba(252,248,238,.5)!important;
-}
-.speech-card .speaker{color:#4a5143!important;text-shadow:0 1px 2px rgba(252,248,238,.88)!important}
-
+.read-along__phrase{opacity:.92}
+.read-along__phrase.is-read{opacity:.95}
+.read-along__phrase.is-current{opacity:1}
+body[data-view=story] .answer-controls:has(#mic-button[hidden]){display:none}

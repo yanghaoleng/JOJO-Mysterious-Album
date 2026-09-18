@@ -94,3 +94,15 @@ WOW请求携带 `speechProfile: "wow-child"`，由后端固定调用豆包2.0 `s
 ### iPhone Duo 四巨头视图
 
 入口 `/dev/iphone-duo/`，基于 chuspeeism/iphone-duo 增加独立折叠设备视图。默认合起仅显示叫叫，展开显示四巨头；有展开/合起按钮、角度滑杆及视角重置。构建：`node dev/tools/build-iphone-duo.mjs`。来源、模型准备和运行时说明见 `iphone-duo/README.md`。
+
+## 第一颗星球的自由探索
+
+`?story=wow` 的第一章现在是一颗半径 10 的可行走星球。孩子以背着小包的 3D 小探险者出现，头顶显示本机冒险昵称；星星小屋保留原有 11 幕对话，小鱼湖、弹弹花地、蘑菇小径、风铃坡提供纯环境互动，不增加剧情或收集进度。探索区从一开始可见，主故事区继续按回答生长；为保证能看清道路，第一颗星球使用较明亮的光线与薄雾。
+
+点击/轻点地面行走，方向键或 WASD 连续移动，松键停止；拖动看四周，滚轮/双指缩放。地图中的目的地和「走回故事小屋」都会实际行走。湖面、房屋、工作台和主角位置设有阻挡，点击湖心停在岸边，路径绕过阻挡；键盘移动可沿边缘滑动。星球背面也可走动。走近景物才触发鱼跃、花跳、蘑菇点头和风铃摇摆，离开后可再次触发。
+
+位置仅存入既有本机 WOW 存档的 `exploration.normal`，不上传，不改变已回答记录。刷新恢复，重新开始清除；进入第二章或其他故事后卸载这颗星球的探索控件与键盘监听。输入文字、打开故事菜单/背包、切到后台时停止移动。减少动态模式保留方向和行走，降低环境动效。
+
+新增模块：`exploration-navigation.js`（球面寻路和阻挡）、`exploration-world.js`（区域与小探险者）、`exploration.js`（交互、镜头、地图、存档）、`exploration.css`。无需新增依赖。构建仍为 `node dev/tools/build.mjs`。
+
+验证：`node dev/tools/verify-exploration.mjs`；浏览器验证用 `PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-exploration-ui.mjs`，默认连接 `http://127.0.0.1:8918/dev/`，可通过 `DEV_QA_BASE` 修改。覆盖四区走动与反馈、湖岸/障碍、球面背面、方向键与 WASD、点击与拖动区分、读档、打字隔离、第一章全部对话与跨章卸载、手机触摸和减少动态。浏览器使用本地文本回退，不代表真实麦克风/线上语音验证。
