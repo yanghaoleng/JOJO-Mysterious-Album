@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { WOW_DEV_STORY } from '../wow-story.js';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
-const base = process.env.DEV_QA_BASE || 'http://127.0.0.1:8918/dev/';
+const base = process.env.DEV_QA_BASE || 'http://127.0.0.1:8156/dev/';
 const output = process.env.VERIFY_OUTPUT || '/tmp/jma-exploration-check';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -17,7 +18,7 @@ const idle = () => page.waitForFunction(() => !window.__DEV_STORY__.status.stage
 async function destination(id) { await page.locator('.exploration-map-toggle').click(); await page.locator(`[data-zone="${id}"]`).click(); await idle(); }
 async function decision() {
   for (let i = 0; i < 180; i++) {
-    const s = await status(); if (s.phase === 'question' && !s.busy) return;
+    const s = await status(); if (['question','complete'].includes(s.phase) && !s.busy) return;
     if (await page.locator('#speech-card').isVisible()) await page.locator('#speech-card').click();
     await page.waitForTimeout(80);
   }
@@ -54,22 +55,30 @@ try {
   assert.ok(movedDistance(before, (await explored()).normal) < .005, 'Position not restored');
   checks.push('position restored on refresh');
   await destination('home'); await page.locator('#start-story').click(); await decision();
-  await page.locator('#reply-more').click(); await page.locator('#show-text').click();
+  if (await page.locator('#reply-options').isHidden()) await page.locator('#reply-more').click(); await page.locator('#show-text').click();
   await page.locator('#answer-input').fill('小星星'); before = (await explored()).normal;
   await page.keyboard.down('ArrowLeft'); await page.waitForTimeout(250); await page.keyboard.up('ArrowLeft');
   assert.ok(movedDistance(before, (await explored()).normal) < .001, 'Text cursor moved character');
   await page.locator('#text-form button').click(); await decision();
   assert.equal((await status()).sceneIndex, 1); assert.ok((await explored()).normal);
   checks.push('typing keeps avatar still; story answer advances normally and keeps exploration');
-  // Complete the first chapter through actual choice controls; second chapter must remove exploration.
+  // Complete the first chapter through actual choice controls; every chapter must retain exploration.
   for (let i = 1; i < 11; i++) {
     if (await page.locator('#reply-options').isHidden()) await page.locator('#reply-more').click();
     if (await page.locator('#choices').isHidden()) await page.locator('#show-choices').click();
     await page.locator('#choices button').first().click(); await decision();
   }
-  assert.equal((await status()).sceneIndex, 11); assert.equal((await explored()), null);
-  assert.equal(await page.locator('.exploration-hud').count(), 0);
-  checks.push('all 11 first-chapter answers; second chapter clears explorer, controls and camera override');
+  assert.equal((await status()).sceneIndex, 11); assert.ok(await explored());
+  assert.equal(await page.locator('.exploration-hud').count(), 1);
+  for (let i = 11; i < WOW_DEV_STORY.scenes.length; i++) {
+    if (await page.locator('#reply-options').isHidden()) await page.locator('#reply-more').click();
+    if (await page.locator('#choices').isHidden()) await page.locator('#show-choices').click();
+    await page.locator('#choices button').first().click(); await decision();
+    assert.ok(await explored(), `Lost child in WOW scene ${i}`);
+    assert.equal(await page.locator('.exploration-hud').count(), 1);
+  }
+  assert.equal((await status()).completed, true);
+  checks.push('all WOW answers and six planets retain one explorer, with normal completion');
   // Restart uses a fresh position, and mobile keeps map/touch movement accessible.
   await page.locator('#open-story-menu').click(); await page.locator('#restart').click();
   await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(400);

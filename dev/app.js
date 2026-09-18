@@ -216,7 +216,13 @@ function setWorld(worldId, cast, options) {
   wowPresentation?.dispose(); wowPresentation = null;
   const scene = story?.id === 'wow' && state ? story.scenes[state.sceneIndex] : null;
   const decorations = scene && !options?.studio ? chapterLayoutOptions(scene.chapter, state.journeySeed) : null;
-  const exploration = scene?.chapter === 1 && !options?.studio ? { saved: state.exploration, getName: () => state.playerName, onSave: position => { state.exploration = position; persist(); } } : null;
+  const explorationKey = scene ? `chapter-${scene.chapter}:${worldId}` : worldId;
+  const exploration = ['wow', 'moon'].includes(story?.id) && state && !options?.studio ? {
+    storyId: story.id,
+    saved: state.explorations?.[explorationKey] || (story.id === 'wow' && scene?.chapter === 1 ? state.exploration : null),
+    getName: () => state.playerName,
+    onSave: position => { state.explorations = { ...state.explorations, [explorationKey]: position }; persist(); },
+  } : null;
   stage.setScene(worldId, cast, { ...options, decorations, exploration });
   const environment = stage.world?.atmosphere;
   if (environment) applyEnvironmentTheme(environment);

@@ -25,8 +25,14 @@ function showChoices(reflection = false) {
   $('answer-choices').hidden = false; layout();
 }
 function resumeAnswer() { voice.listen(phase === 'reflection' && !speech.isActive() && !$('answer-dialog').open && !document.hidden); }
-function layout(){if(!stage)return;const r=$('debate-world').getBoundingClientRect();const bottom=document.querySelector('.conversation').getBoundingClientRect();stage.setViewportInsets({top:innerWidth<768?160:100,bottom:Math.max(140,r.bottom-bottom.top+20),left:innerWidth<900?0:innerWidth*.12,right:0});}
-try{stage=new DioramaStage($('debate-world'));stage.setScene('meadow',speakers);stage.yaw=.04;stage.pitch=.14;stage.frameCharacters();stage.setCameraDriftEnabled(true);layout();$('debate-world').dataset.ready='true';}catch{$('world-error').hidden=false;}
+function layout(){if(!stage)return;const r=$('debate-world').getBoundingClientRect();const bottom=document.querySelector('.conversation').getBoundingClientRect();stage.setViewportInsets({top:innerWidth<768?160:100,bottom:Math.max(140,r.bottom-bottom.top+20),left:20,right:20});}
+const EXPLORATION_STORAGE = 'jma.dev.clay.v1.exploration.debate';
+function debateExploration(reset = false) {
+  let saved = null;
+  try { if (reset) localStorage.removeItem(EXPLORATION_STORAGE); else saved = JSON.parse(localStorage.getItem(EXPLORATION_STORAGE)); } catch {}
+  return { storyId: 'debate', saved, onSave: position => { try { localStorage.setItem(EXPLORATION_STORAGE, JSON.stringify(position)); } catch {} } };
+}
+try{stage=new DioramaStage($('debate-world'));stage.setScene('meadow',speakers,{ exploration: debateExploration() });layout();$('debate-world').dataset.ready='true';}catch(error){console.error(error);$('world-error').hidden=false;}
 new ResizeObserver(layout).observe(document.querySelector('.conversation'));addEventListener('resize',layout);
 function setPhase(next){answerSupport.stop();phase=next;$('answer-choices').hidden=true;if(['ready','topic'].includes(next))showChoices();if(next==='reflection')answerSupport.start();document.body.dataset.phase=next;const discussing=next==='discussing';$('toggle-play').hidden=$('next-turn').hidden=$('finish').hidden=!discussing;$('mic-button').hidden=next!=='reflection';$('write-answer').hidden=!['ready','topic','reflection'].includes(next);$('next-chapter').hidden=next!=='ending';$('write-answer').textContent=next==='reflection'?'写下我的看法':'写下想法';resumeAnswer();layout();}
 async function say(text,who=speakers[0]){const token=++speechId;voice.listen(false);stage?.speak(who.id,true);$('speaker-name').textContent=who.name;$('speech-text').textContent=text;input.setState('speaking',{disabled:true});const played=await speech.speak(text,who.voice);if(token!==speechId)return;stage?.speak('',false);resumeAnswer();return played;}
@@ -51,8 +57,8 @@ document.querySelectorAll('[data-question]').forEach(b=>b.addEventListener('clic
 function next(){if(phase==='discussing'){epoch++;cancelSpeech();index++;void playTurn();}else{cancelSpeech();resumeAnswer();}}
 $('speech-card').onclick=next;$('next-turn').onclick=next;$('finish').onclick=reflect;
 $('toggle-play').onclick=()=>{paused=!paused;epoch++;cancelSpeech();$('toggle-play').textContent=paused?'继续':'暂停';if(!paused)void playTurn();};
-$('restart').onclick=()=>{epoch++;request?.abort();request=null;cancelSpeech();voice.stop();input.reset();result=null;index=0;paused=false;$('answer-dialog').close();$('answer-input').value='';setPhase('ready');$('topic-caption').textContent='带着你的好奇，拜访一位想法不一样的朋友。';$('round-label').textContent='星球主人 · 书桌小鸮';$('speaker-name').textContent='书桌小鸮';$('speech-text').textContent='欢迎来到我的小星球！先选一个你想聊的话题吧。';status('');};
+$('restart').onclick=()=>{stage?.setScene('meadow',speakers,{ exploration: debateExploration(true) });layout();epoch++;request?.abort();request=null;cancelSpeech();voice.stop();input.reset();result=null;index=0;paused=false;$('answer-dialog').close();$('answer-input').value='';setPhase('ready');$('topic-caption').textContent='带着你的好奇，拜访一位想法不一样的朋友。';$('round-label').textContent='星球主人 · 书桌小鸮';$('speaker-name').textContent='书桌小鸮';$('speech-text').textContent='欢迎来到我的小星球！先选一个你想聊的话题吧。';status('');};
 addEventListener('pagehide',()=>{answerSupport.stop();epoch++;request?.abort();cancelSpeech();voice.stop();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){voice.pause();if(phase==='discussing'&&!paused)$('toggle-play').click();}});
-window.__DEBATE_3D__={get status(){return {phase,index,paused,characters:stage?.actors.size||0,world:stage?.worldId,voiceEnabled:voice.enabled};}};
+window.__DEBATE_3D__={get status(){return {phase,index,paused,characters:stage?.actors.size||0,world:stage?.worldId,stage:stage?.stats(),voiceEnabled:voice.enabled};}};
 setPhase('ready');

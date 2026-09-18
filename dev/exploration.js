@@ -6,10 +6,13 @@ const UP = new THREE.Vector3(0, 1, 0);
 const MOVEMENT = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD']);
 const editing = target => target?.closest?.('input, textarea, select, [contenteditable=true]');
 
-export function createExploration(stage, { saved, getName = () => '我', onSave = () => {} } = {}) {
-  const world = stage.world, scenery = createExplorationWorld(world), avatar = createChildAvatar();
+export function createExploration(stage, { saved, storyId = 'wow', getName = () => '我', onSave = () => {} } = {}) {
+  const world = stage.world;
+  const actorObstacles = [...stage.actors.values()].map(actor => ({ normal: actor.group.position.clone().sub(world.planet.center).normalize(), radius: .6 }));
+  const scenery = createExplorationWorld(world, { storyId, actorObstacles }), avatar = createChildAvatar();
+  const uiHost = document.getElementById('world-viewport') || stage.container.parentElement;
   stage.scene.add(scenery.root, avatar.group); stage.style.apply(scenery.root); stage.style.apply(avatar.group);
-  const validSaved = Array.isArray(saved?.normal) && saved.normal.length === 3 && saved.normal.every(Number.isFinite) && Math.hypot(...saved.normal) > .5;
+  const validSaved = Array.isArray(saved?.normal) && saved.normal.length === 3 && saved.normal.every(Number.isFinite) && Math.hypot(...saved.normal) > .5 && Math.hypot(...saved.normal) < 1.5;
   const walker = createSurfaceWalker({ radius: world.planet.radius, obstacles: scenery.obstacles, initial: validSaved ? new THREE.Vector3(...saved.normal).normalize() : world.surfaceNormal(.5, 2.4) });
   const nearbyProps = new Set();
   const keys = new Set(), controller = new AbortController(), options = { signal: controller.signal };
@@ -22,10 +25,10 @@ export function createExploration(stage, { saved, getName = () => '我', onSave 
   const markerMaterial = new THREE.MeshBasicMaterial({ color: '#fff1bf', depthWrite: false });
   const marker = new THREE.Mesh(markerGeometry, markerMaterial); marker.visible = false; stage.scene.add(marker);
   const ui = document.createElement('aside'); ui.className = 'exploration-hud'; ui.setAttribute('aria-label', '星球探索');
-  ui.innerHTML = `<div class="exploration-location"><span>我的小小星球</span><strong id="exploration-area">星星小屋</strong></div><button type="button" class="exploration-map-toggle" aria-expanded="false" aria-controls="exploration-map">星球地图</button><div id="exploration-map" class="exploration-map" hidden><p>想去哪里？我们走过去。</p><div class="exploration-map-paths" aria-hidden="true"></div>${scenery.zones.map(zone => `<button type="button" data-zone="${zone.id}" style="--zone-color:${zone.color}"><span class="zone-dot" aria-hidden="true"></span>${zone.name}</button>`).join('')}<small>小路相通，可以随时走回小屋</small></div><p class="exploration-help">点地面走过去 · 方向键 / WASD 移动<br><span>拖动看四周 · 滚轮或双指缩放</span></p><p class="exploration-feedback" role="status" aria-live="polite"></p><button type="button" class="exploration-return" hidden>走回故事小屋</button>`;
-  document.getElementById('world-viewport').append(ui);
+  ui.innerHTML = `<div class="exploration-location"><span>我的小小星球</span><strong id="exploration-area">${scenery.zones[0].name}</strong></div><button type="button" class="exploration-map-toggle" aria-expanded="false" aria-controls="exploration-map">星球地图</button><div id="exploration-map" class="exploration-map" hidden><p>想去哪里？我们走过去。</p><div class="exploration-map-paths" aria-hidden="true"></div>${scenery.zones.map(zone => `<button type="button" data-zone="${zone.id}" style="--zone-color:${zone.color}"><span class="zone-dot" aria-hidden="true"></span>${zone.name}</button>`).join('')}<small>小路相通，随时可以回到伙伴身边</small></div><p class="exploration-help">点地面走过去 · 方向键 / WASD 移动<br><span>拖动看四周 · 滚轮或双指缩放</span></p><p class="exploration-feedback" role="status" aria-live="polite"></p><button type="button" class="exploration-return" hidden>走回伙伴身边</button>`;
+  uiHost.append(ui);
   const nameLabel = document.createElement('span'); nameLabel.className = 'exploration-child-name'; nameLabel.setAttribute('aria-hidden', 'true');
-  document.getElementById('world-viewport').append(nameLabel);
+  uiHost.append(nameLabel);
   const areaLabel = ui.querySelector('#exploration-area'), feedback = ui.querySelector('.exploration-feedback'), returnButton = ui.querySelector('.exploration-return');
   const map = ui.querySelector('#exploration-map'), toggle = ui.querySelector('.exploration-map-toggle');
   const setMap = open => { map.hidden = !open; toggle.setAttribute('aria-expanded', String(open)); };
@@ -41,7 +44,7 @@ export function createExploration(stage, { saved, getName = () => '我', onSave 
   };
   ui.querySelectorAll('[data-zone]').forEach(button => { button.onclick = () => { const zone = scenery.zones.find(zone => zone.id === button.dataset.zone); go(zone.normal, zone.name); setMap(false); }; });
   returnButton.onclick = () => go(scenery.zones[0].normal, scenery.zones[0].name);
-  const blocked = () => document.hidden || Boolean(document.querySelector('dialog[open]')) || !document.getElementById('story-menu').hidden;
+  const blocked = () => document.hidden || Boolean(document.querySelector('dialog[open]')) || document.getElementById('story-menu')?.hidden === false;
   const stop = () => { keys.clear(); walker.stop(); marker.visible = false; };
   window.addEventListener('keydown', event => {
     if (event.code === 'Escape') { stop(); setMap(false); return; }
@@ -121,7 +124,8 @@ export function createExploration(stage, { saved, getName = () => '我', onSave 
       stage.camera.position.copy(stage.target).add(offset); stage.camera.up.copy(cameraNormal); stage.camera.lookAt(stage.target); stage.camera.updateMatrixWorld();
       const labelPoint = avatar.group.position.clone().addScaledVector(walker.normal, 1.58).project(stage.camera);
       const bounds = stage.container.getBoundingClientRect();
-      nameLabel.textContent = getName() || '我';
+      const playerName = getName() || '我';
+      if (nameLabel.textContent !== playerName) nameLabel.textContent = playerName;
       nameLabel.style.transform = `translate(-50%, -100%) translate(${(labelPoint.x + 1) * bounds.width / 2}px, ${(1 - labelPoint.y) * bounds.height / 2}px)`;
       stage.sun.position.copy(stage.target).add(new THREE.Vector3(-7, 12, 8).applyQuaternion(rotation));
       stage.sun.target.position.copy(stage.target); stage.sun.target.updateMatrixWorld();

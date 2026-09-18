@@ -34,3 +34,19 @@ straight.go(surface.surfaceNormal(5, 0)); straight.step(.05, new THREE.Vector3(0
 const child = createChildAvatar(); child.update(.05, true, false); child.dispose();
 scenery.dispose(); world.dispose();
 console.log('Exploration verified: all five regions, obstacle clearance, lake shore, full sphere, environmental reactions, stable speed, stop and keyboard override.');
+
+for (const id of ['meadow', 'observatory', 'reef', 'pocket', 'cloud', 'moon', 'home']) {
+  const planet = createWorld(id, { radius: 10 });
+  const areas = createExplorationWorld(planet);
+  const navigation = createSurfaceWalker({ radius: 10, obstacles: areas.obstacles, initial: planet.surfaceNormal(.5, 2.4) });
+  for (const zone of [...areas.zones.slice(1), areas.zones[0]]) {
+    assert.ok(navigation.go(zone.normal), `${id}: no route to ${zone.id}`);
+    for (let i = 0; i < 2000 && navigation.moving; i++) {
+      navigation.step(.05);
+      for (const obstacle of areas.obstacles) assert.ok(surfaceDistance(navigation.normal, obstacle.normal, 10) >= obstacle.radius + .265, `${id}: collision`);
+    }
+    assert.equal(navigation.moving, false, `${id}: route stuck`);
+  }
+  areas.dispose(); planet.dispose();
+}
+console.log('All eight world themes passed routing and collision checks.');

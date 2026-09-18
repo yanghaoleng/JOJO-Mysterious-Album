@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
+import { explorationConfig } from './exploration-config.js';
 
 export const EXPLORATION_ZONES = [
   { id: 'home', name: '星星小屋', hint: '故事从这里开始', x: 0, z: 1.8, color: '#e6bb79' },
@@ -9,12 +10,15 @@ export const EXPLORATION_ZONES = [
 ];
 
 /** Shared low-poly clay pieces. These decorations have no story side effects. */
-export function createExplorationWorld(world) {
+export function createExplorationWorld(world, { storyId = 'wow', actorObstacles = [] } = {}) {
+  const config = explorationConfig(world.group.userData.worldId, storyId);
+  const regionZones = EXPLORATION_ZONES.map((zone, i) => ({ ...zone, name: i ? config.names[i - 1] : config.home, hint: i ? (config.hints?.[i - 1] || zone.hint) : '伙伴在这里等你，随时可以继续故事' }));
+  const space = config.theme === 'space', sky = config.theme === 'sky', ocean = config.theme === 'ocean', fabric = config.theme === 'fabric';
   const root = new THREE.Group(); root.name = 'walkable-neighborhoods';
   const geometries = new Map(), materials = new Map(), reactions = [];
   const up = new THREE.Vector3(0, 1, 0);
   const geometry = kind => {
-    if (!geometries.has(kind)) geometries.set(kind, kind === 'box' ? new THREE.BoxGeometry(1, 1, 1) : kind === 'ring' ? new THREE.TorusGeometry(1, .035, 6, 36) : kind === 'cone' ? new THREE.ConeGeometry(1, 1, 10) : new THREE.SphereGeometry(1, 12, 8));
+    if (!geometries.has(kind)) geometries.set(kind, kind === 'box' ? new THREE.BoxGeometry(1, 1, 1) : kind === 'ring' ? new THREE.TorusGeometry(1, .035, 6, 36) : kind === 'star' ? new THREE.OctahedronGeometry(1) : kind === 'cone' ? new THREE.ConeGeometry(1, 1, 10) : new THREE.SphereGeometry(1, 12, 8));
     return geometries.get(kind);
   };
   function shape(parent, color, position, scale, kind = 'ball') {
@@ -32,12 +36,20 @@ export function createExplorationWorld(world) {
     return group;
   }
   function flower(parent, color, size = 1) {
+    if (space) {
+      for (let i=0;i<3;i++) shape(parent, i % 2 ? '#bdd5d5' : '#c4b7d9', [(i-1)*.15,.24+i*.1,0], [.15,.4+i*.08,.15], 'star');
+      return;
+    }
+    if (sky || ocean) {
+      for (let i=0;i<3;i++) shape(parent, sky ? '#ececf2' : color, [(i-1)*.15,.22+i*.08,0], [.19,sky ? .2 : .4,.16]);
+      return;
+    }
     shape(parent, '#71885a', [0, .25 * size, 0], [.035, .3 * size, .035]);
     for (let i = 0; i < 5; i++) { const a = i * Math.PI * .4; shape(parent, color, [Math.cos(a) * .18 * size, .5 * size, Math.sin(a) * .18 * size], [.16 * size, .09, .16 * size]); }
     shape(parent, '#e8bd68', [0, .57 * size, 0], [.095, .055, .095]);
   }
   // Pebbled paths branch from the same clearing. Every stone hugs the sphere.
-  EXPLORATION_ZONES.slice(1).forEach(zone => {
+  regionZones.slice(1).forEach(zone => {
     for (let i = 0; i < 16; i++) {
       const t = i / 15, x = zone.x * t + Math.sin(t * Math.PI) * .5, z = 1.8 + (zone.z - 1.8) * t;
       if (zone.id === 'lake' && t > .67) continue;
@@ -46,7 +58,7 @@ export function createExplorationWorld(world) {
     }
   });
   // A curved water disc follows the actual globe instead of floating above it.
-  const lake = EXPLORATION_ZONES[1], lakeRadius = 1.65;
+  const lake = regionZones[1], lakeRadius = 1.65;
   const vertices = [], indices = [];
   for (let ring = 0; ring <= 8; ring++) for (let i = 0; i <= 48; i++) {
     const a = i / 48 * Math.PI * 2, r = ring / 8 * lakeRadius;
@@ -54,7 +66,7 @@ export function createExplorationWorld(world) {
     if (ring < 8 && i < 48) { const n = ring * 49 + i; indices.push(n, n + 49, n + 1, n + 1, n + 49, n + 50); }
   }
   const waterGeometry = new THREE.BufferGeometry(); waterGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); waterGeometry.setIndex(indices); waterGeometry.computeVertexNormals(); geometries.set('water', waterGeometry);
-  const waterMaterial = new THREE.MeshStandardMaterial({ color: '#83bec2', roughness: .42, side: THREE.DoubleSide, userData: { handcraftedSurface: 'water' } }); materials.set('water', waterMaterial);
+  const waterMaterial = new THREE.MeshStandardMaterial({ color: space ? '#9ca9c7' : sky ? '#c2d7e3' : fabric ? '#c9adbd' : '#83bec2', roughness: .42, side: THREE.DoubleSide, userData: { handcraftedSurface: 'water' } }); materials.set('water', waterMaterial);
   const water = new THREE.Mesh(waterGeometry, waterMaterial); water.receiveShadow = true; root.add(water);
   for (let i = 0; i < 13; i++) {
     const a = i / 13 * Math.PI * 2;
@@ -65,9 +77,14 @@ export function createExplorationWorld(world) {
   const fish = reactive(lake.x, lake.z, 2.9, group => {
     for (let i = 0; i < 3; i++) {
       const model = new THREE.Group(); group.add(model); model.position.set((i - 1) * .55, 0, (i % 2) * .4 - .2);
+      if (space || sky || fabric) {
+        shape(model, space ? '#f5d794' : sky ? '#e8eef5' : '#dab89a', [0,0,0], [.19,.23,.19], space ? 'star' : 'ball');
+        if (fabric) shape(model,'#8d788b',[0,0,.18],[.04,.045,.02]);
+      } else {
       shape(model, ['#edb97d', '#e9d998', '#dca3a0'][i], [0, 0, 0], [.23, .13, .12]);
       shape(model, '#f3cf98', [-.23, 0, 0], [.14, .17, .055], 'cone').rotation.z = Math.PI / 2;
       shape(model, '#424944', [.13, .045, .10], [.025, .025, .025]);
+      }
       model.userData.rest = model.position.clone();
     }
   }, 'fish'); fish.visible = false;
@@ -81,6 +98,11 @@ export function createExplorationWorld(world) {
     const x = -3.5 + Math.sin(i * 1.7) * 1.25, z = 5.4 + i * .45;
     reactive(x, z, 1.3, group => {
       const height = .38 + (i % 3) * .12;
+      if (space || sky || ocean || fabric) {
+        shape(group, space ? '#a7aec7' : sky ? '#e9eaf3' : ocean ? '#e4cabc' : '#cda9bb', [0,.2,0],[.34,.25,.3]);
+        if (ocean || fabric) for(let j=0;j<3;j++) shape(group,'#f0dbcd',[(j-1)*.14,.3,.12],[.045,.14,.18]);
+        return;
+      }
       shape(group, '#ecdec4', [0, height * .5, 0], [.13, height * .6, .13]);
       shape(group, i % 2 ? '#c597a5' : '#ba9e83', [0, height, 0], [.39, .23, .36]);
       for (let j = 0; j < 3; j++) shape(group, '#f2dfc8', [Math.cos(j * 2.1) * .19, height + .17, Math.sin(j * 2.1) * .17], [.06, .035, .06]);
@@ -100,14 +122,15 @@ export function createExplorationWorld(world) {
   // Small breathing shrubs connect the clearings without blocking paths.
   for (let i = 0; i < 24; i++) {
     const a = i * 2.39996, r = 4.4 + (i % 5) * 1.05, x = Math.cos(a) * r, z = Math.sin(a) * r;
-    if (EXPLORATION_ZONES.some(zone => Math.hypot(x - zone.x, z - zone.z) < 2)) continue;
+    if (regionZones.some(zone => Math.hypot(x - zone.x, z - zone.z) < 2)) continue;
     reactive(x, z, 1.25, group => {
-      shape(group, i % 2 ? '#9bb280' : '#b0bd8c', [0, .23, 0], [.36, .3, .32]);
-      shape(group, '#bdc994', [.23, .17, .08], [.22, .22, .23]);
+      shape(group, space ? '#b5bdd0' : sky ? '#e3e6ee' : i % 2 ? '#9bb280' : '#b0bd8c', [0, .23, 0], [.36, .3, .32]);
+      shape(group, space ? '#d0cadc' : sky ? '#f0ecec' : '#bdc994', [.23, .17, .08], [.22, .22, .23]);
     }, 'shrub');
   }
-  const zones = EXPLORATION_ZONES.map(zone => ({ ...zone, normal: world.surfaceNormal(zone.x, zone.z) }));
-  const obstacles = [[-1.45, .35, .64], [-1.62, -2.22, 1.55], [2.55, -1.69, 1.02], [2.7, .95, .9], [lake.x, lake.z, 1.72]].map(([x, z, radius]) => ({ normal: world.surfaceNormal(x, z), radius }));
+  const zones = regionZones.map(zone => ({ ...zone, normal: world.surfaceNormal(zone.x, zone.z) }));
+  const obstacles = [...config.landmarks, [lake.x, lake.z, 1.72]].map(([x, z, radius]) => ({ normal: world.surfaceNormal(x, z), radius }));
+  obstacles.push(...actorObstacles);
   return {
     root, zones, obstacles,
     update(dt, normal, reduced) {

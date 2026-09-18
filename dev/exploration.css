@@ -39,3 +39,10 @@ body[data-exploring=true] .stage-hint, body[data-exploring=true] .scene-caption 
   body[data-exploring=true] .speech-text { font-size: 17px; }
 }
 .exploration-child-name { position: absolute; z-index: 3; top: 0; left: 0; padding: 3px 10px; border-radius: 12px; color: #435441; background: #fff7e9c9; font-size: 10px; line-height: 1.5; pointer-events: none; }
+body[data-exploring=true] #debate-world canvas { cursor: crosshair; }
+body[data-exploring=true] .chapter-title { display: none; }
+body[data-exploring=true][data-phase] .exploration-hud { top: 100px; }
+body[data-exploring=true][data-phase] .exploration-child-name { z-index: 2; }
+@media (max-width: 767px) {
+  body[data-exploring=true][data-phase] .exploration-hud { top: 88px; }
+}
