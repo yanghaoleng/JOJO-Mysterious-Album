@@ -53,9 +53,8 @@ try{
     await p.screenshot({path:`/tmp/jma-click-${mobile?'mobile':'desktop'}.png`});
     checks.push(`${mobile?'mobile touch':'desktop mouse'}: independent picking, reduced-motion manual changes, scroll without accidental switching, keyboard, CTA`);await p.close();
   }
-  const p=await browser.newPage({viewport:{width:1440,height:950}});p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.waitForSelector('#landing-world[data-ready]');await p.waitForTimeout(900);
+  const p=await browser.newPage({viewport:{width:1440,height:950}});p.on('pageerror',e=>errors.push(e.message));await p.goto(base,{waitUntil:'domcontentloaded',timeout:60000});await p.waitForSelector('#landing-world[data-ready]');await p.waitForFunction(()=>document.getElementById('landing-world').__heroScene.status.time>3.4,null,{timeout:30000});
   for(const element of ['star-0','satellite','ufo']){
-    if(element==='ufo')await p.waitForTimeout(1800);
     const point=await locate(p,'sky',element);assert.ok(point,element);const before=await status(p);await p.mouse.click(point.x,point.y);assert.equal((await status(p)).sky.changes,before.sky.changes+1);
   }
   const point=await locate(p,'actor');const before=await status(p);await p.mouse.click(point.x,point.y);await p.mouse.click(point.x,point.y);assert.equal((await status(p)).actor,before.actor+1,'rapid clicks do not interrupt transition');

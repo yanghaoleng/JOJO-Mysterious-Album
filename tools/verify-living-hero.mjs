@@ -31,7 +31,7 @@ try{
   assert.match(await page.locator('#making').innerText(),/涌现/);
   await page.setViewportSize({width:1440,height:1000});
   for(const selector of ['#journeys','#making']){await page.locator(selector).evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);await page.screenshot({path:`${out}/${selector.slice(1)}.png`});}
-  for(const id of ['candy','moon','question']){await page.locator(`[data-journey="${id}"]`).click();await page.locator('.dialog-art').evaluate(e=>e.decode());assert.match(await page.locator('.dialog-art').getAttribute('src'),new RegExp(`journey-${id}`));await page.keyboard.press('Escape');}
+  for(const id of ['candy','moon','question']){await page.locator(`[data-journey="${id}"]`).click();assert.match(await page.locator('#landing-dialog').evaluate(e=>getComputedStyle(e).backgroundImage),new RegExp(`journal-map-${id}`));await page.keyboard.press('Escape');}
   await page.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.landing-page img')].map(i=>{i.loading='eager';return i.decode();}));});
   report.checks.push('chapter numbering, three themed journey dialogs, design-first journal, images loaded');
   const fallback=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
