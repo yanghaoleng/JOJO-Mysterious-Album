@@ -13,7 +13,7 @@ try{
     await p.locator('#landing-dialog').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
     assert.equal(await p.locator('#preview-title').innerText(),`${j.child}的冒险日志`);
     assert.deepEqual(await p.locator('.journal-stats dd').allTextContents(),[`${j.duration}分钟`,'3个','4个','3件']);
-    assert.equal(await p.locator('.journal-invention').count(),3);assert.equal(await p.locator('.journey-question').count(),3);assert.equal(await p.locator('.journey-effect').count(),3);
+    assert.equal(await p.locator('.journal-invention').count(),3);assert.equal(await p.locator('.journey-question').count(),3);assert.equal(await p.locator('.journey-effect').count(),3);assert.equal(await p.locator('.journey-journal img').count(),0);assert.equal(await p.locator('.journal-header h2').count(),1);assert.equal(await p.locator('.journal-header p,.journal-header blockquote,.journal-header .preview-label').count(),0);assert.equal(await p.locator('.journal-invention>svg').count(),3);
     assert.equal(await p.locator('.reply-avatar').count(),3);assert.equal(await p.locator('.reply-name strong').allTextContents().then(a=>a.every(n=>n===j.child)),true);
     assert.equal(await p.locator('.journey-journal [data-lucide]:not(svg)').count(),0);assert.ok(await p.locator('.journey-journal svg').count()>20);
     assert.equal(await p.locator('.journal-stop.is-visited').count(),id==='question'?2:3);
@@ -35,7 +35,7 @@ try{
     else await p.mouse.click(8,8);
     assert.ok(await p.evaluate(()=>window.journalAudio.paused),'close stops audio immediately');
     await p.waitForFunction(()=>!document.getElementById('landing-dialog').open);assert.ok(await p.locator(`[data-journey=${id}]`).evaluate(e=>document.activeElement===e),'focus restored');
-    checks.push(`${id}: child identity, consistent statistics, invention collection, chapter route, three voiced answers, matched illustrations, animated close`);
+    checks.push(`${id}: child identity, consistent statistics, invention collection, chapter route, three voiced answers, text-only effects and icon inventions, animated close`);
   }
   for(const width of [320,390,768]){
     await p.setViewportSize({width,height:844});await p.locator('[data-journey=question]').click();await p.locator('#landing-dialog').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
