@@ -99,12 +99,12 @@ WOW请求携带 `speechProfile: "wow-child"`，由后端固定调用豆包2.0 `s
 
 首页三个入口《第一束好奇的光》《观点小剧场》《登月计划》均支持孩子在星球上自由走动。WOW 六章与登月六幕的每颗星球都有小探险者、原剧情会合区和四个无剧情的环境互动区。手作花草星球有小鱼湖、弹弹花地、蘑菇小径和风铃坡；月球/发射营地换成星光环湾、水晶花地、月石小径和星铃坡；海底、云层、口袋也有各自的名称、颜色和回应景物。
 
-点击/轻点地面行走，方向键或 WASD 连续移动，松键停止；拖动看四周，滚轮/双指缩放。地图和「走回伙伴身边」都通过真实路径行走。湖面、房屋、工作台和伙伴附近有阻挡，点击湖心停在岸边；路径绕过阻挡，键盘可沿边缘滑动。星球背面也能走。走近景物触发鱼跃/星星跳、花跳/水晶弹起、蘑菇点头/月石轻跳和风铃摇摆，离开后可再触发，不自动回答问题或增加剧情进度。
+点击/轻点地面行走，方向键或 WASD 连续移动，松键停止；拖动看四周，滚轮/双指缩放。场景仅保留地点和环境反馈，不显示地图、返回伙伴按钮或操作说明。湖面、房屋、工作台和伙伴附近有阻挡，点击湖心停在岸边；路径绕过阻挡，键盘可沿边缘滑动。星球背面也能走。走近景物触发鱼跃/星星跳、花跳/水晶弹起、蘑菇点头/月石轻跳和风铃摇摆，离开后可再触发，不自动回答问题或增加剧情进度。
 
 各故事分别保存各颗星球的位置，WOW 首章旧版 `exploration.normal` 自动兼容；新增位置保存在当前故事存档的 `explorations` 下，小剧场使用独立的 `jma.dev.clay.v1.exploration.debate`。昵称和坐标仅留本机，不上传。刷新恢复，重新开始清除当前故事的位置；输入文字、打开菜单/对话框或切后台会停止移动。切场景释放旧角色、景物与监听，不重复叠加探索界面。减少动态模式保留操作并减轻跳动。
 
 探索区一开始可见；WOW 原剧情区仍按回答逐步生长，光照和薄雾保证行走道路可辨认。月球抵达或讨论结束后仍能继续散步；其他历史故事和模拟器保持原交互。
 
-模块：`exploration-config.js`（各世界主题和阻挡）、`exploration-navigation.js`（球面寻路）、`exploration-world.js`（四区及小探险者）、`exploration.js`（操作/跟随/地图/存档）、`exploration.css`。无需新增依赖，构建仍为 `node dev/tools/build.mjs`。
+模块：`exploration-config.js`（各世界主题和阻挡）、`exploration-navigation.js`（球面寻路）、`exploration-world.js`（四区及小探险者）、`exploration.js`（操作/跟随/存档）、`exploration.css`。无需新增依赖，构建仍为 `node dev/tools/build.mjs`。
 
 验证：`node dev/tools/verify-exploration.mjs`。设置 `PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs` 后运行 `dev/tools/verify-exploration-ui.mjs`（WOW 全42幕）与 `dev/tools/verify-three-worlds-ui.mjs`（登月全6幕/发明与小剧场讨论）。`DEV_QA_BASE` 默认是 `http://127.0.0.1:8156/dev/`。浏览器覆盖三故事四区走动、反馈、键盘/触摸、存档、输入隔离、390px地图和镜头；API 使用受控回复/本地文本回退，不代表实机麦克风或线上语音验收。

@@ -25,14 +25,11 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
   const markerMaterial = new THREE.MeshBasicMaterial({ color: '#fff1bf', depthWrite: false });
   const marker = new THREE.Mesh(markerGeometry, markerMaterial); marker.visible = false; stage.scene.add(marker);
   const ui = document.createElement('aside'); ui.className = 'exploration-hud'; ui.setAttribute('aria-label', '星球探索');
-  ui.innerHTML = `<div class="exploration-location"><span>我的小小星球</span><strong id="exploration-area">${scenery.zones[0].name}</strong></div><button type="button" class="exploration-map-toggle" aria-expanded="false" aria-controls="exploration-map">星球地图</button><div id="exploration-map" class="exploration-map" hidden><p>想去哪里？我们走过去。</p><div class="exploration-map-paths" aria-hidden="true"></div>${scenery.zones.map(zone => `<button type="button" data-zone="${zone.id}" style="--zone-color:${zone.color}"><span class="zone-dot" aria-hidden="true"></span>${zone.name}</button>`).join('')}<small>小路相通，随时可以回到伙伴身边</small></div><p class="exploration-help">点地面走过去 · 方向键 / WASD 移动<br><span>拖动看四周 · 滚轮或双指缩放</span></p><p class="exploration-feedback" role="status" aria-live="polite"></p><button type="button" class="exploration-return" hidden>走回伙伴身边</button>`;
+  ui.innerHTML = `<div class="exploration-location"><span>我的小小星球</span><strong id="exploration-area">${scenery.zones[0].name}</strong></div><p class="exploration-feedback" role="status" aria-live="polite"></p>`;
   uiHost.append(ui);
   const nameLabel = document.createElement('span'); nameLabel.className = 'exploration-child-name'; nameLabel.setAttribute('aria-hidden', 'true');
   uiHost.append(nameLabel);
-  const areaLabel = ui.querySelector('#exploration-area'), feedback = ui.querySelector('.exploration-feedback'), returnButton = ui.querySelector('.exploration-return');
-  const map = ui.querySelector('#exploration-map'), toggle = ui.querySelector('.exploration-map-toggle');
-  const setMap = open => { map.hidden = !open; toggle.setAttribute('aria-expanded', String(open)); };
-  toggle.onclick = () => setMap(map.hidden);
+  const areaLabel = ui.querySelector('#exploration-area'), feedback = ui.querySelector('.exploration-feedback');
   const go = (normal, label = '') => {
     keys.clear();
     if (!walker.go(normal)) { feedback.textContent = '这边有东西挡住了，试试旁边的小路。'; return; }
@@ -42,12 +39,10 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
       marker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), walker.destination); marker.visible = true;
     }
   };
-  ui.querySelectorAll('[data-zone]').forEach(button => { button.onclick = () => { const zone = scenery.zones.find(zone => zone.id === button.dataset.zone); go(zone.normal, zone.name); setMap(false); }; });
-  returnButton.onclick = () => go(scenery.zones[0].normal, scenery.zones[0].name);
   const blocked = () => document.hidden || Boolean(document.querySelector('dialog[open]')) || document.getElementById('story-menu')?.hidden === false;
   const stop = () => { keys.clear(); walker.stop(); marker.visible = false; };
   window.addEventListener('keydown', event => {
-    if (event.code === 'Escape') { stop(); setMap(false); return; }
+    if (event.code === 'Escape') { stop(); return; }
     if (!MOVEMENT.has(event.code) || editing(event.target) || event.ctrlKey || event.metaKey || event.altKey || blocked()) return;
     event.preventDefault(); keys.add(event.code); travelLabel = ''; marker.visible = false;
   }, options);
@@ -55,7 +50,6 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
   window.addEventListener('blur', stop, options);
   document.addEventListener('visibilitychange', () => { if (document.hidden) { stop(); save(); } }, options);
   document.addEventListener('focusin', event => { if (editing(event.target)) stop(); }, options);
-  document.addEventListener('pointerdown', event => { if (!ui.contains(event.target)) setMap(false); }, options);
   function save() { onSave({ normal: walker.normal.toArray() }); saveAge = 0; }
   window.addEventListener('pagehide', save, options);
   function update(dt) {
@@ -101,9 +95,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     if (area !== nextArea) {
       area = nextArea; areaLabel.textContent = area;
       if (!walker.moving) feedback.textContent = nearZone ? nearest.hint : '慢慢走，总会遇见新东西。';
-      ui.querySelectorAll('[data-zone]').forEach(button => button.setAttribute('aria-current', String(nearZone && button.dataset.zone === nearest.id)));
     }
-    returnButton.hidden = surfaceDistance(normal, scenery.zones[0].normal, world.planet.radius) < 3;
     moved = moving;
   }
   update(0);

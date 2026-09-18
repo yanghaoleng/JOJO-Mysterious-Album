@@ -9,8 +9,8 @@
   <title>萌萌星 · 立体故事工坊</title>
   <link rel="icon" href="../favicon.ico">
   <link rel="stylesheet" href="./app.css?v=20260918-child-interaction">
-  <link rel="stylesheet" href="./immersive.css?v=20260918-exploration">
-  <link rel="stylesheet" href="./exploration.css?v=20260918-three-worlds">
+  <link rel="stylesheet" href="./immersive.css?v=20260918-clean-scene">
+  <link rel="stylesheet" href="./exploration.css?v=20260918-clean-scene">
   <link rel="stylesheet" href="../src/voice-input-control.css?v=20260917-gugu-full">
 </head>
 <body data-view="story">
@@ -18,7 +18,7 @@
     <a href="../" id="home-link" class="icon-control" aria-label="返回萌萌星首页"><i data-lucide="house"></i></a>
     <a class="wordmark" href="../">萌萌星<span>奇妙图鉴</span></a>
     <div class="story-tools" id="story-tools" hidden>
-      <button id="open-story-menu" class="icon-control" aria-label="故事菜单" aria-expanded="false" aria-controls="story-menu"><span aria-hidden="true">···</span></button>
+      <button id="open-story-menu" class="icon-control" aria-label="故事菜单" aria-expanded="false" aria-controls="story-menu"><svg class="more-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="19" cy="12" r="1.7"></circle></svg></button>
       <div id="story-menu" class="story-menu" role="group" aria-label="故事工具" hidden>
         <p id="objective"></p>
         <button id="bag-button" class="quiet-button" aria-haspopup="dialog">小小背包 <span id="bag-count">0</span></button>
@@ -83,6 +83,6 @@
   <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <div id="transition" class="transition" aria-hidden="true"></div>
-  <script type="module" src="./app.bundle.js?v=20260918-three-worlds"></script>
+  <script type="module" src="./app.bundle.js?v=20260918-clean-scene"></script>
 </body>
 </html>
