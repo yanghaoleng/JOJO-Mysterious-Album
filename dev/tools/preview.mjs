@@ -18,7 +18,7 @@ http.createServer(async (request, response) => {
       response.writeHead(upstream.status, { 'Content-Type': upstream.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store' });
       response.end(Buffer.from(await upstream.arrayBuffer())); return;
     }
-    if (request.method !== 'GET' || !(url.pathname.startsWith('/dev/') || url.pathname.startsWith('/vendor/') || url.pathname === '/favicon.ico')) { response.writeHead(404); response.end(); return; }
+    if (request.method !== 'GET' || !(url.pathname.startsWith('/dev/') || url.pathname.startsWith('/vendor/') || url.pathname === '/src/voice-input-control.css' || url.pathname === '/favicon.ico')) { response.writeHead(404); response.end(); return; }
     const name = decodeURIComponent(url.pathname.endsWith('/') ? `${url.pathname}index.html` : url.pathname);
     const path = resolve(root, `.${name}`);
     if (!path.startsWith(root + '/') || name.split('/').some(part => part.startsWith('.'))) throw new Error('Invalid path');

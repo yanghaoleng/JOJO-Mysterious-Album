@@ -6,6 +6,7 @@ import { createActorGrounding } from './planet.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 import { TapFeedback, createObjectTapTarget, firstTapHit } from './tap-feedback.js';
 import { createCameraDrift } from './camera-drift.js';
+import { createExploration } from './exploration.js';
 
 const clamp = THREE.MathUtils.clamp;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -97,6 +98,8 @@ export class DioramaStage {
         this.invention.rotation.y += dt * .12;
       }
       this.tapFeedback.update(dt);
+      this.exploration?.update(dt);
+      if (this.exploration) this.updateCamera();
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
       if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();
@@ -156,6 +159,7 @@ export class DioramaStage {
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
     this.scene.updateMatrixWorld(true);
+    if (this.exploration) { this.exploration.pick(this.raycaster); return; }
     const selected = firstTapHit(this.raycaster.intersectObjects(this.scene.children, true));
     if (selected?.target) this.tapFeedback.trigger(selected.target, this.reduced);
     else if (selected?.actorId) {
@@ -183,7 +187,7 @@ export class DioramaStage {
     const bottom = height - clamp(this.viewportInsets.bottom, 0, Math.max(0, height - top - 48));
     const safeWidth = right - left, safeHeight = bottom - top;
     this.safeViewport = { left, top, right, bottom, width: safeWidth, height: safeHeight, canvasWidth: width, canvasHeight: height, insets: { ...this.viewportInsets } };
-    const focus = this.characterFocus || { width: 2.2, height: 2.6, meanHeight: 2.2 };
+    const focus = (this.exploration ? { width: 7.5, height: 4.0, meanHeight: 2.2 } : this.characterFocus) || { width: 2.2, height: 2.6, meanHeight: 2.2 };
     const compact = width < 640;
     const desiredHeight = this.studio
       ? clamp(safeHeight * .62, Math.min(120, safeHeight * .7), compact ? 260 : 340)
@@ -205,6 +209,7 @@ export class DioramaStage {
   }
 
   updateCamera() {
+    if (this.exploration) { this.exploration.updateCamera(); return; }
     const radius = 23;
     const offset = this.cameraDrift?.offset || { yaw: 0, pitch: 0 };
     const yaw = this.yaw + offset.yaw, pitch = this.pitch + offset.pitch;
@@ -268,7 +273,7 @@ export class DioramaStage {
     this.resize();
   }
 
-  resetCamera() { this.cameraDrift?.reset(); this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+  resetCamera() { if (this.exploration) { this.exploration.goHome(); return; } this.cameraDrift?.reset(); this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
 
   setLighting(atmosphere = {}) {
     const settings = { ...STORYBOOK_PALETTE, ...atmosphere.lighting };
@@ -298,7 +303,7 @@ export class DioramaStage {
       if (!immediate && current.applied && current.progress === current.target) return;
       current.progress = immediate || this.reduced ? current.target : THREE.MathUtils.lerp(current.progress, current.target, 1 - Math.exp(-dt * 1.8));
       if (Math.abs(current.progress - current.target) < .0001) current.progress = current.target;
-      const clarity = THREE.MathUtils.smoothstep(current.progress, 0, 1);
+      const clarity = THREE.MathUtils.smoothstep(this.exploration ? Math.max(.78, current.progress) : current.progress, 0, 1);
       const blend = (from, to) => blendHex(from, to, clarity);
       const mix = (from, to) => THREE.MathUtils.lerp(from, to, clarity);
       this.hemisphere.color.set(blend('#91adc9', '#fff5dc'));
@@ -339,7 +344,8 @@ export class DioramaStage {
     if (starMaterial) starMaterial.opacity = THREE.MathUtils.lerp(starMaterial.opacity, target.stars, blend);
   }
 
-  setScene(worldId, cast = [], { studio = false, decorations = null } = {}) {
+  setScene(worldId, cast = [], { studio = false, decorations = null, exploration = null } = {}) {
+    this.exploration?.dispose(); this.exploration = null;
     this.curiosity = null;
     this.scene.fog = null;
     this.clearInvention();
@@ -351,13 +357,18 @@ export class DioramaStage {
     this.actors.clear();
     this.actorFrames.clear();
     this.studio = studio;
-    this.world = createWorld(worldId, { seed: decorations?.seed || 1, decorations });
+    this.world = createWorld(worldId, { seed: decorations?.seed || 1, decorations, radius: exploration ? 10 : undefined });
     this.world.tapTargets.forEach(target => this.tapFeedback?.add(target));
     this.setLighting(this.world.atmosphere);
     this.style.apply(this.world.group);
     this.scene.add(this.world.group);
     this.worldId = worldId;
     this.setCast(cast, { preserveCamera: false });
+    if (exploration) {
+      this.exploration = createExploration(this, exploration);
+      this.pitch = .65; this.yaw = .1; this.zoom = 1; this.resize();
+    }
+    this.renderer.domElement?.setAttribute('aria-label', exploration ? '点击地面走动，方向键或 WASD 移动，拖动查看星球' : '可以拖动旋转、点击角色和小物件的立体场景');
   }
 
   // Changing a speaker is not a new world. Keep matching actors, the planet,
@@ -549,6 +560,7 @@ export class DioramaStage {
       };
     });
     return {
+      exploration: this.exploration?.stats || null,
       world: this.worldId, actors: [...this.actors.keys()],
       calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,
       camera: this.camera.position.toArray(), orbit: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom },
@@ -567,6 +579,7 @@ export class DioramaStage {
   }
 
   dispose() {
+    this.exploration?.dispose();
     this.renderer.setAnimationLoop(null);
     this.tapFeedback.clear();
     this.resizeObserver.disconnect();

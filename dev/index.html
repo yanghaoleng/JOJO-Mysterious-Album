@@ -8,14 +8,15 @@
   <meta name="description" content="在萌萌星的立体小世界里，和新伙伴一起听故事、想办法。">
   <title>萌萌星 · 立体故事工坊</title>
   <link rel="icon" href="../favicon.ico">
-  <link rel="stylesheet" href="./app.css?v=20260917-gugu-full">
-  <link rel="stylesheet" href="./immersive.css?v=20260917-gugu-full">
+  <link rel="stylesheet" href="./app.css?v=20260918-child-interaction">
+  <link rel="stylesheet" href="./immersive.css?v=20260918-exploration">
+  <link rel="stylesheet" href="./exploration.css?v=20260918-exploration">
   <link rel="stylesheet" href="../src/voice-input-control.css?v=20260917-gugu-full">
 </head>
-<body data-view="home">
+<body data-view="story">
   <header class="topbar">
-    <a href="./" id="home-link" class="icon-control" aria-label="返回故事工坊"><i data-lucide="house"></i></a>
-    <a class="wordmark" href="./">萌萌星<span>立体故事工坊</span></a>
+    <a href="../" id="home-link" class="icon-control" aria-label="返回萌萌星首页"><i data-lucide="house"></i></a>
+    <a class="wordmark" href="../">萌萌星<span>奇妙图鉴</span></a>
     <div class="story-tools" id="story-tools" hidden>
       <button id="open-story-menu" class="icon-control" aria-label="故事菜单" aria-expanded="false" aria-controls="story-menu"><span aria-hidden="true">···</span></button>
       <div id="story-menu" class="story-menu" role="group" aria-label="故事工具" hidden>
@@ -25,7 +26,6 @@
         <button id="restart" class="quiet-button" aria-label="重新开始当前故事">重新开始</button>
       </div>
     </div>
-    <a class="original-link" id="original-link" href="../">原版图鉴</a>
   </header>
 
   <main id="experience">
@@ -36,17 +36,6 @@
       <button class="camera-reset" id="camera-reset" aria-label="恢复正面视角">回到伙伴</button>
       <p class="stage-hint" id="stage-hint">轻轻转动世界 · 和伙伴打个招呼</p>
     </div>
-
-    <section id="home-panel" class="home-panel">
-      <p class="eyebrow">把故事，捧在手心</p>
-      <h1>今天，<br>一起去哪里？</h1>
-      <p class="home-intro">选一个小世界，和你的伙伴慢慢出发。</p>
-      <nav class="story-list" id="story-list" aria-label="选择故事"></nav>
-      <a href="?mode=studio" class="studio-entry"><span>角色模拟器</span><small>捏一个新朋友</small><b aria-hidden="true">↗</b></a>
-      <a href="../story-npcs.html?from=dev" class="studio-entry"><span>故事里的朋友</span><small>认识叫叫和它的朋友们</small><b aria-hidden="true">↗</b></a>
-      <a href="./yellow-four.html" class="studio-entry"><span>黄色四巨头</span><small>四位朋友，一起同框</small><b aria-hidden="true">↗</b></a>
-      <a href="./iphone-duo/" class="studio-entry"><span>iPhone Duo</span><small>一展开，四巨头就到齐</small><b aria-hidden="true">↗</b></a>
-    </section>
 
     <section class="story-panel" id="story-panel" hidden>
       <button type="button" class="speech-card" id="speech-card" aria-label="听角色说话，轻点可跳过这一句">
@@ -72,7 +61,7 @@
           <form id="text-form" class="text-form" hidden><label for="answer-input" class="sr-only">你的想法</label><input id="answer-input" maxlength="180" placeholder="把你的想法写在这里" autocomplete="off" enterkeyhint="send"><button class="primary" type="submit">告诉它</button></form>
         </div>
       </div>
-      <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a href="./" class="quiet-button">再去一个小世界</a></div>
+      <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a href="../" class="quiet-button">回到萌萌星首页</a></div>
     </section>
 
     <section class="studio-panel" id="studio-panel" hidden>
@@ -94,6 +83,6 @@
   <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <div id="transition" class="transition" aria-hidden="true"></div>
-  <script type="module" src="./app.bundle.js?v=20260917-gugu-full"></script>
+  <script type="module" src="./app.bundle.js?v=20260918-child-interaction"></script>
 </body>
 </html>
