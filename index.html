@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#eee6d2">
-<meta name="description" content="萌萌星的奇妙图鉴：会听你说话的互动绘本世界。陪伴伙伴、提问探索、发明登月，再创造自己的角色与画风。">
+<meta name="description" content="一本由孩子接着写的 3D 动态互动绘本。从第一束好奇的光，到观点小剧场和登月计划，让孩子主动表达、发散剧情、创造自己的世界。">
 <title>萌萌星的奇妙图鉴</title>
 <link rel="icon" href="./favicon.ico?v=20260829-soft-corner" sizes="any">
 <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/favicon-star-speech.png?v=20260829-soft-corner">
@@ -385,7 +385,7 @@
 <link rel="stylesheet" href="./src/speech-bubble.css?v=20260910-lyric-motion">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
 <link rel="stylesheet" href="./src/voice-input-control.css?v=20260910-lyric-motion">
-<link rel="stylesheet" href="./src/landing.css?v=20260915-app-icon">
+<link rel="stylesheet" href="./src/landing.css?v=20260918-three-chapters">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -394,42 +394,75 @@
   <section id="mode-gate" aria-labelledby="mode-title">
     <div class="landing-page">
       <header class="landing-nav">
-        <a class="landing-brand" href="./"><img class="landing-app-icon" src="./assets/icons/favicon-star-speech.png" width="38" height="38" alt="">萌萌星的奇妙图鉴</a>
-        <nav aria-label="首页导航"><a href="#stories">挑个故事</a><a href="#create">自由创造</a></nav>
+        <a class="landing-brand" href="./"><img src="./assets/icons/favicon-star-speech.png" width="36" height="36" alt=""><span>萌萌星<span class="brand-small">的奇妙图鉴</span></span></a>
+        <nav aria-label="首页导航"><a href="#chapters">三个章节</a><a href="#journeys">探索记录</a><a href="#making">创作幕后</a></nav>
+        <a class="nav-start" href="./dev/?story=wow">开始第一章 <span aria-hidden="true">↗</span></a>
       </header>
       <main>
         <section class="landing-hero">
-          <div class="hero-copy"><p class="landing-eyebrow">会听你说话的互动绘本世界</p>
-            <h1 id="mode-title">孩子的想象，<br>在这里<span>有了下文。</span></h1>
-            <p class="hero-description">一句好奇的提问，一艘异想天开的飞船，<br class="desktop-break">一个想照顾的小伙伴。<br>说出来，让故事和世界接住孩子的想法。</p>
-            <div class="hero-actions"><a class="landing-primary" href="./dev/?story=wow">进入第一束好奇光 <span aria-hidden="true">↗</span></a><a class="landing-text-link" href="#stories">看看其他故事</a></div>
-            <p class="hero-footnote">开口表达 · 动手探索 · 创造自己的伙伴</p>
+          <div class="hero-copy">
+            <p class="landing-eyebrow"><span class="tiny-star" aria-hidden="true">✦</span> 一本由孩子接着写的互动绘本</p>
+            <h1 id="mode-title">故事的下一页，<br>听孩子的<span class="accent-stop">。</span></h1>
+            <p class="hero-description">给孩子一条冒险的主线，也留一整个世界的想象空间。<br class="desktop-break">大胆说、放开想，让自己的主意变成故事的一部分。</p>
+            <div class="hero-actions"><a class="landing-primary" href="./dev/?story=wow">开始第一章 <span aria-hidden="true">↗</span></a><a class="landing-text-link" href="#chapters">先看看这趟冒险 <span aria-hidden="true">↓</span></a></div>
+            <p class="hero-footnote">从第一束好奇的光出发 · 也可以任选一章</p>
           </div>
-          <a class="hero-picture" href="./dev/?story=wow" aria-label="进入第一束好奇光的纯 3D 场景"><img src="./assets/wow/first-light-3d.png" alt="纯 3D 小星球上的星星窗小房间，窗外是夜空和月亮" fetchpriority="high"><span class="picture-note">“我在房间里，<br>你在外面吗？”</span><span class="picture-caption">走进小星球，开始说话 ↗</span></a>
-        </section>
-        <section class="landing-values" aria-label="故事中的体验">
-          <div><b>想法，会被回应</b><p>角色听你说，再把话题交回你手里。</p></div><div><b>选择，会留下痕迹</b><p>照顾伙伴、寻找线索，让旅程继续。</p></div><div><b>创造，看得见</b><p>把发明带进故事，把角色变成喜欢的样子。</p></div>
-        </section>
-        <section id="stories" class="landing-section">
-          <div class="section-heading"><p class="landing-eyebrow">每一种好奇，都有一扇门</p><h2>今天，想成为怎样的主角？</h2><p>从温柔的陪伴到大胆的发明，选一个此刻最想走进去的世界。</p></div>
-          <div class="story-shelf">
-            <a class="landing-story featured-story" href="./dev/?story=wow"><img src="./assets/wow/first-light-3d.png" alt="纯 3D 小星球上的星星窗小房间" loading="lazy"><div class="story-info"><span class="story-tag">好奇与提问 · 纯 3D 六章旅程</span><h3>第一束好奇光</h3><p>转动小星球，先找到星星窗的小房间。和鼓鼓一起听声音、收集颜色，再说说你的想法。</p><span class="story-invitation">走进纯 3D 小星球 ↗</span></div></a>
-            <a class="landing-story" href="./dev/?story=gugu"><img src="./assets/story/covers/gugu-belly.webp" alt="星星窗小房间里，蜜糖小熊鼓鼓低头听着肚子里的咚咚声" loading="lazy"><div class="story-info"><span class="story-tag">5～8 岁 · 感受与倾听</span><h3>等一个肚子的回答</h3><p>鼓鼓的肚子在咚咚响。不是它不乖，是它在等一个人听。陪它说出一句身体的话，收下第一滴暖暖黄。</p><span class="story-invitation">听鼓鼓把话说完 ↗</span></div></a>
-            <a class="landing-story" href="./story-v2?story=doudou" data-mode-choice="doudou"><img src="./assets/story/covers/doudou-home.webp" alt="苹果树、木桥和远处的家" loading="lazy"><div class="story-info"><span class="story-tag">4～6 岁 · 关心与观察</span><h3>送豆豆回家</h3><p>先照顾迷路的小伙伴，再听线索、过小桥。回家的路，因为有你而安心。</p><span class="story-invitation">我来陪豆豆回家 ↗</span></div></a>
-            <a class="landing-story" href="./story-v2?story=moon"><img src="./assets/story/covers/moon-plan.webp" alt="望远镜、月球和等待被发明的飞船" loading="lazy"><div class="story-info"><span class="story-tag">10 岁以上 · 想象与解决问题</span><h3>登月计划</h3><p>目的地是月球，办法由你想。火箭、传送门，还是新发明？一路遇见难题，也一路改造点子。</p><span class="story-invitation">说出我的登月方案 ↗</span></div></a>
-            <a class="landing-story" href="./debate"><img src="./assets/story/covers/debate-theatre.webp" alt="两个小动物交换不同的想法" loading="lazy"><div class="story-info"><span class="story-tag">5～8 岁 · 表达与倾听</span><h3>观点小剧场</h3><p>同一个问题，原来可以这样想，也可以那样想。听两个角色聊一聊，再说说你的理由。</p><span class="story-invitation">让想法碰个面 ↗</span></div></a>
+          <div class="hero-art-wrap">
+            <div class="hero-concept-tabs" role="tablist" aria-label="选择 Hero 交互方案">
+              <button id="concept-0" role="tab" aria-selected="true" aria-controls="hero-concept-panel" data-concept="0">01 造物台</button>
+              <button id="concept-1" role="tab" aria-selected="false" aria-controls="hero-concept-panel" tabindex="-1" data-concept="1">02 漂浮朋友</button>
+              <button id="concept-2" role="tab" aria-selected="false" aria-controls="hero-concept-panel" tabindex="-1" data-concept="2">03 小星球</button>
+              <button id="concept-3" role="tab" aria-selected="false" aria-controls="hero-concept-panel" tabindex="-1" data-concept="3">04 口袋宇宙</button>
+              <button id="concept-4" role="tab" aria-selected="false" aria-controls="hero-concept-panel" tabindex="-1" data-concept="4">05 想象接力</button>
+            </div>
+            <div id="hero-concept-panel" role="tabpanel" aria-labelledby="concept-0">
+            <div class="hero-speech" id="hero-speech" aria-live="polite">“我想坐自己造的火箭去月球！”</div>
+            <div id="landing-world" class="hero-world"><img src="./assets/landing/hero.webp" width="1200" height="900" alt="小熊和小兔站在立体小岛上，身旁是孩子想象的奶油色火箭" fetchpriority="high"></div>
+            <div class="imagination-switch" aria-label="看看想法怎样改变小世界"><span>如果我想要…</span><button type="button" data-imagine="primary" aria-pressed="true">一艘大火箭</button><button type="button" data-imagine="secondary" aria-pressed="false">好多棒棒糖</button></div>
+            <p class="scene-note" id="concept-description">想法造物台 · 轻点，把一句想象变成眼前的小东西</p>
+            </div>
           </div>
         </section>
-        <section id="create" class="landing-section creation-section">
-          <div class="section-heading"><p class="landing-eyebrow">故事之外，想象继续</p><h2>同一个伙伴，<br>也可以有好多种模样。</h2><p>捏一个喜欢的角色，再为它和它的世界选一套画风。</p></div>
-          <div class="creation-grid"><article class="creation-feature"><img src="./assets/thumbs/editor.webp" alt="产品中的角色编辑预览" loading="lazy"><div><h3>从外形到声音，都由你来</h3><p>挑选角色，调整表情、身体、动作与声音，再放进不同场景。你的奇妙伙伴，慢慢有了自己的性格。</p><button class="landing-primary" type="button" data-mode-choice="debug">打开角色模拟器 <span aria-hidden="true">↗</span></button></div></article>
-          <article class="creation-feature style-feature"><img src="./assets/thumbs/styles.webp" alt="产品中不同绘画风格的人物效果" loading="lazy"><div><h3>给想象换一种笔触</h3><p>水彩的轻盈、铅笔的细腻、油画的色彩。人物画风与背景风格分别调整，找到属于这次冒险的感觉。</p><a class="landing-text-link" href="./style-editor">试试画风编辑器 ↗</a></div></article></div>
+        <div class="landing-manifesto"><p>我们铺好故事的起点，<strong>把“然后呢”，留给孩子。</strong></p><span>有引导的探索 / 没有标准答案的表达 / 看得见的创造</span></div>
+        <section id="chapters" class="landing-section">
+          <div class="section-heading"><div><p class="landing-eyebrow">01 — 三章，一点点打开想象</p><h2>从一句“为什么”，<br>到一个“我来试试”。</h2></div><p>先认识世界，再碰撞想法，最后创造自己的可能。<br>推荐从第一章开始，也欢迎直接走进最心动的一章。</p></div>
+          <div class="chapter-grid">
+            <article class="chapter chapter-first"><a class="chapter-image" href="./dev/?story=wow"><img src="./assets/landing/chapter-wow.webp" width="1200" height="900" alt="3D 小熊和小兔来到星星窗小屋前" loading="lazy"><span class="image-badge">推荐从这里开始</span><span class="chapter-num" aria-hidden="true">01</span></a><div class="chapter-copy"><p class="chapter-kicker">第一章 · 认识世界，唤醒好奇</p><h3>第一束好奇的光</h3><p>一扇亮着光的窗，一个等你回应的伙伴。听一听，说一句，在小小的互动里认识萌萌星，找到想继续探索的理由。</p><a class="chapter-action" href="./dev/?story=wow">开始第一章 <span aria-hidden="true">↗</span></a></div></article>
+            <article class="chapter"><a class="chapter-image debate-image" href="?preview=debate" data-debate-preview><img src="./assets/landing/chapter-debate.webp" width="1200" height="900" alt="猫头鹰和小兔在立体小剧场里面对面交换想法，章节概念场景" loading="lazy"><span class="image-badge">3D 新版 · 体验预览</span><span class="chapter-num" aria-hidden="true">02</span></a><div class="chapter-copy"><p class="chapter-kicker">第二章 · 听见不同，大胆表达</p><h3>观点小剧场</h3><p>带着最感兴趣的话题，拜访爱唱反调的星球主人。为什么你这样想？我还有另一个办法！在讨论中，让想法多拐一个弯。</p><a class="chapter-action" href="?preview=debate" data-debate-preview>体验第二章预览 <span aria-hidden="true">↗</span></a><a class="legacy-link" href="./debate">原版小剧场 ↗</a></div></article>
+            <article class="chapter"><a class="chapter-image moon-image" href="./dev/?story=moon"><img src="./assets/landing/chapter-moon.webp" width="1200" height="900" alt="月色小岛上，小伙伴准备乘坐自己创造的火箭" loading="lazy"><span class="image-badge">可以直接出发</span><span class="chapter-num" aria-hidden="true">03</span></a><div class="chapter-copy"><p class="chapter-kicker">第三章 · 自己发明，改变世界</p><h3>登月计划</h3><p>目的地是月球，怎么去，由你决定。造一艘大火箭，给它加上新本领，再把天马行空的主意变成一路前进的办法。</p><a class="chapter-action" href="./dev/?story=moon">开始第三章 <span aria-hidden="true">↗</span></a></div></article>
+          </div>
+          <p class="chapter-note">每一章都能独立进入，无需解锁。第二章展示新版方向，完整 3D 章节正在制作。</p>
         </section>
-        <section class="landing-closing"><p class="landing-eyebrow">把下一句，留给孩子</p><h2>“然后呢？”<br>这次，让孩子接着说。</h2><a class="landing-primary" href="#stories">选一个故事，开始吧 ↗</a><p class="mode-note" role="status">故事进度、角色配方和兴趣档案保存在当前设备。</p></section>
+        <section id="journeys" class="landing-section journeys-section">
+          <div class="section-heading"><div><p class="landing-eyebrow">02 — 其他孩子的探索记录</p><h2>同一个起点，<br>好多种意想不到。</h2></div><div class="section-aside"><span class="preview-label">未来功能 · 示例展示</span><p>说过的话、走过的路、创造的小东西，<br>都值得被好好收进一本冒险纪念册。</p></div></div>
+          <div class="journey-grid">
+            <a class="journey-card" href="?journey=candy" data-journey="candy"><div class="journey-cover candy-cover"><img src="./assets/landing/candy.webp" width="1200" height="900" alt="长出许多棒棒糖的立体小岛，模拟探索结果" loading="lazy"><span>想象创造</span></div><div class="journey-author"><span class="avatar">芽</span><span>小芽的甜甜星球 <small>虚构昵称 · 示例旅程</small></span><span aria-hidden="true">↗</span></div><blockquote>“我要种一片棒棒糖森林，<br>每个朋友都能分到一根。”</blockquote><p>一个“我想要”，长成了一个“我们一起”。</p></a>
+            <a class="journey-card" href="?journey=moon" data-journey="moon"><div class="journey-cover moon-cover"><img src="./assets/landing/chapter-moon.webp" width="1200" height="900" alt="带着火箭出发的月球小岛，模拟探索结果" loading="lazy"><span>发明与尝试</span></div><div class="journey-author"><span class="avatar">球</span><span>球球的月球快递 <small>虚构昵称 · 示例旅程</small></span><span aria-hidden="true">↗</span></div><blockquote>“火箭可以送快递吗？<br>月亮上的朋友还没吃过蛋糕。”</blockquote><p>登月的理由，也可以只是想给朋友一个惊喜。</p></a>
+            <a class="journey-card" href="?journey=question" data-journey="question"><div class="journey-cover question-cover"><img src="./assets/landing/chapter-debate.webp" width="1200" height="900" alt="两个伙伴讨论不同想法的立体剧场，模拟探索结果" loading="lazy"><span>表达与思考</span></div><div class="journey-author"><span class="avatar">米</span><span>米粒的第 N 个为什么 <small>虚构昵称 · 示例旅程</small></span><span aria-hidden="true">↗</span></div><blockquote>“如果每个人都当船长，<br>谁来发现新的小岛呢？”</blockquote><p>听见另一种想法，又长出了一个新的问题。</p></a>
+          </div>
+          <div class="journey-future"><div><h3>冒险结束，想象还有回声。</h3><p>我们希望为孩子留下探索过程、语音与创造物，让家长看见那些意想不到的瞬间。未来，只有在获得允许后，旅程才会被分享。</p></div><span>记录正在路上<br><small>当前为模拟内容，无真实儿童数据</small></span></div>
+        </section>
+        <section id="making" class="landing-section making-section">
+          <div class="section-heading"><div><p class="landing-eyebrow">03 — 我们的创作手记</p><h2>这个小世界，<br>也是一点点想出来的。</h2></div><p>从纸上的朋友，到会回应的立体世界。<br>那些试过的、绕过的、忍不住多玩一下的，都留在这里。</p></div>
+          <div class="making-timeline">
+            <article><a class="making-image" href="./story-v2?story=doudou"><img src="./assets/landing/history-story.webp" width="1200" height="800" alt="早期二维绘本《送豆豆回家》的实际页面截图" loading="lazy"></a><span class="making-index">最初 · 画出一个朋友</span><h3>先从一页温柔的绘本开始</h3><p>铅笔、水彩、纸张的颗粒。我们先试着让画里的朋友开口，把读故事变成一次有来有回的陪伴。</p><a href="./story-v2?story=doudou" class="landing-text-link">翻翻最初的绘本 ↗</a></article>
+            <article><a class="making-image" href="./?mode=debug"><img src="./assets/landing/history-lab.webp" width="1200" height="800" alt="早期角色模拟器的实际页面截图" loading="lazy"></a><span class="making-index">后来 · 把选择交给孩子</span><h3>朋友不必只有一种模样</h3><p>试过大耳朵、豆豆眼，试过不同的动作、声音和画风。角色模拟器，让“我喜欢这样”有了一个具体的样子。</p><a href="./?mode=debug" class="landing-text-link">打开原版角色模拟器 ↗</a></article>
+            <article><a class="making-image" href="./styles"><img src="./assets/thumbs/styles.webp" width="1200" height="800" alt="项目曾尝试过的多种角色绘画风格" loading="lazy"></a><span class="making-index">现在 · 让世界接住想象</span><h3>从听故事，到成为故事的作者</h3><p>我们试着把选项变成对话，把平面变成立体，把既定的答案变成开放的可能。主线还在，但下一步可以由孩子提出。</p><a href="./styles" class="landing-text-link">看看那些画风实验 ↗</a></article>
+          </div>
+          <div class="lab-heading"><h3>还有一些，认真玩出来的小彩蛋。</h3><a class="landing-text-link" href="./dev/">走进 3D 工坊 ↗</a></div>
+          <div class="experiment-grid">
+            <a href="./dev/?mode=studio"><img src="./assets/landing/studio.webp" width="1200" height="800" alt="3D 角色模拟器的实际页面截图" loading="lazy"><div><span>01 / 捏一个新朋友</span><h4>3D 角色模拟器 <span aria-hidden="true">↗</span></h4></div></a>
+            <a href="./story-npcs?from=dev"><img src="./assets/landing/friends.webp" width="1200" height="800" alt="故事里的朋友角色图鉴实际页面截图" loading="lazy"><div><span>02 / 和大家打个招呼</span><h4>故事里的朋友 <span aria-hidden="true">↗</span></h4></div></a>
+            <a href="./dev/yellow-four"><img src="./assets/landing/yellow-four.webp" width="1200" height="800" alt="黄色四巨头搭肩合照的实际页面截图" loading="lazy"><div><span>03 / 一个颜色，四种可爱</span><h4>黄色四巨头 <span aria-hidden="true">↗</span></h4></div></a>
+            <a href="./dev/iphone-duo/"><img src="./assets/landing/iphone-duo.webp" width="1200" height="800" alt="展开的 iPhone Duo 和四个黄色朋友的实际页面截图" loading="lazy"><div><span>04 / 一展开，快乐就到齐</span><h4>iPhone Duo <span aria-hidden="true">↗</span></h4></div></a>
+          </div>
+        </section>
+        <section class="landing-closing"><div><p class="landing-eyebrow">世界准备好了。你的想法呢？</p><h2>下一页，<br>等你开口。</h2></div><div><a class="landing-primary" href="./dev/?story=wow">开始第一章 <span aria-hidden="true">↗</span></a><p class="mode-note" role="status">从一句好奇开始，慢慢走进萌萌星。</p></div><span class="closing-star" aria-hidden="true">✦</span></section>
       </main>
-      <footer class="landing-footer"><span>萌萌星的奇妙图鉴</span><span>让孩子说出的想象，成为世界的一部分。</span></footer>
+      <footer class="landing-footer"><span>萌萌星的奇妙图鉴 <small>让孩子的想法，成为世界的一部分。</small></span><div><a href="./debate">旧版小剧场 ↗</a><a href="./story-v2?story=wow">旧版绘本 ↗</a><a href="./dev/">3D 工坊 ↗</a></div></footer>
     </div>
   </section>
+  <dialog id="landing-dialog" class="landing-dialog" aria-labelledby="preview-title"><button class="dialog-close" type="button" aria-label="关闭预览" autofocus>×</button><div id="landing-dialog-content"></div></dialog>
 
   <header id="topbar">
     <div class="brand">
@@ -761,5 +794,6 @@
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
   <script type="module" src="./src/mode.js?v=20260915-landing"></script>
+<script type="module" src="./src/landing.js?v=20260918-three-chapters"></script>
 </body>
 </html>
