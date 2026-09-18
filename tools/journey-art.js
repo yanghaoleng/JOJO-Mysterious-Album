@@ -16,7 +16,25 @@ export function createJourneyArt(container,theme,step=null){
   function friend(type,x,y,z,size,rotation){const a=type==='gugu'?createWowCharacter({kind:'gugu',scale:size}):createCharacter({type,scale:size});const frame=group(x,y,z,rotation);frame.add(a.group);a.group.rotation.y=-.12;a.setAction('wave');a.update(.8,0);return frame;}
   function star(x,y,z,size,rotation=0){const shape=new THREE.Shape();for(let i=0;i<10;i++){const r=i%2?.44:1,a=Math.PI/2+i*Math.PI/5;i?shape.lineTo(Math.cos(a)*r,Math.sin(a)*r):shape.moveTo(Math.cos(a)*r,Math.sin(a)*r);}shape.closePath();const m=part(new THREE.ExtrudeGeometry(shape,{depth:.15,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:3}), '#eac67a',[x,y,z],[size,size,size]);m.rotation.z=rotation;return m;}
   function lollipop(x,y,z,size,color,angle){const g=group(x,y,z,angle);g.scale.setScalar(size);part(new THREE.CylinderGeometry(.055,.055,2.8,12),'#fdf0d9',[0,-.8,0],[1,1,1],g);ball(color,[0,.65,0],[1,1,.27],g);const points=[];for(let i=0;i<150;i++){const t=i/149,a=t*Math.PI*5;points.push(new THREE.Vector3(Math.cos(a)*(.06+t*.79),.65+Math.sin(a)*(.06+t*.79),.265));}part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),150,.055,8,false),'#fff3d8',[0,0,0],[1,1,1],g);return g;}
-  if(theme==='candy'){
+  if(theme==='music'){
+    const cloud=group(-.8,1.2,0,-.15);
+    for(const [x,y,s] of [[-1.4,0,.75],[-.7,.3,.95],[.3,.5,1.1],[1.3,.1,.8],[0,-.4,.9]])ball('#eee4d7',[x,y,0],[s,s*.75,s*.6],cloud);
+    for(let i=0;i<5;i++){const x=-3.5+i*1.65;star(x,-.8+Math.sin(i)*.4,.5,.38,i*.14);ball('#a7c7cc',[x,-1.9,0],[.12,.3,.12]);}
+    for(const [x,y,c] of [[-3.9,3,'#b1c5c1'],[3.7,3.4,'#dfb8bc'],[2.9,.9,'#e2c488']]){
+      const note=group(x,y,0,.15);ball(c,[0,0,0],[.26,.18,.15],note);part(new THREE.CylinderGeometry(.055,.055,.95,10),c,[.21,.42,0],[1,1,1],note);part(new THREE.BoxGeometry(.45,.13,.11),c,[.4,.84,0],[1,1,1],note);
+    }
+    friend('frog',-3.4,-2.1,.7,.73,-.15);friend('gugu',2.5,-2.1,.9,.85,.15);
+  }else if(theme==='lantern'){
+    const tower=group(-.4,.9,0,-.12);
+    part(new THREE.CylinderGeometry(.52,.85,3.5,24),'#eee3c8',[0,-.3,0],[1,1,1],tower);
+    part(new THREE.CylinderGeometry(.82,.82,.14,24),'#b1c6b4',[0,1.48,0],[1,1,1],tower);
+    ball('#edc771',[0,1.97,0],[.47,.49,.47],tower);
+    for(let i=0;i<4;i++){const a=i*Math.PI/2;part(new THREE.CylinderGeometry(.055,.055,.95,10),'#b1c6b4',[Math.cos(a)*.6,1.96,Math.sin(a)*.6],[1,1,1],tower);}
+    part(new THREE.ConeGeometry(.9,.75,24),'#95b5a9',[0,2.73,0],[1,1,1],tower);
+    for(let i=0;i<5;i++)ball('#e3bd76',[-3.5+i*1.5,-2.4+Math.sin(i*.7)*.55,.4],[.14,.2,.14]);
+    friend('cat',2.2,-1.8,.8,.9,.2);friend('frog',-3.7,.1,.5,.72,-.2);
+    star(-3.4,3.5,0,.35,.2);star(3.6,2.7,0,.3);ball('#c4c8d5',[4.8,4,-2],[.9,.9,.9]);
+  }else if(theme==='candy'){
     lollipop(-.85,1.1,.3,1.3,'#e79691',-.24);
     if(step!==0)lollipop(3.8,3,-1,.63,'#a9c9b2',.38);
     if(step!==0)lollipop(-4,-.85,-.6,.54,'#d9b571',.3);

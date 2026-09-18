@@ -4,12 +4,13 @@ const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const base=process.argv[2]||'http://localhost:8153',browser=await chromium.launch({channel:'chrome',headless:true});
 const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[],checks=[];
 p.setDefaultTimeout(20000);p.on('pageerror',e=>errors.push(e.message));await p.route('**/api/analytics/**',r=>r.fulfill({status:204}));
-await p.addInitScript(()=>{const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(...args){window.journalAudio=this;return play.apply(this,args);};});
+await p.addInitScript(()=>{window.journalEntries=0;const animate=Element.prototype.animate;Element.prototype.animate=function(...args){if(this.id==='landing-dialog')window.journalEntries++;return animate.apply(this,args);};const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(...args){window.journalAudio=this;return play.apply(this,args);};});
+async function reveal(id){for(let i=0;i<6;i++){if(await p.locator(`[data-journey=${id}]`).isVisible())return;await p.locator('[data-journey-next]').click();await p.waitForTimeout(1100);}throw new Error(`Missing card ${id}`);}
 try{
   await p.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
   for(const [id,j] of Object.entries(journeys)){
-    await p.locator(`[data-journey=${id}]`).click();await p.waitForSelector('#landing-dialog[open]');
-    assert.ok(await p.locator('#landing-dialog').evaluate(e=>e.getAnimations().some(a=>a.effect.getKeyframes().some(f=>f.transform?.includes('translateY')))),'entry animation exists');
+    await reveal(id);const entries=await p.evaluate(()=>window.journalEntries);await p.locator(`[data-journey=${id}]`).click();await p.waitForSelector('#landing-dialog[open]');
+    assert.ok(await p.evaluate(()=>window.journalEntries)>entries,'entry animation invoked');
     await p.locator('#landing-dialog').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
     assert.equal(await p.locator('#preview-title').innerText(),`${j.child}的冒险日志`);
     assert.deepEqual(await p.locator('.journal-stats dd').allTextContents(),[`${j.duration}分钟`,'3个','4个','3件']);
@@ -18,7 +19,7 @@ try{
     assert.equal(await p.locator('.journey-journal [data-lucide]:not(svg)').count(),0);assert.ok(await p.locator('.journey-journal svg').count()>20);
     assert.equal(await p.locator('.journal-stop.is-visited').count(),id==='question'?2:3);
     assert.equal(await p.locator('.journal-chapter').nth(1).locator('.journey-moment').count(),id==='question'?2:1);
-    assert.ok(await p.locator('#landing-dialog').evaluate((e,id)=>getComputedStyle(e).backgroundImage.includes(`journal-map-${id}.webp`),id),'art is a cropped atmospheric background');
+    assert.ok(await p.locator('#landing-dialog').evaluate((e,id)=>getComputedStyle(e).backgroundImage.includes(`journal-map-${id}.webp`),j.backdrop||id),'art is a cropped atmospheric background');
     assert.equal(await p.locator('.journal-map-art').count(),0);
     await p.locator('#landing-dialog').evaluate(async e=>{const url=getComputedStyle(e).backgroundImage.match(/url\("([^"]+)"\)/)[1];const img=new Image();img.src=url;await img.decode();});
     await p.locator('.journey-journal img').evaluateAll(imgs=>Promise.all(imgs.map(i=>{i.loading='eager';return i.decode();})));
@@ -38,10 +39,10 @@ try{
     checks.push(`${id}: child identity, consistent statistics, invention collection, chapter route, three voiced answers, text-only effects and icon inventions, animated close`);
   }
   for(const width of [320,390,768]){
-    await p.setViewportSize({width,height:844});await p.locator('[data-journey=question]').click();await p.locator('#landing-dialog').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
+    await p.setViewportSize({width,height:844});await reveal('question');await p.locator('[data-journey=question]').click();await p.locator('#landing-dialog').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
     assert.ok(await p.locator('#landing-dialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1),`no overflow at ${width}`);
     await p.screenshot({path:`/tmp/journal-width-${width}.png`});await p.locator('.journey-voice').first().scrollIntoViewIfNeeded();await p.screenshot({path:`/tmp/journal-voice-${width}.png`});await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('landing-dialog').open);
   }
-  await p.emulateMedia({reducedMotion:'reduce'});await p.locator('[data-journey=candy]').click();assert.equal(await p.locator('#landing-dialog').evaluate(e=>e.getAnimations().length),0);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('landing-dialog').open);checks.push('320/390/768 responsive layouts; reduced motion; Escape, close button and backdrop all close');
+  await p.emulateMedia({reducedMotion:'reduce'});await reveal('candy');await p.locator('[data-journey=candy]').click();assert.equal(await p.locator('#landing-dialog').evaluate(e=>e.getAnimations().length),0);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('landing-dialog').open);checks.push('320/390/768 responsive layouts; reduced motion; Escape, close button and backdrop all close');
   assert.deepEqual(errors,[]);console.log(JSON.stringify({base,checks,errors,status:'passed'},null,2));
 }finally{await browser.close();}

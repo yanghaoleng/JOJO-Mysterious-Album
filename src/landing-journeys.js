@@ -44,3 +44,16 @@ for(const [id,log] of Object.entries(logs)){
   const journey=journeys[id];
   Object.assign(journey,{...log,steps:journey.steps.map((step,i)=>({...step,...log.steps[i]}))});
 }
+
+Object.assign(journeys,{
+  music:{title:'朵朵的云朵音乐会',child:'朵朵',avatar:'cloud',image:'journey-music',backdrop:'question',theme:'blue',duration:19,quote:'小声唱歌的云，也应该被大家听见。',creation:'一场给每朵云都留了声音的音乐会',stops:['发现云会唱歌','给小声音留位置','造出了轮流演奏的舞台'],steps:[
+    {chapter:0,time:'02:18',icon:'music',speaker:'鼓鼓',question:'这朵云不下雨，你猜它在做什么？',answer:'它在唱歌！雨点就是它的小鼓槌。',effect:'云朵轻轻抖动，雨点敲出节奏。朵朵给一朵普通的云，找到了新的本领。',ideas:['把雨点变成鼓槌'],invention:'雨点小鼓槌'},
+    {chapter:1,time:'08:35',icon:'ear',speaker:'书桌小鸮',question:'大云唱得很响，小云的声音听不见，怎么办？',answer:'大家先小声一点，听完小云的，再一起唱！',effect:'伙伴们轮流安静下来，小云终于唱完了自己的那一句。音乐会多了一条认真倾听的约定。',ideas:['给小声音单独的时间'],invention:'小声音优先约定'},
+    {chapter:2,time:'15:41',icon:'sparkles',speaker:'雪团小兔',question:'怎样让每朵云都知道什么时候轮到自己？',answer:'做一排会发光的星星，亮到谁，谁就唱！',effect:'一排星星依次亮起，云朵接着唱出不同的声音。朵朵把刚才的约定，做成了能一起玩的舞台。',ideas:['用星星安排出场','让光来指挥合唱'],invention:'星星轮唱舞台'},
+  ]},
+  lantern:{title:'阿布的晚安灯塔',child:'阿布',avatar:'chick',image:'journey-lantern',backdrop:'moon',theme:'sage',duration:17,quote:'灯塔也可以小声一点，让朋友好好睡觉。',creation:'一座会为晚归朋友轻轻亮起的灯塔',stops:['想给晚归朋友照路','照顾想睡觉的伙伴','发明了温柔的路灯'],steps:[
+    {chapter:0,time:'01:52',icon:'lamp',speaker:'月牙小猫',question:'天黑了，晚回家的朋友怎么找到路？',answer:'我要造一个大灯塔，让大家都能看见家！',effect:'一座灯塔亮了起来，星球上的小路不再漆黑。阿布给晚归的朋友留下了一个方向。',ideas:['给晚归朋友造灯塔'],invention:'回家方向灯塔'},
+    {chapter:1,time:'07:09',icon:'moon',speaker:'小荷',question:'可是灯太亮，想睡觉的朋友睡不着了。',answer:'那就把光照在路上，不要照到他们的窗户。',effect:'灯光低下头，沿着小路铺开。窗户重新暗了下来，照路和睡觉终于可以同时发生。',ideas:['只照路不照窗户'],invention:'低头照路的灯'},
+    {chapter:2,time:'14:22',icon:'footprints',speaker:'鼓鼓',question:'没有人走过来的时候，灯还要一直亮吗？',answer:'听到脚步再亮，人走过去就慢慢睡着。',effect:'朋友走近时，小灯一盏盏亮起；走远后，光又轻轻暗下去。阿布让这座灯塔学会了等待。',ideas:['用脚步唤醒灯','让路灯慢慢入睡'],invention:'脚步唤醒小路'},
+  ]},
+});
