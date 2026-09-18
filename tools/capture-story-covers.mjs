@@ -29,8 +29,10 @@ try{
     await writeFile(new URL(`../assets/landing/${name}.webp`,import.meta.url),await sharp(await page.screenshot()).webp({quality:88}).toBuffer());
     console.log(name);
   }
-  await page.setViewportSize({width:1440,height:900});await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.waitForSelector('#landing-world[data-ready]');await page.waitForTimeout(500);
-  const data=await page.locator('#landing-world canvas').evaluate(c=>c.toDataURL('image/webp',.9).split(',')[1]);
-  await writeFile(new URL('../assets/landing/hero-immersive.webp',import.meta.url),Buffer.from(data,'base64'));console.log('hero-immersive');
+  for(const [width,name] of [[1440,'hero-immersive'],[390,'hero-immersive-mobile']]){
+    await page.setViewportSize({width,height:width===390?844:900});await page.goto(base,{waitUntil:'domcontentloaded'});
+    await page.waitForSelector('#landing-world[data-ready]');await page.waitForTimeout(500);
+    const data=await page.locator('#landing-world canvas').evaluate(c=>c.toDataURL('image/webp',.9).split(',')[1]);
+    await writeFile(new URL(`../assets/landing/${name}.webp`,import.meta.url),Buffer.from(data,'base64'));console.log(name);
+  }
 }finally{await browser.close();}
