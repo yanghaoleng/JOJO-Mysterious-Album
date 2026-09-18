@@ -87,6 +87,7 @@ dialog.addEventListener('click',async event=>{
 const icon=name=>`<i data-lucide="${name}" aria-hidden="true"></i>`;
 function openJourney(id){
   const j=journeys[id];if(!j)return;stopJourneyAudio();
+  const journeyUrl=new URL(location.href);journeyUrl.searchParams.set('journey',id);history.replaceState(null,'',journeyUrl);
   dialog.style.setProperty('--journal-backdrop-image',`url("${new URL(`../assets/landing/journal-map-${j.backdrop||id}.webp`,import.meta.url).href}")`);
   const ideaCount=j.steps.reduce((sum,step)=>sum+step.ideas.length,0);
   const avatar=(extra='')=>`<span class="child-avatar avatar-${j.avatar} ${extra}" role="img" aria-label="${j.child}的冒险头像"></span>`;
