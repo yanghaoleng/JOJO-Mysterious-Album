@@ -23,7 +23,7 @@ try{
     await page.setViewportSize({width,height:width<768?844:900});await page.evaluate(()=>document.getElementById('mode-gate').scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:`${out}/home-${width}.png`});
     assert.ok(await page.locator('#mode-gate').evaluate(e=>e.scrollWidth<=e.clientWidth+1),`overflow ${width}`);
     for(const section of ['chapters','journeys','making']){await page.locator(`#${section}`).scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/${section}-${width}.png`});}
-    await page.locator('.landing-closing').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/closing-${width}.png`});report.widths.push(width);
+    await page.locator('.landing-footer').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/footer-${width}.png`});report.widths.push(width);
   }
   await page.evaluate(async()=>{await Promise.all([...document.images].map(i=>{i.loading='eager';return i.decode().catch(()=>{});}));});
   assert.deepEqual(await page.locator('.landing-page img').evaluateAll(imgs=>imgs.filter(i=>!i.naturalWidth).map(i=>i.src)),[]);

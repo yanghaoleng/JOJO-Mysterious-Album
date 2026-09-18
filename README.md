@@ -13,9 +13,17 @@
 - 第二章 `/dev/debate` 复用现有 `/api/debate`，小鸮与小兔进行六轮交替讨论，孩子可用语音或文字表达。支持暂停、跳句、重开和结束后的个人看法；声音失败可用字幕继续。
 - 探索记录是三个独立的模拟纪念册卡片，使用生成的默认童趣头像与按主题创作的漂浮 3D 拼贴，明确标注示例内容；不采集真实语音，不实现云端旅程或公开分享。未来分享需先取得允许。
 - 创作手记先说明开放世界、想法改变旅程和涌现玩法的设计愿景，再回看迭代；这些是探索方向，不宣称当前已支持任意玩法。创作幕后保留二维绘本、角色模拟器与画风实验，并以真实截图公开 3D 角色模拟器、故事里的朋友、黄色四巨头和 iPhone Duo 入口。
-- 顶部只保留产品名；底部以第一章真实场景、标题与开始按钮作为入口。
+- 顶部只保留产品名；模块陈列馆归入迭代历程，底部提供按天归档的更新日志入口。
 - 首页逻辑为 `src/landing.js`，场景为 `src/landing-scene.js`，样式为 `src/landing.css`。原版角色模拟器仍由 `src/mode.js` 管理，`/?mode=debug` 路由不变。
 - `tools/capture-story-covers.mjs` 重建实际章节截图；`tools/capture-landing.mjs` 保留模拟旅程插图与幕后截图的生成入口，使用 `src/landing-art-scene.js`。`tools/verify-landing.mjs [baseURL]` 验证自动场景、弹窗、链接、五种屏幕宽度、图片、WebGL 降级，以及第二章讨论状态与取消流程。验证中的讨论与语音响应使用固定测试数据，不代表真机麦克风验证。需通过 `PLAYWRIGHT_MODULE` 指定 playwright-core；截图另需 `SHARP_MODULE`。
+
+## 模块陈列与更新日志
+
+- `/dev/modules/` 陈列可复用界面、逻辑、模型、场景与音频，详见 [`dev/ARCHITECTURE.md`](dev/ARCHITECTURE.md)。新增模块时同步注册、说明与演示。
+- `/changelog/` 从仓库第一条提交开始，按北京时间的提交日期合并。每一天有中文摘要，展开后可查看全部原始提交；包括已合入主线的历史分支。
+- 摘要源文件为 `src/changelog/entries.json`。新的一天必须补充摘要；同一天继续发布时更新已有条目。`npm run build:changelog` 生成页面与 `history.json`；新日期漏写摘要或仓库是浅克隆时会报错。
+- 生成目录 `changelog/` 不进入 Git。**先提交，再运行 `node tools/package-release.mjs /tmp/jma-release.tar.gz`**；打包器读取完整 HEAD 历史并把生成页面一起装入发布包，因此日志包含这次发布的最后一条提交。部署不要改回仅 `git archive`。
+- `tools/verify-updates.mjs` 对照完整 Git 历史核验日志、首页入口、四种屏幕宽度与旧模拟器；`QA_ORIGIN` 选择本地或线上，`PLAYWRIGHT_MODULE` 指定浏览器依赖。
 
 ## 《哇呜！第一束好奇光》
 

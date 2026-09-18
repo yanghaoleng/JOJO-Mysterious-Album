@@ -5,3 +5,6 @@ __pycache__/
 .claude/
 node_modules/
 .data/
+
+# Generated from the full release history after committing.
+/changelog/

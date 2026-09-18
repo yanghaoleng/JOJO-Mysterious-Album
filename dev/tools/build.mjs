@@ -26,3 +26,5 @@ for(const [html,assets] of [
   for(const asset of assets){const digest=createHash('sha256').update(await readFile(asset)).digest('hex').slice(0,12),name=asset.split('/').at(-1).replaceAll('.','\\.');content=content.replace(new RegExp(`(${name}\\?v=)[^"']+`,'g'),`$1${digest}`);}
   await writeFile(html,content);
 }
+
+await import('../../tools/build-changelog.mjs');
