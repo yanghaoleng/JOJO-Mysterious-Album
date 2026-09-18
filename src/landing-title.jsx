@@ -32,7 +32,7 @@ function Title({target,instant}){
 }
 const target=document.getElementById('mode-title');
 if(target){
-  const instant=matchMedia('(prefers-reduced-motion: reduce)').matches||!document.documentElement.classList.contains('hero-title-pending');
+  const instant=matchMedia('(prefers-reduced-motion: reduce)').matches;
   target.setAttribute('aria-label',lines.join(''));target.dataset.textMotion='calligraph';
   const root=createRoot(target);flushSync(()=>root.render(<Title target={target} instant={instant}/>));
   document.documentElement.classList.remove('hero-title-pending');
