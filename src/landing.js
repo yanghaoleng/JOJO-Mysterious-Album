@@ -73,6 +73,8 @@ function stopJourneyAudio(){audioToken++;journeyAudio.pause();journeyAudio.curre
 journeyAudio.addEventListener('ended',()=>stopJourneyAudio());
 journeyAudio.addEventListener('loadedmetadata',()=>{if(audioButton&&Number.isFinite(journeyAudio.duration))audioButton.querySelector('.voice-duration').textContent=`${Math.ceil(journeyAudio.duration)}″`;});
 dialog.addEventListener('click',async event=>{
+  const share=event.target.closest('[data-share-journey]');
+  if(share){const url=location.href;try{await navigator.clipboard.writeText(url);}catch{const input=document.createElement('input');input.value=url;document.body.append(input);input.select();document.execCommand('copy');input.remove();}share.textContent='已复制';setTimeout(()=>{if(share.isConnected)share.textContent='复制分享链接';},1800);return;}
   const button=event.target.closest('[data-journey-audio]');if(!button)return;
   const status=content.querySelector('.journey-audio-status');status.textContent='';
   if(audioButton===button&&!journeyAudio.paused){audioToken++;journeyAudio.pause();resetAudioButton(button);return;}
@@ -90,7 +92,7 @@ function openJourney(id){
   const avatar=(extra='')=>`<span class="child-avatar avatar-${j.avatar} ${extra}" role="img" aria-label="${j.child}的冒险头像"></span>`;
   const entry=(step,i)=>`<article class="journey-moment journal-entry">
     <span class="journal-pin">${icon(step.icon)}</span>
-    <div class="journal-entry-heading"><span class="journal-time">出发后 ${step.time}</span></div>
+    <div class="journal-entry-heading" aria-hidden="true"></div>
     <div class="journal-entry-body"><div class="journal-dialogue">
       <div class="journey-question"><p><span class="question-speaker">${icon('message-circle')} ${escapeHTML(step.speaker)}问：</span>“${escapeHTML(step.question)}”</p></div>
       <div class="journey-reply">${avatar('reply-avatar')}<div class="reply-body"><span class="reply-name"><strong>${j.child}</strong> 的回答 <small>AI 模拟童声</small></span>
@@ -106,8 +108,8 @@ function openJourney(id){
 
     <section class="journal-route" aria-labelledby="route-title"><div class="journal-section-title"><h3 id="route-title">我的探索路线</h3><span>留下了 ${visited} 个章节的足迹</span></div><nav class="journal-stops" aria-label="跳到旅程章节">${journeyChapters.map((chapter,ci)=>{const seen=j.steps.some(step=>step.chapter===ci);return `<button type="button" class="journal-stop ${seen?'is-visited':'is-unvisited'}" data-journal-stop="journal-${id}-chapter-${ci}"><span class="stop-symbol">${icon(chapter.icon)}</span><strong>${chapter.number} · ${chapter.title}</strong><small>${j.stops[ci]} · ${seen?j.steps.filter(step=>step.chapter===ci).length+' 次回答':'待探索'}</small></button>`;}).join('')}</nav></section>
     <p class="journey-audio-status" role="status" aria-live="polite"></p>
-    <div class="journey-conversations journal-timeline">${journeyChapters.map((chapter,ci)=>{const steps=j.steps.map((step,i)=>({step,i})).filter(({step})=>step.chapter===ci);return `<section class="journal-chapter ${steps.length?'':'chapter-unvisited'}" id="journal-${id}-chapter-${ci}"><div class="journal-chapter-heading"><span>${icon(chapter.icon)}</span><div><span>${chapter.number} · ${steps.length?'我的足迹':'未探索'}</span><h3>${chapter.title}</h3></div></div>${steps.length?steps.map(({step,i})=>entry(step,i)).join(''):`<p class="journal-unvisited">这一站还没有出发。下一次，${j.child}可以把新的想法带到这里。</p>`}</section>`;}).join('')}</div>
-    <footer class="journal-end"><span class="journal-finish">${icon('flag')}</span><p>这一次，${j.child}留下了</p><h3>${escapeHTML(j.creation)}</h3><p>一个想法接着一个想法，走出了自己的路线。</p><a class="landing-primary" href="./dev/?story=wow">开始我的第一章 ${icon('arrow-up-right')}</a></footer>
+    <div class="journey-conversations journal-timeline">${journeyChapters.map((chapter,ci)=>{const steps=j.steps.map((step,i)=>({step,i})).filter(({step})=>step.chapter===ci);return `<section class="journal-chapter ${steps.length?'':'chapter-unvisited'}" id="journal-${id}-chapter-${ci}"><div class="journal-chapter-heading"><span>${icon(chapter.icon)}</span><div><h3>${chapter.number} · ${chapter.title}</h3></div></div>${steps.length?steps.map(({step,i})=>entry(step,i)).join(''):`<p class="journal-unvisited">这一站还没有出发。下一次，${j.child}可以把新的想法带到这里。</p>`}</section>`;}).join('')}</div>
+    <footer class="journal-end"><span class="journal-finish">${icon('flag')}</span><p>这一次，${j.child}留下了</p><h3>${escapeHTML(j.creation)}</h3><p>一个想法接着一个想法，走出了自己的路线。</p><div class="journal-end-actions"><button class="landing-primary" type="button" data-share-journey>复制分享链接</button><a class="landing-primary" href="./">开启我的冒险 ${icon('arrow-up-right')}</a></div></footer>
     <p class="dialog-footnote">这是一份模拟的冒险日志，昵称、统计和对话均为示例；声音由 AI 合成，配图为 3D 效果示意，不是真实儿童录音或游戏实录。探索留存与授权分享正在规划中。</p>
   </div>`);
 }

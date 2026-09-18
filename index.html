@@ -387,14 +387,14 @@
 <link rel="stylesheet" href="./src/voice-input-control.css?v=20260910-lyric-motion">
 <link rel="modulepreload" href="./vendor/landing-title.js?v=20260918-pop2">
 <script>document.documentElement.classList.add("hero-title-pending");setTimeout(()=>document.documentElement.classList.remove("hero-title-pending"),2200);</script>
-<link rel="stylesheet" href="./src/landing.css?v=20260918-hero-arrow">
+<link rel="stylesheet" href="./src/landing.css?v=20260918-home-polish">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
   <canvas id="paper-grain" aria-hidden="true"></canvas>
 
   <section id="mode-gate" aria-labelledby="mode-title">
-    <div class="landing-page">
+    <div id="top" class="landing-page">
       <header class="landing-nav">
         <a class="landing-brand" href="./"><img src="./assets/icons/favicon-star-speech.png" width="36" height="36" alt=""><span>萌萌星的奇妙图鉴</span></a>
 
@@ -412,9 +412,9 @@
         </section>
         <section id="chapters" class="landing-section" aria-label="三个冒险章节">
           <div class="chapter-grid">
-            <article class="chapter"><a class="chapter-card" href="./dev/?story=wow" aria-label="开始第一束好奇的光"><img src="./assets/landing/story-wow.webp" width="1200" height="900" alt="第一束好奇的光，真实 3D 故事场景截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第一章</span>第一束好奇的光</h2><div class="chapter-reveal"><p>跟着鼓鼓学会走动、观察和提问，为失去好奇心的宇宙找回第一束光。</p><span>从这里出发 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
-            <article class="chapter"><a class="chapter-card" href="./dev/debate" aria-label="开始观点小剧场"><img src="./assets/landing/story-debate.webp" width="1200" height="900" alt="观点小剧场，两个立体角色在星球上讨论的真实截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第二章</span>观点小剧场</h2><div class="chapter-reveal"><p>怎样让好奇心继续亮着？听听不同的理由，再表达你自己的救援办法。</p><span>让想法碰个面 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
-            <article class="chapter"><a class="chapter-card" href="./dev/?story=moon" aria-label="开始登月计划"><img src="./assets/landing/story-moon.webp" width="1200" height="900" alt="登月计划，望远镜山丘与伙伴的真实 3D 故事截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第三章</span>登月计划</h2><div class="chapter-reveal"><p>把上一站的想法做出来。造物件、请朋友试用，一起建造宇宙的好奇心广场。</p><span>带着想象出发 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
+            <article class="chapter"><a class="chapter-card" href="./dev/?story=wow" aria-label="开始第一束好奇的光"><img src="./assets/landing/chapter-wow.webp" width="1200" height="900" alt="第一束好奇的光，真实 3D 故事场景截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第一章</span>第一束好奇的光</h2><div class="chapter-reveal"><p>跟着鼓鼓学会走动、观察和提问，为失去好奇心的宇宙找回第一束光。</p><span>从这里出发 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
+            <article class="chapter"><a class="chapter-card" href="./dev/debate" aria-label="开始观点小剧场"><img src="./assets/landing/chapter-debate.webp" width="1200" height="900" alt="观点小剧场，两个立体角色在星球上讨论的真实截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第二章</span>观点小剧场</h2><div class="chapter-reveal"><p>怎样让好奇心继续亮着？听听不同的理由，再表达你自己的救援办法。</p><span>让想法碰个面 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
+            <article class="chapter"><a class="chapter-card" href="./dev/?story=moon" aria-label="开始登月计划"><img src="./assets/landing/chapter-moon.webp" width="1200" height="900" alt="登月计划，望远镜山丘与伙伴的真实 3D 故事截图" loading="lazy"><div class="chapter-caption"><h2><span class="chapter-number">第三章</span>登月计划</h2><div class="chapter-reveal"><p>把上一站的想法做出来。造物件、请朋友试用，一起建造宇宙的好奇心广场。</p><span>带着想象出发 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></div></div></a></article>
           </div>
         </section>
         <section id="journeys" class="landing-section journeys-section">
@@ -429,29 +429,28 @@
           <div class="journey-controls" aria-label="示例旅程轮换"><button type="button" data-journey-prev aria-label="上一组旅程"><i data-lucide="arrow-left" aria-hidden="true"></i></button><button type="button" data-journey-pause aria-label="暂停轮换旅程" aria-pressed="false"><span data-pause><i data-lucide="pause" aria-hidden="true"></i></span><span data-play hidden><i data-lucide="play" aria-hidden="true"></i></span></button><button type="button" data-journey-next aria-label="下一组旅程"><i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
         </section>
         <section id="making" class="landing-section making-section">
-          <div class="section-heading making-intro"><p class="landing-eyebrow">我们的创作手记</p><h2>给一个起点，<br>让玩法自己长出来。</h2><p>我们想做一个向孩子的想象敞开的世界。故事给出方向，孩子说出的一个新主意，可以让伙伴、物件和接下来的旅程产生新的联系。</p></div>
+          <div class="section-heading making-intro"><h2>我们的创作手记</h2><p>我们想做一个向孩子的想象敞开的世界。故事给出方向，孩子说出的一个新主意，可以让伙伴、物件和接下来的旅程产生新的联系。</p></div>
           <div class="making-beliefs">
             <article><h3><span class="belief-icon"><i data-lucide="globe-2" aria-hidden="true"></i></span>世界是开放的</h3><p>去月球，也可以先给朋友送一块蛋糕。我们希望主线是一份邀请，让孩子有空间提出自己的目标。</p></article>
             <article><h3><span class="belief-icon"><i data-lucide="wand-sparkles" aria-hidden="true"></i></span>想法能改变接下来</h3><p>一句“我想要”，不只换来一句回答。我们想让它成为世界里的东西，也成为下一次探索的线索。</p></article>
             <article><h3><span class="belief-icon"><i data-lucide="sparkles" aria-hidden="true"></i></span>玩法，从相遇中涌现</h3><p>棒棒糖遇上火箭，会不会变成一趟甜甜的快递？让角色、物件和孩子的主意相遇，长出我们也没预先写好的玩法。</p></article>
           </div>
-          <div class="making-history-heading"><h3>带着这些想法，一点点往前试。</h3><p>这是我们正在探索的方向。下面，留着一路走来的尝试。</p></div>
+          <div class="making-history-heading"><h3>迭代历程</h3></div>
           <div class="making-timeline">
-            <article><a class="making-image" href="./story-v2?story=doudou"><img src="./assets/landing/history-story.webp" width="1200" height="800" alt="早期二维绘本《送豆豆回家》的实际页面截图" loading="lazy"></a><span class="making-index">最初 · 画出一个朋友</span><h3>先从一页温柔的绘本开始</h3><p>铅笔、水彩、纸张的颗粒。我们先试着让画里的朋友开口，把读故事变成一次有来有回的陪伴。</p><a href="./story-v2?story=doudou" class="landing-text-link">翻翻最初的绘本 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
-            <article><a class="making-image" href="./?mode=debug"><img src="./assets/landing/history-lab.webp" width="1200" height="800" alt="早期角色模拟器的实际页面截图" loading="lazy"></a><span class="making-index">后来 · 把选择交给孩子</span><h3>朋友不必只有一种模样</h3><p>试过大耳朵、豆豆眼，试过不同的动作、声音和画风。角色模拟器，让“我喜欢这样”有了一个具体的样子。</p><a href="./?mode=debug" class="landing-text-link">打开原版角色模拟器 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
-            <article><a class="making-image" href="./styles"><img src="./assets/thumbs/styles.webp" width="1200" height="800" alt="项目曾尝试过的多种角色绘画风格" loading="lazy"></a><span class="making-index">现在 · 让世界接住想象</span><h3>从听故事，到成为故事的作者</h3><p>我们试着把选项变成对话，把平面变成立体，把既定的答案变成开放的可能。主线还在，但下一步可以由孩子提出。</p><a href="./styles" class="landing-text-link">看看那些画风实验 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
+            <article><a class="making-image" href="./story-v2?story=doudou"><img src="./assets/landing/history-story.webp" width="1200" height="800" alt="早期二维绘本《送豆豆回家》的实际页面截图" loading="lazy"></a><h3>先从一页温柔的绘本开始</h3><p>铅笔、水彩、纸张的颗粒。我们先试着让画里的朋友开口，把读故事变成一次有来有回的陪伴。</p><a href="./story-v2?story=doudou" class="landing-text-link">翻翻最初的绘本 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
+            <article><a class="making-image" href="./?mode=debug"><img src="./assets/landing/history-lab.webp" width="1200" height="800" alt="早期角色模拟器的实际页面截图" loading="lazy"></a><h3>朋友不必只有一种模样</h3><p>试过大耳朵、豆豆眼，试过不同的动作、声音和画风。角色模拟器，让“我喜欢这样”有了一个具体的样子。</p><a href="./?mode=debug" class="landing-text-link">打开原版角色模拟器 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
+            <article><a class="making-image" href="./styles"><img src="./assets/thumbs/styles.webp" width="1200" height="800" alt="项目曾尝试过的多种角色绘画风格" loading="lazy"></a><h3>从听故事，到成为故事的作者</h3><p>我们试着把选项变成对话，把平面变成立体，把既定的答案变成开放的可能。主线还在，但下一步可以由孩子提出。</p><a href="./styles" class="landing-text-link">看看那些画风实验 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></article>
           </div>
           <div class="lab-heading"><h3>还有一些，认真玩出来的小彩蛋。</h3></div>
           <div class="experiment-grid">
-            <a href="./dev/?mode=studio"><img src="./assets/landing/studio.webp" width="1200" height="800" alt="3D 角色模拟器的实际页面截图" loading="lazy"><div><span>01 / 捏一个新朋友</span><h4>3D 角色模拟器 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
-            <a href="./story-npcs?from=home"><img src="./assets/landing/friends.webp" width="1200" height="800" alt="故事里的朋友角色图鉴实际页面截图" loading="lazy"><div><span>02 / 和大家打个招呼</span><h4>故事里的朋友 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
-            <a href="./dev/yellow-four"><img src="./assets/landing/yellow-four.webp" width="1200" height="800" alt="黄色四巨头搭肩合照的实际页面截图" loading="lazy"><div><span>03 / 一个颜色，四种可爱</span><h4>黄色四巨头 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
-            <a href="./dev/iphone-duo/"><img src="./assets/landing/iphone-duo.webp" width="1200" height="800" alt="展开的 iPhone Duo 和四个黄色朋友的实际页面截图" loading="lazy"><div><span>04 / 一展开，快乐就到齐</span><h4>iPhone Duo <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
+            <a href="./dev/?mode=studio"><img src="./assets/landing/studio.webp" width="1200" height="800" alt="3D 角色模拟器的实际页面截图" loading="lazy"><div><h4>3D 角色模拟器 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
+            <a href="./story-npcs?from=home"><img src="./assets/landing/friends.webp" width="1200" height="800" alt="故事里的朋友角色图鉴实际页面截图" loading="lazy"><div><h4>故事里的朋友 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
+            <a href="./dev/yellow-four"><img src="./assets/landing/yellow-four.webp" width="1200" height="800" alt="黄色四巨头搭肩合照的实际页面截图" loading="lazy"><div><h4>黄色四巨头 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
+            <a href="./dev/iphone-duo/"><img src="./assets/landing/iphone-duo.webp" width="1200" height="800" alt="展开的 iPhone Duo 和四个黄色朋友的实际页面截图" loading="lazy"><div><h4>iPhone Duo <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></h4></div></a>
           </div>
         </section>
-        <section class="landing-closing"><img src="./assets/landing/story-wow.webp" width="1200" height="900" alt="第一束好奇的光的故事场景" loading="lazy"><div><h2>第一束好奇的光</h2><a class="landing-primary" href="./dev/?story=wow">开始第一章 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></span></a></div><p class="mode-note" role="status" hidden></p></section>
+        <section class="landing-closing"><img src="./assets/landing/story-wow.webp" width="1200" height="900" alt="第一束好奇的光的故事场景" loading="lazy"><div><h2>第一束好奇的光</h2><a class="landing-primary" href="#top">回到顶部 <span aria-hidden="true"><i class="landing-link-arrow" data-lucide="arrow-up" aria-hidden="true"></i></span></a></div><p class="mode-note" role="status" hidden></p></section>
       </main>
-      <footer class="landing-footer"><span>萌萌星的奇妙图鉴 <small>让孩子的想法，成为世界的一部分。</small></span><div><a href="./debate">旧版小剧场 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a><a href="./story-v2?story=wow">旧版绘本 <i class="landing-link-arrow" data-lucide="arrow-up-right" aria-hidden="true"></i></a></div></footer>
     </div>
   </section>
   <dialog id="landing-dialog" class="landing-dialog" aria-labelledby="preview-title"><button class="dialog-close" type="button" aria-label="关闭冒险日志" autofocus>×</button><div id="landing-dialog-content"></div></dialog>

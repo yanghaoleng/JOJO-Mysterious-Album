@@ -18,6 +18,19 @@
 @media(prefers-reduced-motion:reduce){#mode-gate{scroll-behavior:auto}.landing-page *{animation:none!important;transition:none!important}}
 .hero-concept-tabs{display:flex;justify-content:center;gap:3px;border-bottom:1px solid #dce0d1;padding:0 0 10px;margin:0 0 20px;position:relative;z-index:3}.landing-page .hero-concept-tabs button{border:0;background:transparent;border-radius:100px!important;padding:8px 9px;font-size:10px;color:#69775f;white-space:nowrap}.landing-page .hero-concept-tabs button[aria-selected=true]{background:#dfe8d4;color:#304c34;font-weight:750}.hero-world{touch-action:pan-y}.hero-world canvas{pointer-events:auto}.hero-art-wrap{padding-top:0}.hero-world img{mix-blend-mode:multiply}.hero-world[data-ready] img{visibility:hidden}.hero-concept-tabs button:hover{background:#e9eddf}.landing-hero{padding-top:30px;padding-bottom:34px}.scene-note{min-height:2.8em;line-height:1.6}
 @media(max-width:1100px) and (min-width:768px){.hero-concept-tabs{gap:0}.landing-page .hero-concept-tabs button{font-size:9px;padding:8px 6px}}
+
+/* Final homepage and journal polish. */
+.chapter-card{height:520px}
+.chapter-card:is(:hover,:focus-visible,.is-expanded)>img{transform:scale(1.09)}
+.making-intro>.landing-eyebrow,.making-history-heading p,.making-index,.experiment-grid>a>div>span{display:none}
+.making-intro{margin-bottom:30px}.making-history-heading{margin:40px 0 22px}.making-history-heading h3{font-size:22px}
+.journal-entry-heading{display:none}.journal-chapter-heading>div>span{display:none}
+.landing-dialog .journey-effect{margin-left:0;padding-left:0;border-left:0;background:transparent}
+.landing-dialog .journey-effect>p{font-size:17px;line-height:1.9}
+.journal-end-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px}
+.journal-end-actions .landing-primary{border:0}
+.journal-end-actions .landing-primary svg{width:16px;height:16px}
+@media(max-width:767px){.chapter-card{height:465px}.chapter-card:is(:hover,:focus-visible,.is-expanded)>img{transform:scale(1.06)}.making-history-heading{margin:28px 0 16px}.journal-end-actions{gap:9px}.landing-dialog .journey-effect>p{font-size:16px}}
 @media(max-width:767px){.hero-concept-tabs{margin-bottom:17px;padding-bottom:10px;gap:1px}.landing-page .hero-concept-tabs button{font-size:9px;padding:8px 6px}.hero-art-wrap{margin-top:16px}.hero-world{aspect-ratio:1.4}}
 @media(min-width:768px){.hero-world{width:108%;margin-left:-4%;height:clamp(300px,29vw,410px);aspect-ratio:auto}.hero-concept-tabs{margin-bottom:12px}.hero-speech{margin-bottom:-25px}.landing-hero{min-height:0;padding-top:27px;padding-bottom:26px}.landing-page .hero-concept-tabs button{font-size:11px;padding:8px 10px}}
 @media(min-width:768px) and (max-width:1100px){.landing-page .hero-concept-tabs button{font-size:9px;padding:8px 5px}}
