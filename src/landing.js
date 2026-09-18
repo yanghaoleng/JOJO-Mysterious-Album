@@ -7,7 +7,7 @@ let scene, returnFocus;
 const heroObserver=new IntersectionObserver(entries=>{
   if(!entries.some(e=>e.isIntersecting))return;
   heroObserver.disconnect();
-  import('./landing-scene.js?v=20260918-pop').then(async({createLandingScene})=>{
+  import('./landing-scene.js?v=20260918-click').then(async({createLandingScene})=>{
     if(document.getElementById('mode-title')?.dataset.entrance!=='complete'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await new Promise(resolve=>{const done=()=>{clearTimeout(timer);window.removeEventListener('mengmeng:hero-title-ready',done);resolve();};const timer=setTimeout(done,2600);window.addEventListener('mengmeng:hero-title-ready',done,{once:true});});
     scene=createLandingScene(world);world.dataset.ready='true';
     scene.renderer.domElement.addEventListener('webglcontextlost',()=>world.removeAttribute('data-ready'));

@@ -46,7 +46,20 @@ export function createLandingSky(stage) {
   const satellite = new THREE.Group(); root.add(satellite);
   part(satellite,new THREE.SphereGeometry(.42,20,14),blush);
   const ring=part(satellite,new THREE.TorusGeometry(.68,.06,8,40),cream);ring.rotation.set(1,.25,-.35);
-  let flights=0, lastFlight=-1;
+  const interactive=[...stars.map(s=>s.group),...dust.map(s=>s.mesh),ufo,comet,satellite];
+  const variants=['#ffdda0','#a5ecdc','#e6b7f2','#ffbcac'];
+  interactive.forEach((group,i)=>{
+    group.userData.heroSky=i<6?`star-${i}`:i<34?`spark-${i-6}`:['ufo','comet','satellite'][i-34];
+    group.userData.variant=0;group.userData.changedAt=-100;
+    group.traverse(node=>{if(node.material){node.material=node.material.clone();materials.add(node.material);node.userData.baseColor=node.material.color.clone();}});
+  });
+  let changes=0,flights=0, lastFlight=-1;
+  function change(group,time,{reduced=false}={}){
+    group=group||stars[changes%stars.length].group;
+    group.userData.variant++;group.userData.changedAt=reduced?-100:time;changes++;
+    const tint=new THREE.Color(variants[group.userData.variant%variants.length]);
+    group.traverse(node=>{if(node.material){node.material.color.copy(node.userData.baseColor).lerp(tint,.75);if(node.material.emissive)node.material.emissive.copy(tint);}});
+  }
   const smooth=t=>{const x=THREE.MathUtils.clamp(t,0,1);return x===1?1:1-Math.exp(-6*x)*Math.cos(10*x);};
   function place(group,u,v,size){
     const c=stage.camera,h=c.top-c.bottom;
@@ -54,6 +67,7 @@ export function createLandingSky(stage) {
     group.scale.setScalar(h*size);
   }
   return {
+    change,
     update(time,{reduced=false}={}) {
       const enter=delay=>reduced?1:smooth((time-delay)/.55);
       stars.forEach(({group,u,v,size,delay},i)=>{place(group,u+Math.sin(time*.22+i)*.008,v+Math.sin(time*.6+i)*.012,size*enter(delay));group.rotation.set(.14,Math.sin(time*.35+i)*.36,Math.sin(time*.25+i)*.22);});
@@ -69,9 +83,16 @@ export function createLandingSky(stage) {
       comet.visible=!reduced&&streak>7.4&&streak<9.3;
       const travel=(streak-7.4)/1.9;
       place(comet,1.3-travel*1.6,(mobile?.48:.08)+travel*.2,.035);comet.rotation.z=Math.PI-.23;
+      interactive.forEach(group=>{
+        const age=time-group.userData.changedAt;
+        if(!reduced&&age>=0&&age<.55)group.scale.multiplyScalar(.7+.3*smooth(age/.55));
+        if(group.userData.heroSky==='satellite')ring.rotation.z=-.35+group.userData.variant*.55;
+        if(group.userData.heroSky.startsWith('star-'))group.rotation.z+=group.userData.variant*Math.PI/5;
+      });
       if(ufo.visible&&lap!==lastFlight){lastFlight=lap;flights++;}
     },
-    get stats(){return {stars:stars.length,ufo:ufo.visible,comet:comet.visible,flights};},
+    get targets(){return interactive.filter(group=>group.visible).map(group=>({element:group.userData.heroSky,position:group.getWorldPosition(new THREE.Vector3()).project(stage.camera)}));},
+    get stats(){return {stars:stars.length,ufo:ufo.visible,comet:comet.visible,flights,changes};},
     dispose(){root.removeFromParent();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());},
   };
 }

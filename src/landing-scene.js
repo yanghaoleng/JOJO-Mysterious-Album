@@ -2,7 +2,7 @@ import * as THREE from '../vendor/three.module.js';
 import { DioramaStage } from '../dev/stage.js';
 import { createWorld } from '../dev/worlds.js';
 import { createWowCharacter } from '../dev/wow-visuals.js';
-import { createLandingSky } from './landing-sky.js?v=20260918-pop';
+import { createLandingSky } from './landing-sky.js?v=20260918-click';
 
 import { createLandingPuffs } from './landing-puffs.js?v=20260918-pop';
 
@@ -16,8 +16,11 @@ const palettes=[
   {land:'#c89ba8',shade:'#9a6f89',sky:'#422d48',glow:'#996574',halo:'#ffd5be'},
 ];
 
+// The landing scene keeps its framing; pointer input changes objects instead of orbiting.
+class LandingStage extends DioramaStage { installPointer() {} }
+
 export function createLandingScene(container,{motion=true}={}) {
-  const stage=new DioramaStage(container), hero=container.closest('.landing-hero');
+  const stage=new LandingStage(container), hero=container.closest('.landing-hero');
   const preference=matchMedia('(prefers-reduced-motion: reduce)');
   let reduced=preference.matches||!motion, elapsed=0,previous=0,visible=true,disposed=false;
   const cast=[
@@ -70,6 +73,23 @@ export function createLandingScene(container,{motion=true}={}) {
   const targetPalette={...previousPalette};
   function publish(){container.dataset.actor=String(schedules.actor.index);container.dataset.scenery=String(schedules.scenery.index);container.dataset.scene=String(schedules.planet.index);}
   function nextSchedule(track){track.index++;track.at=elapsed;track.next=elapsed+track.intervals[(track.index-1)%track.intervals.length];}
+  function change(kind){
+    if(kind==='actor'){
+      if(actorTransition)return;
+      nextSchedule(schedules.actor);
+      if(reduced)stage.setCast([cast[schedules.actor.index%cast.length]]);
+      else actorTransition={start:elapsed,swapped:false};
+    }else if(kind==='scenery'){
+      if(!reduced&&schedules.scenery.index&&elapsed-schedules.scenery.at<.48)return;
+      oldScenery=schedules.scenery.index%worlds.length;nextSchedule(schedules.scenery);
+    }else if(kind==='planet'){
+      for(const [key,value] of Object.entries({land,shade,sky:skyColor,glow:glowColor,halo:haloColor}))previousPalette[key].copy(value);
+      nextSchedule(schedules.planet);const palette=palettes[schedules.planet.index%palettes.length];
+      for(const key of Object.keys(targetPalette))targetPalette[key]=new THREE.Color(palette[key]);
+      paintPlanet(true);
+    }else return;
+    publish();
+  }
   function paintPlanet(force=false){
     if(!force&&elapsed-lastPaint<.035)return;lastPaint=elapsed;
     const t=reduced?1:ease((elapsed-schedules.planet.at)/.65);
@@ -86,26 +106,75 @@ export function createLandingScene(container,{motion=true}={}) {
       material.opacity=opacity*amount;material.depthWrite=blending?false:depthWrite;
     });
   }
-  function onPreference(){reduced=preference.matches||!motion;if(reduced){actorTransition=null;scenery.forEach((_,i)=>sceneryVisibility(i,i===schedules.scenery.index%worlds.length?1:0));paintPlanet(true);}}
+  function onPreference(){reduced=preference.matches||!motion;if(reduced){if(actorTransition&&!actorTransition.swapped)stage.setCast([cast[schedules.actor.index%cast.length]]);actorTransition=null;scenery.forEach((_,i)=>sceneryVisibility(i,i===schedules.scenery.index%worlds.length?1:0));paintPlanet(true);}}
   preference.addEventListener('change',onPreference);
   const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;});observer.observe(container);
-  stage.renderer.domElement.setAttribute('aria-hidden','true');stage.renderer.domElement.removeAttribute('role');stage.renderer.domElement.style.pointerEvents='none';
+  const canvas=stage.renderer.domElement,raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+  const listeners=new AbortController();
+  let press=null,keyboardIndex=0;
+  const keyboardKinds=['actor','scenery','planet','sky'];
+  const labels={actor:'角色',scenery:'星球上的道具',planet:'星球',sky:'空中的小模型'};
+  canvas.removeAttribute('aria-hidden');canvas.setAttribute('role','button');canvas.tabIndex=0;
+  function label(){canvas.setAttribute('aria-label',`切换${labels[keyboardKinds[keyboardIndex]]}。左右方向键选择元素，回车或空格切换。`);}
+  label();
+  function pick(clientX,clientY){
+    const bounds=canvas.getBoundingClientRect();
+    pointer.set((clientX-bounds.left)/bounds.width*2-1,-(clientY-bounds.top)/bounds.height*2+1);
+    raycaster.setFromCamera(pointer,stage.camera);
+    for(const hit of raycaster.intersectObjects(stage.scene.children,true)){
+      let shown=true;
+      for(let node=hit.object;node;node=node.parent)if(!node.visible)shown=false;
+      const mats=Array.isArray(hit.object.material)?hit.object.material:[hit.object.material];
+      if(!shown||mats.every(m=>!m||!m.visible||m.opacity<.25))continue;
+      for(let node=hit.object;node;node=node.parent){
+        if(node.userData.heroSky)return {kind:'sky',object:node,point:hit.point};
+        if(node===stage.actors.get('hero')?.group)return {kind:'actor'};
+        if(node===globe)return {kind:'planet'};
+        if(scenery.some(roots=>roots.includes(node)))return {kind:'scenery'};
+      }
+    }
+    return null;
+  }
+  function activate(hit){
+    if(!hit)return;
+    if(hit.kind==='sky'){
+      sky.change(hit.object,elapsed,{reduced});
+      if(!reduced&&hit.point)puffs.burst(hit.point,elapsed,{size:.16,count:4});
+    }else change(hit.kind);
+  }
+  const on=(event,handler)=>canvas.addEventListener(event,handler,{signal:listeners.signal});
+  on('pointerdown',event=>{
+    if(!event.isPrimary||event.button!==0){press=null;return;}
+    press={id:event.pointerId,x:event.clientX,y:event.clientY,hit:pick(event.clientX,event.clientY)};
+  });
+  on('pointermove',event=>{
+    if(press&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>8)press=null;
+    if(event.pointerType==='mouse')canvas.style.cursor=pick(event.clientX,event.clientY)?'pointer':'default';
+  });
+  on('pointerup',event=>{
+    const start=press;press=null;
+    if(!start||event.pointerId!==start.id||Math.hypot(event.clientX-start.x,event.clientY-start.y)>8)return;
+    // Keep the object touched at press time, even when a flying model moves away.
+    activate(start.hit);
+  });
+  on('pointercancel',()=>{press=null;});on('pointerleave',()=>{press=null;canvas.style.cursor='default';});
+  on('keydown',event=>{
+    if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
+      event.preventDefault();keyboardIndex=(keyboardIndex+(event.key==='ArrowRight'?1:3))%4;label();
+    }else if(event.key==='Enter'||event.key===' '){event.preventDefault();activate({kind:keyboardKinds[keyboardIndex]});}
+  });
   publish();paintPlanet(true);
   stage.renderer.setAnimationLoop(now=>{
     const dt=previous?Math.min((now-previous)/1000,.05):0;previous=now;
     if(disposed||!visible||document.hidden)return;
     if(!reduced)elapsed+=dt;
     const actorTrack=schedules.actor,propTrack=schedules.scenery,planetTrack=schedules.planet;
-    if(!reduced&&elapsed>=actorTrack.next){nextSchedule(actorTrack);actorTransition={start:elapsed,swapped:false};publish();}
+    if(!reduced&&elapsed>=actorTrack.next)change('actor');
     if(actorTransition&&!actorTransition.swapped&&elapsed-actorTransition.start>.14){
       stage.setCast([cast[actorTrack.index%cast.length]]);stage.actors.get('hero').setAction('wave');actorTransition.swapped=true;
     }
-    if(!reduced&&elapsed>=propTrack.next){oldScenery=propTrack.index%worlds.length;nextSchedule(propTrack);publish();}
-    if(!reduced&&elapsed>=planetTrack.next){
-      for(const [key,value] of Object.entries({land,shade,sky:skyColor,glow:glowColor,halo:haloColor}))previousPalette[key].copy(value);
-      nextSchedule(planetTrack);const palette=palettes[planetTrack.index%palettes.length];
-      for(const key of Object.keys(targetPalette))targetPalette[key]=new THREE.Color(palette[key]);publish();
-    }
+    if(!reduced&&elapsed>=propTrack.next)change('scenery');
+    if(!reduced&&elapsed>=planetTrack.next)change('planet');
     const entrance=reduced?1:spring(elapsed/.8);
     const planetAge=elapsed-planetTrack.at;
     const pulse=reduced||!planetTrack.index||planetAge>.65?0:Math.sin(planetAge/.65*Math.PI*3)*Math.exp(-planetAge*6);
@@ -139,6 +208,6 @@ export function createLandingScene(container,{motion=true}={}) {
     stage.yaw=.05+(reduced?0:Math.sin(elapsed*.23)*.045);stage.updateCamera();
     paintPlanet();sky.update(reduced?0:elapsed,{reduced});stage.renderer.render(stage.scene,stage.camera);
   });
-  container.__heroScene={get status(){return {time:elapsed,reduced,visible,actor:schedules.actor.index,scenery:schedules.scenery.index,planet:schedules.planet.index,next:{actor:schedules.actor.next,scenery:schedules.scenery.next,planet:schedules.planet.next},sky:sky.stats,puffs:puffs.stats,actorScale:stage.actors.get('hero')?.group.scale.x,drawCalls:stage.renderer.info.render.calls,geometries:stage.renderer.info.memory.geometries};}};
-  return {renderer:stage.renderer,stage,dispose(){disposed=true;observer.disconnect();preference.removeEventListener('change',onPreference);sky.dispose();puffs.dispose();worlds.slice(1).forEach(world=>world.dispose());delete container.__heroScene;stage.dispose();}};
+  container.__heroScene={get skyTargets(){const r=canvas.getBoundingClientRect();return sky.targets.map(({element,position:p})=>({element,x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2}));},hitAt(x,y){const hit=pick(x,y);return hit?{kind:hit.kind,element:hit.object?.userData.heroSky||hit.kind}:null;},get status(){return {time:elapsed,reduced,visible,actor:schedules.actor.index,scenery:schedules.scenery.index,planet:schedules.planet.index,next:{actor:schedules.actor.next,scenery:schedules.scenery.next,planet:schedules.planet.next},sky:sky.stats,puffs:puffs.stats,actorScale:stage.actors.get('hero')?.group.scale.x,drawCalls:stage.renderer.info.render.calls,geometries:stage.renderer.info.memory.geometries};}};
+  return {renderer:stage.renderer,stage,dispose(){disposed=true;listeners.abort();observer.disconnect();preference.removeEventListener('change',onPreference);sky.dispose();puffs.dispose();worlds.slice(1).forEach(world=>world.dispose());delete container.__heroScene;stage.dispose();}};
 }
