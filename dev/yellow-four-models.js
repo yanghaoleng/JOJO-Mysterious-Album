@@ -2,12 +2,8 @@ import * as THREE from '../vendor/three.module.js';
 import { createNPCToolkit, buildBirdNPC } from '../src/story-npcs/models.js';
 
 // Solid reference-based studies. Source images stay in local output/references.
-export const FOUR = [
-  { id: 'bull', name: '黄牛', note: '紫角大哥', color: '#eeb52b', height: 1.48 },
-  { id: 'round', name: '圆滚滚', note: '快乐担当', color: '#ffcf28', height: 1.48 },
-  { id: 'jiaojiao', name: '叫叫', note: '披风小队长', color: '#f7cf54', height: 1.14 },
-  { id: 'kangaroo', name: '袋鼠', note: '长腿选手', color: '#eebd37', height: 1.60 },
-];
+import { FOUR } from './content/yellow-friends.js';
+export { FOUR } from './content/yellow-friends.js';
 
 function taperedTube(points, radii) {
   const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));

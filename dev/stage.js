@@ -1,6 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
-import { createCharacter } from './models.js';
-import { createDocumentCharacter } from '../src/story-npcs/factory.js';
+import { createActor, actorModelKey } from './presentation/actor-factory.js';
 import { createWorld } from './worlds.js';
 import { createActorGrounding } from './planet.js';
 import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
@@ -85,10 +84,12 @@ export class DioramaStage {
     this.renderer.setAnimationLoop(now => {
       const dt = Math.min((now - previous) / 1000, .05);
       previous = now;
-      if (document.hidden) return;
+      if (document.hidden || this.container.hidden) return;
       const time = this.reduced ? 0 : now / 1000;
       this.world?.update(time, dt);
       for (const actor of this.actors.values()) {
+        if (actor.scriptAction?.remaining > 0) { actor.scriptAction.remaining -= dt; actor.setAction(actor.scriptAction.action); }
+        else if (actor.scriptAction) { actor.scriptAction = null; actor.setAction('idle'); }
         actor.update(time, dt);
         actor.surfaceGrounding?.update();
       }
@@ -99,6 +100,7 @@ export class DioramaStage {
       }
       this.tapFeedback.update(dt);
       this.exploration?.update(dt);
+      this.worldPresenter?.update(dt);
       if (this.exploration) this.updateCamera();
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
@@ -160,6 +162,7 @@ export class DioramaStage {
     this.raycaster.setFromCamera(this.pointer, this.camera);
     this.scene.updateMatrixWorld(true);
     if (this.exploration) { this.exploration.pick(this.raycaster); return; }
+    if (this.worldPresenter?.pick(this.raycaster)) return;
     const selected = firstTapHit(this.raycaster.intersectObjects(this.scene.children, true));
     if (selected?.target) this.tapFeedback.trigger(selected.target, this.reduced);
     else if (selected?.actorId) {
@@ -292,13 +295,13 @@ export class DioramaStage {
     this.tapFeedback?.setRevealProgress(this.world?.tapTargets || [], clamp(Number(decorationProgress) || 0, 0, 1), { immediate: !this.curiosity, reduced: this.reduced });
     if (!this.curiosity) {
       this.curiosity = { progress: target, target };
-      this.scene.fog = new THREE.Fog('#46566b', 20.2, 28.8);
+      if (!this.environmentOverride) this.scene.fog = new THREE.Fog('#46566b', 20.2, 28.8);
       this.updateLighting(1, true);
     } else this.curiosity.target = target;
   }
 
   updateLighting(dt, immediate = false) {
-    if (this.curiosity) {
+    if (this.curiosity && !this.environmentOverride) {
       const current = this.curiosity;
       if (!immediate && current.applied && current.progress === current.target) return;
       current.progress = immediate || this.reduced ? current.target : THREE.MathUtils.lerp(current.progress, current.target, 1 - Math.exp(-dt * 1.8));
@@ -345,7 +348,9 @@ export class DioramaStage {
   }
 
   setScene(worldId, cast = [], { studio = false, decorations = null, exploration = null } = {}) {
+    this.worldPresenter?.clear();
     this.exploration?.dispose(); this.exploration = null;
+    this.environmentOverride = false;
     this.curiosity = null;
     this.scene.fog = null;
     this.clearInvention();
@@ -383,18 +388,14 @@ export class DioramaStage {
     }
     const spots = this.world.characterSpots || [{ x: -1.6, y: .05, z: 1.5 }, { x: 1.3, y: .05, z: 1 }, { x: 0, y: .05, z: 2.6 }];
     cast.forEach((config, index) => {
-      const modelKey = config.modelKey ?? config.createActor ?? (config.characterId ? `document:${config.characterId}` : `clay:${config.type || 'rabbit'}`);
+      const modelKey = actorModelKey(config);
       let actor = this.actors.get(config.id);
       if (actor && actor.castModelKey !== modelKey) {
         this.scene.remove(actor.group); actor.dispose();
         this.actors.delete(config.id); this.actorFrames.delete(config.id); actor = null;
       }
       if (!actor) {
-        actor = typeof config.createActor === 'function'
-          ? config.createActor({ scale: studio ? 1.3 : .78 })
-          : config.characterId
-          ? createDocumentCharacter({ characterId: config.characterId, scale: studio ? 1.3 : .78 })
-          : createCharacter({ type: config.type || 'rabbit', color: config.color, scale: studio ? 1.3 : .78 });
+        actor = createActor(config, studio ? 1.3 : .78);
         actor.castModelKey = modelKey;
         const restBounds = new THREE.Box3().setFromObject(actor.group);
         restBounds.min.divide(actor.group.scale); restBounds.max.divide(actor.group.scale);
@@ -429,6 +430,12 @@ export class DioramaStage {
 
   speak(id, speaking) {
     for (const [actorId, actor] of this.actors) actor.setAction(speaking && actorId === id ? 'talk' : 'listen');
+  }
+
+  animateActor(id, action, expression = 'happy', duration = 3) {
+    const actor = this.actors.get(id);
+    if (actor) { actor.setExpression(expression); actor.setAction(action); actor.scriptAction = { action, remaining: duration }; return true; }
+    return this.exploration?.animateActor(id, action, expression, duration) || false;
   }
 
   act(action, expression = 'happy') {
@@ -560,6 +567,7 @@ export class DioramaStage {
       };
     });
     return {
+      scriptedEntities: this.worldPresenter?.stats || [],
       exploration: this.exploration?.stats || null,
       world: this.worldId, actors: [...this.actors.keys()],
       calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,

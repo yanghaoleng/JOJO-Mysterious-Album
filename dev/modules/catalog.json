@@ -1,0 +1,7475 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "logic:dialogue",
+      "kind": "logic",
+      "name": "对话播放与字幕",
+      "description": "把说话人、台词和朗读字幕组合成可取消的对话序列。",
+      "source": "dev/presentation/dialogue-player.js",
+      "capabilities": [
+        "连续台词",
+        "分段朗读",
+        "过期回调隔离"
+      ],
+      "dependencies": [
+        "logic:read-along"
+      ]
+    },
+    {
+      "id": "logic:contracts",
+      "kind": "logic",
+      "name": "世界能力约定",
+      "description": "所有来源共用的命令字段、范围与资源校验。",
+      "source": "dev/runtime/contracts.js",
+      "capabilities": [
+        "字段检查",
+        "资源白名单"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:session",
+      "kind": "logic",
+      "name": "游戏会话装配",
+      "description": "连接事件、存档、世界命令和呈现器，离开场景时释放实例。",
+      "source": "dev/runtime/game-session.js",
+      "capabilities": [
+        "场景绑定",
+        "生命周期"
+      ],
+      "dependencies": [
+        "logic:director",
+        "logic:presenter"
+      ]
+    },
+    {
+      "id": "logic:actor-factory",
+      "kind": "logic",
+      "name": "角色模型装配",
+      "description": "通过资源 ID 装配原创角色、故事角色、MOMO 和黄色四巨头。",
+      "source": "dev/presentation/actor-factory.js",
+      "capabilities": [
+        "统一模型入口",
+        "稳定实例身份"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:prop-animation",
+      "kind": "logic",
+      "name": "道具动画与释放",
+      "description": "为独立道具提供激活、工作、停止与释放接口。",
+      "source": "dev/creation-models.js",
+      "capabilities": [
+        "通用状态",
+        "资源所有权",
+        "减少动态"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "ui:choices",
+      "kind": "ui",
+      "name": "短选项列表",
+      "description": "共用的点选输入，第一章、辩论和彩蛋都在使用。",
+      "source": "dev/presentation/choice-list.js",
+      "capabilities": [
+        "文字安全渲染",
+        "选择回调",
+        "键盘焦点"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "ui:encounter",
+      "kind": "ui",
+      "name": "NPC 对话框",
+      "description": "招呼、两项互动、继续探索。世界行为与朗读由调用方提供。",
+      "source": "dev/presentation/encounter-dialog.js",
+      "capabilities": [
+        "对话展示",
+        "焦点恢复",
+        "退出清理"
+      ],
+      "dependencies": [
+        "ui:choices"
+      ]
+    },
+    {
+      "id": "ui:voice",
+      "kind": "ui",
+      "name": "语音输入状态",
+      "description": "等待、收音、转写、识别文字和暂停状态的统一展示。演示不申请麦克风。",
+      "source": "src/voice-input-control.js",
+      "capabilities": [
+        "录音状态",
+        "音量反馈",
+        "原话展示"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:answer-support",
+      "kind": "logic",
+      "name": "等待与选项兜底",
+      "description": "4 秒未开口，或 8 秒仍未有具体回答时，提供短选项。",
+      "source": "dev/answer-support.js",
+      "capabilities": [
+        "静默计时",
+        "收到语音",
+        "暂停计时"
+      ],
+      "dependencies": [
+        "ui:choices"
+      ]
+    },
+    {
+      "id": "logic:world-runtime",
+      "kind": "logic",
+      "name": "世界命令与事件试验区",
+      "description": "增加与移除物件、切换环境、播放动作；无效批次整体拒绝。可试用 AI 的结构化提案。",
+      "source": "dev/runtime/world-runtime.js",
+      "capabilities": [
+        "原子校验",
+        "版本检查",
+        "世界快照",
+        "能力白名单"
+      ],
+      "dependencies": [
+        "logic:director",
+        "logic:intent"
+      ]
+    },
+    {
+      "id": "logic:director",
+      "kind": "logic",
+      "name": "剧情事件运行器",
+      "description": "按进入场景、选择、靠近和造物事件执行规则；支持条件、一次性事件和参数绑定。",
+      "source": "dev/runtime/story-director.js",
+      "capabilities": [
+        "事件条件",
+        "故事旗标",
+        "一次性触发"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:intent",
+      "kind": "logic",
+      "name": "语音 / AI 操作入口",
+      "description": "语音意图和模型提案共用命令入口。提案携带场景版本，旧场景的回答不能修改新场景。",
+      "source": "dev/runtime/intent-gateway.js",
+      "capabilities": [
+        "能力描述",
+        "提案校验",
+        "拒绝过期操作"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:creation",
+      "kind": "logic",
+      "name": "造物组合规则",
+      "description": "识别已有模型、颜色与伙伴，生成创建或修改命令。未知想法明确保存成试作品。",
+      "source": "dev/features/creation-service.js",
+      "capabilities": [
+        "三件组合",
+        "继续修改",
+        "容量限制"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:progress",
+      "kind": "logic",
+      "name": "场景进度与旧档迁移",
+      "description": "用稳定场景 ID 恢复进度，支持脚本改序、插入与删除场景；兼容旧数字存档。",
+      "source": "dev/runtime/story-progress.js",
+      "capabilities": [
+        "稳定场景 ID",
+        "分支跳转",
+        "旧档兼容"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:exploration",
+      "kind": "logic",
+      "name": "球面探索与寻路",
+      "description": "地面点选、键盘移动、球面绕障、靠近触发。",
+      "source": "dev/exploration.js",
+      "capabilities": [
+        "绕障行走",
+        "区域事件",
+        "坐标保存"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:voice",
+      "kind": "logic",
+      "name": "语音采集与朗读",
+      "description": "管理采集、识别、朗读和取消；只在孩子主动打开麦克风后申请权限。",
+      "source": "dev/voice.js",
+      "capabilities": [
+        "ASR",
+        "TTS",
+        "取消与暂停"
+      ],
+      "dependencies": [
+        "ui:voice"
+      ]
+    },
+    {
+      "id": "logic:read-along",
+      "kind": "logic",
+      "name": "朗读字幕同步",
+      "description": "按合成音频真实时间戳高亮字幕。无时间戳时展示原文。",
+      "source": "dev/read-along.js",
+      "capabilities": [
+        "播放时钟",
+        "字词高亮",
+        "中断清理"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:presenter",
+      "kind": "logic",
+      "name": "3D 世界呈现器",
+      "description": "根据世界状态同步模型、碰撞与动画；释放被移除的实例，不推进剧情。",
+      "source": "dev/presentation/world-presenter.js",
+      "capabilities": [
+        "模型增删",
+        "状态同步",
+        "资源释放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "story:wow",
+      "kind": "story",
+      "name": "第一章 · 好奇与上手",
+      "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
+      "source": "dev/content/stories/wow.js",
+      "capabilities": [
+        "纯数据脚本",
+        "事件声明"
+      ],
+      "dependencies": [
+        "logic:director"
+      ]
+    },
+    {
+      "id": "story:debate",
+      "kind": "story",
+      "name": "第二章 · 辩论与表达",
+      "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
+      "source": "dev/content/stories/debate.js",
+      "capabilities": [
+        "纯数据脚本",
+        "事件声明"
+      ],
+      "dependencies": [
+        "logic:director"
+      ]
+    },
+    {
+      "id": "story:moon",
+      "kind": "story",
+      "name": "第三章 · 自由造物",
+      "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
+      "source": "dev/content/stories/moon.js",
+      "capabilities": [
+        "纯数据脚本",
+        "事件声明"
+      ],
+      "dependencies": [
+        "logic:director"
+      ]
+    },
+    {
+      "id": "prop:bridge",
+      "kind": "prop",
+      "name": "彩虹小桥",
+      "description": "桥板一块块亮起来，伙伴可以在桥边碰头。",
+      "source": "dev/modules/props/bridge.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bridge",
+        "kind": "prop",
+        "name": "彩虹小桥",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:garden",
+      "kind": "prop",
+      "name": "问题花园",
+      "description": "花瓣展开了，藏在花心的小星星跟着探出头。",
+      "source": "dev/modules/props/garden.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:garden",
+        "kind": "prop",
+        "name": "问题花园",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:tree",
+      "kind": "prop",
+      "name": "发现果树",
+      "description": "树枝轻轻摇起来，枝头的星星果一颗颗亮了。",
+      "source": "dev/modules/props/tree.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:tree",
+        "kind": "prop",
+        "name": "发现果树",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:house",
+      "kind": "prop",
+      "name": "好奇小屋",
+      "description": "屋门打开了，窗里亮着一盏等朋友来的灯。",
+      "source": "dev/modules/props/house.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:house",
+        "kind": "prop",
+        "name": "好奇小屋",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:telescope",
+      "kind": "prop",
+      "name": "星光望远镜",
+      "description": "镜筒转起来，旁边的星星按顺序亮了。",
+      "source": "dev/modules/props/telescope.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:telescope",
+        "kind": "prop",
+        "name": "星光望远镜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:robot",
+      "kind": "prop",
+      "name": "问题小机器人",
+      "description": "机器人挥挥手，胸前的问号灯亮了。",
+      "source": "dev/modules/props/robot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot",
+        "kind": "prop",
+        "name": "问题小机器人",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:boat",
+      "kind": "prop",
+      "name": "探问小船",
+      "description": "船桨划起来，船边浮出一串小气泡。",
+      "source": "dev/modules/props/boat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:boat",
+        "kind": "prop",
+        "name": "探问小船",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:rocket",
+      "kind": "prop",
+      "name": "好奇火箭",
+      "description": "推进器亮起来，火箭在底座上轻轻升起。",
+      "source": "dev/modules/props/rocket.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rocket",
+        "kind": "prop",
+        "name": "好奇火箭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:portal",
+      "kind": "prop",
+      "name": "想象传送门",
+      "description": "门里的光圈转起来，两边的星星互相眨眼。",
+      "source": "dev/modules/props/portal.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:portal",
+        "kind": "prop",
+        "name": "想象传送门",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:balloon",
+      "kind": "prop",
+      "name": "云朵气球",
+      "description": "气球牵起小篮子，慢慢升到绳子顶端。",
+      "source": "dev/modules/props/balloon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:balloon",
+        "kind": "prop",
+        "name": "云朵气球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:windmill",
+      "kind": "prop",
+      "name": "提问风车",
+      "description": "风车转起来，把星光送给旁边的小灯。",
+      "source": "dev/modules/props/windmill.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:windmill",
+        "kind": "prop",
+        "name": "提问风车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:fountain",
+      "kind": "prop",
+      "name": "气泡喷泉",
+      "description": "三束气泡轮流跳起来，落回自己的小水池。",
+      "source": "dev/modules/props/fountain.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:fountain",
+        "kind": "prop",
+        "name": "气泡喷泉",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:music",
+      "kind": "prop",
+      "name": "星星音乐台",
+      "description": "彩色琴键轮流跳动，星星音符也跟着跳起来。",
+      "source": "dev/modules/props/music.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:music",
+        "kind": "prop",
+        "name": "星星音乐台",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:bakery",
+      "kind": "prop",
+      "name": "分享点心台",
+      "description": "蒸笼打开了，热气托起一只圆圆的星星包。",
+      "source": "dev/modules/props/bakery.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bakery",
+        "kind": "prop",
+        "name": "分享点心台",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:swing",
+      "kind": "prop",
+      "name": "云朵秋千",
+      "description": "秋千轻轻摇起来，吊绳旁的铃铛跟着摆动。",
+      "source": "dev/modules/props/swing.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:swing",
+        "kind": "prop",
+        "name": "云朵秋千",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:lantern",
+      "kind": "prop",
+      "name": "好奇灯塔",
+      "description": "灯罩慢慢升起，灯塔周围的小光点跳起来。",
+      "source": "dev/modules/props/lantern.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:lantern",
+        "kind": "prop",
+        "name": "好奇灯塔",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:stage",
+      "kind": "prop",
+      "name": "小小表演台",
+      "description": "帷幕拉开，聚光灯亮在你留给朋友的位置。",
+      "source": "dev/modules/props/stage.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:stage",
+        "kind": "prop",
+        "name": "小小表演台",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:ladder",
+      "kind": "prop",
+      "name": "折叠探索梯",
+      "description": "梯级从下到上轻轻抬起，顶端的小旗也摇起来。",
+      "source": "dev/modules/props/ladder.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:ladder",
+        "kind": "prop",
+        "name": "折叠探索梯",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:camera",
+      "kind": "prop",
+      "name": "发现照相机",
+      "description": "镜头闪了一下，一张星星图案的相片升出来。",
+      "source": "dev/modules/props/camera.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:camera",
+        "kind": "prop",
+        "name": "发现照相机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "prop:prototype",
+      "kind": "prop",
+      "name": "想象试作品",
+      "description": "把暂未匹配的想法呈现为彩色积木试作品。",
+      "source": "dev/modules/props/prototype.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:prototype",
+        "kind": "prop",
+        "name": "想象试作品",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      }
+    },
+    {
+      "id": "npc:jiaojiao",
+      "kind": "actor",
+      "name": "叫叫",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:jiaojiao",
+        "kind": "actor",
+        "name": "叫叫",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:lingdang",
+      "kind": "actor",
+      "name": "铃铛",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:lingdang",
+        "kind": "actor",
+        "name": "铃铛",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:zhuxiaodi",
+      "kind": "actor",
+      "name": "猪小弟",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:zhuxiaodi",
+        "kind": "actor",
+        "name": "猪小弟",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:jiaojiao-mom",
+      "kind": "actor",
+      "name": "叫叫妈妈",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:jiaojiao-mom",
+        "kind": "actor",
+        "name": "叫叫妈妈",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:jiaojiao-dad",
+      "kind": "actor",
+      "name": "叫叫爸爸",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:jiaojiao-dad",
+        "kind": "actor",
+        "name": "叫叫爸爸",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:zhuxiaodi-mom",
+      "kind": "actor",
+      "name": "猪小弟妈妈",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:zhuxiaodi-mom",
+        "kind": "actor",
+        "name": "猪小弟妈妈",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:zhuxiaodi-dad",
+      "kind": "actor",
+      "name": "猪小弟爸爸",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:zhuxiaodi-dad",
+        "kind": "actor",
+        "name": "猪小弟爸爸",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:lingdang-mom",
+      "kind": "actor",
+      "name": "铃铛妈妈",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:lingdang-mom",
+        "kind": "actor",
+        "name": "铃铛妈妈",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:lingdang-dad",
+      "kind": "actor",
+      "name": "铃铛爸爸",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:lingdang-dad",
+        "kind": "actor",
+        "name": "铃铛爸爸",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:nini",
+      "kind": "actor",
+      "name": "妮妮",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:nini",
+        "kind": "actor",
+        "name": "妮妮",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:xiaomaoqiu",
+      "kind": "actor",
+      "name": "小毛球",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:xiaomaoqiu",
+        "kind": "actor",
+        "name": "小毛球",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:xiaolu-teacher",
+      "kind": "actor",
+      "name": "小鹿老师",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:xiaolu-teacher",
+        "kind": "actor",
+        "name": "小鹿老师",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:miao-boss",
+      "kind": "actor",
+      "name": "喵老板",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:miao-boss",
+        "kind": "actor",
+        "name": "喵老板",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:zhuxiaoyu",
+      "kind": "actor",
+      "name": "猪小玉",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:zhuxiaoyu",
+        "kind": "actor",
+        "name": "猪小玉",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:lvdou",
+      "kind": "actor",
+      "name": "绿豆",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:lvdou",
+        "kind": "actor",
+        "name": "绿豆",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:douya",
+      "kind": "actor",
+      "name": "豆芽",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:douya",
+        "kind": "actor",
+        "name": "豆芽",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:fendou",
+      "kind": "actor",
+      "name": "粉豆",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:fendou",
+        "kind": "actor",
+        "name": "粉豆",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:landou",
+      "kind": "actor",
+      "name": "蓝豆",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:landou",
+        "kind": "actor",
+        "name": "蓝豆",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:dahongdou",
+      "kind": "actor",
+      "name": "大红豆",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:dahongdou",
+        "kind": "actor",
+        "name": "大红豆",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:donggaofen",
+      "kind": "actor",
+      "name": "董高分",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:donggaofen",
+        "kind": "actor",
+        "name": "董高分",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:qinlianxi",
+      "kind": "actor",
+      "name": "秦练习",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:qinlianxi",
+        "kind": "actor",
+        "name": "秦练习",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:aigaicuo",
+      "kind": "actor",
+      "name": "艾改错",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:aigaicuo",
+        "kind": "actor",
+        "name": "艾改错",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:wulala",
+      "kind": "actor",
+      "name": "乌拉拉",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:wulala",
+        "kind": "actor",
+        "name": "乌拉拉",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:mili",
+      "kind": "actor",
+      "name": "米粒",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:mili",
+        "kind": "actor",
+        "name": "米粒",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:yuanbao",
+      "kind": "actor",
+      "name": "圆宝",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:yuanbao",
+        "kind": "actor",
+        "name": "圆宝",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:duziteng",
+      "kind": "actor",
+      "name": "杜子腾",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:duziteng",
+        "kind": "actor",
+        "name": "杜子腾",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:wanneng",
+      "kind": "actor",
+      "name": "万能",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:wanneng",
+        "kind": "actor",
+        "name": "万能",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:baozai",
+      "kind": "actor",
+      "name": "包仔",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:baozai",
+        "kind": "actor",
+        "name": "包仔",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:danzai",
+      "kind": "actor",
+      "name": "蛋仔",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:danzai",
+        "kind": "actor",
+        "name": "蛋仔",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:maoge",
+      "kind": "actor",
+      "name": "帽哥",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:maoge",
+        "kind": "actor",
+        "name": "帽哥",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:sunwukong",
+      "kind": "actor",
+      "name": "孙悟空",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:sunwukong",
+        "kind": "actor",
+        "name": "孙悟空",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:rusheng",
+      "kind": "actor",
+      "name": "如生",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:rusheng",
+        "kind": "actor",
+        "name": "如生",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:lanbitou",
+      "kind": "actor",
+      "name": "烂笔头哥",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:lanbitou",
+        "kind": "actor",
+        "name": "烂笔头哥",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:dengdeng",
+      "kind": "actor",
+      "name": "灯灯",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:dengdeng",
+        "kind": "actor",
+        "name": "灯灯",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:domi",
+      "kind": "actor",
+      "name": "Domi",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:domi",
+        "kind": "actor",
+        "name": "Domi",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:hatty",
+      "kind": "actor",
+      "name": "Hatty",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:hatty",
+        "kind": "actor",
+        "name": "Hatty",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:elfie",
+      "kind": "actor",
+      "name": "Elfie",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:elfie",
+        "kind": "actor",
+        "name": "Elfie",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:hackett",
+      "kind": "actor",
+      "name": "Hackett",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:hackett",
+        "kind": "actor",
+        "name": "Hackett",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:allie",
+      "kind": "actor",
+      "name": "Allie（艾丽）",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:allie",
+        "kind": "actor",
+        "name": "Allie（艾丽）",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:sage",
+      "kind": "actor",
+      "name": "Sage（赛奇）",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:sage",
+        "kind": "actor",
+        "name": "Sage（赛奇）",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:gulu",
+      "kind": "actor",
+      "name": "咕噜",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:gulu",
+        "kind": "actor",
+        "name": "咕噜",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "npc:prank-doctor",
+      "kind": "actor",
+      "name": "恶作剧博士",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "src/story-npcs/factory.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "npc:prank-doctor",
+        "kind": "actor",
+        "name": "恶作剧博士",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "yellow:bull",
+      "kind": "actor",
+      "name": "黄牛",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/yellow-four-models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "yellow:bull",
+        "kind": "actor",
+        "name": "黄牛",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "yellow:round",
+      "kind": "actor",
+      "name": "圆滚滚",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/yellow-four-models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "yellow:round",
+        "kind": "actor",
+        "name": "圆滚滚",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "yellow:jiaojiao",
+      "kind": "actor",
+      "name": "叫叫",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/yellow-four-models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "yellow:jiaojiao",
+        "kind": "actor",
+        "name": "叫叫",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "yellow:kangaroo",
+      "kind": "actor",
+      "name": "袋鼠",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/yellow-four-models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "yellow:kangaroo",
+        "kind": "actor",
+        "name": "袋鼠",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:dog",
+      "kind": "actor",
+      "name": "豆豆",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:dog",
+        "kind": "actor",
+        "name": "豆豆",
+        "color": "#c99561",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:rabbit",
+      "kind": "actor",
+      "name": "雪团",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:rabbit",
+        "kind": "actor",
+        "name": "雪团",
+        "color": "#eee3d5",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:otter",
+      "kind": "actor",
+      "name": "阿獭",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:otter",
+        "kind": "actor",
+        "name": "阿獭",
+        "color": "#99735b",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:owl",
+      "kind": "actor",
+      "name": "咕咕",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:owl",
+        "kind": "actor",
+        "name": "咕咕",
+        "color": "#b19a7f",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:cat",
+      "kind": "actor",
+      "name": "月牙",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:cat",
+        "kind": "actor",
+        "name": "月牙",
+        "color": "#bf9980",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:bear",
+      "kind": "actor",
+      "name": "蜜糖",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:bear",
+        "kind": "actor",
+        "name": "蜜糖",
+        "color": "#c39666",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "clay:frog",
+      "kind": "actor",
+      "name": "小荷",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/models.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "walk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "clay:frog",
+        "kind": "actor",
+        "name": "小荷",
+        "color": "#93af83",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk",
+          "walk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:window",
+      "kind": "actor",
+      "name": "星星窗",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:window",
+        "kind": "actor",
+        "name": "星星窗",
+        "color": "#efd36e",
+        "animations": [
+          "idle"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:gugu",
+      "kind": "actor",
+      "name": "鼓鼓",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:gugu",
+        "kind": "actor",
+        "name": "鼓鼓",
+        "color": "#e5bd5d",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:fish",
+      "kind": "actor",
+      "name": "海底 MOMO",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:fish",
+        "kind": "actor",
+        "name": "海底 MOMO",
+        "color": "#86b4cd",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:cloud",
+      "kind": "actor",
+      "name": "云朵 MOMO",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:cloud",
+        "kind": "actor",
+        "name": "云朵 MOMO",
+        "color": "#dce4e7",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:clock",
+      "kind": "actor",
+      "name": "时钟 MOMO",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:clock",
+        "kind": "actor",
+        "name": "时钟 MOMO",
+        "color": "#a5c3a0",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:shadow",
+      "kind": "actor",
+      "name": "影子 MOMO",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:shadow",
+        "kind": "actor",
+        "name": "影子 MOMO",
+        "color": "#dca9bd",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "wow:star",
+      "kind": "actor",
+      "name": "星星 MOMO",
+      "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
+      "source": "dev/wow-visuals.js",
+      "capabilities": [
+        "idle",
+        "wave",
+        "hop",
+        "listen",
+        "talk",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "wow:star",
+        "kind": "actor",
+        "name": "星星 MOMO",
+        "color": "#d6b462",
+        "animations": [
+          "idle",
+          "wave",
+          "hop",
+          "listen",
+          "talk"
+        ],
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ]
+      }
+    },
+    {
+      "id": "world:orchard",
+      "kind": "world",
+      "name": "红苹果园",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:bakery",
+      "kind": "world",
+      "name": "阿暖面包房",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:bridge",
+      "kind": "world",
+      "name": "吱呀小木桥",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:home",
+      "kind": "world",
+      "name": "豆豆的家",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:observatory",
+      "kind": "world",
+      "name": "望远镜山丘",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:reef",
+      "kind": "world",
+      "name": "海底维修站",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:pocket",
+      "kind": "world",
+      "name": "巨人的口袋",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:cloud",
+      "kind": "world",
+      "name": "云层导航站",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:moon",
+      "kind": "world",
+      "name": "月球接引区",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:meadow",
+      "kind": "world",
+      "name": "萤火草地",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "world:cove",
+      "kind": "world",
+      "name": "听听贝河湾",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "encounter:jiaojiao",
+      "kind": "encounter",
+      "name": "叫叫 · 架起小旗",
+      "description": "wow / bakery：我是叫叫！这回先看清路，再一起出发。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "jiaojiao",
+        "storyId": "wow",
+        "world": "bakery",
+        "prop": "ladder",
+        "occupation": "架起小旗",
+        "greeting": "我是叫叫！这回先看清路，再一起出发。",
+        "name": "叫叫",
+        "yellow": false,
+        "voice": "star",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看旗子",
+            "response": "先停一停，旗子指着一条新小路。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起挥手",
+            "response": "收到！勇敢也可以是和朋友一起慢慢试。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:zhuxiaodi",
+      "kind": "encounter",
+      "name": "猪小弟 · 蒸星星包",
+      "description": "wow / bakery：我在试新形状的包子。慢一点，星星角就不会歪。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "zhuxiaodi",
+        "storyId": "wow",
+        "world": "bakery",
+        "prop": "bakery",
+        "occupation": "蒸星星包",
+        "greeting": "我在试新形状的包子。慢一点，星星角就不会歪。",
+        "name": "猪小弟",
+        "yellow": false,
+        "voice": "moss",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开蒸笼",
+            "response": "看，圆包子和星星包子都蒸好了。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "请他唱一句",
+            "response": "我边哼歌边捏包子，你可以照自己的节奏来。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:jiaojiao-mom",
+      "kind": "encounter",
+      "name": "叫叫妈妈 · 收拾问候小屋",
+      "description": "wow / bakery：小屋留了一把椅子。你可以坐一会儿，再出发。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "jiaojiao-mom",
+        "storyId": "wow",
+        "world": "bakery",
+        "prop": "house",
+        "occupation": "收拾问候小屋",
+        "greeting": "小屋留了一把椅子。你可以坐一会儿，再出发。",
+        "name": "叫叫妈妈",
+        "yellow": false,
+        "voice": "caring",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开小屋",
+            "response": "灯亮啦。我把听故事的位置留给你。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "留一个问候",
+            "response": "问候收到了。有人愿意讲，我就愿意听。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:yellow:round",
+      "kind": "encounter",
+      "name": "圆滚滚 · 敲快乐节拍",
+      "description": "wow / bakery：我是圆滚滚。叮咚一声，肚子也想跟着摇！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "yellow:round",
+        "storyId": "wow",
+        "world": "bakery",
+        "prop": "music",
+        "occupation": "敲快乐节拍",
+        "greeting": "我是圆滚滚。叮咚一声，肚子也想跟着摇！",
+        "name": "圆滚滚",
+        "yellow": true,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "敲两下琴键",
+            "response": "叮、咚！我跟上你的节拍啦。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起摇一摇",
+            "response": "慢慢摇也很好玩，快乐有好多种样子。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:xiaomaoqiu",
+      "kind": "encounter",
+      "name": "小毛球 · 整理海边宝贝",
+      "description": "wow / reef：别碰倒啦！我的小收藏，说不定能帮上忙。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "xiaomaoqiu",
+        "storyId": "wow",
+        "world": "reef",
+        "prop": "prototype",
+        "occupation": "整理海边宝贝",
+        "greeting": "别碰倒啦！我的小收藏，说不定能帮上忙。",
+        "name": "小毛球",
+        "yellow": false,
+        "voice": "smart",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试试圆纽扣",
+            "response": "圆纽扣滚进了空位，歪歪的小装置站稳了。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "整理小积木",
+            "response": "我也来收好。下次找宝贝就不用翻个底朝天！",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:yuanbao",
+      "kind": "encounter",
+      "name": "圆宝 · 分享海星点心",
+      "description": "wow / reef：我在给点心找新形状。海星形的看起来怎么样？",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "yuanbao",
+        "storyId": "wow",
+        "world": "reef",
+        "prop": "bakery",
+        "occupation": "分享海星点心",
+        "greeting": "我在给点心找新形状。海星形的看起来怎么样？",
+        "name": "圆宝",
+        "yellow": false,
+        "voice": "sweet",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看点心",
+            "response": "小蒸笼打开了，海星和圆圆的点心挨在一起。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "分成两份",
+            "response": "一份留给路过的朋友，一份留在点心台。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:duziteng",
+      "kind": "encounter",
+      "name": "杜子腾 · 试跳跳气泡",
+      "description": "wow / reef：这些气泡一跳，我就想猜下一颗从哪儿来！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "duziteng",
+        "storyId": "wow",
+        "world": "reef",
+        "prop": "fountain",
+        "occupation": "试跳跳气泡",
+        "greeting": "这些气泡一跳，我就想猜下一颗从哪儿来！",
+        "name": "杜子腾",
+        "yellow": false,
+        "voice": "star",
+        "choices": [
+          {
+            "id": "first",
+            "label": "猜左边",
+            "response": "左边先冒一颗，右边跟上一颗。再看看规律。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "让气泡一起跳",
+            "response": "哇，一起跳起来啦！池子把它们全接住了。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:yellow:bull",
+      "kind": "encounter",
+      "name": "黄牛 · 扶稳小木桥",
+      "description": "debate / meadow：我是黄牛。桥这头我扶住，你先看看桥板。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "yellow:bull",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "bridge",
+        "occupation": "扶稳小木桥",
+        "greeting": "我是黄牛。桥这头我扶住，你先看看桥板。",
+        "name": "黄牛",
+        "yellow": true,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看桥板",
+            "response": "这块桥板歪了，我扶稳，你指路。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起亮起桥灯",
+            "response": "桥上的小灯亮起来，大家都能看见路。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:nini",
+      "kind": "encounter",
+      "name": "妮妮 · 给玩偶哼歌",
+      "description": "wow / cloud：我想唱给玩偶听……你愿意先安静陪我吗？",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "nini",
+        "storyId": "wow",
+        "world": "cloud",
+        "prop": "swing",
+        "occupation": "给玩偶哼歌",
+        "greeting": "我想唱给玩偶听……你愿意先安静陪我吗？",
+        "name": "妮妮",
+        "yellow": false,
+        "voice": "soft",
+        "choices": [
+          {
+            "id": "first",
+            "label": "安静听一听",
+            "response": "谢谢你等我。现在我愿意小声唱一句啦。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "轻轻摇秋千",
+            "response": "玩偶的秋千动了，我的紧张也小了一点。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:fendou",
+      "kind": "encounter",
+      "name": "粉豆 · 拍云朵照片",
+      "description": "wow / cloud：你看！同一朵云，从旁边看像另一件东西呢。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "fendou",
+        "storyId": "wow",
+        "world": "cloud",
+        "prop": "camera",
+        "occupation": "拍云朵照片",
+        "greeting": "你看！同一朵云，从旁边看像另一件东西呢。",
+        "name": "粉豆",
+        "yellow": false,
+        "voice": "sweet",
+        "choices": [
+          {
+            "id": "first",
+            "label": "拍拍这朵云",
+            "response": "照片出来了，云朵的弯弯角也拍进去了。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "换个角度拍",
+            "response": "换个角度，普通的小云也有新的样子。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:domi",
+      "kind": "encounter",
+      "name": "Domi · 试气球魔法",
+      "description": "wow / cloud：我的魔法还不太稳。这次先让气球升一点点！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "domi",
+        "storyId": "wow",
+        "world": "cloud",
+        "prop": "balloon",
+        "occupation": "试气球魔法",
+        "greeting": "我的魔法还不太稳。这次先让气球升一点点！",
+        "name": "Domi",
+        "yellow": false,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试飞一次",
+            "response": "咦，真的升起来了！一点点也算新的发现。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "先检查绳子",
+            "response": "绳子系好了，谢谢你帮我慢下来看看。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:yellow:kangaroo",
+      "kind": "encounter",
+      "name": "袋鼠 · 量一小步有多远",
+      "description": "moon / cloud：我是袋鼠。长腿也要先试一小步，看看落在哪儿。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "yellow:kangaroo",
+        "storyId": "moon",
+        "world": "cloud",
+        "prop": "ladder",
+        "occupation": "量一小步有多远",
+        "greeting": "我是袋鼠。长腿也要先试一小步，看看落在哪儿。",
+        "name": "袋鼠",
+        "yellow": true,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试一小步",
+            "response": "小旗摇了摇，这次的距离刚刚好。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起找落脚点",
+            "response": "平平的这一块不错。先看清，再跳。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:jiaojiao-dad",
+      "kind": "encounter",
+      "name": "叫叫爸爸 · 讲桌边故事",
+      "description": "wow / home：我是今天的故事播音员。结尾还没想好呢。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "jiaojiao-dad",
+        "storyId": "wow",
+        "world": "home",
+        "prop": "stage",
+        "occupation": "讲桌边故事",
+        "greeting": "我是今天的故事播音员。结尾还没想好呢。",
+        "name": "叫叫爸爸",
+        "yellow": false,
+        "voice": "neighbor",
+        "choices": [
+          {
+            "id": "first",
+            "label": "让小屋开口",
+            "response": "小屋说：欢迎呀！我也忍不住换了个声音。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "慢一点讲",
+            "response": "好，我慢下来。故事里也要留点时间听你笑。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:zhuxiaodi-mom",
+      "kind": "encounter",
+      "name": "猪小弟妈妈 · 缝小旅行袋",
+      "description": "wow / home：刚才我缝得有点快。我们一起看看漏了哪里。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "zhuxiaodi-mom",
+        "storyId": "wow",
+        "world": "home",
+        "prop": "prototype",
+        "occupation": "缝小旅行袋",
+        "greeting": "刚才我缝得有点快。我们一起看看漏了哪里。",
+        "name": "猪小弟妈妈",
+        "yellow": false,
+        "voice": "clear",
+        "choices": [
+          {
+            "id": "first",
+            "label": "补上小口袋",
+            "response": "一小块布接好了，宝贝有地方放啦。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "慢慢试一试",
+            "response": "不赶时间，一针一线也能做成喜欢的样子。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:zhuxiaodi-dad",
+      "kind": "encounter",
+      "name": "猪小弟爸爸 · 分配野餐点心",
+      "description": "wow / home：点心要分给几位朋友？先看看还有谁没拿到。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "zhuxiaodi-dad",
+        "storyId": "wow",
+        "world": "home",
+        "prop": "bakery",
+        "occupation": "分配野餐点心",
+        "greeting": "点心要分给几位朋友？先看看还有谁没拿到。",
+        "name": "猪小弟爸爸",
+        "yellow": false,
+        "voice": "moss",
+        "choices": [
+          {
+            "id": "first",
+            "label": "再留一份",
+            "response": "好，给后来的人留一份，大家都有得分享。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "摆成一个圆",
+            "response": "圆圆地摆开，每一位朋友都看得清楚。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:zhuxiaoyu",
+      "kind": "encounter",
+      "name": "猪小玉 · 搭配表演披肩",
+      "description": "wow / home：这条披肩配什么颜色好呢？我想听个新主意。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "zhuxiaoyu",
+        "storyId": "wow",
+        "world": "home",
+        "prop": "stage",
+        "occupation": "搭配表演披肩",
+        "greeting": "这条披肩配什么颜色好呢？我想听个新主意。",
+        "name": "猪小玉",
+        "yellow": false,
+        "voice": "clear",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试试金色",
+            "response": "金色小灯一亮，披肩也像晒到了太阳。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "先转一圈看看",
+            "response": "转一圈也许就有新发现。我先不急着选。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:lingdang-mom",
+      "kind": "encounter",
+      "name": "铃铛妈妈 · 记录花朵变化",
+      "description": "wow / meadow：这朵花刚刚才打开。我们先看一会儿。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "lingdang-mom",
+        "storyId": "wow",
+        "world": "meadow",
+        "prop": "garden",
+        "occupation": "记录花朵变化",
+        "greeting": "这朵花刚刚才打开。我们先看一会儿。",
+        "name": "铃铛妈妈",
+        "yellow": false,
+        "voice": "soft",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看花心",
+            "response": "花心里有小小的星形！把这个发现记下来。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "等它慢慢开",
+            "response": "等一等，另一片花瓣也展开了。观察不用着急。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:aigaicuo",
+      "kind": "encounter",
+      "name": "艾改错 · 修理歪风车",
+      "description": "wow / meadow：刚才装歪了一片叶子。改一小处，再试一次。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "aigaicuo",
+        "storyId": "wow",
+        "world": "meadow",
+        "prop": "windmill",
+        "occupation": "修理歪风车",
+        "greeting": "刚才装歪了一片叶子。改一小处，再试一次。",
+        "name": "艾改错",
+        "yellow": false,
+        "voice": "moss",
+        "choices": [
+          {
+            "id": "first",
+            "label": "转转叶片",
+            "response": "现在转得顺多了，改过的地方看得见。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "检查底座",
+            "response": "先让底座站稳，风车就不会东倒西歪。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:wulala",
+      "kind": "encounter",
+      "name": "乌拉拉 · 给气泡排队",
+      "description": "wow / meadow：我也想一起玩！刚才我把顺序全弄乱了。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "wulala",
+        "storyId": "wow",
+        "world": "meadow",
+        "prop": "fountain",
+        "occupation": "给气泡排队",
+        "greeting": "我也想一起玩！刚才我把顺序全弄乱了。",
+        "name": "乌拉拉",
+        "yellow": false,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "一起轮流",
+            "response": "这次你一下、我一下。我的那一下也到了！",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起看气泡",
+            "response": "有人陪着看，我不用闹很大声也被看见了。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:mili",
+      "kind": "encounter",
+      "name": "米粒 · 猜星星谜语",
+      "description": "wow / meadow：什么东西越问越多？嘿嘿，是新问题！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "mili",
+        "storyId": "wow",
+        "world": "meadow",
+        "prop": "telescope",
+        "occupation": "猜星星谜语",
+        "greeting": "什么东西越问越多？嘿嘿，是新问题！",
+        "name": "米粒",
+        "yellow": false,
+        "voice": "lively",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看镜筒",
+            "response": "望远镜里多了一颗星，新的谜语又来啦。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "再猜一次",
+            "response": "可以慢慢猜。我喜欢听不一样的答案。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:lvdou",
+      "kind": "encounter",
+      "name": "绿豆 · 准备冒险试飞",
+      "description": "wow / observatory：出发出发！哎，先看看我是不是漏了零件？",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "lvdou",
+        "storyId": "wow",
+        "world": "observatory",
+        "prop": "rocket",
+        "occupation": "准备冒险试飞",
+        "greeting": "出发出发！哎，先看看我是不是漏了零件？",
+        "name": "绿豆",
+        "yellow": false,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "检查舱门",
+            "response": "还好先看一眼，舱门关好了。一起试飞！",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "点亮推进器",
+            "response": "亮起来了！新点子也要留时间试一试。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:dahongdou",
+      "kind": "encounter",
+      "name": "大红豆 · 搭英雄小桥",
+      "description": "wow / observatory：力量小队集合！等等，我先听听桥放在哪儿。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "dahongdou",
+        "storyId": "wow",
+        "world": "observatory",
+        "prop": "bridge",
+        "occupation": "搭英雄小桥",
+        "greeting": "力量小队集合！等等，我先听听桥放在哪儿。",
+        "name": "大红豆",
+        "yellow": false,
+        "voice": "bright",
+        "choices": [
+          {
+            "id": "first",
+            "label": "扶稳桥板",
+            "response": "嘿哟，扶好了。大家一起比一个人使劲更稳。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "先看小路",
+            "response": "我先不喊口号了，看看路通向哪里。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:gulu",
+      "kind": "encounter",
+      "name": "咕噜 · 检修伙伴飞船",
+      "description": "wow / observatory：我是咕噜。大家坐稳之前，我先看看船舱。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "gulu",
+        "storyId": "wow",
+        "world": "observatory",
+        "prop": "boat",
+        "occupation": "检修伙伴飞船",
+        "greeting": "我是咕噜。大家坐稳之前，我先看看船舱。",
+        "name": "咕噜",
+        "yellow": false,
+        "voice": "neighbor",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试试小船",
+            "response": "小船动了，我会等最后一位伙伴上来。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "看看气泡",
+            "response": "气泡一颗颗升起来，说明这个小部件在工作。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:yellow:jiaojiao",
+      "kind": "encounter",
+      "name": "叫叫 · 排练小队出发",
+      "description": "wow / observatory：披风小队长到！今天的任务是帮宇宙找回问题。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "yellow:jiaojiao",
+        "storyId": "wow",
+        "world": "observatory",
+        "prop": "stage",
+        "occupation": "排练小队出发",
+        "greeting": "披风小队长到！今天的任务是帮宇宙找回问题。",
+        "name": "叫叫",
+        "yellow": true,
+        "voice": "bubble",
+        "choices": [
+          {
+            "id": "first",
+            "label": "一起挥披风",
+            "response": "出发也要等朋友，我先在这里挥手。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "把问题传下去",
+            "response": "收到！下一颗星球有人想听你的不同理由。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:lingdang",
+      "kind": "encounter",
+      "name": "铃铛 · 对照两次观察",
+      "description": "debate / meadow：等等，我有个计划。先看证据，再说为什么。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "lingdang",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "telescope",
+        "occupation": "对照两次观察",
+        "greeting": "等等，我有个计划。先看证据，再说为什么。",
+        "name": "铃铛",
+        "yellow": false,
+        "voice": "lively",
+        "choices": [
+          {
+            "id": "first",
+            "label": "换个方向看",
+            "response": "从这边看和那边看不一样，两次发现都要留下。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "听听另一种猜法",
+            "response": "我先把自己的结论放一放，听听你看见了什么。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:lingdang-dad",
+      "kind": "encounter",
+      "name": "铃铛爸爸 · 整理问题书架",
+      "description": "debate / meadow：书里有办法，也会留下一些还没解开的问题。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "lingdang-dad",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "house",
+        "occupation": "整理问题书架",
+        "greeting": "书里有办法，也会留下一些还没解开的问题。",
+        "name": "铃铛爸爸",
+        "yellow": false,
+        "voice": "neighbor",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开问题小屋",
+            "response": "门打开了，没想明白的问题也有位置。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "留一个不同想法",
+            "response": "不同的想法不必马上合成一个，可以先放在一起看。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:donggaofen",
+      "kind": "encounter",
+      "name": "董高分 · 核对星星记录",
+      "description": "debate / meadow：知道得多，也可能漏看。我们拿观察来对一对。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "donggaofen",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "telescope",
+        "occupation": "核对星星记录",
+        "greeting": "知道得多，也可能漏看。我们拿观察来对一对。",
+        "name": "董高分",
+        "yellow": false,
+        "voice": "clever",
+        "choices": [
+          {
+            "id": "first",
+            "label": "再看一次",
+            "response": "第二次看到了新细节，我愿意改一改刚才的说法。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "先举个例子",
+            "response": "比如同一颗星，从不同位置看就不一样。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:qinlianxi",
+      "kind": "encounter",
+      "name": "秦练习 · 排练两种角色",
+      "description": "debate / meadow：这次我演两边！先说完一个理由，再换角色。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "qinlianxi",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "stage",
+        "occupation": "排练两种角色",
+        "greeting": "这次我演两边！先说完一个理由，再换角色。",
+        "name": "秦练习",
+        "yellow": false,
+        "voice": "star",
+        "choices": [
+          {
+            "id": "first",
+            "label": "换个角色演",
+            "response": "换个位置，原来别人担心的是这一件事。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "慢下来听",
+            "response": "我先停一下，让另一位朋友把话说完。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:maoge",
+      "kind": "encounter",
+      "name": "帽哥 · 主持小小讨论",
+      "description": "debate / meadow：上台不用急。先说你看见什么，再说你的理由。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "maoge",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "stage",
+        "occupation": "主持小小讨论",
+        "greeting": "上台不用急。先说你看见什么，再说你的理由。",
+        "name": "帽哥",
+        "yellow": false,
+        "voice": "youth",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试着开场",
+            "response": "帷幕拉开啦！我把第一个发言位置留给你。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "把话说具体",
+            "response": "比如“我喜欢桥，因为大家可以一起走过去”。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:rusheng",
+      "kind": "encounter",
+      "name": "如生 · 写两种故事结尾",
+      "description": "debate / meadow：同一个开头，也可以有两个温暖的结尾。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "rusheng",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "house",
+        "occupation": "写两种故事结尾",
+        "greeting": "同一个开头，也可以有两个温暖的结尾。",
+        "name": "如生",
+        "yellow": false,
+        "voice": "neighbor",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开一个结尾",
+            "response": "门打开了：他们先一起试，再一起修改。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "听另一个结尾",
+            "response": "另一个故事里，他们先听清每个人的担心。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:lanbitou",
+      "kind": "encounter",
+      "name": "烂笔头哥 · 给句子找节拍",
+      "description": "debate / meadow：让一句话有画面，可以加一个你看见的小细节。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "lanbitou",
+        "storyId": "debate",
+        "world": "meadow",
+        "prop": "music",
+        "occupation": "给句子找节拍",
+        "greeting": "让一句话有画面，可以加一个你看见的小细节。",
+        "name": "烂笔头哥",
+        "yellow": false,
+        "voice": "youth",
+        "choices": [
+          {
+            "id": "first",
+            "label": "加一个声音",
+            "response": "叮咚！加上琴键声，这句话像真的发生在眼前。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "加一个转折",
+            "response": "“原本我想独自走，后来发现一起走能听见更多。”",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:miao-boss",
+      "kind": "encounter",
+      "name": "喵老板 · 摆问题交换摊",
+      "description": "moon / pocket：这里不收钱。一个好问题，换一个新发现怎么样？",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "miao-boss",
+        "storyId": "moon",
+        "world": "pocket",
+        "prop": "prototype",
+        "occupation": "摆问题交换摊",
+        "greeting": "这里不收钱。一个好问题，换一个新发现怎么样？",
+        "name": "喵老板",
+        "yellow": false,
+        "voice": "moss",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看小宝贝",
+            "response": "宝贝不一定贵，一颗旧纽扣也能引出新问题。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "先听交换理由",
+            "response": "你喜欢它的理由，和我喜欢它的理由还真不一样。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:douya",
+      "kind": "encounter",
+      "name": "豆芽 · 调试机械助手",
+      "description": "moon / observatory：线路接好之前，先说清楚希望机器人帮什么忙。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "douya",
+        "storyId": "moon",
+        "world": "observatory",
+        "prop": "robot",
+        "occupation": "调试机械助手",
+        "greeting": "线路接好之前，先说清楚希望机器人帮什么忙。",
+        "name": "豆芽",
+        "yellow": false,
+        "voice": "clear",
+        "choices": [
+          {
+            "id": "first",
+            "label": "让它挥手",
+            "response": "指令收到了！它会先挥手，再等下一件事。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "检查问号灯",
+            "response": "灯亮起来了，机器人也能提醒我们继续提问。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:danzai",
+      "kind": "encounter",
+      "name": "蛋仔 · 整理发明说明书",
+      "description": "moon / observatory：说一小步就好，我帮你把复杂的想法拆开。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "danzai",
+        "storyId": "moon",
+        "world": "observatory",
+        "prop": "house",
+        "occupation": "整理发明说明书",
+        "greeting": "说一小步就好，我帮你把复杂的想法拆开。",
+        "name": "蛋仔",
+        "yellow": false,
+        "voice": "smart",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开说明小屋",
+            "response": "第一步有地方放了。之后还可以回来补下一步。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "试着换个顺序",
+            "response": "先试、再记、再修改，也是一种顺序。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:baozai",
+      "kind": "encounter",
+      "name": "包仔 · 搭第一件试作品",
+      "description": "moon / observatory：我有个新点子！先搭一点点，看看它会怎样。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "baozai",
+        "storyId": "moon",
+        "world": "observatory",
+        "prop": "prototype",
+        "occupation": "搭第一件试作品",
+        "greeting": "我有个新点子！先搭一点点，看看它会怎样。",
+        "name": "包仔",
+        "yellow": false,
+        "voice": "clever",
+        "choices": [
+          {
+            "id": "first",
+            "label": "拼上小积木",
+            "response": "新积木接上了，看起来和刚才已经不一样。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "请他试一试",
+            "response": "我来试！发现能改的地方，就记在下一张纸上。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:elfie",
+      "kind": "encounter",
+      "name": "Elfie · 改造水边小食店",
+      "description": "moon / reef：我的工具包里有锅铲，也有修东西的小零件。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "elfie",
+        "storyId": "moon",
+        "world": "reef",
+        "prop": "bakery",
+        "occupation": "改造水边小食店",
+        "greeting": "我的工具包里有锅铲，也有修东西的小零件。",
+        "name": "Elfie",
+        "yellow": false,
+        "voice": "lively",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开小厨房",
+            "response": "点心做好啦！厨房的小机关也一起动起来。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "给朋友留一份",
+            "response": "朋友来试新食谱，我就能听到更多好主意。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:prank-doctor",
+      "kind": "encounter",
+      "name": "恶作剧博士 · 修理喷泡泡机",
+      "description": "moon / reef：我本来想恶作剧……现在想请人陪我看看泡泡。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "prank-doctor",
+        "storyId": "moon",
+        "world": "reef",
+        "prop": "fountain",
+        "occupation": "修理喷泡泡机",
+        "greeting": "我本来想恶作剧……现在想请人陪我看看泡泡。",
+        "name": "恶作剧博士",
+        "yellow": false,
+        "voice": "clever",
+        "choices": [
+          {
+            "id": "first",
+            "label": "一起试机器",
+            "response": "泡泡乖乖落回池子里。这次大家都能安心看。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "给它新用途",
+            "response": "把它变成欢迎喷泉吧，朋友路过就会看到。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:sunwukong",
+      "kind": "encounter",
+      "name": "孙悟空 · 搭小小创作梯",
+      "description": "moon / pocket：点子像筋斗，能翻很远。先把第一步说清楚！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "sunwukong",
+        "storyId": "moon",
+        "world": "pocket",
+        "prop": "ladder",
+        "occupation": "搭小小创作梯",
+        "greeting": "点子像筋斗，能翻很远。先把第一步说清楚！",
+        "name": "孙悟空",
+        "yellow": false,
+        "voice": "bright",
+        "choices": [
+          {
+            "id": "first",
+            "label": "展开小梯子",
+            "response": "一阶一阶来，故事也可以这样往前长。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "试个新名字",
+            "response": "名字里加上它会做的事，朋友一听就懂。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:dengdeng",
+      "kind": "encounter",
+      "name": "灯灯 · 检查灵感小灯",
+      "description": "moon / pocket：这盏灯还差一点。我先把手边这件事做好。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "dengdeng",
+        "storyId": "moon",
+        "world": "pocket",
+        "prop": "lantern",
+        "occupation": "检查灵感小灯",
+        "greeting": "这盏灯还差一点。我先把手边这件事做好。",
+        "name": "灯灯",
+        "yellow": false,
+        "voice": "bright",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开灯罩",
+            "response": "小光点出来了，刚才细细检查的地方管用了。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "一起看看光",
+            "response": "光照到哪儿，我们就在那里找一个新问题。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:landou",
+      "kind": "encounter",
+      "name": "蓝豆 · 制作舞台道具",
+      "description": "moon / pocket：这是我新做的舞台！有点歪，不过可以再改。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "landou",
+        "storyId": "moon",
+        "world": "pocket",
+        "prop": "stage",
+        "occupation": "制作舞台道具",
+        "greeting": "这是我新做的舞台！有点歪，不过可以再改。",
+        "name": "蓝豆",
+        "yellow": false,
+        "voice": "youth",
+        "choices": [
+          {
+            "id": "first",
+            "label": "拉开帷幕",
+            "response": "帷幕能打开啦，歪一点也能先演第一场。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "试试站位",
+            "response": "换个位置，舞台就不挡住朋友了。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:hatty",
+      "kind": "encounter",
+      "name": "Hatty · 规划安静小屋",
+      "description": "moon / cloud：让我先理一理……计划里也要留一格空白。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "hatty",
+        "storyId": "moon",
+        "world": "cloud",
+        "prop": "house",
+        "occupation": "规划安静小屋",
+        "greeting": "让我先理一理……计划里也要留一格空白。",
+        "name": "Hatty",
+        "yellow": false,
+        "voice": "clever",
+        "choices": [
+          {
+            "id": "first",
+            "label": "打开那扇门",
+            "response": "门后留了空位置，正好放你的新点子。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "留点空白",
+            "response": "没有填满也很好，下次的发现就有地方来了。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:hackett",
+      "kind": "encounter",
+      "name": "Hackett · 试装反转风车",
+      "description": "moon / cloud：这风车怎么转反啦？哼，我可没有故意……",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "hackett",
+        "storyId": "moon",
+        "world": "cloud",
+        "prop": "windmill",
+        "occupation": "试装反转风车",
+        "greeting": "这风车怎么转反啦？哼，我可没有故意……",
+        "name": "Hackett",
+        "yellow": false,
+        "voice": "smart",
+        "choices": [
+          {
+            "id": "first",
+            "label": "陪他再试",
+            "response": "你愿意陪我试？那我也认真把叶片装好。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "换个角度看",
+            "response": "从另一边看，它也能带动小灯，不用拆掉全部。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:wanneng",
+      "kind": "encounter",
+      "name": "万能 · 校对魔法门",
+      "description": "moon / cloud：我在研究一扇问题门。故事魔法也要先试个模型。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "wanneng",
+        "storyId": "moon",
+        "world": "cloud",
+        "prop": "portal",
+        "occupation": "校对魔法门",
+        "greeting": "我在研究一扇问题门。故事魔法也要先试个模型。",
+        "name": "万能",
+        "yellow": false,
+        "voice": "neighbor",
+        "choices": [
+          {
+            "id": "first",
+            "label": "试开小门",
+            "response": "门环转起来了！这是绘本魔法，我们先看它的样子。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "检查门边",
+            "response": "门边的星星都亮了，这次没漏掉最后一颗。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:allie",
+      "kind": "encounter",
+      "name": "Allie（艾丽） · 画月球公共花园",
+      "description": "moon / moon：这片花园留给大家。想种什么，可以一起商量。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "allie",
+        "storyId": "moon",
+        "world": "moon",
+        "prop": "garden",
+        "occupation": "画月球公共花园",
+        "greeting": "这片花园留给大家。想种什么，可以一起商量。",
+        "name": "Allie（艾丽）",
+        "yellow": false,
+        "voice": "caring",
+        "choices": [
+          {
+            "id": "first",
+            "label": "看看新花",
+            "response": "每朵花都不一样，放在一起也很好看。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "留一块空地",
+            "response": "空地留给下一位朋友的新点子。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:sage",
+      "kind": "encounter",
+      "name": "Sage（赛奇） · 试星星摇滚台",
+      "description": "moon / moon：老胡子也爱新声音。我们来听听你的节拍！",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "sage",
+        "storyId": "moon",
+        "world": "moon",
+        "prop": "music",
+        "occupation": "试星星摇滚台",
+        "greeting": "老胡子也爱新声音。我们来听听你的节拍！",
+        "name": "Sage（赛奇）",
+        "yellow": false,
+        "voice": "moss",
+        "choices": [
+          {
+            "id": "first",
+            "label": "弹几个音",
+            "response": "琴键跳起来啦，慢拍子也能和快拍子一起玩。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "换个节奏",
+            "response": "新节奏出来了。我也能向小朋友学到新东西。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encounter:xiaolu-teacher",
+      "kind": "encounter",
+      "name": "小鹿老师 · 等一场新音乐会",
+      "description": "moon / moon：不用先弹得很熟。我们从一个声音开始。",
+      "source": "dev/content/encounters.js",
+      "capabilities": [
+        "靠近招呼",
+        "短选项互动"
+      ],
+      "dependencies": [
+        "ui:encounter"
+      ],
+      "encounter": {
+        "id": "xiaolu-teacher",
+        "storyId": "moon",
+        "world": "moon",
+        "prop": "music",
+        "occupation": "等一场新音乐会",
+        "greeting": "不用先弹得很熟。我们从一个声音开始。",
+        "name": "小鹿老师",
+        "yellow": false,
+        "voice": "gentle",
+        "choices": [
+          {
+            "id": "first",
+            "label": "弹第一个音",
+            "response": "第一个音响了，我会等你慢慢接下一句。",
+            "action": "wave"
+          },
+          {
+            "id": "second",
+            "label": "请她陪着弹",
+            "response": "你一句，我一句，音乐就在一起尝试里长出来。",
+            "action": "hop"
+          }
+        ]
+      }
+    },
+    {
+      "id": "audio:landing/audio/candy-1.mp3",
+      "kind": "audio",
+      "name": "candy-1",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/candy-1.mp3",
+      "url": "/assets/landing/audio/candy-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/candy-2.mp3",
+      "kind": "audio",
+      "name": "candy-2",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/candy-2.mp3",
+      "url": "/assets/landing/audio/candy-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/candy-3.mp3",
+      "kind": "audio",
+      "name": "candy-3",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/candy-3.mp3",
+      "url": "/assets/landing/audio/candy-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/lantern-1.mp3",
+      "kind": "audio",
+      "name": "lantern-1",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/lantern-1.mp3",
+      "url": "/assets/landing/audio/lantern-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/lantern-2.mp3",
+      "kind": "audio",
+      "name": "lantern-2",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/lantern-2.mp3",
+      "url": "/assets/landing/audio/lantern-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/lantern-3.mp3",
+      "kind": "audio",
+      "name": "lantern-3",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/lantern-3.mp3",
+      "url": "/assets/landing/audio/lantern-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/moon-1.mp3",
+      "kind": "audio",
+      "name": "moon-1",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/moon-1.mp3",
+      "url": "/assets/landing/audio/moon-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/moon-2.mp3",
+      "kind": "audio",
+      "name": "moon-2",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/moon-2.mp3",
+      "url": "/assets/landing/audio/moon-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/moon-3.mp3",
+      "kind": "audio",
+      "name": "moon-3",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/moon-3.mp3",
+      "url": "/assets/landing/audio/moon-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/music-1.mp3",
+      "kind": "audio",
+      "name": "music-1",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/music-1.mp3",
+      "url": "/assets/landing/audio/music-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/music-2.mp3",
+      "kind": "audio",
+      "name": "music-2",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/music-2.mp3",
+      "url": "/assets/landing/audio/music-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/music-3.mp3",
+      "kind": "audio",
+      "name": "music-3",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/music-3.mp3",
+      "url": "/assets/landing/audio/music-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/question-1.mp3",
+      "kind": "audio",
+      "name": "question-1",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/question-1.mp3",
+      "url": "/assets/landing/audio/question-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/question-2.mp3",
+      "kind": "audio",
+      "name": "question-2",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/question-2.mp3",
+      "url": "/assets/landing/audio/question-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:landing/audio/question-3.mp3",
+      "kind": "audio",
+      "name": "question-3",
+      "description": "首页场景声音",
+      "source": "assets/landing/audio/question-3.mp3",
+      "url": "/assets/landing/audio/question-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/calm.mp3",
+      "kind": "audio",
+      "name": "calm",
+      "description": "背景音乐",
+      "source": "assets/music/calm.mp3",
+      "url": "/assets/music/calm.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/danger.mp3",
+      "kind": "audio",
+      "name": "danger",
+      "description": "背景音乐",
+      "source": "assets/music/danger.mp3",
+      "url": "/assets/music/danger.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/draft.mp3",
+      "kind": "audio",
+      "name": "draft",
+      "description": "背景音乐",
+      "source": "assets/music/draft.mp3",
+      "url": "/assets/music/draft.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/unease.mp3",
+      "kind": "audio",
+      "name": "unease",
+      "description": "背景音乐",
+      "source": "assets/music/unease.mp3",
+      "url": "/assets/music/unease.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/01-welcome.mp3",
+      "kind": "audio",
+      "name": "01-welcome",
+      "description": "已录制角色台词",
+      "source": "assets/voice/01-welcome.mp3",
+      "url": "/assets/voice/01-welcome.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/02-trait.mp3",
+      "kind": "audio",
+      "name": "02-trait",
+      "description": "已录制角色台词",
+      "source": "assets/voice/02-trait.mp3",
+      "url": "/assets/voice/02-trait.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/03-heart.mp3",
+      "kind": "audio",
+      "name": "03-heart",
+      "description": "已录制角色台词",
+      "source": "assets/voice/03-heart.mp3",
+      "url": "/assets/voice/03-heart.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/04-name.mp3",
+      "kind": "audio",
+      "name": "04-name",
+      "description": "已录制角色台词",
+      "source": "assets/voice/04-name.mp3",
+      "url": "/assets/voice/04-name.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/05-world.mp3",
+      "kind": "audio",
+      "name": "05-world",
+      "description": "已录制角色台词",
+      "source": "assets/voice/05-world.mp3",
+      "url": "/assets/voice/05-world.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/06-play.mp3",
+      "kind": "audio",
+      "name": "06-play",
+      "description": "已录制角色台词",
+      "source": "assets/voice/06-play.mp3",
+      "url": "/assets/voice/06-play.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/07-seeds.mp3",
+      "kind": "audio",
+      "name": "07-seeds",
+      "description": "已录制角色台词",
+      "source": "assets/voice/07-seeds.mp3",
+      "url": "/assets/voice/07-seeds.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/08-gate.mp3",
+      "kind": "audio",
+      "name": "08-gate",
+      "description": "已录制角色台词",
+      "source": "assets/voice/08-gate.mp3",
+      "url": "/assets/voice/08-gate.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/09-brave.mp3",
+      "kind": "audio",
+      "name": "09-brave",
+      "description": "已录制角色台词",
+      "source": "assets/voice/09-brave.mp3",
+      "url": "/assets/voice/09-brave.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/10-complete.mp3",
+      "kind": "audio",
+      "name": "10-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/10-complete.mp3",
+      "url": "/assets/voice/10-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/lab-bubble.mp3",
+      "kind": "audio",
+      "name": "lab-bubble",
+      "description": "已录制角色台词",
+      "source": "assets/voice/lab-bubble.mp3",
+      "url": "/assets/voice/lab-bubble.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/lab-moss.mp3",
+      "kind": "audio",
+      "name": "lab-moss",
+      "description": "已录制角色台词",
+      "source": "assets/voice/lab-moss.mp3",
+      "url": "/assets/voice/lab-moss.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/lab-sprout.mp3",
+      "kind": "audio",
+      "name": "lab-sprout",
+      "description": "已录制角色台词",
+      "source": "assets/voice/lab-sprout.mp3",
+      "url": "/assets/voice/lab-sprout.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/lab-star.mp3",
+      "kind": "audio",
+      "name": "lab-star",
+      "description": "已录制角色台词",
+      "source": "assets/voice/lab-star.mp3",
+      "url": "/assets/voice/lab-star.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-brave.mp3",
+      "kind": "audio",
+      "name": "action-brave",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-brave.mp3",
+      "url": "/assets/voice/star/action-brave.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-expression-0.mp3",
+      "kind": "audio",
+      "name": "action-expression-0",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-expression-0.mp3",
+      "url": "/assets/voice/star/action-expression-0.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-expression-1.mp3",
+      "kind": "audio",
+      "name": "action-expression-1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-expression-1.mp3",
+      "url": "/assets/voice/star/action-expression-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-expression-2.mp3",
+      "kind": "audio",
+      "name": "action-expression-2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-expression-2.mp3",
+      "url": "/assets/voice/star/action-expression-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-expression-3.mp3",
+      "kind": "audio",
+      "name": "action-expression-3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-expression-3.mp3",
+      "url": "/assets/voice/star/action-expression-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-expression-4.mp3",
+      "kind": "audio",
+      "name": "action-expression-4",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-expression-4.mp3",
+      "url": "/assets/voice/star/action-expression-4.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-random.mp3",
+      "kind": "audio",
+      "name": "action-random",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-random.mp3",
+      "url": "/assets/voice/star/action-random.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-run.mp3",
+      "kind": "audio",
+      "name": "action-run",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-run.mp3",
+      "url": "/assets/voice/star/action-run.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-sit.mp3",
+      "kind": "audio",
+      "name": "action-sit",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-sit.mp3",
+      "url": "/assets/voice/star/action-sit.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-sleep.mp3",
+      "kind": "audio",
+      "name": "action-sleep",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-sleep.mp3",
+      "url": "/assets/voice/star/action-sleep.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-tap-0.mp3",
+      "kind": "audio",
+      "name": "action-tap-0",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-tap-0.mp3",
+      "url": "/assets/voice/star/action-tap-0.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-tap-1.mp3",
+      "kind": "audio",
+      "name": "action-tap-1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-tap-1.mp3",
+      "url": "/assets/voice/star/action-tap-1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-tap-2.mp3",
+      "kind": "audio",
+      "name": "action-tap-2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-tap-2.mp3",
+      "url": "/assets/voice/star/action-tap-2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-tap-3.mp3",
+      "kind": "audio",
+      "name": "action-tap-3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-tap-3.mp3",
+      "url": "/assets/voice/star/action-tap-3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-walk.mp3",
+      "kind": "audio",
+      "name": "action-walk",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-walk.mp3",
+      "url": "/assets/voice/star/action-walk.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/action-wave.mp3",
+      "kind": "audio",
+      "name": "action-wave",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/action-wave.mp3",
+      "url": "/assets/voice/star/action-wave.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/dialogue-choice.mp3",
+      "kind": "audio",
+      "name": "dialogue-choice",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/dialogue-choice.mp3",
+      "url": "/assets/voice/star/dialogue-choice.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/dialogue-encourage.mp3",
+      "kind": "audio",
+      "name": "dialogue-encourage",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/dialogue-encourage.mp3",
+      "url": "/assets/voice/star/dialogue-encourage.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/dialogue-profile.mp3",
+      "kind": "audio",
+      "name": "dialogue-profile",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/dialogue-profile.mp3",
+      "url": "/assets/voice/star/dialogue-profile.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/dialogue-question.mp3",
+      "kind": "audio",
+      "name": "dialogue-question",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/dialogue-question.mp3",
+      "url": "/assets/voice/star/dialogue-question.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-age-band.mp3",
+      "kind": "audio",
+      "name": "feedback-age-band",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-age-band.mp3",
+      "url": "/assets/voice/star/feedback-age-band.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-attention.mp3",
+      "kind": "audio",
+      "name": "feedback-attention",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-attention.mp3",
+      "url": "/assets/voice/star/feedback-attention.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-challenge.mp3",
+      "kind": "audio",
+      "name": "feedback-challenge",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-challenge.mp3",
+      "url": "/assets/voice/star/feedback-challenge.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-emotion.mp3",
+      "kind": "audio",
+      "name": "feedback-emotion",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-emotion.mp3",
+      "url": "/assets/voice/star/feedback-emotion.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-encouragement.mp3",
+      "kind": "audio",
+      "name": "feedback-encouragement",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-encouragement.mp3",
+      "url": "/assets/voice/star/feedback-encouragement.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-explore-together.mp3",
+      "kind": "audio",
+      "name": "feedback-explore-together",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-explore-together.mp3",
+      "url": "/assets/voice/star/feedback-explore-together.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-explore-try.mp3",
+      "kind": "audio",
+      "name": "feedback-explore-try",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-explore-try.mp3",
+      "url": "/assets/voice/star/feedback-explore-try.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-explore-watch.mp3",
+      "kind": "audio",
+      "name": "feedback-explore-watch",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-explore-watch.mp3",
+      "url": "/assets/voice/star/feedback-explore-watch.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-expression.mp3",
+      "kind": "audio",
+      "name": "feedback-expression",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-expression.mp3",
+      "url": "/assets/voice/star/feedback-expression.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-learning-both.mp3",
+      "kind": "audio",
+      "name": "feedback-learning-both",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-learning-both.mp3",
+      "url": "/assets/voice/star/feedback-learning-both.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-learning-do.mp3",
+      "kind": "audio",
+      "name": "feedback-learning-do",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-learning-do.mp3",
+      "url": "/assets/voice/star/feedback-learning-do.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-learning-hear.mp3",
+      "kind": "audio",
+      "name": "feedback-learning-hear",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-learning-hear.mp3",
+      "url": "/assets/voice/star/feedback-learning-hear.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-learning-see.mp3",
+      "kind": "audio",
+      "name": "feedback-learning-see",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-learning-see.mp3",
+      "url": "/assets/voice/star/feedback-learning-see.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-pace.mp3",
+      "kind": "audio",
+      "name": "feedback-pace",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-pace.mp3",
+      "url": "/assets/voice/star/feedback-pace.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-play-style.mp3",
+      "kind": "audio",
+      "name": "feedback-play-style",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-play-style.mp3",
+      "url": "/assets/voice/star/feedback-play-style.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-role.mp3",
+      "kind": "audio",
+      "name": "feedback-role",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-role.mp3",
+      "url": "/assets/voice/star/feedback-role.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-sensitivities.mp3",
+      "kind": "audio",
+      "name": "feedback-sensitivities",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-sensitivities.mp3",
+      "url": "/assets/voice/star/feedback-sensitivities.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-social.mp3",
+      "kind": "audio",
+      "name": "feedback-social",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-social.mp3",
+      "url": "/assets/voice/star/feedback-social.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-story-tone.mp3",
+      "kind": "audio",
+      "name": "feedback-story-tone",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-story-tone.mp3",
+      "url": "/assets/voice/star/feedback-story-tone.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-animals.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-animals",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-animals.mp3",
+      "url": "/assets/voice/star/feedback-theme-animals.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-building.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-building",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-building.mp3",
+      "url": "/assets/voice/star/feedback-theme-building.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-music.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-music",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-music.mp3",
+      "url": "/assets/voice/star/feedback-theme-music.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-mystery.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-mystery",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-mystery.mp3",
+      "url": "/assets/voice/star/feedback-theme-mystery.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-nature.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-nature",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-nature.mp3",
+      "url": "/assets/voice/star/feedback-theme-nature.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/feedback-theme-space.mp3",
+      "kind": "audio",
+      "name": "feedback-theme-space",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/feedback-theme-space.mp3",
+      "url": "/assets/voice/star/feedback-theme-space.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/interview-complete.mp3",
+      "kind": "audio",
+      "name": "interview-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/interview-complete.mp3",
+      "url": "/assets/voice/star/interview-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-age-band.mp3",
+      "kind": "audio",
+      "name": "question-age-band",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-age-band.mp3",
+      "url": "/assets/voice/star/question-age-band.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-attention.mp3",
+      "kind": "audio",
+      "name": "question-attention",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-attention.mp3",
+      "url": "/assets/voice/star/question-attention.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-challenge.mp3",
+      "kind": "audio",
+      "name": "question-challenge",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-challenge.mp3",
+      "url": "/assets/voice/star/question-challenge.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-emotion.mp3",
+      "kind": "audio",
+      "name": "question-emotion",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-emotion.mp3",
+      "url": "/assets/voice/star/question-emotion.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-encouragement.mp3",
+      "kind": "audio",
+      "name": "question-encouragement",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-encouragement.mp3",
+      "url": "/assets/voice/star/question-encouragement.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-explore.mp3",
+      "kind": "audio",
+      "name": "question-explore",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-explore.mp3",
+      "url": "/assets/voice/star/question-explore.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-expression.mp3",
+      "kind": "audio",
+      "name": "question-expression",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-expression.mp3",
+      "url": "/assets/voice/star/question-expression.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-interest.mp3",
+      "kind": "audio",
+      "name": "question-interest",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-interest.mp3",
+      "url": "/assets/voice/star/question-interest.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-learning.mp3",
+      "kind": "audio",
+      "name": "question-learning",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-learning.mp3",
+      "url": "/assets/voice/star/question-learning.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-pace.mp3",
+      "kind": "audio",
+      "name": "question-pace",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-pace.mp3",
+      "url": "/assets/voice/star/question-pace.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-play-style.mp3",
+      "kind": "audio",
+      "name": "question-play-style",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-play-style.mp3",
+      "url": "/assets/voice/star/question-play-style.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-role.mp3",
+      "kind": "audio",
+      "name": "question-role",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-role.mp3",
+      "url": "/assets/voice/star/question-role.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-sensitivities.mp3",
+      "kind": "audio",
+      "name": "question-sensitivities",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-sensitivities.mp3",
+      "url": "/assets/voice/star/question-sensitivities.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-social.mp3",
+      "kind": "audio",
+      "name": "question-social",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-social.mp3",
+      "url": "/assets/voice/star/question-social.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-story-tone.mp3",
+      "kind": "audio",
+      "name": "question-story-tone",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-story-tone.mp3",
+      "url": "/assets/voice/star/question-story-tone.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-theme.mp3",
+      "kind": "audio",
+      "name": "question-theme",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-theme.mp3",
+      "url": "/assets/voice/star/question-theme.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/question-tone.mp3",
+      "kind": "audio",
+      "name": "question-tone",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/question-tone.mp3",
+      "url": "/assets/voice/star/question-tone.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-attic.mp3",
+      "kind": "audio",
+      "name": "scene-attic",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-attic.mp3",
+      "url": "/assets/voice/star/scene-attic.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-blanket-fort.mp3",
+      "kind": "audio",
+      "name": "scene-blanket-fort",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-blanket-fort.mp3",
+      "url": "/assets/voice/star/scene-blanket-fort.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-breakfast-table.mp3",
+      "kind": "audio",
+      "name": "scene-breakfast-table",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-breakfast-table.mp3",
+      "url": "/assets/voice/star/scene-breakfast-table.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-castle-window.mp3",
+      "kind": "audio",
+      "name": "scene-castle-window",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-castle-window.mp3",
+      "url": "/assets/voice/star/scene-castle-window.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-classroom-desk.mp3",
+      "kind": "audio",
+      "name": "scene-classroom-desk",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-classroom-desk.mp3",
+      "url": "/assets/voice/star/scene-classroom-desk.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-clouds.mp3",
+      "kind": "audio",
+      "name": "scene-clouds",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-clouds.mp3",
+      "url": "/assets/voice/star/scene-clouds.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-giant-pocket.mp3",
+      "kind": "audio",
+      "name": "scene-giant-pocket",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-giant-pocket.mp3",
+      "url": "/assets/voice/star/scene-giant-pocket.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-greenhouse.mp3",
+      "kind": "audio",
+      "name": "scene-greenhouse",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-greenhouse.mp3",
+      "url": "/assets/voice/star/scene-greenhouse.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-library.mp3",
+      "kind": "audio",
+      "name": "scene-library",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-library.mp3",
+      "url": "/assets/voice/star/scene-library.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-meadow.mp3",
+      "kind": "audio",
+      "name": "scene-meadow",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-meadow.mp3",
+      "url": "/assets/voice/star/scene-meadow.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-moon.mp3",
+      "kind": "audio",
+      "name": "scene-moon",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-moon.mp3",
+      "url": "/assets/voice/star/scene-moon.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-mushroom-forest.mp3",
+      "kind": "audio",
+      "name": "scene-mushroom-forest",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-mushroom-forest.mp3",
+      "url": "/assets/voice/star/scene-mushroom-forest.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-music-stage.mp3",
+      "kind": "audio",
+      "name": "scene-music-stage",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-music-stage.mp3",
+      "url": "/assets/voice/star/scene-music-stage.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-paper-creek.mp3",
+      "kind": "audio",
+      "name": "scene-paper-creek",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-paper-creek.mp3",
+      "url": "/assets/voice/star/scene-paper-creek.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-paper-ground.mp3",
+      "kind": "audio",
+      "name": "scene-paper-ground",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-paper-ground.mp3",
+      "url": "/assets/voice/star/scene-paper-ground.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-rainy-window.mp3",
+      "kind": "audio",
+      "name": "scene-rainy-window",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-rainy-window.mp3",
+      "url": "/assets/voice/star/scene-rainy-window.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-rooftop.mp3",
+      "kind": "audio",
+      "name": "scene-rooftop",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-rooftop.mp3",
+      "url": "/assets/voice/star/scene-rooftop.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-seaside.mp3",
+      "kind": "audio",
+      "name": "scene-seaside",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-seaside.mp3",
+      "url": "/assets/voice/star/scene-seaside.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-snow-globe.mp3",
+      "kind": "audio",
+      "name": "scene-snow-globe",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-snow-globe.mp3",
+      "url": "/assets/voice/star/scene-snow-globe.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-space.mp3",
+      "kind": "audio",
+      "name": "scene-space",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-space.mp3",
+      "url": "/assets/voice/star/scene-space.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-train.mp3",
+      "kind": "audio",
+      "name": "scene-train",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-train.mp3",
+      "url": "/assets/voice/star/scene-train.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/scene-underwater.mp3",
+      "kind": "audio",
+      "name": "scene-underwater",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/scene-underwater.mp3",
+      "url": "/assets/voice/star/scene-underwater.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-complete.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-complete.mp3",
+      "url": "/assets/voice/star/script-bedtime-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-intro.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-intro",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-intro.mp3",
+      "url": "/assets/voice/star/script-bedtime-intro.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q1-picture.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q1-picture",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q1-picture.mp3",
+      "url": "/assets/voice/star/script-bedtime-q1-picture.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q1-sound.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q1-sound",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q1-sound.mp3",
+      "url": "/assets/voice/star/script-bedtime-q1-sound.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q1.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q1.mp3",
+      "url": "/assets/voice/star/script-bedtime-q1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q2-adventure.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q2-adventure",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q2-adventure.mp3",
+      "url": "/assets/voice/star/script-bedtime-q2-adventure.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q2-calm.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q2-calm",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q2-calm.mp3",
+      "url": "/assets/voice/star/script-bedtime-q2-calm.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q2.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q2.mp3",
+      "url": "/assets/voice/star/script-bedtime-q2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q3-help.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q3-help",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q3-help.mp3",
+      "url": "/assets/voice/star/script-bedtime-q3-help.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q3-retry.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q3-retry",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q3-retry.mp3",
+      "url": "/assets/voice/star/script-bedtime-q3-retry.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-bedtime-q3.mp3",
+      "kind": "audio",
+      "name": "script-bedtime-q3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-bedtime-q3.mp3",
+      "url": "/assets/voice/star/script-bedtime-q3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-complete.mp3",
+      "kind": "audio",
+      "name": "script-forest-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-complete.mp3",
+      "url": "/assets/voice/star/script-forest-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-intro.mp3",
+      "kind": "audio",
+      "name": "script-forest-intro",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-intro.mp3",
+      "url": "/assets/voice/star/script-forest-intro.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q1-hear.mp3",
+      "kind": "audio",
+      "name": "script-forest-q1-hear",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q1-hear.mp3",
+      "url": "/assets/voice/star/script-forest-q1-hear.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q1-see.mp3",
+      "kind": "audio",
+      "name": "script-forest-q1-see",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q1-see.mp3",
+      "url": "/assets/voice/star/script-forest-q1-see.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q1.mp3",
+      "kind": "audio",
+      "name": "script-forest-q1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q1.mp3",
+      "url": "/assets/voice/star/script-forest-q1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q2-together.mp3",
+      "kind": "audio",
+      "name": "script-forest-q2-together",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q2-together.mp3",
+      "url": "/assets/voice/star/script-forest-q2-together.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q2-try.mp3",
+      "kind": "audio",
+      "name": "script-forest-q2-try",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q2-try.mp3",
+      "url": "/assets/voice/star/script-forest-q2-try.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q2.mp3",
+      "kind": "audio",
+      "name": "script-forest-q2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q2.mp3",
+      "url": "/assets/voice/star/script-forest-q2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q3-stay.mp3",
+      "kind": "audio",
+      "name": "script-forest-q3-stay",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q3-stay.mp3",
+      "url": "/assets/voice/star/script-forest-q3-stay.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q3-wave.mp3",
+      "kind": "audio",
+      "name": "script-forest-q3-wave",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q3-wave.mp3",
+      "url": "/assets/voice/star/script-forest-q3-wave.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-forest-q3.mp3",
+      "kind": "audio",
+      "name": "script-forest-q3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-forest-q3.mp3",
+      "url": "/assets/voice/star/script-forest-q3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-complete.mp3",
+      "kind": "audio",
+      "name": "script-gift-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-complete.mp3",
+      "url": "/assets/voice/star/script-gift-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-intro.mp3",
+      "kind": "audio",
+      "name": "script-gift-intro",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-intro.mp3",
+      "url": "/assets/voice/star/script-gift-intro.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q1-book.mp3",
+      "kind": "audio",
+      "name": "script-gift-q1-book",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q1-book.mp3",
+      "url": "/assets/voice/star/script-gift-q1-book.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q1-machine.mp3",
+      "kind": "audio",
+      "name": "script-gift-q1-machine",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q1-machine.mp3",
+      "url": "/assets/voice/star/script-gift-q1-machine.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q1.mp3",
+      "kind": "audio",
+      "name": "script-gift-q1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q1.mp3",
+      "url": "/assets/voice/star/script-gift-q1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q2-alone.mp3",
+      "kind": "audio",
+      "name": "script-gift-q2-alone",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q2-alone.mp3",
+      "url": "/assets/voice/star/script-gift-q2-alone.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q2-together.mp3",
+      "kind": "audio",
+      "name": "script-gift-q2-together",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q2-together.mp3",
+      "url": "/assets/voice/star/script-gift-q2-together.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q2.mp3",
+      "kind": "audio",
+      "name": "script-gift-q2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q2.mp3",
+      "url": "/assets/voice/star/script-gift-q2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q3-explain.mp3",
+      "kind": "audio",
+      "name": "script-gift-q3-explain",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q3-explain.mp3",
+      "url": "/assets/voice/star/script-gift-q3-explain.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q3-listen.mp3",
+      "kind": "audio",
+      "name": "script-gift-q3-listen",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q3-listen.mp3",
+      "url": "/assets/voice/star/script-gift-q3-listen.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-gift-q3.mp3",
+      "kind": "audio",
+      "name": "script-gift-q3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-gift-q3.mp3",
+      "url": "/assets/voice/star/script-gift-q3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-complete.mp3",
+      "kind": "audio",
+      "name": "script-rain-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-complete.mp3",
+      "url": "/assets/voice/star/script-rain-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-intro.mp3",
+      "kind": "audio",
+      "name": "script-rain-intro",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-intro.mp3",
+      "url": "/assets/voice/star/script-rain-intro.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q1-hear.mp3",
+      "kind": "audio",
+      "name": "script-rain-q1-hear",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q1-hear.mp3",
+      "url": "/assets/voice/star/script-rain-q1-hear.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q1-see.mp3",
+      "kind": "audio",
+      "name": "script-rain-q1-see",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q1-see.mp3",
+      "url": "/assets/voice/star/script-rain-q1-see.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q1.mp3",
+      "kind": "audio",
+      "name": "script-rain-q1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q1.mp3",
+      "url": "/assets/voice/star/script-rain-q1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q2-build.mp3",
+      "kind": "audio",
+      "name": "script-rain-q2-build",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q2-build.mp3",
+      "url": "/assets/voice/star/script-rain-q2-build.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q2-draw.mp3",
+      "kind": "audio",
+      "name": "script-rain-q2-draw",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q2-draw.mp3",
+      "url": "/assets/voice/star/script-rain-q2-draw.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q2.mp3",
+      "kind": "audio",
+      "name": "script-rain-q2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q2.mp3",
+      "url": "/assets/voice/star/script-rain-q2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q3-company.mp3",
+      "kind": "audio",
+      "name": "script-rain-q3-company",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q3-company.mp3",
+      "url": "/assets/voice/star/script-rain-q3-company.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q3-count.mp3",
+      "kind": "audio",
+      "name": "script-rain-q3-count",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q3-count.mp3",
+      "url": "/assets/voice/star/script-rain-q3-count.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-rain-q3.mp3",
+      "kind": "audio",
+      "name": "script-rain-q3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-rain-q3.mp3",
+      "url": "/assets/voice/star/script-rain-q3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-complete.mp3",
+      "kind": "audio",
+      "name": "script-star-complete",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-complete.mp3",
+      "url": "/assets/voice/star/script-star-complete.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-intro.mp3",
+      "kind": "audio",
+      "name": "script-star-intro",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-intro.mp3",
+      "url": "/assets/voice/star/script-star-intro.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q1-ask.mp3",
+      "kind": "audio",
+      "name": "script-star-q1-ask",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q1-ask.mp3",
+      "url": "/assets/voice/star/script-star-q1-ask.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q1-leaf.mp3",
+      "kind": "audio",
+      "name": "script-star-q1-leaf",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q1-leaf.mp3",
+      "url": "/assets/voice/star/script-star-q1-leaf.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q1.mp3",
+      "kind": "audio",
+      "name": "script-star-q1",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q1.mp3",
+      "url": "/assets/voice/star/script-star-q1.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q2-map.mp3",
+      "kind": "audio",
+      "name": "script-star-q2-map",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q2-map.mp3",
+      "url": "/assets/voice/star/script-star-q2-map.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q2-song.mp3",
+      "kind": "audio",
+      "name": "script-star-q2-song",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q2-song.mp3",
+      "url": "/assets/voice/star/script-star-q2-song.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q2.mp3",
+      "kind": "audio",
+      "name": "script-star-q2",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q2.mp3",
+      "url": "/assets/voice/star/script-star-q2.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q3-cloud.mp3",
+      "kind": "audio",
+      "name": "script-star-q3-cloud",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q3-cloud.mp3",
+      "url": "/assets/voice/star/script-star-q3-cloud.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q3-home.mp3",
+      "kind": "audio",
+      "name": "script-star-q3-home",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q3-home.mp3",
+      "url": "/assets/voice/star/script-star-q3-home.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/script-star-q3.mp3",
+      "kind": "audio",
+      "name": "script-star-q3",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/script-star-q3.mp3",
+      "url": "/assets/voice/star/script-star-q3.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-bamboo-panda.mp3",
+      "kind": "audio",
+      "name": "template-bamboo-panda",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-bamboo-panda.mp3",
+      "url": "/assets/voice/star/template-bamboo-panda.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-bean-dog.mp3",
+      "kind": "audio",
+      "name": "template-bean-dog",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-bean-dog.mp3",
+      "url": "/assets/voice/star/template-bean-dog.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-book-owl.mp3",
+      "kind": "audio",
+      "name": "template-book-owl",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-book-owl.mp3",
+      "url": "/assets/voice/star/template-book-owl.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-cloud-alpaca.mp3",
+      "kind": "audio",
+      "name": "template-cloud-alpaca",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-cloud-alpaca.mp3",
+      "url": "/assets/voice/star/template-cloud-alpaca.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-cloud-inventor.mp3",
+      "kind": "audio",
+      "name": "template-cloud-inventor",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-cloud-inventor.mp3",
+      "url": "/assets/voice/star/template-cloud-inventor.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-curl-fox.mp3",
+      "kind": "audio",
+      "name": "template-curl-fox",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-curl-fox.mp3",
+      "url": "/assets/voice/star/template-curl-fox.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-forest-deer.mp3",
+      "kind": "audio",
+      "name": "template-forest-deer",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-forest-deer.mp3",
+      "url": "/assets/voice/star/template-forest-deer.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-honey-bear.mp3",
+      "kind": "audio",
+      "name": "template-honey-bear",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-honey-bear.mp3",
+      "url": "/assets/voice/star/template-honey-bear.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-leaf-hedgehog.mp3",
+      "kind": "audio",
+      "name": "template-leaf-hedgehog",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-leaf-hedgehog.mp3",
+      "url": "/assets/voice/star/template-leaf-hedgehog.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-moon-cat.mp3",
+      "kind": "audio",
+      "name": "template-moon-cat",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-moon-cat.mp3",
+      "url": "/assets/voice/star/template-moon-cat.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-pond-frog.mp3",
+      "kind": "audio",
+      "name": "template-pond-frog",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-pond-frog.mp3",
+      "url": "/assets/voice/star/template-pond-frog.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-quiet-painter.mp3",
+      "kind": "audio",
+      "name": "template-quiet-painter",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-quiet-painter.mp3",
+      "url": "/assets/voice/star/template-quiet-painter.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-river-otter.mp3",
+      "kind": "audio",
+      "name": "template-river-otter",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-river-otter.mp3",
+      "url": "/assets/voice/star/template-river-otter.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-snow-rabbit.mp3",
+      "kind": "audio",
+      "name": "template-snow-rabbit",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-snow-rabbit.mp3",
+      "url": "/assets/voice/star/template-snow-rabbit.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:voice/star/template-trail-explorer.mp3",
+      "kind": "audio",
+      "name": "template-trail-explorer",
+      "description": "已录制角色台词",
+      "source": "assets/voice/star/template-trail-explorer.mp3",
+      "url": "/assets/voice/star/template-trail-explorer.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    }
+  ],
+  "commands": {
+    "entity.spawn": [
+      "id",
+      "asset",
+      "position",
+      "color",
+      "scale"
+    ],
+    "entity.remove": [
+      "id"
+    ],
+    "entity.state": [
+      "id",
+      "state"
+    ],
+    "entity.animate": [
+      "id",
+      "animation"
+    ],
+    "entity.color": [
+      "id",
+      "color"
+    ],
+    "actor.animate": [
+      "target",
+      "animation",
+      "expression",
+      "duration"
+    ],
+    "encounter.activate": [
+      "target"
+    ],
+    "environment.set": [
+      "preset"
+    ],
+    "world.react": [
+      "action"
+    ],
+    "flag.set": [
+      "key",
+      "value"
+    ],
+    "creation.put": [
+      "record"
+    ],
+    "creation.activate": [
+      "id"
+    ]
+  }
+}

@@ -7,11 +7,11 @@ const UP = new THREE.Vector3(0, 1, 0);
 const MOVEMENT = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD']);
 const editing = target => target?.closest?.('input, textarea, select, [contenteditable=true]');
 
-export function createExploration(stage, { saved, storyId = 'wow', getName = () => '我', onSave = () => {}, canInteract, onInteraction, onSpeech, creations = [] } = {}) {
+export function createExploration(stage, { saved, storyId = 'wow', getName = () => '我', onSave = () => {}, canInteract, onInteraction, onSpeech, onEvent, onCommands, creations = [] } = {}) {
   const world = stage.world;
   const actorObstacles = [...stage.actors.values()].map(actor => ({ normal: actor.group.position.clone().sub(world.planet.center).normalize(), radius: .6 }));
   const scenery = createExplorationWorld(world, { storyId, actorObstacles }), avatar = createChildAvatar();
-  const friends = createExplorationFriends(stage, { storyId, canInteract, onInteraction, onSpeech });
+  const friends = createExplorationFriends(stage, { storyId, canInteract, onInteraction, onSpeech, onEvent, onCommands });
   friends.setCreations(creations);
   scenery.obstacles.push(...friends.obstacles);
   const uiHost = document.getElementById('world-viewport') || stage.container.parentElement;
@@ -20,6 +20,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
   const walker = createSurfaceWalker({ radius: world.planet.radius, obstacles: scenery.obstacles, initial: validSaved ? new THREE.Vector3(...saved.normal).normalize() : world.surfaceNormal(.5, 2.4) });
   const nearbyProps = new Set();
   const keys = new Set(), controller = new AbortController(), options = { signal: controller.signal };
+  let eventObstacles = [];
   let moved = false, saveAge = 0, area = '', heading = 0, travelLabel = '', previousNormal = walker.normal.clone();
   const cameraNormal = walker.normal.clone();
   const surfaceFrame = new THREE.Quaternion().setFromUnitVectors(UP, walker.normal);
@@ -99,6 +100,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     const nextArea = nearZone ? nearest.name : '星球小路';
     if (area !== nextArea) {
       area = nextArea; areaLabel.textContent = area;
+      if (nearZone) onEvent?.('zone.enter', { zone: nearest.id });
       if (!walker.moving) feedback.textContent = nearZone ? nearest.hint : '慢慢走，总会遇见新东西。';
     }
     moved = moving;
@@ -106,6 +108,12 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
   update(0);
   document.body.dataset.exploring = 'true';
   return {
+    setEventObstacles(records) {
+      const old = new Set(eventObstacles); scenery.obstacles.splice(0,scenery.obstacles.length,...scenery.obstacles.filter(o=>!old.has(o)),...records);
+      eventObstacles = records;
+    },
+    animateActor(id,action,expression,duration) { return friends.animateActor(id,action,expression,duration); },
+    activateEncounter(id) { return friends.activate(id); },
     setCreations(records) {
       const previous = new Set(friends.obstacles);scenery.obstacles.splice(0,scenery.obstacles.length,...scenery.obstacles.filter(o=>!previous.has(o)));
       friends.setCreations(records);scenery.obstacles.push(...friends.obstacles);
@@ -124,6 +132,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     goHome() { go(scenery.zones[0].normal, scenery.zones[0].name); },
     pick(raycaster) {
       if(blocked())return false;
+      if(stage.worldPresenter?.pick(raycaster))return true;
       if(friends.pick(raycaster,walker.normal,normal=>go(normal)))return true;
       const hit = raycaster.ray.intersectSphere(sphere, new THREE.Vector3());
       if (!hit) return false;

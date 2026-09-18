@@ -1,38 +1,41 @@
 import * as THREE from '../vendor/three.module.js';
-import { createDocumentCharacter } from '../src/story-npcs/factory.js';
+import { createActor } from './presentation/actor-factory.js';
+import { createEncounterDialog } from './presentation/encounter-dialog.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
-import { createYellowCharacter, FOUR } from './yellow-four-models.js';
+import { FOUR } from './content/yellow-friends.js';
 import { encountersFor, ENCOUNTER_PLACES } from './encounter-catalog.js';
 import { createCreationModel } from './creation-models.js';
 
 const UP = new THREE.Vector3(0,1,0);
-export function createExplorationFriends(stage, { storyId, canInteract = () => true, onInteraction = () => {}, onSpeech = () => {} }) {
+export function createExplorationFriends(stage, { storyId, canInteract = () => true, onInteraction = () => {}, onSpeech = () => {}, onEvent = () => {}, onCommands }) {
   const world = stage.world, root = new THREE.Group(); root.name = 'curiosity-friends'; stage.scene.add(root);
-  const actors = [], creations = [], obstacles = [], controller = new AbortController();
-  let active = null, time = 0, lastFocus = null;
-  const dialog = document.createElement('section'); dialog.className = 'encounter-dialog'; dialog.hidden = true;
-  dialog.setAttribute('role','dialog'); dialog.setAttribute('aria-modal','false'); dialog.setAttribute('aria-label','和星球朋友互动');
-  const name = document.createElement('p'), line = document.createElement('p'), choices = document.createElement('div'), close = document.createElement('button');
-  name.className='encounter-name'; line.className='encounter-line';line.setAttribute('aria-live','polite');choices.className='encounter-choices';close.className='encounter-close';close.textContent='继续逛逛';close.type='button';
-  dialog.append(name,line,choices,close);document.body.append(dialog);
-  const scenePanel = document.querySelector('#story-panel, .conversation');
+  const actors = [], creations = [], obstacles = [];
+  let active = null, time = 0;
+  const view = createEncounterDialog({onClose:finish});
   function finish() {
-    if(!active)return;active.cooldown=time+10;active=null;dialog.hidden=true;delete document.body.dataset.encounter;
-    if(scenePanel)scenePanel.inert=false;onInteraction(false);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
+    if(!active)return;active.cooldown=time+10;active=null;view.hide();onInteraction(false);
   }
-  close.onclick=finish;
-  document.addEventListener('keydown',event=>{if(active && event.key==='Escape'){event.preventDefault();finish();}},{signal:controller.signal});
+  function animateActor(id,action,expression='happy',duration=3) {
+    const item=actors.find(n=>n.config.id===id&&n.present);
+    if(!item)return false;
+    item.action=action;item.actor.setAction(action);item.actor.setExpression(expression);item.actionUntil=time+duration;return true;
+  }
+  function activate(id) { const item=actors.find(n=>n.config.id===id&&n.present)||actors.find(n=>n.config.id===id);item?.props.forEach(p=>p.trigger());return Boolean(item); }
   function open(item) {
     if(active || !canInteract())return;
-    active=item;item.count++;lastFocus=document.activeElement;dialog.hidden=false;document.body.dataset.encounter='true';if(scenePanel)scenePanel.inert=true;onInteraction(true);
-    name.textContent=`${item.config.name} · ${item.config.occupation}`;line.textContent=item.config.greeting;
+    active=item;item.count++;onInteraction(true);
+    view.show(item.config,choice=>{
+      onSpeech(choice.response,item.config);
+      const effects=choice.effects||[{type:'actor.animate',target:item.config.id,animation:choice.action,expression:'happy'},{type:'encounter.activate',target:item.config.id}];
+      if(onCommands)onCommands(effects);else{animateActor(item.config.id,choice.action);activate(item.config.id);}
+      onEvent('encounter.choice',{npcId:item.config.id,choiceId:choice.id||choice.label});
+    });
     onSpeech(item.config.greeting,item.config);
-    choices.replaceChildren(...item.config.choices.map(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice.label;b.onclick=()=>{line.textContent=choice.response;onSpeech(choice.response,item.config);item.action=choice.action;item.actor.setAction(choice.action);item.actor.setExpression('happy');item.actionUntil=time+3;item.props.forEach(p=>p.trigger());};return b;}));
-    choices.querySelector('button')?.focus({preventScroll:true});
+    onEvent('encounter.enter',{npcId:item.config.id});
   }
   function station(config, normal, propKinds=[config.prop], color) {
     const anchor=new THREE.Group();anchor.position.copy(world.planet.center).addScaledVector(normal,world.planet.radius+.03);anchor.quaternion.setFromUnitVectors(UP,normal);root.add(anchor);
-    const actor=config.yellow?createYellowCharacter(config.id.slice(7),.70):createDocumentCharacter({characterId:config.id,scale:.7});
+    const actor=createActor({asset:config.yellow?config.id:`npc:${config.id}`},.7);
     actor.group.position.x=-.5;anchor.add(actor.group);
     const props=propKinds.map((kind,i)=>{const prop=createCreationModel(kind,color);prop.group.scale.setScalar(.57);prop.group.position.set(.6+(i%2)*.85,0,Math.floor(i/2)*.85);anchor.add(prop.group);return prop;});
     const item={config,normal,anchor,actor,props,inside:false,count:0,cooldown:0,actionUntil:0,action:'hop',present:true};
@@ -52,7 +55,7 @@ export function createExplorationFriends(stage, { storyId, canInteract = () => t
     const present = new Set();
     for(const item of [...actors].reverse()){item.present=!present.has(item.config.id);item.actor.group.visible=item.present;present.add(item.config.id);}
   }
-  return { root,obstacles,setCreations,get active(){return Boolean(active);},
+  return { root,obstacles,setCreations,animateActor,activate,get active(){return Boolean(active);},
     showCreation(id){const item=creations.find(n=>n.creationId===id);item?.props.forEach(p=>p.trigger());if(item){item.action='hop';item.actor.setAction('hop');item.actionUntil=time+4;}},
     creationNormal(id){return creations.find(n=>n.creationId===id)?.normal;},
     pick(raycaster, playerNormal, walk){
@@ -73,6 +76,6 @@ export function createExplorationFriends(stage, { storyId, canInteract = () => t
       }
     },
     get stats(){return actors.map(item=>{const p=item.anchor.position.clone().addScaledVector(item.normal,.85).project(stage.camera),r=stage.container.getBoundingClientRect();return {id:item.config.id,name:item.config.name,present:item.present,prop:item.props.map(p=>p.kind),normal:item.normal.toArray(),count:item.count,creationId:item.creationId||null,screen:{x:(p.x+1)*r.width/2,y:(1-p.y)*r.height/2}};});},
-    dispose(){finish();controller.abort();dialog.remove();actors.forEach(item=>{item.actor.dispose();item.props.forEach(p=>p.dispose());});root.removeFromParent();},
+    dispose(){finish();view.dispose();actors.forEach(item=>{item.actor.dispose();item.props.forEach(p=>p.dispose());});root.removeFromParent();},
   };
 }

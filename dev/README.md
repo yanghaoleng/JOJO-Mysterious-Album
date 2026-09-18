@@ -1,5 +1,7 @@
 # 萌萌星 · 立体故事工坊
 
+当前开发入口：[架构设计与扩展指南](./ARCHITECTURE.md) · [模块陈列馆](https://jma.mikeywa.site/dev/modules/) · [机器可读模块清单](./modules/catalog.json)。三个主章节共用内容目录、事件运行器、世界命令和独立模型/UI 组件。修改脚本主要进入 `content/stories/`，新增模块按 `AGENTS.md` 更新注册表和陈列馆。
+
 当前首页：`https://jma.mikeywa.site/`；无参数的 `/dev/` 返回新版首页，带故事参数的入口保留。三个主章节沿着“拯救宇宙的好奇心”串联：发现与上手、倾听与表达、自由创造。彩蛋点位、人设互动、预制造物与存档规则见 [CURIOSITY-WORLDS.md](./CURIOSITY-WORLDS.md)。
 
 ## 黄色四巨头

@@ -157,7 +157,8 @@ export function createVoiceInput({ button, transcript, status, sanitize = text =
   function reset(state = 'setup') {
     clearTranscript(); setLevel(0); return setState(state);
   }
-  const api = { setState, setLevel, setActivity, setTranscript, clearTranscript, reset, getState: () => ({ ...current }) };
+  function dispose() { textMotion?.destroy(); inputs.delete(button); }
+  const api = { setState, setLevel, setActivity, setTranscript, clearTranscript, reset, dispose, getState: () => ({ ...current }) };
   inputs.set(button, api);
   setState('setup');
   return api;
