@@ -4,6 +4,7 @@ const world = document.getElementById('landing-world');
 const dialog = document.getElementById('landing-dialog');
 const content = document.getElementById('landing-dialog-content');
 const gate = document.getElementById('mode-gate');
+mountJourneyIcons(gate);
 let scene, returnFocus;
 const heroObserver=new IntersectionObserver(entries=>{
   if(!entries.some(e=>e.isIntersecting))return;
