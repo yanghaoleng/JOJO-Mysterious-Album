@@ -89,7 +89,7 @@
 
 /* Keep sample journals focused on the child's words and ideas. */
 .journal-header{gap:22px;padding-top:46px}
-.landing-dialog .journal-header>h2{margin:0 38px 0 0;font-size:34px;line-height:1.4;letter-spacing:-.035em}
+.landing-dialog .journal-title-row>h2{margin:0 38px 0 0;font-size:34px;line-height:1.4;letter-spacing:-.035em}
 .journal-stats{margin:0}
 .journal-invention{display:flex;align-items:center;gap:12px;text-align:left;padding:18px}
 .journal-invention>svg{width:22px;height:22px;flex-shrink:0;color:var(--journal-accent)}
@@ -101,7 +101,7 @@
 .landing-dialog .journey-effect>p{margin:7px 0 0;font-size:13px;line-height:1.9}
 @media(max-width:600px){
  .journal-header{padding-top:31px;gap:20px}
- .landing-dialog .journal-header>h2{font-size:27px}
+ .landing-dialog .journal-title-row>h2{font-size:27px}
  .journal-inventions{grid-template-columns:1fr;gap:8px}
  .journal-invention{padding:13px 15px;gap:12px}
  .journal-invention h4{font-size:13px}
@@ -109,3 +109,7 @@
  .journey-effect{margin-left:40px;padding-left:10px}
  .landing-dialog .journey-effect>p{font-size:12px}
 }
+
+.journal-title-row{display:flex;align-items:center;gap:16px;min-width:0}
+.journal-title-row>.child-avatar{width:64px;height:64px;border:3px solid #fffdf6;box-shadow:0 4px 16px #6b604212}
+@media(max-width:600px){.journal-title-row{gap:12px}.journal-title-row>.child-avatar{width:48px;height:48px}.landing-dialog .journal-title-row>h2{margin-right:0;font-size:clamp(22px,6vw,27px)}}

@@ -83,7 +83,7 @@ function openJourney(id){
   </article>`;
   const visited=journeyChapters.filter((_,ci)=>j.steps.some(step=>step.chapter===ci)).length;
   show(`<div class="journey-journal journal-${j.theme}">
-    <header class="journal-header"><h2 id="preview-title">${j.child}的冒险日志</h2>
+    <header class="journal-header"><div class="journal-title-row">${avatar()}<h2 id="preview-title">${j.child}的冒险日志</h2></div>
       <dl class="journal-stats"><div><dt>${icon('clock-3')}探索时光</dt><dd>${j.duration}<span>分钟</span></dd></div><div><dt>${icon('message-circle')}自己的回答</dt><dd>${j.steps.length}<span>个</span></dd></div><div><dt>${icon('lightbulb')}冒出的新点子</dt><dd>${ideaCount}<span>个</span></dd></div><div><dt>${icon('flag')}留下的发明</dt><dd>${j.steps.length}<span>件</span></dd></div></dl>
     </header>
     <section class="journal-keepsakes" aria-labelledby="keepsake-title"><div class="journal-section-title"><h3 id="keepsake-title">${j.child}的发明口袋</h3></div><div class="journal-inventions">${j.steps.map(step=>`<div class="journal-invention">${icon(step.icon)}<h4>${escapeHTML(step.invention)}</h4></div>`).join('')}</div></section>
