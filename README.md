@@ -4,16 +4,18 @@
 
 面向儿童的 AI 原生创意箱庭。4 至 6 岁的孩子可以照顾迷路的小狗豆豆、陪它寻找家；10 岁以上的孩子可以只带着“登陆月球”这个目标，自由发明交通工具并由世界导演实时组织旅程。
 
-主页以三章组织体验：《第一束好奇的光》→ `/dev/?story=wow`、观点小剧场 → `/?preview=debate`（新版方向预览，保留 `/debate` 原版入口）、《登月计划》→ `/dev/?story=moon`。各章独立进入，不设解锁门槛。
+主页以三章组织体验：《第一束好奇的光》→ `/dev/?story=wow`、观点小剧场 → `/dev/debate`（3D 可玩版，保留 `/debate` 原版入口）、《登月计划》→ `/dev/?story=moon`。各章独立进入，不设解锁门槛。
 
 ## 首页 · 三章冒险与 3D Hero
 
-- 暖乳白底色，章节封面与 Hero 直接复用 `/dev/models.js` 的真实立体角色，独立绘制首页概念场景。
-- Hero 暂时保留五个可切换方案：想法造物台、漂浮朋友星系、会长大的小星球、口袋里的宇宙、想象力接力。Tab 支持左右方向键、Home、End；所有方案共享一个 WebGL 上下文，支持减少动态效果偏好和静态图片降级。交互仅用于首页展示，不写入故事进度。
-- 探索记录是三个可打开的模拟纪念册，明确标注虚构昵称和示例内容；不采集真实语音，不实现云端旅程或公开分享。未来分享需先取得允许。
+- 暖乳白底色，Hero 复用故事内的 `DioramaStage` 场景与角色，大星球溢出边缘，每 12 秒自动切换一组伙伴与世界；无手动切换 Tab。支持减少动态效果和 WebGL 静态降级。
+- 三章使用真实故事场景截图，隐藏操作界面后截取。卡片平时只显示标题，悬停或聚焦显示摘要；触屏首次轻点显示摘要，再点进入。
+- 第二章 `/dev/debate` 复用现有 `/api/debate`，小鸮与小兔进行六轮交替讨论，孩子可用语音或文字表达。支持暂停、跳句、重开和结束后的个人看法；声音失败可用字幕继续。
+- 探索记录是三个独立的模拟纪念册卡片，使用生成的默认童趣头像，明确标注示例内容；不采集真实语音，不实现云端旅程或公开分享。未来分享需先取得允许。
 - 创作幕后保留二维绘本、角色模拟器与画风实验，并以真实截图公开 3D 角色模拟器、故事里的朋友、黄色四巨头和 iPhone Duo 入口。
-- 首页逻辑为 `src/landing.js`，独立场景为 `src/landing-scene.js`，样式为 `src/landing.css`。原版角色模拟器仍由 `src/mode.js` 管理，`/?mode=debug` 路由不变。
-- `tools/capture-landing.mjs` 可重建概念封面和真实截图；`tools/verify-landing.mjs [baseURL]` 验证五个交互方案、弹窗、20 个入口、五种屏幕宽度、图片资源与 WebGL 降级。需通过 `PLAYWRIGHT_MODULE` 指定可用的 playwright-core；截图另需 `SHARP_MODULE`。
+- 顶部只保留产品名；底部以第一章真实场景、标题与开始按钮作为入口。
+- 首页逻辑为 `src/landing.js`，场景为 `src/landing-scene.js`，样式为 `src/landing.css`。原版角色模拟器仍由 `src/mode.js` 管理，`/?mode=debug` 路由不变。
+- `tools/capture-story-covers.mjs` 重建实际章节截图；`tools/capture-landing.mjs` 保留模拟旅程插图与幕后截图的生成入口，使用 `src/landing-art-scene.js`。`tools/verify-landing.mjs [baseURL]` 验证自动场景、弹窗、链接、五种屏幕宽度、图片、WebGL 降级，以及第二章讨论状态与取消流程。验证中的讨论与语音响应使用固定测试数据，不代表真机麦克风验证。需通过 `PLAYWRIGHT_MODULE` 指定 playwright-core；截图另需 `SHARP_MODULE`。
 
 ## 《哇呜！第一束好奇光》
 

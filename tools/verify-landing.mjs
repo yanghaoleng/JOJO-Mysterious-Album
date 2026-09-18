@@ -1,54 +1,47 @@
-// Run against local or production without submitting voice, story, or analytics data.
+// Real browser checks for the immersive landing and the 3D debate state machine.
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
-const base=process.argv[2]||'http://localhost:8149';
-const out=process.env.VERIFY_OUTPUT||'/tmp/jma-landing-verification';await mkdir(out,{recursive:true});
+const base=process.argv[2]||'http://localhost:8149',out=process.env.VERIFY_OUTPUT||'/tmp/jma-immersive-check';await mkdir(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true});
-const page=await browser.newPage({viewport:{width:1440,height:900}});
-const errors=[],failed=[],report={base,viewports:[],concepts:[],links:[]};
-page.on('pageerror',error=>errors.push(error.message));page.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
+const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[],failures=[];
+page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});
 await page.route('**/api/analytics/**',r=>r.fulfill({status:204}));
+const report={base,widths:[],links:[],hero:[],debate:[]};
 try{
-  await page.goto(base);await page.waitForSelector('#landing-world[data-ready]');await page.waitForTimeout(900);
-  assert.equal(await page.locator('.chapter').count(),3);
-  for(let i=0;i<5;i++){
-    await page.locator(`[data-concept="${i}"]`).click();
-    assert.equal(await page.locator(`[data-concept="${i}"]`).getAttribute('aria-selected'),'true');
-    assert.equal(await page.locator('#landing-world canvas').count(),1);
-    for(const action of ['primary','secondary'])await page.locator(`[data-imagine="${action}"]`).click();
-    await page.screenshot({path:`${out}/desktop-concept-${i+1}.png`});report.concepts.push(await page.locator('#concept-description').textContent());
-  }
-  await page.locator('[data-concept="4"]').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-concept="0"]').getAttribute('aria-selected'),'true');
-  await page.keyboard.press('End');assert.equal(await page.locator('[data-concept="4"]').getAttribute('aria-selected'),'true');
-  await page.locator('.chapter-action[data-debate-preview]').click();await page.waitForSelector('#landing-dialog[open]');
-  await page.locator('[data-topic="1"]').click();assert.match(await page.locator('#debate-lines').innerText(),/船/);
-  await page.keyboard.press('Escape');assert.equal(await page.locator('#landing-dialog').evaluate(el=>el.open),false);
-  for(const id of ['candy','moon','question']){await page.locator(`[data-journey="${id}"]`).click();assert.equal(await page.locator('#landing-dialog li').count(),3);await page.locator('.dialog-close').click();}
-  const hrefs=await page.locator('.landing-page a').evaluateAll(links=>[...new Set(links.map(a=>a.href))]);
-  for(const href of hrefs){if(new URL(href).origin!==new URL(base).origin)continue;const r=await page.request.get(href);assert.equal(r.status(),200,href);report.links.push({url:href,status:r.status()});}
+  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});await page.waitForSelector('#landing-world[data-ready]');
+  assert.equal(await page.locator('.landing-page [role=tab],.landing-nav nav,.nav-start').count(),0);
+  assert.equal(await page.locator('.landing-brand').innerText(),'萌萌星的奇妙图鉴');
+  assert.equal(await page.locator('#chapters .chapter-card').count(),3);
+  assert.equal(await page.locator('#journeys .section-heading p').count(),1);
+  for(const n of [0,1,2]){await page.waitForFunction(n=>document.getElementById('landing-world').dataset.scene===String(n),n,{timeout:15000});await page.waitForTimeout(1000);await page.screenshot({path:`${out}/hero-${n}.png`});report.hero.push(n);}
+  const card=page.locator('.chapter-card').first();await card.scrollIntoViewIfNeeded();await card.hover();await page.waitForTimeout(400);assert.equal(await card.locator('.chapter-reveal').evaluate(e=>getComputedStyle(e).opacity),'1');
+  for(const id of ['candy','moon','question']){await page.locator(`[data-journey="${id}"]`).click();await page.waitForSelector('#landing-dialog[open]');await page.keyboard.press('Escape');}
+  const hrefs=await page.locator('.landing-page a').evaluateAll(list=>[...new Set(list.map(a=>a.href))]);
+  for(const href of hrefs){if(new URL(href).origin!==new URL(base).origin)continue;const r=await page.request.get(href);assert.equal(r.status(),200,href);report.links.push(href);}
   for(const width of [320,390,768,1024,1440]){
-    await page.setViewportSize({width,height:width<768?844:900});
-    await page.evaluate(()=>{document.getElementById('mode-gate').scrollTop=0;});
-    await page.locator('[data-concept="0"]').click();
-    const dimensions=await page.locator('#mode-gate').evaluate(el=>({width:el.clientWidth,scrollWidth:el.scrollWidth}));assert.ok(dimensions.scrollWidth<=dimensions.width+1,JSON.stringify({width,dimensions}));
-    await page.screenshot({path:`${out}/home-${width}.png`});
+    await page.setViewportSize({width,height:width<768?844:900});await page.evaluate(()=>document.getElementById('mode-gate').scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:`${out}/home-${width}.png`});
+    assert.ok(await page.locator('#mode-gate').evaluate(e=>e.scrollWidth<=e.clientWidth+1),`overflow ${width}`);
     for(const section of ['chapters','journeys','making']){await page.locator(`#${section}`).scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/${section}-${width}.png`});}
-    await page.locator('.experiment-grid').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/experiments-${width}.png`});
-    const imageSizes=await page.locator('.experiment-grid>a>img').evaluateAll(imgs=>imgs.map(i=>({width:i.clientWidth,height:i.clientHeight})));assert.ok(imageSizes.every(i=>i.height<=i.width),JSON.stringify(imageSizes));
-    report.viewports.push({width,...dimensions});
+    await page.locator('.landing-closing').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/closing-${width}.png`});report.widths.push(width);
   }
-  await page.evaluate(async()=>{await Promise.all([...document.images].map(img=>{img.loading='eager';return img.decode().catch(()=>{});}));});
-  const broken=await page.locator('.landing-page img').evaluateAll(imgs=>imgs.filter(i=>!i.complete||!i.naturalWidth).map(i=>i.src));assert.deepEqual(broken,[]);
-  await page.goto(`${base}/?preview=debate`);await page.waitForSelector('#landing-dialog[open]');await page.keyboard.press('Escape');
-  await page.goto(`${base}/?journey=candy`);await page.waitForSelector('#landing-dialog[open]');await page.locator('.dialog-close').click();
-  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-  report.errors=errors;report.failed=failed;report.status='passed';
-  // The poster must remain useful if WebGL cannot be created.
-  const fallback=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
-  await fallback.route('**/api/analytics/**',r=>r.fulfill({status:204}));
-  await fallback.addInitScript(()=>{const native=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.includes('webgl')?null:native.call(this,type,...args);};});
-  await fallback.goto(base);await fallback.locator('[data-concept="3"]').click();assert.equal(await fallback.locator('#landing-world img').evaluate(el=>getComputedStyle(el).visibility),'visible');
-  assert.match(await fallback.locator('#landing-world img').getAttribute('src'),/concept-cosmos/);await fallback.close();report.webglFallback='passed';
-  await writeFile(`${out}/report.json`,JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+  await page.evaluate(async()=>{await Promise.all([...document.images].map(i=>{i.loading='eager';return i.decode().catch(()=>{});}));});
+  assert.deepEqual(await page.locator('.landing-page img').evaluateAll(imgs=>imgs.filter(i=>!i.naturalWidth).map(i=>i.src)),[]);
+  const avatar=await page.request.get(`${base}/assets/landing/child-avatars.webp`);assert.equal(avatar.status(),200);
+  assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
+  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});await mobile.route('**/api/analytics/**',r=>r.fulfill({status:204}));await mobile.goto(base,{waitUntil:'domcontentloaded'});const mobileCard=mobile.locator('.chapter-card').nth(1);await mobileCard.tap();assert.equal(await mobileCard.evaluate(e=>e.classList.contains('is-expanded')),true);await mobileCard.tap();await mobile.waitForURL('**/dev/debate');await mobile.waitForSelector('#debate-world[data-ready]');await mobile.screenshot({path:`${out}/debate-mobile.png`});await mobile.close();
+  const debate=await browser.newPage({viewport:{width:1440,height:900}});const debateErrors=[];debate.on('pageerror',e=>debateErrors.push(e.message));await debate.route('**/api/analytics/**',r=>r.fulfill({status:204}));
+  // Deterministic audio + response fixtures isolate playback, cancellation and UI transitions.
+  const wav=Buffer.alloc(44+16000*2);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(16000,24);wav.writeUInt32LE(32000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
+  await debate.route('**/api/tts',r=>r.fulfill({status:200,contentType:'audio/wav',body:wav}));
+  const result={allowed:true,topic:'星球上可以只种棒棒糖吗？',turns:Array.from({length:6},(_,i)=>({speakerId:i%2?'snow-rabbit':'book-owl',phase:['opening','response','closing'][Math.floor(i/2)],text:['我喜欢甜甜的棒棒糖。','也有朋友更喜欢苹果。','可以给苹果留一块地方。','还可以听听其他朋友的想法。','每种愿望都值得被听见。','我们一起设计这个星球吧。'][i]})),closingQuestion:'你的星球上想种些什么？',commonGround:'大家都希望朋友能快乐地生活。'};
+  let mode='normal';await debate.route('**/api/debate',async r=>{const data=r.request().postDataJSON();assert.deepEqual(data.speakers.map(s=>s.id),['book-owl','snow-rabbit']);if(mode==='delayed')await new Promise(resolve=>setTimeout(resolve,1000));await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mode==='blocked'?{allowed:false,safeMessage:'请换一个不含个人信息的问题。'}:result)}).catch(()=>{});});
+  await debate.goto(`${base}/dev/debate`,{waitUntil:'domcontentloaded'});await debate.waitForSelector('#debate-world[data-ready]');assert.equal(await debate.evaluate(()=>window.__DEBATE_3D__.status.characters),2);
+  async function submit(text){await debate.locator('#write-answer').click();await debate.locator('#answer-input').fill(text);await debate.locator('#send-answer').click();}
+  await submit('星球上可以只种棒棒糖吗？');await debate.waitForFunction(()=>document.body.dataset.phase==='discussing');await debate.locator('#toggle-play').click();assert.equal(await debate.evaluate(()=>window.__DEBATE_3D__.status.paused),true);await debate.locator('#next-turn').click();assert.equal(await debate.evaluate(()=>window.__DEBATE_3D__.status.index),1);await debate.locator('#toggle-play').click();await debate.waitForFunction(()=>document.body.dataset.phase==='reflection');await submit('我要种苹果和棒棒糖，分给大家。');await debate.waitForFunction(()=>document.body.dataset.phase==='ending');report.debate.push('six alternating turns, pause, next, resume, reflection, ending');await debate.locator('#restart').click();assert.equal(await debate.evaluate(()=>window.__DEBATE_3D__.status.phase),'ready');
+  mode='blocked';await submit('测试安全拒绝');await debate.waitForFunction(()=>document.body.dataset.phase==='topic');assert.match(await debate.locator('#status').innerText(),/个人信息/);report.debate.push('safe rejection');
+  await debate.locator('#restart').click();mode='delayed';await submit('测试重开');await debate.waitForFunction(()=>document.body.dataset.phase==='thinking');await debate.locator('#restart').click();await debate.waitForTimeout(1300);assert.equal(await debate.evaluate(()=>window.__DEBATE_3D__.status.phase),'ready');report.debate.push('restart cancels pending request');
+  await debate.addInitScript(()=>{navigator.mediaDevices.getUserMedia=()=>Promise.reject(new DOMException('denied','NotAllowedError'));});await debate.reload({waitUntil:'domcontentloaded'});await debate.locator('#mic-button').click();await debate.waitForFunction(()=>document.getElementById('status').textContent.includes('权限'));assert.equal(await debate.locator('#write-answer').isVisible(),true);report.debate.push('denied microphone retains text input');assert.deepEqual(debateErrors,[]);await debate.close();
+  const fallback=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});await fallback.addInitScript(()=>{const native=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.includes('webgl')?null:native.call(this,type,...args);};});await fallback.goto(base,{waitUntil:'domcontentloaded'});await fallback.locator('#landing-world img').evaluate(img=>img.decode());assert.equal(await fallback.locator('#landing-world img').evaluate(e=>getComputedStyle(e).visibility),'visible');await fallback.close();
+  report.errors=errors;report.status='passed';await writeFile(`${out}/report.json`,JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 }finally{await browser.close();}
