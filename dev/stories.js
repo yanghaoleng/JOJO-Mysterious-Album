@@ -2,6 +2,7 @@
 // Choices are practical suggestions, never a test or a personality score.
 import { GUGU_DEV_STORY } from './gugu-story.js';
 import { WOW_DEV_STORY } from './wow-story.js';
+import { MOON_CURIOSITY_STORY } from './moon-story.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
 
 // NPC identity stays separate from the player's saved companion.
@@ -172,183 +173,6 @@ const doudouScenes = [
   },
 ];
 
-const moonScenes = [
-  {
-    id: 'moon-observatory', title: '一张空白设计纸', chapter: 1, world: 'observatory',
-    objective: '发明一样能带整支小队出发的东西。',
-    cast: [{ id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' }],
-    dialogue: [
-      { speaker: 'ace', text: '今晚的目标只有一个：登上月球。' },
-      { speaker: 'companion', text: '没有现成飞船，但我们有一张设计纸。' },
-      { speaker: 'ace', text: '什么样的发明，都可以先做个小模型。' },
-    ],
-    question: '你想造什么，带大家去月球？',
-    freeInput: true,
-    inventionHints: ['一座能移动的传送门', '有透明驾驶舱的火箭', '你自己的发明'],
-    inventionPrompt: '说说它的样子，以及怎样带大家移动。',
-    inventionResult: '模型动起来了！它偏向海边，稳稳进入气泡站。',
-    inventionAction: 'launch', inventionSpeaker: 'ace', inventionExpression: 'surprised',
-    nextDestination: 'reef',
-    choices: [
-      { id: 'portal', label: '先试试传送门', hints: ['传送', '门', '穿越'], result: '门亮了！出口偏向海边，我们进入了气泡站。', speaker: 'ace', action: 'launch', expression: 'surprised' },
-      { id: 'rocket', label: '先试试小火箭', hints: ['火箭', '飞船', '驾驶舱'], result: '火箭轻轻起飞，绕进了海边的气泡站。', speaker: 'ace', action: 'launch', expression: 'surprised' },
-      { id: 'balloon-ship', label: '造一艘气球飞船', hints: ['造一艘气球飞船'], result: '飞船慢慢升起来，海风把大家带到了气泡站。', speaker: 'ace', action: 'launch', expression: 'happy' },
-    ],
-    closing: [
-      { speaker: 'companion', text: '大家都好好的，发明也跟着来了。' },
-      { speaker: 'ace', text: '我们记住这次偏航，下一站再改一点。' },
-    ],
-  },
-  {
-    id: 'moon-reef', title: '海底维修站', chapter: 1, world: 'reef',
-    objective: '改造刚才的发明，让它带大家上浮。',
-    cast: [
-      { id: 'paopao', type: 'frog', name: '泡泡', color: '#86afa6', voice: 'bubble' },
-      { id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' },
-    ],
-    dialogue: [
-      { speaker: 'paopao', text: '欢迎！气泡站有空气，也有修理工具。' },
-      { speaker: 'ace', text: '我们的发明还在，只是方向不太对。' },
-      { speaker: 'paopao', text: '先让它上浮吧，我来帮你固定零件。' },
-    ],
-    question: '给刚才的发明加什么，能离开海底？',
-    freeInput: true,
-    inventionHints: ['能推着它上浮的气泡', '一对会划水的桨', '任何适合你发明的改造'],
-    inventionPrompt: '保留你的发明，说说这次加上或改变什么。',
-    inventionResult: '新改造让我们上浮了，巨人的软口袋接住了小队。',
-    inventionAction: 'launch', inventionSpeaker: 'paopao', inventionExpression: 'happy',
-    inventionReward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' },
-    nextDestination: 'pocket',
-    choices: [
-      { id: 'bubbles', label: '加一个气泡推进器', hints: ['气泡', '发动机', '推进', '浮'], result: '气泡推着我们上浮，软软的口袋接住了大家！', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
-      { id: 'paddles', label: '加一对划水桨', hints: ['桨', '划水', '划', '翅膀'], result: '小桨推着我们上浮，软软的口袋接住了大家！', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
-      { id: 'float-ring', label: '加一个大浮圈', hints: ['加一个大浮圈'], result: '浮圈鼓起来，把大家托到水面，落进软软的口袋。', speaker: 'paopao', action: 'launch', expression: 'happy', reward: { id: 'sea-bolt', name: '深海蓝螺栓', description: '泡泡帮我们固定零件的螺栓，下一站还能用。' } },
-    ],
-    closing: [
-      { speaker: 'companion', text: '先是海底，现在是一个超大的口袋。' },
-      { speaker: 'ace', text: '上浮成功了，下一步是找到袋口。' },
-    ],
-  },
-  {
-    id: 'moon-pocket', title: '纽扣那么大的窗', chapter: 2, world: 'pocket',
-    objective: '用口袋里的材料，为发明增加脱身办法。',
-    cast: [
-      { id: 'zhuzhu', type: 'bear', name: '竹竹', color: '#d5cabb', voice: 'bubble' },
-      { id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' },
-    ],
-    dialogue: [
-      { speaker: 'zhuzhu', text: '我是口袋修补员，袋口就在上面。' },
-      { speaker: 'ace', text: '这里有纽扣、线，还有一点风。' },
-      { speaker: 'zhuzhu', text: '你来想办法，我帮你把材料接牢。' },
-    ],
-    question: '怎样改造它，把大家带出口袋？',
-    freeInput: true,
-    inventionHints: ['会展开的折叠梯', '借风鼓起来的小帆', '适合你发明的新办法'],
-    inventionPrompt: '可以加零件，也可以改变它的形状或工作方式。',
-    inventionResult: '这次改造把大家送到袋口，一阵轻风托我们进了云层。',
-    inventionAction: 'launch', inventionSpeaker: 'zhuzhu', inventionExpression: 'happy',
-    inventionReward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' },
-    nextDestination: 'cloud',
-    choices: [
-      { id: 'ladder', label: '装一架折叠梯', hints: ['梯', '伸长', '爬', '折叠'], result: '梯子展开，大家到达袋口，轻风把我们托进云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
-      { id: 'sail', label: '装一面借风的小帆', hints: ['帆', '风', '吹', '气球'], result: '小帆鼓起来，大家越过袋口，飘进了柔软云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
-      { id: 'rope', label: '装一条攀爬绳', hints: ['装一条攀爬绳'], result: '绳子挂住袋口，把大家拉上去，轻风托着我们进入云层。', speaker: 'zhuzhu', action: 'launch', expression: 'happy', reward: { id: 'pocket-thread', name: '巨人口袋线', description: '又轻又结实的一卷线，用来连接你的下一件新零件。' } },
-    ],
-    closing: [
-      { speaker: 'companion', text: '袋口变小了，我们真的出来了！' },
-      { speaker: 'ace', text: '前面全是白云，该给发明找方向了。' },
-    ],
-  },
-  {
-    id: 'moon-cloud', title: '白云里的方向', chapter: 2, world: 'cloud',
-    objective: '让发明找到通往月球的方向。',
-    cast: [
-      { id: 'yunyou', type: 'rabbit', name: '云游', color: '#e4e0ef', voice: 'star' },
-      { id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' },
-    ],
-    dialogue: [
-      { speaker: 'yunyou', text: '我是云层领航员，月亮在云的上面。' },
-      { speaker: 'ace', text: '看不清时，我们先停下来辨认方向。' },
-      { speaker: 'yunyou', text: '我有月亮的位置，可以交给你的发明。' },
-    ],
-    question: '你想加什么，让它知道往哪儿走？',
-    freeInput: true,
-    inventionHints: ['标出月亮方向的小屏幕', '会发光的导航线', '你自己的指路办法'],
-    inventionPrompt: '说说你的发明怎样接收方向，再带大家往前走。',
-    inventionResult: '新功能找到了方向，云层慢慢退下，月球出现在前面。',
-    inventionAction: 'glow', inventionSpeaker: 'yunyou', inventionExpression: 'happy',
-    inventionReward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' },
-    nextDestination: 'moon',
-    choices: [
-      { id: 'radar', label: '装一个月球导航屏', hints: ['雷达', '屏', '地图', '导航'], result: '屏幕亮出一条路线，我们穿过云层，看见月球了。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
-      { id: 'light-line', label: '拉出一条发光航线', hints: ['光', '线', '亮', '指路'], result: '航线从白云里亮起来，带着我们找到前方的月球。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
-      { id: 'moon-compass', label: '装一个月球指南针', hints: ['装一个月球指南针'], result: '指针指向月球，大家顺着它穿过了白云。', speaker: 'yunyou', action: 'glow', expression: 'happy', reward: { id: 'cloud-bearing', name: '月球方向卡', description: '云游标出的方向：保留这张卡，让发明知道下一站。' } },
-    ],
-    closing: [
-      { speaker: 'companion', text: '一路改过的零件，都跟着我们来了。' },
-      { speaker: 'ace', text: '还有最后一步：让大家稳稳落地。' },
-    ],
-  },
-  {
-    id: 'moon-landing', title: '最后一点距离', chapter: 3, world: 'moon',
-    objective: '让整个小队连同发明缓缓落到月面。',
-    cast: [
-      { id: 'yueya', type: 'cat', name: '月牙', color: '#b9c4d4', voice: 'star' },
-      { id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' },
-    ],
-    dialogue: [
-      { speaker: 'yueya', text: '这里是月面接引站，我在通讯器里等你们。' },
-      { speaker: 'ace', text: '月球没有空气，降落伞在这里用不上。' },
-      { speaker: 'yueya', text: '让发明慢下来，就能稳稳接近地面。' },
-    ],
-    question: '最后怎样改造，让大家慢慢落地？',
-    freeInput: true,
-    inventionHints: ['让推进器轻轻向下喷气', '把传送门出口贴近地面', '你自己的缓慢着陆办法'],
-    inventionPrompt: '讲一个能让整个小队慢下来、留在安全舱里的办法。',
-    inventionResult: '我们把你的办法装好试了一次，发明缓缓贴近月面，停稳了。',
-    inventionAction: 'launch', inventionSpeaker: 'yueya', inventionExpression: 'happy',
-    nextDestination: 'moon',
-    choices: [
-      { id: 'gentle-thruster', label: '用小推进器减速', hints: ['推进', '喷气', '减速', '反推', '慢'], result: '小推进器轻轻工作，发明和大家稳稳落到月面。', speaker: 'yueya', action: 'launch', expression: 'happy' },
-      { id: 'low-portal', label: '让出口贴近地面', hints: ['门', '出口', '传送', '贴近'], result: '出口贴着月面打开，发明和大家缓缓滑到地面。', speaker: 'yueya', action: 'launch', expression: 'happy' },
-      { id: 'landing-legs', label: '加上缓冲腿和减速喷口', hints: ['加上缓冲腿和减速喷口'], result: '喷口先让我们慢下来，软软的缓冲腿接住了落地的一小步。', speaker: 'yueya', action: 'launch', expression: 'happy' },
-    ],
-    closing: [
-      { speaker: 'ace', text: '着陆完成，我们真的到月球了。' },
-      { speaker: 'companion', text: '想给这次旅行，留下一样小纪念吗？' },
-    ],
-  },
-  {
-    id: 'moon-arrival', title: '月球，抵达', chapter: 3, world: 'moon',
-    objective: '给一路改造的发明留下一张抵达记录。',
-    cast: [
-      { id: 'ace', type: 'owl', name: '阿策', color: '#bfa98c', voice: 'moss' },
-      { id: 'yueya', type: 'cat', name: '月牙', color: '#b9c4d4', voice: 'star' },
-    ],
-    dialogue: [
-      { speaker: 'ace', text: '从海底到口袋，再从白云到这里。' },
-      { speaker: 'yueya', text: '每次绕路，你们都给发明加了一点办法。' },
-      { speaker: 'ace', text: '我想把这段路，画在最初的设计纸上。' },
-    ],
-    question: '最后想留下什么纪念？',
-    inputMode: 'choice',
-    freeInput: true,
-    inventionHints: ['给这件发明起一个名字', '画下你最喜欢的一次改造', '你想留下的旅行纪念'],
-    inventionPrompt: '可以讲讲你最喜欢的零件，也可以给发明起个名字。',
-    inventionResult: '这份纪念已经写在设计纸旁，和我们的月球合影放在一起。',
-    inventionAction: 'celebrate', inventionSpeaker: 'ace', inventionExpression: 'happy',
-    choices: [
-      { id: 'route-drawing', label: '画出这条弯弯的路线', hints: ['路线', '画', '海底', '路'], result: '弯弯的路线画好了，每一个转弯都有我们的办法。', speaker: 'ace', action: 'celebrate', expression: 'happy' },
-      { id: 'group-photo', label: '和发明拍一张合影', hints: ['拍', '照片', '合影', '纪念'], result: '大家和发明站在一起，月球合影拍好了。', speaker: 'yueya', action: 'celebrate', expression: 'happy' },
-      { id: 'travel-badge', label: '做一枚旅行徽章', hints: ['做一枚旅行徽章'], result: '徽章上画着我们的发明，纪念这次弯弯的月球旅程。', speaker: 'ace', action: 'celebrate', expression: 'happy' },
-    ],
-    closing: [
-      { speaker: 'companion', text: '你的办法带我们到了这里。' },
-      { speaker: 'ace', text: '下一次想再改，我们还有新的设计纸。' },
-    ],
-    final: true,
-  },
-];
 
 const echoScenes = [
   {
@@ -502,21 +326,7 @@ export const STORIES = [
     scenes: doudouScenes,
     ending: { title: '豆豆到家了', text: '从苹果树下到红屋顶的门口，你一直陪着豆豆。', companionLine: '需要帮助时，可以问一问；走得慢，也能一起到家。' },
   },
-  {
-    id: 'moon', title: '登月计划', subtitle: '带着一个点子出发，沿路把它改成真的。',
-    onboarding: 'direct',
-    age: '10 岁以上', companion: 'rabbit', companionName: '小航', color: '#9799bd',
-    premise: '没有标准飞船，也没有唯一方案。你的发明会和整支小队一起旅行。',
-    freeInput: true,
-    inventionPolicy: '沿用玩家已经提出的发明与零件。接受不同的安全幻想方案；允许试做、偏航、暂停和重新修改。把现实科学与故事魔法说清楚。不评分、不宣布失败，不把自由输入硬改写为提示选项。',
-    chapters: [
-      { id: 'begin', number: 1, title: '先做一次', promise: '做出第一件发明，从海底继续改。' },
-      { id: 'adjust', number: 2, title: '沿路改造', promise: '越过口袋，再给发明找到方向。' },
-      { id: 'arrive', number: 3, title: '月球，抵达', promise: '稳稳落地，留下自己的旅行纪念。' },
-    ],
-    scenes: moonScenes,
-    ending: { title: '月球，抵达', text: '海底、口袋、云层、月面。一路上的改造，组成了你的发明。', companionLine: '路线可以弯，办法可以改。下一张设计纸，也留给你。' },
-  },
+  MOON_CURIOSITY_STORY,
   {
     id: 'echo', title: '不见了的回声', subtitle: '听完一句小小的话，陪小回声找到家。',
     age: '4～7 岁', companion: 'rabbit', companionName: '软软', color: '#91b5be',

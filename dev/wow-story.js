@@ -27,12 +27,12 @@ export const WOW_DEV_STORY = {
       wow: { kind: source.kind, prop: source.prop, color: chapter.color, colorName: chapter.colorName, momo: chapter.momo },
       cast: [{ id: 'wow', name: kind === 'window' ? '星星窗' : chapter.id === 1 && chapterScene === 4 ? 'MOMO' : chapter.momo,
         voice: 'bubble', createActor: ({scale}) => createWowCharacter({kind, color:chapter.color, scale}) }],
-      dialogue: [{ speaker: narrator ? 'guide' : 'wow', text: source.text }],
+      dialogue: [{ speaker: narrator ? 'guide' : 'wow', text: source.text }, ...(chapter.id === 1 && chapterScene === 0 ? [{speaker:'guide',text:'点一下脚边的小路，就能走过去。走近路边的朋友，它会和你打招呼。我们一起帮这个宇宙找回好奇心。'}] : [])],
       choices: [...source.suggestions, ...(source.kind === 'create' ? ['绿色，像一片小叶子。'] : EXTRA_IDEAS[source.id] ? [EXTRA_IDEAS[source.id]] : [])].map((label, i) => ({ id: `${source.id}-${i}`, label })), closing: [],
       final: chapter.id === 6 && chapterScene === chapter.scenes.length - 1,
     };
   })),
-  ending: { title: '第一束光，一直是你的声音', text: '六位朋友，六种颜色，还有你亲手想出来的六把钥匙。', companionLine: '你最初说：“{firstWords}”我们一直记着。小灯会留着光，等你回来。' },
+  ending: { title: '第一束光，一直是你的声音', text: '六种颜色回来了。下一颗星球上，朋友们对怎样救回好奇心有不同的想法。', companionLine: '你最初说：“{firstWords}”我们一直记着。接下来，带着好奇去听听不同的理由，再把你想的办法做出来。' },
 };
 
 export function wowVisualState(scene, state, lit = false) {

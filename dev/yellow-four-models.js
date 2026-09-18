@@ -112,11 +112,15 @@ function kangaroo(b) {
 }
 
 export function createYellowFour() {
-  return FOUR.map(item => {
-    const b = createNPCToolkit(item.id, item.color, { scale: item.height, species: item.id });
+  return FOUR.map(item => createYellowCharacter(item.id));
+}
+
+export function createYellowCharacter(id, scale) {
+    const item = FOUR.find(item => item.id === id);
+    if (!item) throw new Error('Unknown yellow character');
+    const b = createNPCToolkit(item.id, item.color, { scale: scale ?? item.height, species: item.id });
     ({ bull, round, jiaojiao: buildBirdNPC, kangaroo })[item.id](b);
     const actor = b.finish();
     actor.group.userData.actorId = item.id;
     return { ...actor, ...item, arms: b.arms, rig: b.rig };
-  });
 }

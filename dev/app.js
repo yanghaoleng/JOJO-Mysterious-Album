@@ -1,4 +1,6 @@
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';
+import { planCreation } from './creation-catalog.js';
+import { journey, rememberJourney } from './curiosity-journey.js';
 import { DioramaStage } from './stage.js';
 import { CHARACTER_CATALOG } from './models.js';
 import { WORLD_CATALOG } from './worlds.js';
@@ -45,7 +47,7 @@ function choiceFirst() {
   return scene && (scene.inputMode === 'choice' || (!scene.freeInput && story?.id !== 'wow'));
 }
 const answerSupport = new AnswerSupport({
-  available: () => phase === 'question' && !busy && !choiceFirst() && !shownChoices && !shownText && !menuOpen && !$('bag-dialog').open && !document.hidden,
+  available: () => phase === 'question' && !busy && !choiceFirst() && !shownChoices && !shownText && !menuOpen && !$('bag-dialog').open && !document.hidden && !document.body.dataset.encounter,
   reveal: () => { setReplyMode('choices'); notify('可以继续说，也可以选一个小主意。'); },
 });
 function beginAnswer() {
@@ -67,7 +69,7 @@ function notify(message) {
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { $('notice').dataset.visible = 'false'; }, 4200);
 }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], wowEntries: [], playerName: '', firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
+const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], creations: [], wowEntries: [], playerName: '', firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
 function savedState() {
   const saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || saved.sceneIndex < 0 || saved.sceneIndex >= story.scenes.length || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
@@ -193,7 +195,7 @@ function showVoiceFeedback(update) {
 }
 
 function resumeListening() {
-  voice.listen(['question', 'setup'].includes(phase) && !choiceFirst() && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden);
+  voice.listen(['question', 'setup'].includes(phase) && !choiceFirst() && !busy && !menuOpen && !shownText && !$('bag-dialog').open && !document.hidden && !document.body.dataset.encounter);
 }
 
 function scheduleFraming() {
@@ -219,6 +221,10 @@ function setWorld(worldId, cast, options) {
   const explorationKey = scene ? `chapter-${scene.chapter}:${worldId}` : worldId;
   const exploration = ['wow', 'moon'].includes(story?.id) && state && !options?.studio ? {
     storyId: story.id,
+    creations: (state.creations || []).filter(item => item.world === worldId),
+    canInteract: () => !busy && voiceTransport !== 'speaking' && ['ready','question','complete','creation-review'].includes(phase) && !menuOpen && !$('bag-dialog').open,
+    onInteraction: open => { if (open) { answerSupport.stop(); voice.listen(false); } else { voice.skip(); if (phase === 'question') answerSupport.start(); resumeListening(); } },
+    onSpeech: (text, npc) => { void voice.say(text, npc.voice || getNpc(npc.id)?.voiceKey || 'bubble', () => {}, npc.yellow ? '' : npc.id); },
     saved: state.explorations?.[explorationKey] || (story.id === 'wow' && scene?.chapter === 1 ? state.exploration : null),
     getName: () => state.playerName,
     onSave: position => { state.explorations = { ...state.explorations, [explorationKey]: position }; persist(); },
@@ -320,6 +326,7 @@ function showView(view) {
 
 function route() {
   answerSupport.stop();
+  $('creation-review').hidden = true;
   epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); busy = false; shownChoices = shownText = replyOpen = false;
   spokenLineVersion++; reading.clear(); endingReading.clear();
   resetVoiceInput();
@@ -339,6 +346,7 @@ function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
   resetVoiceInput();
   story = selected; state = savedState() || defaultState(); phase = 'ready';
+  state.creations = Array.isArray(state.creations) ? state.creations.filter(item => item && typeof item.name === 'string' && Array.isArray(item.parts) && item.parts.length && item.parts.length <= 3 && Array.isArray(item.normal) && item.normal.length === 3 && item.normal.every(Number.isFinite)).slice(-60) : [];
   if (story.id === 'wow') persist();
   showView('story');
   document.title = `${story.title} · 萌萌星`;
@@ -347,6 +355,7 @@ function openStory(selected) {
   $('objective').textContent = story.subtitle;
   $('speaker').textContent = story.scenes[0].cast[0].name;
   reading.setText(story.premise || story.subtitle);
+  if (story.id === 'moon' && journey().debate?.idea) reading.setText(`上一站你说：“${journey().debate.idea}”我们把这个想法带来了。现在造一件能让朋友继续好奇的作品吧。`);
   $('speech-card').dataset.speaking = 'false';
   $('answer-dock').hidden = true; $('story-start').hidden = false;
   $('resume-note').textContent = state.setupDone && !state.completed ? '上次走到的地方还在，继续一起走。' : '说出你的想法，也可以随时点选。';
@@ -355,10 +364,11 @@ function openStory(selected) {
     $('resume-note').textContent = '六种颜色都在这里，你的旅程也保存好了。';
     $('start-story').textContent = '查看我的旅程';
   }
+  if(story.id==='moon'&&state.completed){$('resume-note').textContent='你造的世界还在。继续散步，或者回来加一个新点子。';$('start-story').textContent='回到我的造物世界';}
   setWorld(story.scenes[state.sceneIndex].world, storyCast(story.scenes[state.sceneIndex]));
   rememberMountedScene(story.scenes[state.sceneIndex]);
   syncWowPresentation();
-  if (story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
+  if (!['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
 }
 
@@ -375,6 +385,7 @@ const SETUP = [
 async function startStory() {
   if (phase !== 'ready' || busy) return;
   void voice.unlock(); $('story-start').hidden = true;
+  if(story.id==='moon'&&state.completed){await finishStory();return;}
   if (story.id === 'wow') {
     if (state.completed) { await finishStory(); return; }
     while (state.wowEntries.some(entry => entry.id === story.scenes[state.sceneIndex].id)) {
@@ -429,6 +440,7 @@ function renderAnswerOptions() {
 
 async function choose(choice, customResult) {
   if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(choice.label);
+  if (story?.scenes[state?.sceneIndex]?.creation && phase === 'question') return handleAnswer(choice.label);
   if (busy || !['question', 'setup'].includes(phase)) return;
   void voice.unlock();
   const wasSetup = phase === 'setup', token = epoch;
@@ -466,6 +478,7 @@ async function choose(choice, customResult) {
 }
 
 async function enterScene(index) {
+  $('creation-review').hidden = true;
   const token = epoch;
   const scene = story.scenes[index];
   const sameChapter = mountedStoryScene?.storyId === story.id && mountedStoryScene.chapter === scene.chapter;
@@ -485,7 +498,7 @@ async function enterScene(index) {
   else setWorld(scene.world, storyCast(scene));
   rememberMountedScene(scene);
   syncWowPresentation();
-  if (!keepWorld && story.id !== 'wow' && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
+  if (!keepWorld && !['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);
   $('chapter-name').textContent = `第${['一', '二', '三', '四', '五', '六'][scene.chapter - 1]}章 · ${chapter?.title || ''}`;
@@ -524,7 +537,7 @@ function rememberInvention(text, visual) {
 }
 
 async function handleAnswer(raw, source = 'text') {
-  if (busy || !['question', 'setup'].includes(phase)) return;
+  if (busy || document.body.dataset.encounter || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
   if (source !== 'voice') { voiceCapture = null; renderVoiceInput(); }
@@ -540,6 +553,7 @@ async function handleAnswer(raw, source = 'text') {
     return;
   }
   const scene = story.scenes[state.sceneIndex], token = epoch;
+  if (scene.creation) return createWorldObject(text, token);
   if (scene.nickname) {
     const nickname = text.replace(/^(?:我叫|叫我|你叫我|我的名字是|我是)\s*/u, '').trim().slice(0, 12);
     if (!nickname || /\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('给自己起一个短短的冒险昵称吧，比如“小星星”。'); return; }
@@ -584,6 +598,38 @@ async function handleAnswer(raw, source = 'text') {
   }
 }
 
+async function createWorldObject(text, token) {
+  if (/自杀|自残|杀人|炸弹|武器|强奸|色情|身份证|手机号|我家在|住在|学校叫/.test(text)) { setReplyMode('choices'); notify('换成能帮助朋友探索的小机关吧，比如会亮的灯或小机器人。'); return; }
+  const scene=story.scenes[state.sceneIndex], plan=planCreation(text);
+  state.creations ||= [];
+  const inWorld=state.creations.filter(item=>item.world===scene.world);
+  const previous=inWorld.at(-1), modifying=Boolean(previous && /(?:刚才|这座|这个|它|原来).*(?:加|改|换)|^(给|把|让)?(刚才|这个|它|原来)|加上|换成|改成|再加|改为/.test(text));
+  if(inWorld.length>=12&&!modifying){notify('这里已经有十二件作品啦。可以说“给刚才的作品加一朵花”，继续改造它。');return;}
+  const normal=modifying?previous.normal:stage.exploration.creationPosition();
+  if(!normal){notify('这边有点挤，走到旁边的空地再试试吧。');return;}
+  answerSupport.stop();busy=true;phase='responding';voice.listen(false);setReplyMode(null);renderVoiceInput();
+  const record={...plan,id:modifying?previous.id:`creation-${Date.now()}-${state.creations.length}`,world:scene.world,scene:scene.id,normal};
+  if(modifying){
+    const replacing=/换成|改成|替换/.test(text);
+    record.parts=replacing?plan.parts:[...new Set([...previous.parts,...plan.parts.filter(p=>p!=='prototype')])].slice(-3);
+    record.name=replacing?plan.name:previous.name;record.primary=/红|橙|黄|绿|蓝|紫|粉|白/.test(text)?plan.primary:previous.primary;
+    if(plan.parts[0]==='prototype'){record.parts=previous.parts;record.response=record.primary!==previous.primary?`${record.name}换上了你说的颜色。`:'原来的作品还在，新功能先记在作品旁。再说一个具体物件，朋友就能帮你接上去。';}
+    state.creations.splice(state.creations.indexOf(previous),1,record);
+  } else state.creations.push(record);
+  persist();rememberJourney('moon',{created:state.creations.length,lastWork:record.name});
+  stage.exploration.setCreations(state.creations.filter(item=>item.world===scene.world));stage.exploration.showCreation(record.id);updateBag();
+  await speakLine({speaker:scene.inventionSpeaker,text:`${modifying?'改好了':'做出来了'}！${record.response}`},token);
+  if(token!==epoch)return;
+  busy=false;phase='creation-review';renderVoiceInput();$('creation-review').hidden=false;
+  $('creation-next').textContent=scene.final?'把这段旅程收好':'带着发现去下一站';
+}
+
+function continueCreating() {
+  $('ending').hidden=true;$('speech-card').hidden=false;$('creation-review').hidden=true;
+  const scene=story.scenes[state.sceneIndex];phase='question';busy=false;
+  pendingChoices=scene.choices;reading.setText('还想造什么？也可以说“给刚才的作品加……”');renderAnswerOptions();beginAnswer();resumeListening();
+}
+
 async function finishStory() {
   const token = epoch;
   phase = 'complete'; busy = false; voice.listen(false); state.completed = true; persist();
@@ -593,21 +639,30 @@ async function finishStory() {
   $('ending-text').textContent = story.ending.text;
   $('save-memory').textContent = '收进我的图鉴'; $('save-memory').disabled = false;
   if (story.id === 'wow') $('save-memory').textContent = '下载我的旅程';
+  $('journey-next').hidden = story.id !== 'wow';
+  $('return-creating').hidden = story.id !== 'moon';
+  if(story.id==='wow')rememberJourney('wow',{completed:true,question:state.wowEntries.findLast(entry=>entry.id==='star-wish')?.answer || state.firstWords || '宇宙里还有什么值得发现？'});
   await speakLine({ speaker: story.id === 'wow' ? 'wow' : 'companion', text: endingLine }, token);
 }
 
 function updateBag() {
-  $('bag-count').textContent = String((state?.inventory.length || 0) + (state?.inventions.length || 0));
+  $('bag-count').textContent = String((state?.inventory.length || 0) + (state?.inventions.length || 0) + (state?.creations?.length || 0));
 }
 function openBag() {
   const content = $('bag-content'); content.replaceChildren();
-  const items = [...state.inventory, ...state.inventions.map(item => ({ name: item.visual.name, description: `${item.scene}：${item.visual.details || '一路带着的小发明'}` }))];
+  const items = [...state.inventory, ...state.inventions.map(item => ({ name: item.visual.name, description: `${item.scene}：${item.visual.details || '一路带着的小发明'}` })), ...(state.creations||[]).map(item=>({name:item.name,description:item.idea,creation:item}))];
   if (!items.length) { const p = document.createElement('p'); p.textContent = '还没有小道具。沿路遇到的礼物会收在这里。'; content.append(p); }
   items.forEach(item => {
     const section = document.createElement('section'); section.className = 'bag-item';
     const h = document.createElement('h3'); h.textContent = item.name;
     const p = document.createElement('p'); p.textContent = item.description;
-    section.append(h, p); content.append(section);
+    section.append(h,p);
+    if(item.creation){const button=document.createElement('button');button.type='button';button.className='quiet-button';button.textContent='去看看这件作品';button.onclick=async()=>{
+      $('bag-dialog').close();setStoryMenu(false);$('story-start').hidden=true;$('ending').hidden=true;$('speech-card').hidden=false;
+      const i=story.scenes.findIndex(scene=>scene.id===item.creation.scene);if(i<0)return;
+      const token=epoch;await enterScene(i);if(token===epoch)stage.exploration?.visitCreation(item.creation.id);
+    };section.append(button);}
+    content.append(section);
   });
   setStoryMenu(false); voice.listen(false); $('bag-dialog').showModal();
 }
@@ -677,6 +732,9 @@ function initializeControls() {
     if (url.origin === location.origin && url.pathname === location.pathname) { event.preventDefault(); navigate(url); }
   });
   $('start-story').onclick = startStory;
+  $('creation-again').onclick = continueCreating;
+  $('return-creating').onclick = continueCreating;
+  $('creation-next').onclick = () => { $('creation-review').hidden=true;void (story.scenes[state.sceneIndex].final ? finishStory() : enterScene(state.sceneIndex+1)); };
   $('restart').onclick = () => { epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); setStoryMenu(false); setReplyMode(null); state = defaultState(); persist(); openStory(story); };
   $('open-story-menu').onclick = () => setStoryMenu(!menuOpen);
   $('scene-reset').onclick = () => { stage.resetCamera(); setStoryMenu(false, true); };

@@ -1,10 +1,10 @@
 # 萌萌星 · 立体故事工坊
 
-独立实验入口：`https://jma.mikeywa.site/dev/`。没有替换旧版图鉴、旧故事、骨骼、资源或存档。
+当前首页：`https://jma.mikeywa.site/`；无参数的 `/dev/` 返回新版首页，带故事参数的入口保留。三个主章节沿着“拯救宇宙的好奇心”串联：发现与上手、倾听与表达、自由创造。彩蛋点位、人设互动、预制造物与存档规则见 [CURIOSITY-WORLDS.md](./CURIOSITY-WORLDS.md)。
 
 ## 黄色四巨头
 
-`yellow-four.html` 是独立的四人同框场景：黄牛、圆滚滚、叫叫、袋鼠，造型参考 2026-09-09 的两张图片。参考原图仅保留在本机 `output/yellow-four-20260909/references/`。新增三位角色只在这个合照场景出现；叫叫复用现有实体模型工厂。
+`yellow-four.html` 是四人同框场景：黄牛、圆滚滚、叫叫、袋鼠，造型参考 2026-09-09 的两张图片。参考原图仅保留在本机 `output/yellow-four-20260909/references/`。同一组模型也作为新版星球彩蛋；叫叫复用现有实体模型工厂。
 
 支持拖动或方向键转动、滚轮和双指缩放、点角色打招呼、集体挥手和蹦跳、导出 2400 × 1600 PNG。使用本地网格和既有 Three.js，不依赖外部生成服务。构建：`node dev/tools/build-yellow-four.mjs`；与现有工坊预览服务共用。
 
@@ -15,7 +15,7 @@
 | 第一束好奇光 | `?story=wow` | 六章42幕，循序渐进发现道具，用提问点亮MOMO的世界；真实3D钥匙和旅程纪念册。 |
 | 等一个肚子的回答 | `?story=gugu` | 5～8 岁；第一章改编的独立故事，听鼓鼓把一句身体的话说完，收下第一滴暖暖黄。 |
 | 送豆豆回家 | `?story=doudou` | 4～6 岁；先照顾、再过河、对照线索回家。 |
-| 登月计划 | `?story=moon` | 10 岁以上；直接发明，经过海底、口袋、云层持续改造，安全抵达月面。 |
+| 登月计划 · 好奇心造物场 | `?story=moon` | 六幕开放创造，19 类预制物件和想象试作品，可组合、修改、指定角色、回访作品。 |
 | 不见了的回声 | `?story=echo` | 4～7 岁；听完一句话，带着听听贝、线团和种子陪回声回家。 |
 | 角色模拟器 | `?mode=studio` | 7 种伙伴、5 种配色、体型、4 表情、6 动作、11 场景，保存并导出实际模型。 |
 
@@ -59,6 +59,7 @@ node dev/tools/verify-storybook.mjs
 node dev/tools/verify-api-contract.mjs
 node dev/tools/verify-inventions.mjs
 node dev/tools/verify-voice.mjs
+node dev/tools/verify-curiosity-worlds.mjs
 ```
 
 本地预览：`node dev/tools/preview.mjs 8914`。默认不调用线上 API；确需验证真实语音时，显式设置 `DEV_API_BASE=https://jma.mikeywa.site`。此本地预览工具只监听回环地址，不作为生产服务。
@@ -107,4 +108,4 @@ WOW请求携带 `speechProfile: "wow-child"`，由后端固定调用豆包2.0 `s
 
 模块：`exploration-config.js`（各世界主题和阻挡）、`exploration-navigation.js`（球面寻路）、`exploration-world.js`（四区及小探险者）、`exploration.js`（操作/跟随/存档）、`exploration.css`。无需新增依赖，构建仍为 `node dev/tools/build.mjs`。
 
-验证：`node dev/tools/verify-exploration.mjs`。设置 `PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs` 后运行 `dev/tools/verify-exploration-ui.mjs`（WOW 全42幕）与 `dev/tools/verify-three-worlds-ui.mjs`（登月全6幕/发明与小剧场讨论）。`DEV_QA_BASE` 默认是 `http://127.0.0.1:8156/dev/`。浏览器覆盖三故事四区走动、反馈、键盘/触摸、存档、输入隔离、390px地图和镜头；API 使用受控回复/本地文本回退，不代表实机麦克风或线上语音验收。
+当前三章浏览器验收：设置 `PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs` 后运行 `dev/tools/verify-curiosity-ui.mjs`。`DEV_QA_BASE` 默认是 `http://127.0.0.1:8156/dev/`。旧 `verify-exploration-ui.mjs` 和 `verify-three-worlds-ui.mjs` 依赖已移除的地图与旧登月推进，保留为历史版本证据。离线逻辑仍可运行 `verify-exploration.mjs`。浏览器检查采用受控回复，不代表实机麦克风声学验收。

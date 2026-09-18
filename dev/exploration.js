@@ -1,15 +1,19 @@
 import * as THREE from '../vendor/three.module.js';
 import { createSurfaceWalker, surfaceDistance } from './exploration-navigation.js';
 import { createExplorationWorld, createChildAvatar } from './exploration-world.js';
+import { createExplorationFriends } from './exploration-friends.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const MOVEMENT = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD']);
 const editing = target => target?.closest?.('input, textarea, select, [contenteditable=true]');
 
-export function createExploration(stage, { saved, storyId = 'wow', getName = () => '我', onSave = () => {} } = {}) {
+export function createExploration(stage, { saved, storyId = 'wow', getName = () => '我', onSave = () => {}, canInteract, onInteraction, onSpeech, creations = [] } = {}) {
   const world = stage.world;
   const actorObstacles = [...stage.actors.values()].map(actor => ({ normal: actor.group.position.clone().sub(world.planet.center).normalize(), radius: .6 }));
   const scenery = createExplorationWorld(world, { storyId, actorObstacles }), avatar = createChildAvatar();
+  const friends = createExplorationFriends(stage, { storyId, canInteract, onInteraction, onSpeech });
+  friends.setCreations(creations);
+  scenery.obstacles.push(...friends.obstacles);
   const uiHost = document.getElementById('world-viewport') || stage.container.parentElement;
   stage.scene.add(scenery.root, avatar.group); stage.style.apply(scenery.root); stage.style.apply(avatar.group);
   const validSaved = Array.isArray(saved?.normal) && saved.normal.length === 3 && saved.normal.every(Number.isFinite) && Math.hypot(...saved.normal) > .5 && Math.hypot(...saved.normal) < 1.5;
@@ -39,7 +43,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
       marker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), walker.destination); marker.visible = true;
     }
   };
-  const blocked = () => document.hidden || Boolean(document.querySelector('dialog[open]')) || document.getElementById('story-menu')?.hidden === false;
+  const blocked = () => friends.active || document.hidden || Boolean(document.querySelector('dialog[open]')) || document.getElementById('story-menu')?.hidden === false;
   const stop = () => { keys.clear(); walker.stop(); marker.visible = false; };
   window.addEventListener('keydown', event => {
     if (event.code === 'Escape') { stop(); return; }
@@ -78,6 +82,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     avatar.group.quaternion.copy(surfaceRotation);
     avatar.facing.rotation.y = heading; avatar.update(dt, moving, stage.reduced);
     scenery.update(dt, normal, stage.reduced);
+    friends.update(dt, normal, moving);
     if (moving) for (const target of world.tapTargets) {
       if (target.reveal?.visible === false) continue;
       const point = target.object ? target.object.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3().setFromMatrixPosition(target.frame);
@@ -101,8 +106,25 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
   update(0);
   document.body.dataset.exploring = 'true';
   return {
+    setCreations(records) {
+      const previous = new Set(friends.obstacles);scenery.obstacles.splice(0,scenery.obstacles.length,...scenery.obstacles.filter(o=>!previous.has(o)));
+      friends.setCreations(records);scenery.obstacles.push(...friends.obstacles);
+    },
+    showCreation(id) { friends.showCreation(id); },
+    visitCreation(id) { const normal=friends.creationNormal(id);if(normal)go(normal,'你的作品'); },
+    creationPosition() {
+      // Place new work beside the child, outside all existing actor and prop footprints.
+      const frame = new THREE.Quaternion().setFromUnitVectors(UP,walker.normal);
+      for(const radius of [2.6,3.6,4.8,6])for(let i=0;i<16;i++){
+        const angle=i*Math.PI/8,normal=new THREE.Vector3(Math.sin(radius/world.planet.radius)*Math.cos(angle),Math.cos(radius/world.planet.radius),Math.sin(radius/world.planet.radius)*Math.sin(angle)).applyQuaternion(frame).normalize();
+        if(scenery.obstacles.every(o=>surfaceDistance(normal,o.normal,world.planet.radius)>o.radius+1.5))return normal.toArray();
+      }
+      return null;
+    },
     goHome() { go(scenery.zones[0].normal, scenery.zones[0].name); },
     pick(raycaster) {
+      if(blocked())return false;
+      if(friends.pick(raycaster,walker.normal,normal=>go(normal)))return true;
       const hit = raycaster.ray.intersectSphere(sphere, new THREE.Vector3());
       if (!hit) return false;
       go(hit.sub(world.planet.center).normalize()); return true;
@@ -125,11 +147,11 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     get stats() {
       const projected = avatar.group.position.clone().addScaledVector(walker.normal, .7).project(stage.camera);
       const { width, height } = stage.container.getBoundingClientRect();
-      return { area, moving: walker.moving || moved, normal: walker.normal.toArray(), position: avatar.group.position.toArray(), destination: walker.destination?.toArray() || null, avatar: { x: (projected.x + 1) * width / 2, y: (1 - projected.y) * height / 2 }, zones: scenery.zones.map(({ id, name }) => ({ id, name })), reactions: scenery.reactions };
+      return { area, moving: walker.moving || moved, normal: walker.normal.toArray(), position: avatar.group.position.toArray(), destination: walker.destination?.toArray() || null, avatar: { x: (projected.x + 1) * width / 2, y: (1 - projected.y) * height / 2 }, zones: scenery.zones.map(({ id, name }) => ({ id, name })), reactions: scenery.reactions, friends: friends.stats, encounterOpen: friends.active };
     },
     dispose() {
       // Routing/restarting owns persistence; never write old coordinates into a new story.
-      controller.abort(); ui.remove(); nameLabel.remove(); scenery.dispose(); avatar.dispose(); marker.removeFromParent(); markerGeometry.dispose(); markerMaterial.dispose();
+      controller.abort(); friends.dispose(); ui.remove(); nameLabel.remove(); scenery.dispose(); avatar.dispose(); marker.removeFromParent(); markerGeometry.dispose(); markerMaterial.dispose();
       document.body.removeAttribute('data-exploring'); stage.camera.up.copy(UP); stage.sun.position.set(-7, 12, 8); stage.sun.target.position.set(0, 0, 0); stage.sun.target.updateMatrixWorld();
     },
   };

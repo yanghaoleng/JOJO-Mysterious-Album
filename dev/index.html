@@ -9,8 +9,8 @@
   <title>萌萌星 · 立体故事工坊</title>
   <link rel="icon" href="../favicon.ico">
   <link rel="stylesheet" href="./app.css?v=20260918-child-interaction">
-  <link rel="stylesheet" href="./immersive.css?v=20260918-clean-scene">
-  <link rel="stylesheet" href="./exploration.css?v=20260918-clean-scene">
+  <link rel="stylesheet" href="./immersive.css?v=20260918-curiosity-worlds">
+  <link rel="stylesheet" href="./exploration.css?v=20260918-curiosity-worlds">
   <link rel="stylesheet" href="../src/voice-input-control.css?v=20260917-gugu-full">
 </head>
 <body data-view="story">
@@ -61,7 +61,8 @@
           <form id="text-form" class="text-form" hidden><label for="answer-input" class="sr-only">你的想法</label><input id="answer-input" maxlength="180" placeholder="把你的想法写在这里" autocomplete="off" enterkeyhint="send"><button class="primary" type="submit">告诉它</button></form>
         </div>
       </div>
-      <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a href="../" class="quiet-button">回到萌萌星首页</a></div>
+      <div id="creation-review" class="creation-review" hidden><button id="creation-again" class="primary" type="button">再造一件 / 改一改</button><button id="creation-next" class="secondary" type="button">带着发现去下一站</button></div>
+      <div class="ending" id="ending" hidden><h2 id="ending-title"></h2><p id="ending-text"></p><blockquote id="ending-line"></blockquote><button id="save-memory" class="primary">收进我的图鉴</button><a id="journey-next" href="./debate" class="primary" hidden>带着好奇，去听不同的想法</a><button id="return-creating" class="primary" type="button" hidden>继续创造这个世界</button><a href="../" class="quiet-button">回到萌萌星首页</a></div>
     </section>
 
     <section class="studio-panel" id="studio-panel" hidden>
@@ -83,6 +84,6 @@
   <dialog id="bag-dialog"><div class="dialog-top"><h2>一路带着的东西</h2><button class="quiet-button" id="close-bag" autofocus>关闭</button></div><div id="bag-content"></div></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <div id="transition" class="transition" aria-hidden="true"></div>
-  <script type="module" src="./app.bundle.js?v=20260918-clean-scene"></script>
+  <script type="module" src="./app.bundle.js?v=20260918-curiosity-worlds"></script>
 </body>
 </html>
