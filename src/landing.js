@@ -1,3 +1,4 @@
+import { journeys } from './landing-journeys.js?v=20260918-pop';
 const world = document.getElementById('landing-world');
 const dialog = document.getElementById('landing-dialog');
 const content = document.getElementById('landing-dialog-content');
@@ -6,7 +7,8 @@ let scene, returnFocus;
 const heroObserver=new IntersectionObserver(entries=>{
   if(!entries.some(e=>e.isIntersecting))return;
   heroObserver.disconnect();
-  import('./landing-scene.js?v=20260918-living').then(({createLandingScene})=>{
+  import('./landing-scene.js?v=20260918-pop').then(async({createLandingScene})=>{
+    if(document.getElementById('mode-title')?.dataset.entrance!=='complete'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await new Promise(resolve=>{const done=()=>{clearTimeout(timer);window.removeEventListener('mengmeng:hero-title-ready',done);resolve();};const timer=setTimeout(done,2600);window.addEventListener('mengmeng:hero-title-ready',done,{once:true});});
     scene=createLandingScene(world);world.dataset.ready='true';
     scene.renderer.domElement.addEventListener('webglcontextlost',()=>world.removeAttribute('data-ready'));
   }).catch(()=>world.removeAttribute('data-ready'));
@@ -17,19 +19,38 @@ cards.forEach(card=>card.addEventListener('click',event=>{
   if(!matchMedia('(hover: none)').matches||card.classList.contains('is-expanded'))return;
   event.preventDefault();cards.forEach(c=>c.classList.remove('is-expanded'));card.classList.add('is-expanded');
 }));
-const journeys={
-  candy:{title:'小芽的甜甜星球',image:'journey-candy',quote:'我要种一片棒棒糖森林，每个朋友都能分到一根。',steps:[['一个小小的愿望','小芽想要一根比自己还大的棒棒糖。'],['伙伴的好奇','“如果其他朋友也想尝一尝呢？”'],['又长出的主意','把一根棒棒糖变成一片森林，让每个朋友选一种味道。']],creation:'创造物 · 一片可以分享的棒棒糖森林'},
-  moon:{title:'球球的月球快递',image:'journey-moon',quote:'火箭可以送快递吗？月亮上的朋友还没吃过蛋糕。',steps:[['先定一个目的地','球球选择去月球，想见见那里的朋友。'],['发明自己的办法','造一艘能装下蛋糕的火箭，还要有一扇小窗。'],['多想一步','为了让蛋糕不颠坏，给火箭加上软软的座位。']],creation:'创造物 · 一艘送蛋糕的月光火箭'},
-  question:{title:'米粒的第 N 个为什么',image:'journey-question',quote:'如果每个人都当船长，谁来发现新的小岛呢？',steps:[['带着兴趣出发','米粒喜欢大海，想和伙伴一起开船。'],['遇到不同的声音','星球主人觉得，船上只能听一个人的。'],['留下自己的想法','“可以轮流当船长，也要听见发现小岛的人。”']],creation:'留下的想法 · 轮流做决定，也一起听建议'},
-};
+
 function show(html){returnFocus=document.activeElement;content.innerHTML=html;if(!dialog.open)dialog.showModal();dialog.scrollTop=0;gate.style.overflow='hidden';}
 function close(){dialog.close();}
 dialog.querySelector('.dialog-close').addEventListener('click',close);
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
-dialog.addEventListener('close',()=>{gate.style.overflow='';returnFocus?.focus({preventScroll:true});if(location.search.includes('journey=')||location.search.includes('preview=')){const u=new URL(location.href);u.searchParams.delete('journey');u.searchParams.delete('preview');history.replaceState(null,'',u);}});
-function openJourney(id){const j=journeys[id];if(!j)return;show(`<span class="preview-label">冒险纪念册 · 模拟示例</span><h2 id="preview-title">${j.title}</h2><img class="dialog-art" src="./assets/landing/${j.image}.webp" alt="${j.creation}"><blockquote class="sample-quote">“${j.quote}”</blockquote><ol>${j.steps.map(([h,p])=>`<li><b>${h}</b>${p}</li>`).join('')}</ol><p><strong>${j.creation}</strong></p><p class="dialog-footnote">这是使用虚构昵称和模拟内容制作的功能预览，不是真实儿童记录。语音留存、个人旅程生成与授权分享正在规划中，当前没有录音或公开分享功能。</p><a class="landing-primary" href="./dev/?story=wow">开始第一章 ↗</a>`);}
+dialog.addEventListener('close',()=>{stopJourneyAudio();gate.style.overflow='';returnFocus?.focus({preventScroll:true});if(location.search.includes('journey=')||location.search.includes('preview=')){const u=new URL(location.href);u.searchParams.delete('journey');u.searchParams.delete('preview');history.replaceState(null,'',u);}});
+const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const journeyAudio=new Audio();journeyAudio.preload='none';
+let audioButton=null,audioToken=0;
+function resetAudioButton(button){if(!button)return;button.dataset.playing='false';button.setAttribute('aria-pressed','false');button.querySelector('.voice-symbol').textContent='▶';button.querySelector('.voice-hint').textContent='听听这句话';}
+function stopJourneyAudio(){audioToken++;journeyAudio.pause();journeyAudio.currentTime=0;resetAudioButton(audioButton);audioButton=null;}
+journeyAudio.addEventListener('ended',()=>stopJourneyAudio());
+journeyAudio.addEventListener('loadedmetadata',()=>{if(audioButton&&Number.isFinite(journeyAudio.duration))audioButton.querySelector('.voice-duration').textContent=`${Math.ceil(journeyAudio.duration)}″`;});
+dialog.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-journey-audio]');if(!button)return;
+  const status=content.querySelector('.journey-audio-status');status.textContent='';
+  if(audioButton===button&&!journeyAudio.paused){audioToken++;journeyAudio.pause();resetAudioButton(button);return;}
+  const token=++audioToken;
+  if(audioButton!==button){journeyAudio.pause();resetAudioButton(audioButton);audioButton=button;journeyAudio.src=button.dataset.journeyAudio;}
+  button.querySelector('.voice-hint').textContent='正在准备声音…';
+  try{await journeyAudio.play();if(token!==audioToken)return;button.dataset.playing='true';button.setAttribute('aria-pressed','true');button.querySelector('.voice-symbol').textContent='Ⅱ';button.querySelector('.voice-hint').textContent='正在播放 · 点此暂停';}
+  catch{if(token!==audioToken)return;resetAudioButton(button);status.textContent='声音暂时没连上，可以再点一次。回答也写在气泡里。';}
+});
+function openJourney(id){
+  const j=journeys[id];if(!j)return;stopJourneyAudio();
+  show(`<div class="journey-detail-heading"><span class="child-avatar avatar-${j.avatar}" aria-hidden="true"></span><div><span class="preview-label">示例旅程 · AI 模拟童声</span><h2 id="preview-title">${j.title}</h2></div></div><img class="dialog-art journey-detail-cover" src="./assets/landing/${j.image}.webp" alt="${escapeHTML(j.creation)}"><p class="journey-audio-status" role="status" aria-live="polite"></p><div class="journey-conversations">${j.steps.map((step,i)=>`<article class="journey-moment"><div class="journey-question"><span>${escapeHTML(step.speaker)}问</span><p>“${escapeHTML(step.question)}”</p></div><div class="journey-reply"><span class="reply-name">${j.child}说</span><button class="journey-voice" type="button" data-journey-audio="./assets/landing/audio/${id}-${i+1}.mp3" aria-pressed="false" aria-label="播放${j.child}的模拟回答：${escapeHTML(step.answer)}"><span class="voice-symbol" aria-hidden="true">▶</span><span class="voice-content"><span class="voice-words">${escapeHTML(step.answer)}</span><span class="voice-meta"><span class="voice-hint">听听这句话</span><span class="voice-duration"></span><span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></span></span></button></div><figure class="journey-effect"><img src="./assets/landing/journey-${id}-${i+1}.webp" width="1200" height="900" alt="${escapeHTML(step.effect)}" loading="lazy"><figcaption><span>于是，世界有了新变化</span><p>${escapeHTML(step.effect)}</p></figcaption></figure></article>`).join('')}</div><p class="journey-result">这一趟冒险留下了<strong>${j.creation}</strong></p><p class="dialog-footnote">昵称、对话和效果均为模拟示例；声音由 AI 合成，配图为效果示意，不是真实儿童录音或游戏实录。探索留存与授权分享正在规划中。</p><a class="landing-primary" href="./dev/?story=wow">开始自己的第一章 ↗</a>`);
+}
+
 document.querySelectorAll('[data-journey]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openJourney(a.dataset.journey);}));
 const query=new URLSearchParams(location.search);
 if(query.has('journey'))openJourney(query.get('journey'));
 else if(query.get('preview')==='debate')location.replace('./dev/debate');
-window.addEventListener('pagehide',event=>{if(!event.persisted)scene?.dispose();});
+window.addEventListener('pagehide',event=>{stopJourneyAudio();if(!event.persisted)scene?.dispose();});
+
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopJourneyAudio();});

@@ -25,7 +25,7 @@ the project-level noncommercial license.
 - Source: <https://calligraph.raphaelsalaja.com/>
 - License: MIT
 - Copyright 2026 Raphael Salaja
-- Scope: `vendor/calligraph-bubble.js` and its source dependency.
+- Scope: `vendor/calligraph-bubble.js`, `vendor/landing-title.js`, and their source dependency.
 - Full text: `licenses/MIT`
 
 ## UISFX 0.4.0

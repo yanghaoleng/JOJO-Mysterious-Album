@@ -280,3 +280,11 @@ python3 scripts/generate_star_offline.py
 历史上已按 Unlicense 公开的版本无法被追溯性收回；本许可仅约束权利人可许可的当前及后续新增内容。
 
 `tools/capture-journey-art.mjs` 重建三幅主题旅程插图；`tools/verify-living-hero.mjs [baseURL]` 检查三层独立节奏、离屏暂停、减少动态效果、五种屏宽与静态降级。
+
+### 首页动效与示例纪念册
+
+- Hero 的角色切换约 0.6 秒、地表约 0.48 秒、星球色彩约 0.65 秒；采用短促弹性回弹，变化后少量白色烟雾在 0.72 秒内散开。仍保持各层独立的停留节奏。
+- 标题直接使用 Calligraph 1.4.1 的 `bouncy` 字符动画。`src/landing-title.jsx` 以约 55ms 间隔逐字呈现、预留两行尺寸；`npm run build:landing-title` 构建独立资源。减少动态效果时直接显示全文，资源失败时保留原始标题。
+- 三份示例冒险各有三轮“伙伴提问 → 孩子回答 → 世界变化”记录。九个语音气泡使用项目现有合成童声音色预生成的 MP3；全部是虚构示例，明确标注 AI 模拟声音。每次仅播放一句，切换、关闭和切到后台都会停止旧声音，不采集录音。
+- 对话数据在 `src/landing-journeys.js`；`tools/capture-journey-details.mjs` 重建九张 3D 效果示意图，`tools/generate-journey-audio.mjs` 通过现有 TTS 服务生成缺失的样音。
+- `tools/verify-hero-pop.mjs [baseURL]` 检查逐字动画、弹性回弹、烟雾、九段真实音频播放、暂停与关闭、图片、手机布局和降级显示。

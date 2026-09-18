@@ -385,7 +385,8 @@
 <link rel="stylesheet" href="./src/speech-bubble.css?v=20260910-lyric-motion">
 <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
 <link rel="stylesheet" href="./src/voice-input-control.css?v=20260910-lyric-motion">
-<link rel="stylesheet" href="./src/landing.css?v=20260918-living">
+<script>document.documentElement.classList.add("hero-title-pending");setTimeout(()=>document.documentElement.classList.remove("hero-title-pending"),2200);</script>
+<link rel="stylesheet" href="./src/landing.css?v=20260918-pop">
 </head>
 <body data-mode="choosing">
   <div id="stage" aria-hidden="true"></div>
@@ -781,6 +782,7 @@
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
   <script type="module" src="./src/analytics.js"></script>
   <script type="module" src="./src/mode.js?v=20260915-landing"></script>
-<script type="module" src="./src/landing.js?v=20260918-living"></script>
+<script type="module" src="./vendor/landing-title.js?v=20260918-pop"></script>
+<script type="module" src="./src/landing.js?v=20260918-pop"></script>
 </body>
 </html>

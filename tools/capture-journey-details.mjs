@@ -1,0 +1,3 @@
+import{writeFile}from'node:fs/promises';
+const{chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');const b=await chromium.launch({channel:'chrome',headless:true});
+try{const p=await b.newPage();for(const theme of ['candy','moon','question'])for(let step=0;step<3;step++){await p.goto(`${process.env.BASE_URL||'http://localhost:8153'}/tools/journey-art?theme=${theme}&step=${step}`);await p.waitForFunction(()=>window.ready);const data=await p.evaluate(()=>window.art.renderer.domElement.toDataURL('image/webp',.9).split(',')[1]);await writeFile(new URL(`../assets/landing/journey-${theme}-${step+1}.webp`,import.meta.url),Buffer.from(data,'base64'));console.log(theme,step+1);}}finally{await b.close();}

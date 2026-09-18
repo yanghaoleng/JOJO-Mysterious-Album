@@ -11,3 +11,7 @@
 All images are local WebP. Start the project server before capturing; set `PLAYWRIGHT_MODULE` and `SHARP_MODULE` to the available runtime paths. `tools/landing-art.html` is the deterministic concept capture surface.
 
 `journey-candy`, `journey-moon`, and `journey-question` are original procedural 3D collages captured by `tools/capture-journey-art.mjs`. They reuse actual project characters with newly modelled lollipops, a cake rocket, and a sailboat. These are fictional journey illustrations, not gameplay screenshots. There are no tabletop grounds; the moon and sea fragments are complete round spheres.
+
+`journey-{candy,moon,question}-{1,2,3}` are staged outcome illustrations for the fictional dialogue records, generated with `tools/capture-journey-details.mjs`. They are concept illustrations, not screenshots of children using the product.
+
+`audio/{candy,moon,question}-{1,2,3}.mp3` are AI-synthesised example child answers using the existing `wow-child` speech profile. The exact scripts are in `src/landing-journeys.js`. They do not contain recordings or cloned voices of real children. Generate missing files with `tools/generate-journey-audio.mjs`.

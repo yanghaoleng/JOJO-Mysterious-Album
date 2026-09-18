@@ -23,7 +23,7 @@ export function createLandingSky(stage) {
     mesh.scale.setScalar(size); return mesh;
   }
   const stars = [[.59,.15,.014],[.92,.32,.02],[.47,.78,.012],[.12,.79,.02],[.84,.08,.009],[.34,.12,.008]].map(([u,v,size],i) => {
-    const group = new THREE.Group(); root.add(group); star(group); return { group,u,v,size,delay:.7+i*.17 };
+    const group = new THREE.Group(); root.add(group); star(group); return { group,u,v,size,delay:.3+i*.1 };
   });
   const dustGeometry = new THREE.SphereGeometry(.018, 6, 4); geometries.add(dustGeometry);
   const dustMaterial = new THREE.MeshBasicMaterial({color:'#fff1d1',transparent:true,opacity:.6}); materials.add(dustMaterial);
@@ -47,7 +47,7 @@ export function createLandingSky(stage) {
   part(satellite,new THREE.SphereGeometry(.42,20,14),blush);
   const ring=part(satellite,new THREE.TorusGeometry(.68,.06,8,40),cream);ring.rotation.set(1,.25,-.35);
   let flights=0, lastFlight=-1;
-  const smooth=t=>{const x=THREE.MathUtils.clamp(t,0,1);return x*x*(3-2*x);};
+  const smooth=t=>{const x=THREE.MathUtils.clamp(t,0,1);return x===1?1:1-Math.exp(-6*x)*Math.cos(10*x);};
   function place(group,u,v,size){
     const c=stage.camera,h=c.top-c.bottom;
     group.position.set(THREE.MathUtils.lerp(c.left,c.right,u),THREE.MathUtils.lerp(c.top,c.bottom,v),-13);
@@ -55,7 +55,7 @@ export function createLandingSky(stage) {
   }
   return {
     update(time,{reduced=false}={}) {
-      const enter=delay=>reduced?1:smooth((time-delay)/1.1);
+      const enter=delay=>reduced?1:smooth((time-delay)/.55);
       stars.forEach(({group,u,v,size,delay},i)=>{place(group,u+Math.sin(time*.22+i)*.008,v+Math.sin(time*.6+i)*.012,size*enter(delay));group.rotation.set(.14,Math.sin(time*.35+i)*.36,Math.sin(time*.25+i)*.22);});
       dust.forEach(({mesh,u,v,delay},i)=>{place(mesh,u,v+Math.sin(time*.3+i)*.003,.07*enter(delay));});
       place(satellite,.97,.71,.055*enter(1.2));satellite.rotation.z=Math.sin(time*.22)*.13;
