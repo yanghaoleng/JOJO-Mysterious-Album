@@ -25,7 +25,10 @@ const worldState = (state, world) =>
 // Pure command reducer. A whole batch validates on a copy before any rendering or save.
 function reduce(state, c, context) {
   const world =
-    c.type.startsWith("entity.") || c.type === "environment.set"
+    c.type.startsWith("entity.") ||
+    c.type === "environment.set" ||
+    c.type.startsWith("group.") ||
+    c.type.startsWith("feeding.")
       ? worldState(state, context.world)
       : null;
   const entity = world?.entities[c.id];
@@ -70,6 +73,13 @@ function reduce(state, c, context) {
   } else if (c.type === "actor.animate" || c.type === "encounter.activate")
     requireValue(context.actors.includes(c.target), "Actor is not present");
   else if (c.type === "environment.set") world.environment = c.preset;
+  else if (c.type === "group.patrol" || c.type === "group.gather" || c.type === "group.surround") {
+    // Group actions are presentational (patrol/gather/surround): participants
+    // only need to exist in this world; positions are animated by the
+    // presenter, never persisted back into world records.
+    for (const id of [...(c.targets || []), ...(c.surrounders || [])])
+      requireValue(world.entities[id], "Group participant is not in this world");
+  }
   else if (c.type === "flag.set") {
     requireValue(
       Object.hasOwn(state.flags, c.key) ||

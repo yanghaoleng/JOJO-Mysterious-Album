@@ -19,7 +19,7 @@ const boxCorners = box => [0, 1, 2, 3, 4, 5, 6, 7].map(index => new THREE.Vector
 ));
 
 export class DioramaStage {
-  constructor(container, onTouch = () => {}) {
+  constructor(container, onTouch = () => {}, options = {}) {
     this.container = container;
     this.onTouch = onTouch;
     this.actors = new Map();
@@ -28,7 +28,7 @@ export class DioramaStage {
     this.viewportInsets = { top: 0, bottom: 0, left: 0, right: 0 };
     this.style = createStorybookStyle();
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.cameraDrift = createCameraDrift({ reduced: this.reduced });
+    this.cameraDrift = createCameraDrift({ reduced: this.reduced, ...(options.drift || {}) });
     this.cameraDriftEnabled = false;
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
@@ -50,6 +50,7 @@ export class DioramaStage {
     this.pitch = DEFAULT_PITCH;
     this.zoom = 1;
     this.studio = false;
+    this.angleMode = 'ground';
     this.cameraAnim = null;
     this.cameraHistory = [];
     this.cameraIndex = -1;
@@ -310,9 +311,12 @@ export class DioramaStage {
 
   // Smooth, animated camera move for reframes. Interpolates yaw/pitch/zoom/
   // target/pan so a pull-back reads as a process instead of a jump.
-  animateCameraTo(state, duration = .9) {
+  animateCameraTo(state, duration = .9, { commit = true } = {}) {
     if (this.exploration) return;
-    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit: true, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .12, 1.8), target: state.target.clone(), pan: state.pan.clone() } };
+    // Keep the handheld sway from fighting the move while it is in flight;
+    // it fades back in once the move has settled.
+    this.cameraDrift?.pause(Math.max(.6, duration + .8));
+    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .12, 1.8), target: state.target.clone(), pan: state.pan.clone() } };
   }
   stepCameraAnimation(dt) {
     const anim = this.cameraAnim;
@@ -351,18 +355,32 @@ export class DioramaStage {
   cameraBack() {
     if (this.cameraIndex <= 0) return false;
     this.cameraIndex--;
-    this.restoreCameraState(this.cameraHistory[this.cameraIndex]);
+    // History jumps are moves, not teleports: animate to the previous framing.
+    this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
     if (this.onCameraHistoryChange) this.onCameraHistoryChange();
     return true;
   }
   cameraForward() {
     if (this.cameraIndex >= this.cameraHistory.length - 1) return false;
     this.cameraIndex++;
-    this.restoreCameraState(this.cameraHistory[this.cameraIndex]);
+    this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
     if (this.onCameraHistoryChange) this.onCameraHistoryChange();
     return true;
   }
   cameraNavState() { return { index: this.cameraIndex, count: this.cameraHistory.length }; }
+
+  // One button toggles between a top-down view and a 45-degree ground view.
+  // Both are fixed presets; the other camera controls are untouched.
+  toggleCameraAngle() {
+    if (this.exploration) return this.angleMode;
+    const overhead = this.angleMode === 'overhead';
+    this.angleMode = overhead ? 'ground' : 'overhead';
+    const pitch = overhead ? .6 : 1.35;
+    const zoom = overhead ? Math.max(.22, Math.min(1.8, this.zoom * 1.35)) : Math.max(.22, this.zoom / 1.35);
+    this.animateCameraTo({ yaw: this.yaw, pitch, zoom, target: this.target.clone(), pan: this.panOffset.clone() }, .9);
+    return this.angleMode;
+  }
+  cameraAngleMode() { return this.angleMode; }
 
   setLighting(atmosphere = {}) {
     const settings = { ...STORYBOOK_PALETTE, ...atmosphere.lighting };

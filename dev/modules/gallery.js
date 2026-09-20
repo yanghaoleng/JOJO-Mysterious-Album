@@ -186,11 +186,13 @@ function startWorld(
   viewport.classList.add("scene-transition-out");
   $("preview-stage").hidden = false;
   resizeHandle.hidden = false;
-  if (!stage) stage = new DioramaStage($("preview-stage"));
+  if (!stage) stage = new DioramaStage($("preview-stage"), undefined, { drift: { yawAmplitude: .21, pitchAmplitude: .07, period: 30, quietSeconds: 1.5, fadeInSeconds: 2.2 } });
   game?.dispose();
   game = createGameSession({ story: script, stage, saved, onChange: () => {} });
   stage.setScene(world, cast, { studio: true });
   stage.setCameraDriftEnabled(false);
+  // The AI scene-play mode keeps the handheld sway on by default.
+  if (script === AI_CONTROL_LEVEL) stage.setCameraDriftEnabled(true);
   game.bind({ id: "showcase-scene", world }, cast);
   stage.resize();
   requestAnimationFrame(() => {
@@ -256,6 +258,13 @@ function syncCameraNav() {
   const { index, count } = stage.cameraNavState();
   $("camera-back").disabled = index <= 0;
   $("camera-forward").disabled = index >= count - 1;
+  const angle = $("camera-angle");
+  if (angle) {
+    const overhead = stage.cameraAngleMode?.() === "overhead";
+    angle.setAttribute("aria-label", overhead ? "切换到45度地面视角" : "切换到俯视角");
+    angle.title = overhead ? "切换到45度地面视角" : "切换到俯视角";
+    angle.classList.toggle("is-overhead", overhead);
+  }
 }
 function aiControlDemo() {
   startWorld(AI_CONTROL_LEVEL.world);
@@ -268,6 +277,7 @@ function aiControlDemo() {
   stage.onCameraHistoryChange = syncCameraNav;
   $("camera-back").onclick = () => stage.cameraBack();
   $("camera-forward").onclick = () => stage.cameraForward();
+  $("camera-angle").onclick = () => { stage.toggleCameraAngle(); syncCameraNav(); };
   stage.saveCameraState();
   syncCameraNav();
   $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
@@ -339,7 +349,10 @@ async function naturalControl() {
     const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands: arranged }, "ai");
     if(applied.warnings?.length) trace.push('[执行提醒]',...applied.warnings);
     if (applied.ok) trace.push('[物件容量]', `    当前 ${Object.keys(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).length} / 300 个；自动移除最早生成的 ${recycled} 个。`);
-    if(arranged.some(c=>c.type==='feeding.start')) trace.push('[进食计划]','    先生成各组对象；角色分别寻找食物，每吃两下消耗一个，直到吃完或停止。');
+    if(arranged.some(c=>c.type==='feeding.start')) trace.push('[进食计划]','    先生成各组对象；吃者走向食物、播放吃动画，食物随后消失（A 吃 B 开放表演）。');
+    if(arranged.some(c=>c.type==='group.patrol')) trace.push('[巡逻]','    角色沿直线来回走动，带一点小动作。');
+    if(arranged.some(c=>c.type==='group.gather')) trace.push('[聚拢]','    角色/物件集合到一起。');
+    if(arranged.some(c=>c.type==='group.surround')) trace.push('[包围]','    包围者围成一圈，被围者先聚拢到中间。');
     trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
     const spawnCount = arranged.filter(c => c.type === 'entity.spawn').length;
     const arrivalSeconds = stage.reduced ? 0 : 2 + Math.min(8, Math.max(0, spawnCount - 1) * .28);

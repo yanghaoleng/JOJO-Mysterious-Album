@@ -26,6 +26,15 @@ def resolve_objects(text, catalog, quantity):
     return result
 
 
+def _borrow_scene_entity(entries, exclude=()):
+    for _eid, item in entries.items():
+        asset = str(item.get('asset', ''))
+        if not asset or asset in exclude:
+            continue
+        return {'asset': asset, 'kind': 'actor' if asset.startswith('npc:') else 'prop', 'count': 1, 'explicit': False}
+    return None
+
+
 def compound_scene_result(text, context, catalog, root, quantity):
     eating = re.search(r'吃(?:掉|光|完|起来)?', text)
     entries = context.get('entities', {}) if isinstance(context, dict) else {}
@@ -46,9 +55,14 @@ def compound_scene_result(text, context, catalog, root, quantity):
         group = select_scene_group(left,context,catalog,root)
         if group and not group['category']:
             actors = [{'asset':asset,'kind':'actor','count':1,'explicit':True} for asset in group['members']]
-        # “A 吃 B”不限定吃者必须是角色、食物必须是食物类：只要两边都能识别出对象即可。
+        # “A 吃 B”是开放表演：不限定吃者必须是角色、食物必须是食物类；
+        # 一侧识别不出具体对象时，借用场景里已有的对象来演（“一个鸡腿吃汉堡”也成立）。
+        if not actors:
+            actors = [borrowed] if (borrowed := _borrow_scene_entity(entries)) else []
+        if not foods:
+            foods = [borrowed] if (borrowed := _borrow_scene_entity(entries, exclude={a['asset'] for a in actors})) else []
         if not actors or not foods:
-            return {'reply':'吃东西需要明确的吃者和食物，例如“10个猪小弟吃80个汉堡包”。','commands':[],'sceneSwitch':None,'source':'compound','handled':True}
+            return {'reply':'先把要表演吃的东西召唤出来吧，比如“变出1个汉堡”，再说“鸡腿吃汉堡”。','commands':[],'sceneSwitch':None,'source':'compound','handled':True}
         objects = actors + foods
     elif not re.search(r'来|生成|变出|召唤|放|加|\d+|[一二两三四五六七八九十]+[个只辆份]',text):
         return None

@@ -24,6 +24,9 @@ export const COMMANDS = Object.freeze({
   "flag.set": ["key", "value"],
   "creation.put": ["record"],
   "creation.activate": ["id"],
+  "group.patrol": ["targets"],
+  "group.gather": ["targets"],
+  "group.surround": ["targets", "surrounders"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
 export const MAX_WORLD_ENTITIES = 300;
@@ -188,6 +191,22 @@ export function validateCommand(command) {
     );
   if (c.type === "world.react")
     requireValue(REACTIONS.includes(c.action), "Invalid world reaction");
+  if (c.type === "group.patrol" || c.type === "group.gather")
+    requireValue(
+      Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,
+      "Invalid group targets",
+    );
+  if (c.type === "group.surround") {
+    requireValue(
+      Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,
+      "Invalid surround targets",
+    );
+    requireValue(
+      Array.isArray(c.surrounders) && c.surrounders.length > 0 && c.surrounders.length <= 100 && c.surrounders.every(safeId) && new Set(c.surrounders).size === c.surrounders.length,
+      "Invalid surrounders",
+    );
+    requireValue(!c.surrounders.some(id => c.targets.includes(id)), "Cannot surround oneself");
+  }
   if (c.type === "flag.set")
     requireValue(
       safeId(c.key) &&

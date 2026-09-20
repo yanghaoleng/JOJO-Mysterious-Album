@@ -2,6 +2,22 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:group-motion",
+      "kind": "logic",
+      "name": "巡逻、聚拢与包围",
+      "description": "输入“叫叫小分队开始在月球上巡逻”或“绿豆家族围住了叫叫小分队”：角色沿直线来回巡逻、集合聚拢或围成一圈，纯表演动作不改变存档。",
+      "source": "dev/presentation/movement-controller.js",
+      "capabilities": [
+        "巡逻走动",
+        "聚拢集合",
+        "包围成圈",
+        "不落盘"
+      ],
+      "dependencies": [
+        "logic:intent"
+      ]
+    },
+    {
       "id": "logic:feeding",
       "kind": "logic",
       "name": "角色寻找食物与循环进食",
@@ -17581,6 +17597,16 @@
     ],
     "creation.activate": [
       "id"
+    ],
+    "group.patrol": [
+      "targets"
+    ],
+    "group.gather": [
+      "targets"
+    ],
+    "group.surround": [
+      "targets",
+      "surrounders"
     ]
   }
 }

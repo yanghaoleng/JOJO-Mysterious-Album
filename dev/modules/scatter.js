@@ -96,23 +96,25 @@ export function arrangeInView(commands, entities, stage, random = Math.random) {
   catch(error) { if(error.code !== 'placement_retry') throw error; }
   // Small, bounded pull-backs: each step shrinks the framing slightly, never a
   // single jump to the farthest possible view, and never below a zoom floor.
+  // Keep the same ground point targeted (the horizon stays put in the frame);
+  // only the field of view widens, so the move never tilts into a top-down view.
   const minZoom=Math.max(.22,Math.min(original.zoom*.55,original.zoom*((stage.camera.right-stage.camera.left)/(stage.world.planet.radius*2+3))));
   for (const factor of [1,.75,.5]) {
     let zoom=original.zoom;
     while(zoom>minZoom+.001){
       zoom=Math.max(minZoom,zoom*.88);
-      stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
+      stage.target.copy(original.target);stage.panOffset.copy(original.pan);
       stage.pitch=original.pitch;stage.yaw=original.yaw;stage.zoom=zoom;stage.resize();
-      try { return commit({yaw:original.yaw,pitch:original.pitch,zoom,target:stage.target.clone(),pan:stage.panOffset.clone()},factor<1,factor); }
+      try { return commit({yaw:original.yaw,pitch:original.pitch,zoom,target:original.target.clone(),pan:original.pan.clone()},factor<1,factor); }
       catch(error) { if(error.code !== 'placement_retry') throw error; }
     }
   }
   // Still stuck: a gentle yaw nudge as the last resort, never a 90-degree turn.
   for (const turn of [.35,-.35,.7,-.7]) {
     const zoom=Math.max(minZoom,original.zoom*.5);
-    stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
+    stage.target.copy(original.target);stage.panOffset.copy(original.pan);
     stage.pitch=original.pitch;stage.yaw=original.yaw+turn;stage.zoom=zoom;stage.resize();
-    try { return commit({yaw:stage.yaw,pitch:original.pitch,zoom,target:stage.target.clone(),pan:stage.panOffset.clone()},true,.5); }
+    try { return commit({yaw:stage.yaw,pitch:original.pitch,zoom,target:original.target.clone(),pan:original.pan.clone()},true,.5); }
     catch(error) { if(error.code !== 'placement_retry') throw error; }
   }
   Object.assign(stage,{zoom:original.zoom,pitch:original.pitch,yaw:original.yaw});

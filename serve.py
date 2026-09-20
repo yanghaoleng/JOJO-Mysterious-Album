@@ -804,23 +804,28 @@ def director_result(idea):
     return {"mechanic": mechanic, "abilityLabel": label, "narratorLine": line[:60], "gateLine": gate_line}
 
 
-SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。先理解孩子这句话的意图，再从下面的功能里选出最接近的一项或几项，翻译成安全、可执行的结构化世界操作。
+SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。孩子会像导演一样连续说出句子来安排画面（先换场景、再调天气、再召唤角色、再让角色行动）。先理解这句话的完整意图，从功能里选出最接近的一项或几项，翻译成安全、可执行的结构化世界操作。一条话可以组合多步。
 只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
 允许的命令：
 1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；
-2. entity.remove: {type,id}，让指定模型消失；
-3. entity.move: {type,id,position:[x,z]}，只能移动已经存在的实体；
-4. entity.animate: {type,id,animation:"activate"}，触发机关；
-5. entity.scale: {type,id,scale}，调整大小；entity.color: {type,id,color}，改变颜色；
-6. feeding.start: {type,eaters:[id...],foods:[id...]}，让吃者去吃食物（吃者与食物都必须是场景中已存在的实体 id）；
-7. environment.set: {type,preset:"day|dusk|night|default"}，切换白天/黄昏/夜晚。
+2. entity.remove: {type,id}，让指定模型消失（可多条，用于“全部消失/清空”）；
+3. entity.move: {type,id,position:[x,z]}，移动已存在的实体；
+4. entity.animate: {type,id,animation:"activate"}，触发机关；actor.animate: {type,target,animation,expression,duration} 让角色做动作；
+5. entity.scale: {type,id,scale} 调整大小；entity.color: {type,id,color} 改变颜色；
+6. feeding.start: {type,eaters:[id...],foods:[id...]}，“A 吃 B”是开放的表演：任何对象都可以吃任何对象（吃者对着食物播放吃动画，食物随后消失），不限定吃者是角色、食物是食物类，鸡腿可以吃汉堡。吃者与食物必须是场景中已存在的实体 id（或本批 spawn 生成的 id）；若 A 或 B 不在清单里，用清单中相似对象生成，或借用场景已有对象来表演；
+7. environment.set: {type,preset:"day|dusk|night|default"}，切换白天/黄昏/夜晚；
+8. group.patrol: {type,targets:[id...]}，让一组角色沿直线来回走动巡逻，可带小动作；
+9. group.gather: {type,targets:[id...]}，让一组角色/物件聚拢到一起；
+10. group.surround: {type,targets:[id...],surrounders:[id...]}，让 surrounders 围住 targets（围成一圈，targets 先聚拢到一起）。
 意图匹配规则：
-- “出现/生成/变出/召唤 X 个 Y” → entity.spawn；
-- “让 Y 消失/把 Y 拿走/删掉 Y/清除 Y” → entity.remove（若是“全部消失/清空/都没了”，列出当前场景所有实体 id 逐一 remove）；
-- “Y 吃 Z”或“让 Y 吃 Z” → 先生成 Y、Z（如果还没有），再用 feeding.start 让 Y 吃 Z；
-- “去/到 口袋/月球/草地/果园/面包房/海底/云层/家” → sceneSwitch；
-- “变亮/天亮了/白天” → environment.set day，“黄昏/傍晚” → dusk，“天黑/夜晚” → night；
-- “把 Y 变大/变小/换颜色” → entity.scale / entity.color（Y 必须是已存在的实体）。
+- “出现/生成/变出/召唤 X 个 Y” → entity.spawn（X 个就 X 条）；
+- “Y 消失/把 Y 拿走/删掉/清空” → entity.remove；“全部消失/清空场景/都没了” → 列出当前场景所有实体逐一 remove；
+- “A 吃 B / 让 A 吃 B” → 先生成 A、B（若不在场），再 feeding.start；吃是开放的，任何对象可以吃任何对象；
+- “去/到 月球/草地/果园/面包房/海底/云层/家/口袋” → sceneSwitch；“天黑/夜晚/关灯” → environment.set night，其余类推；
+- “X 巡逻/X 开始巡逻/X 走一走” → group.patrol；
+- “X 集合/聚拢/围过来/走到一起” → group.gather；
+- “X 包围/围住 Y/X 团团围住 Y” → group.surround（X 是包围者，Y 是被围者）；
+- 一条话组合多步：例如“叫叫小分队开始在月球上巡逻”= sceneSwitch moon + 生成叫叫小分队成员 + group.patrol；“绿豆家族出现了，他们包围住了叫叫小分队”= 生成绿豆家族 + group.surround（绿豆家族围住叫叫小分队）。
 位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
 
 SCENE_KEYWORDS = {
@@ -879,6 +884,66 @@ def approximate_scene_result(text, context):
     }
 
 
+def group_action_scene_result(text, context, catalog, root):
+    """巡逻 / 聚拢 / 包围：分组级表演动作。关键词兜底，LLM 在线时优先由模型产出。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    if not re.search(r'巡逻|巡视|走一走|遛一遛|走动|集合|聚拢|围过来|靠拢|包围|围住|围起来|团团围住', compact):
+        return None
+    world_switch = None
+    for world, words in SCENE_NAMES.items():
+        if any(word in compact and len(word) >= 2 for word in words):
+            world_switch = {"world": world}
+            break
+    present_assets = {item.get('asset') for item in entities.values()}
+    def resolve_group(side):
+        selection = select_scene_group(side, context, catalog, root) if side else None
+        if selection and not selection.get('category'):
+            return selection['members'], selection['name']
+        return None, None
+    def spawn_missing(members):
+        token = uuid.uuid4().hex[:10]
+        commands, ids = [], []
+        for asset in members:
+            existing = [eid for eid, item in entities.items() if item.get('asset') == asset]
+            if existing:
+                ids.append(existing[0])
+                continue
+            cid = f'group-{token}-{len(commands)}'
+            commands.append({'type': 'entity.spawn', 'id': cid, 'asset': asset, 'position': [0, 0], 'scale': .5})
+            ids.append(cid)
+        return commands, ids
+    surround = re.search(r'包围|围住|围起来|团团围住', compact)
+    if surround:
+        left, right = compact[:surround.start()], compact[surround.end():]
+        left_members, left_name = resolve_group(left)
+        right_members, right_name = resolve_group(right)
+        if left_members and right_members:
+            surround_cmds, surround_ids = spawn_missing(left_members)
+            target_cmds, target_ids = spawn_missing(right_members)
+            if not surround_ids or not target_ids:
+                return None
+            cmds = surround_cmds + target_cmds + [{'type': 'group.surround', 'targets': target_ids, 'surrounders': surround_ids}]
+            return {'reply': f'好，{left_name or "它们"}围住了{right_name or "它们"}。', 'commands': cmds, 'sceneSwitch': world_switch, 'source': 'group', 'matches': [left_name or '', right_name or '']}
+        return None
+    members, name = resolve_group(compact)
+    if not members:
+        members = [item.get('asset') for item in entities.values() if str(item.get('asset', '')).startswith('npc:')]
+        name = '大家'
+    if not members:
+        return None
+    spawn_cmds, ids = spawn_missing(members)
+    if not ids:
+        return None
+    if re.search(r'巡逻|巡视|走一走|遛一遛|走动', compact):
+        action = {'type': 'group.patrol', 'targets': ids}
+        reply = f'好，{name or "大家"}开始巡逻啦。'
+    else:
+        action = {'type': 'group.gather', 'targets': ids}
+        reply = f'好，{name or "大家"}集合起来啦。'
+    return {'reply': reply, 'commands': spawn_cmds + [action], 'sceneSwitch': world_switch, 'source': 'group', 'matches': [name or '']}
+
+
 def removal_scene_result(text, context, catalog):
     """处理“让X消失/全部消失/清空”的意图：移除指定对象或清空当前世界全部实体。"""
     compact = re.sub(r"[，。！？、,.!?\s]", "", text)
@@ -918,6 +983,8 @@ def _keyword_scene_result(text, context):
     catalog = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))
     removal = removal_scene_result(text, context, catalog)
     if removal: return removal
+    group_action = group_action_scene_result(text, context, catalog, ROOT)
+    if group_action: return group_action
     compound = compound_scene_result(text, context, catalog, ROOT, scene_quantity)
     if compound: return compound
     indexed = dict(SCENE_KEYWORDS)
@@ -1025,11 +1092,16 @@ def llm_scene_result(text, context):
     switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
     allowed_assets = set(p["id"] for p in props)
     known_ids = {eid: item.get("asset") for eid, item in (context.get("entities", {}) if isinstance(context, dict) else {}).items()}
+    raw_commands = parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []
+    # A feeding / group action may reference entities this same batch spawns.
+    for command in raw_commands:
+        if isinstance(command, dict) and command.get("type") == "entity.spawn" and isinstance(command.get("id"), str):
+            known_ids.setdefault(command["id"][:64], None)
     commands = []
-    for command in parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []:
+    for command in raw_commands:
         if not isinstance(command, dict): continue
         ctype = command.get("type")
-        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate"}:
+        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"}:
             continue
         item = {"type": ctype, "id": str(command.get("id", ""))[:64]}
         if ctype == "entity.spawn":
@@ -1048,6 +1120,16 @@ def llm_scene_result(text, context):
             preset = command.get("preset")
             if preset not in {"day", "dusk", "night", "default"}: continue
             item["preset"] = preset
+        elif ctype in {"group.patrol", "group.gather"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if not ids: continue
+            item["targets"] = ids
+        elif ctype == "group.surround":
+            targets = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            surrounders = [str(x)[:64] for x in command.get("surrounders", []) if isinstance(x, str) and x in known_ids]
+            if not targets or not surrounders: continue
+            item["targets"] = targets
+            item["surrounders"] = surrounders
         elif ctype == "actor.animate":
             item["target"] = command.get("target")
             item["animation"] = command.get("animation")

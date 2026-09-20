@@ -4,6 +4,7 @@ import { createCreationModel } from "../creation-models.js";
 import { createActor } from "./actor-factory.js";
 
 import { createFeedingController } from "./feeding-controller.js";
+import { createMovementController } from "./movement-controller.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 const PRESETS = {
@@ -37,6 +38,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   stage.scene.add(root);
   const entries = new Map();
   const feeding = createFeedingController({entries,stage,consume:onConsume});
+  const movement = createMovementController({entries, stage});
   let currentWorld = null,
     lastCreations = "",
     lastEnvironment = null,
@@ -51,6 +53,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   }
   function clear() {
     feeding.clear();
+    movement.clear();
     for (const id of [...entries.keys()]) remove(id);
     currentWorld = null;
     lastCreations = "";
@@ -184,12 +187,17 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       }
     }
     for (const c of commands) {
-      if(c.type==='feeding.start') feeding.start(c.eaters,c.foods);
+      if(c.type==='feeding.start') { feeding.start(c.eaters,c.foods); movement.stop([...c.eaters]); }
       if(c.type==='feeding.stop') feeding.stop(c.eaters);
       if(['entity.move','entity.motion'].includes(c.type)) {
         // Consumption persists the current position; other movement cancels feeding.
         if(!commands.some(other=>other.type==='entity.remove')) feeding.stop([c.id]);
+        movement.stop([c.id]);
       }
+      if(c.type==='entity.remove') movement.stop([c.id]);
+      if(c.type==='group.patrol') movement.patrol(c.targets);
+      if(c.type==='group.gather') movement.gather(c.targets);
+      if(c.type==='group.surround') movement.surround(c.targets, c.surrounders);
       if (c.type === "entity.animate") {
         const item = entries.get(c.id);
         if (item?.actor) {
@@ -261,8 +269,10 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         } else item.model.update(dt, stage.reduced, item.state !== "idle");
       }
       feeding.update(dt,time);
+      movement.update(dt,time);
     },
     get feedingStats() { return feeding.stats; },
+    get movementStats() { return movement.stats; },
     getObject(id) { return entries.get(id)?.model.group || null; },
     pick(raycaster) {
       const hits = raycaster.intersectObject(root, true);
