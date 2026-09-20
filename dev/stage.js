@@ -50,6 +50,10 @@ export class DioramaStage {
     this.pitch = DEFAULT_PITCH;
     this.zoom = 1;
     this.studio = false;
+    this.cameraAnim = null;
+    this.cameraHistory = [];
+    this.cameraIndex = -1;
+    this.onCameraHistoryChange = null;
     this.hemisphere = new THREE.HemisphereLight(STORYBOOK_PALETTE.sky, STORYBOOK_PALETTE.bounce, STORYBOOK_PALETTE.hemisphereIntensity);
     this.scene.add(this.hemisphere);
     const key = new THREE.DirectionalLight(STORYBOOK_PALETTE.sun, STORYBOOK_PALETTE.sunIntensity);
@@ -109,6 +113,7 @@ export class DioramaStage {
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
       if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();
+      if (this.cameraAnim) this.stepCameraAnimation(dt);
       this.renderer.render(this.scene, this.camera);
     });
   }
@@ -301,7 +306,63 @@ export class DioramaStage {
     this.resize();
   }
 
-  resetCamera() { if (this.exploration) { this.exploration.goHome(); return; } this.cameraDrift?.reset(); this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+  resetCamera() { if (this.exploration) { this.exploration.goHome(); return; } this.cameraDrift?.reset(); this.cameraAnim = null; this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+
+  // Smooth, animated camera move for reframes. Interpolates yaw/pitch/zoom/
+  // target/pan so a pull-back reads as a process instead of a jump.
+  animateCameraTo(state, duration = .9) {
+    if (this.exploration) return;
+    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit: true, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .12, 1.8), target: state.target.clone(), pan: state.pan.clone() } };
+  }
+  stepCameraAnimation(dt) {
+    const anim = this.cameraAnim;
+    if (!anim) return;
+    anim.t = Math.min(1, anim.t + dt / anim.duration);
+    const eased = 1 - Math.pow(1 - anim.t, 3);
+    this.yaw = anim.from.yaw + (anim.to.yaw - anim.from.yaw) * eased;
+    this.pitch = anim.from.pitch + (anim.to.pitch - anim.from.pitch) * eased;
+    this.zoom = anim.from.zoom + (anim.to.zoom - anim.from.zoom) * eased;
+    this.target.lerpVectors(anim.from.target, anim.to.target, eased);
+    this.panOffset.lerpVectors(anim.from.pan, anim.to.pan, eased);
+    this.resize();
+    if (anim.t >= 1) { this.cameraAnim = null; if (anim.commit) this.saveCameraState(); }
+  }
+
+  // Camera history for the back/forward arrows in the module gallery.
+  saveCameraState() {
+    const state = { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() };
+    const last = this.cameraHistory[this.cameraIndex];
+    const same = last && Math.abs(last.yaw - state.yaw) < 1e-4 && Math.abs(last.pitch - state.pitch) < 1e-4 && Math.abs(last.zoom - state.zoom) < 1e-4 && last.target.distanceToSquared(state.target) < 1e-6 && last.pan.distanceToSquared(state.pan) < 1e-6;
+    if (!same) {
+      this.cameraHistory = this.cameraHistory.slice(0, this.cameraIndex + 1);
+      this.cameraHistory.push(state);
+      this.cameraIndex = this.cameraHistory.length - 1;
+      if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    }
+    return this.cameraIndex;
+  }
+  restoreCameraState(state) {
+    if (!state || this.exploration) return;
+    this.cameraAnim = null;
+    this.yaw = state.yaw; this.pitch = state.pitch; this.zoom = clamp(state.zoom, .12, 1.8);
+    this.target.copy(state.target); this.panOffset.copy(state.pan);
+    this.resize();
+  }
+  cameraBack() {
+    if (this.cameraIndex <= 0) return false;
+    this.cameraIndex--;
+    this.restoreCameraState(this.cameraHistory[this.cameraIndex]);
+    if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    return true;
+  }
+  cameraForward() {
+    if (this.cameraIndex >= this.cameraHistory.length - 1) return false;
+    this.cameraIndex++;
+    this.restoreCameraState(this.cameraHistory[this.cameraIndex]);
+    if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    return true;
+  }
+  cameraNavState() { return { index: this.cameraIndex, count: this.cameraHistory.length }; }
 
   setLighting(atmosphere = {}) {
     const settings = { ...STORYBOOK_PALETTE, ...atmosphere.lighting };

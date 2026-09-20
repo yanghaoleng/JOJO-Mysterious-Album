@@ -30,9 +30,11 @@ function reduce(state, c, context) {
       : null;
   const entity = world?.entities[c.id];
   if (c.type.startsWith('feeding.')) {
+    // “A 吃 B”允许任意对象互吃：吃者与食物只要在当前世界中存在即可，
+    // 不强制吃者是角色、食物是可食用类（例如“鸡腿吃汉堡”也成立）。
     const entities=worldState(state,context.world).entities;
-    for(const id of c.eaters) requireValue(entities[id] && ASSETS[entities[id].asset]?.kind==='actor','Eater must be an actor in this world');
-    if(c.type==='feeding.start') for(const id of c.foods) requireValue(entities[id] && ASSETS[entities[id].asset]?.edible,'Target must be edible in this world');
+    for(const id of c.eaters) requireValue(entities[id], 'Eater must exist in this world');
+    if(c.type==='feeding.start') for(const id of c.foods) requireValue(entities[id], 'Food must exist in this world');
     return;
   }
 

@@ -248,6 +248,15 @@ function eventDemo() {
   fillProposal();
   log();
 }
+function syncCameraNav() {
+  const nav = $("camera-nav");
+  if (!nav) return;
+  nav.hidden = !stage;
+  if (!stage) return;
+  const { index, count } = stage.cameraNavState();
+  $("camera-back").disabled = index <= 0;
+  $("camera-forward").disabled = index >= count - 1;
+}
 function aiControlDemo() {
   startWorld(AI_CONTROL_LEVEL.world);
   $("command-panel").dataset.mode = "natural";
@@ -256,6 +265,11 @@ function aiControlDemo() {
   controlRecords = [];
   activeControlRecord = -1;
   renderControlTabs();
+  stage.onCameraHistoryChange = syncCameraNav;
+  $("camera-back").onclick = () => stage.cameraBack();
+  $("camera-forward").onclick = () => stage.cameraForward();
+  stage.saveCameraState();
+  syncCameraNav();
   $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
 }
 function renderControlTabs() {
@@ -312,9 +326,13 @@ async function naturalControl() {
       startWorld(result.sceneSwitch.world);
       trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, "    状态：已完成淡出 / 淡入");
     }
+    stage.saveCameraState();
     const layout = arrangeInView(result.commands, game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}, stage);
     const arranged = layout.commands;
-    if (layout.reframed) trace.push('[镜头调整]', '    已自动拉远并重新取景，选择容纳新模型的正面地面。');
+    if (layout.reframed) {
+      syncCameraNav();
+      trace.push('[镜头调整]', '    已渐进拉远取景（保留了当前视角方向），新模型尽量留在原镜头内。');
+    }
     if (layout.reduced) trace.push('[密度调整]', '    已适当缩小本批模型，采用紧凑排列。');
     trace.push('[5] 视野内散落', `    ${arranged.filter(c => c.type === 'entity.spawn').length} 个新模型，已检查镜头和地面遮挡；采用紧凑排列，密集时允许接触并播放碰撞反馈。`);
     const recycled = capacityEvictions(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}, arranged).length;
@@ -515,6 +533,7 @@ function select(item) {
   $("preview-stage").hidden = true;
   $("preview-stage").style.height = '';
   resizeHandle.hidden = true;
+  $("camera-nav") && ($("camera-nav").hidden = true);
   $("preview-ui").hidden = true;
   $("preview-ui").replaceChildren();
   $("preview-controls").replaceChildren();

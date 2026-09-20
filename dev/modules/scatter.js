@@ -74,39 +74,48 @@ export function scatterCommands(commands, entities, world, random = Math.random,
 }
 
 // Reframe from physical world dimensions, never multiply an already zoomed-out
-// camera repeatedly. Keep all sampling on the visible, representable hemisphere.
+// camera repeatedly. Pull back gradually in small steps with a floor, keep the
+// current viewport direction when possible, and hand the finished move to the
+// stage so it animates instead of jumping. New models stay inside the current
+// camera whenever the current framing can hold them.
 export function arrangeInView(commands, entities, stage, random = Math.random) {
-  // Explicit resizing preserves positions and sizes, widening the camera when needed.
-  const resizes=commands.filter(c=>c.type==='entity.scale' && entities[c.id]);
-  if(resizes.length){
-    const extent=Math.max(3,...resizes.map(c=>{const asset=entities[c.id].asset;return Math.max(footprint(asset,c.scale),heights.get(asset)*c.scale);}));
-    const diameter=stage.world.planet.radius*2+extent*2;
-    stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
-    stage.zoom*=Math.min(1,(stage.camera.right-stage.camera.left)*.8/diameter,(stage.camera.top-stage.camera.bottom)*.8/diameter);stage.resize();
-  }
   const original = {zoom:stage.zoom, pitch:stage.pitch, yaw:stage.yaw, target:stage.target.clone(), pan:stage.panOffset.clone()};
   const attempt = (factor, contactPacking = false) => scatterCommands(commands.map(c => c.type === 'entity.spawn' ? {...c,scale:c.sizeLocked ? c.scale : Math.max(.2,(c.scale ?? .55)*factor)} : c),entities,stage.world,random,stage.camera,{compact:true,contactPacking});
-  try { return {commands:attempt(1), reframed:false, reduced:false}; }
-  catch(error) { if(error.code !== 'placement_retry') throw error; }
-  const maxSize=Math.max(3,...commands.filter(c=>c.type==='entity.spawn').map(c=>Math.max(footprint(c.asset,c.scale||.55),heights.get(c.asset)*(c.scale||.55))));
-  const diameter = stage.world.planet.radius * 2 + maxSize*2;
-  stage.target.copy(stage.world.planet.center);
-  stage.panOffset.set(0,0,0);
-  stage.zoom *= Math.min((stage.camera.right-stage.camera.left)*.85/diameter,(stage.camera.top-stage.camera.bottom)*.8/diameter);
-  try {
-    for (const factor of [1,.75,.5,.36,.2]) {
-      for (const turn of [0,1,2,3]) {
-        stage.pitch = Math.max(.8, original.pitch);
-        stage.yaw = original.yaw + turn * Math.PI / 2;
-        stage.resize();
-        try { return {commands:attempt(factor,factor===.2),reframed:true,reduced:factor<1}; }
-        catch(error) { if(error.code !== 'placement_retry') throw error; }
-      }
-    }
-    throw new Error(commands.some(c=>c.sizeLocked) ? '当前区域放不下指定尺寸与数量，请减少数量或选更大的星球；指定尺寸未被缩小。' : '自动布局暂未完成，请重新提交；已有模型保持不变。');
-  } catch(error) {
+  const commit = (target, reduced, factor) => {
+    // Position the new models inside the target framing first, then return the
+    // camera to the original spot and animate the move over ~0.9s.
+    stage.zoom = target.zoom; stage.pitch = target.pitch; stage.yaw = target.yaw;
+    stage.target.copy(target.target); stage.panOffset.copy(target.pan); stage.resize();
+    const commands = attempt(factor, target.zoom < original.zoom * .9 || factor < 1);
     Object.assign(stage,{zoom:original.zoom,pitch:original.pitch,yaw:original.yaw});
     stage.target.copy(original.target); stage.panOffset.copy(original.pan); stage.resize();
-    throw error;
+    stage.animateCameraTo(target,.9);
+    return {commands, reframed:true, reduced};
+  };
+  try { return {commands:attempt(1), reframed:false, reduced:false}; }
+  catch(error) { if(error.code !== 'placement_retry') throw error; }
+  // Small, bounded pull-backs: each step shrinks the framing slightly, never a
+  // single jump to the farthest possible view, and never below a zoom floor.
+  const minZoom=Math.max(.22,Math.min(original.zoom*.55,original.zoom*((stage.camera.right-stage.camera.left)/(stage.world.planet.radius*2+3))));
+  for (const factor of [1,.75,.5]) {
+    let zoom=original.zoom;
+    while(zoom>minZoom+.001){
+      zoom=Math.max(minZoom,zoom*.88);
+      stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
+      stage.pitch=original.pitch;stage.yaw=original.yaw;stage.zoom=zoom;stage.resize();
+      try { return commit({yaw:original.yaw,pitch:original.pitch,zoom,target:stage.target.clone(),pan:stage.panOffset.clone()},factor<1,factor); }
+      catch(error) { if(error.code !== 'placement_retry') throw error; }
+    }
   }
+  // Still stuck: a gentle yaw nudge as the last resort, never a 90-degree turn.
+  for (const turn of [.35,-.35,.7,-.7]) {
+    const zoom=Math.max(minZoom,original.zoom*.5);
+    stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
+    stage.pitch=original.pitch;stage.yaw=original.yaw+turn;stage.zoom=zoom;stage.resize();
+    try { return commit({yaw:stage.yaw,pitch:original.pitch,zoom,target:stage.target.clone(),pan:stage.panOffset.clone()},true,.5); }
+    catch(error) { if(error.code !== 'placement_retry') throw error; }
+  }
+  Object.assign(stage,{zoom:original.zoom,pitch:original.pitch,yaw:original.yaw});
+  stage.target.copy(original.target); stage.panOffset.copy(original.pan); stage.resize();
+  throw new Error(commands.some(c=>c.sizeLocked) ? '当前区域放不下指定尺寸与数量，请减少数量或选更大的星球；指定尺寸未被缩小。' : '自动布局暂未完成，请重新提交；已有模型保持不变。');
 }

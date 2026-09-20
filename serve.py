@@ -34,7 +34,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 from scene_appearance import appearance_edit, decorate_spawns
-from scene_interactions import compound_scene_result
+from scene_interactions import compound_scene_result, resolve_objects
 from scene_groups import select_scene_group, spawn_scene_group
 from volc_asr import transcribe_pcm
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
@@ -804,13 +804,24 @@ def director_result(idea):
     return {"mechanic": mechanic, "abilityLabel": label, "narratorLine": line[:60], "gateLine": gate_line}
 
 
-SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。把孩子的一句话翻译成安全、可执行的结构化世界操作。
+SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。先理解孩子这句话的意图，再从下面的功能里选出最接近的一项或几项，翻译成安全、可执行的结构化世界操作。
 只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
-允许的命令只有：
-1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，asset 只能是 prop:rocket、prop:balloon、prop:house、prop:rocket 或 npc:jiaojiao、npc:jiaojiao-mom；
-2. entity.move: {type,id,position:[x,z]}，只能移动已经存在的实体；
-3. entity.animate: {type,id,animation:"activate"}。
-位置坐标每轴只能在 -9 到 9。需要“巨人的口袋”时切换到 pocket；说“另一个星球/换个星球”时从可用 world 中选择一个与当前不同的 world。不要输出 JS、HTML、URL 或任意属性路径。"""
+允许的命令：
+1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；
+2. entity.remove: {type,id}，让指定模型消失；
+3. entity.move: {type,id,position:[x,z]}，只能移动已经存在的实体；
+4. entity.animate: {type,id,animation:"activate"}，触发机关；
+5. entity.scale: {type,id,scale}，调整大小；entity.color: {type,id,color}，改变颜色；
+6. feeding.start: {type,eaters:[id...],foods:[id...]}，让吃者去吃食物（吃者与食物都必须是场景中已存在的实体 id）；
+7. environment.set: {type,preset:"day|dusk|night|default"}，切换白天/黄昏/夜晚。
+意图匹配规则：
+- “出现/生成/变出/召唤 X 个 Y” → entity.spawn；
+- “让 Y 消失/把 Y 拿走/删掉 Y/清除 Y” → entity.remove（若是“全部消失/清空/都没了”，列出当前场景所有实体 id 逐一 remove）；
+- “Y 吃 Z”或“让 Y 吃 Z” → 先生成 Y、Z（如果还没有），再用 feeding.start 让 Y 吃 Z；
+- “去/到 口袋/月球/草地/果园/面包房/海底/云层/家” → sceneSwitch；
+- “变亮/天亮了/白天” → environment.set day，“黄昏/傍晚” → dusk，“天黑/夜晚” → night；
+- “把 Y 变大/变小/换颜色” → entity.scale / entity.color（Y 必须是已存在的实体）。
+位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
 
 SCENE_KEYWORDS = {
     "rocket": {"asset": "prop:rocket", "words": ["好奇火箭", "火箭", "飞船"]},
@@ -868,6 +879,33 @@ def approximate_scene_result(text, context):
     }
 
 
+def removal_scene_result(text, context, catalog):
+    """处理“让X消失/全部消失/清空”的意图：移除指定对象或清空当前世界全部实体。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    if not re.search(r'消失|移除|删除|清除|拿走|去掉|不见了|都不见|没了|清空', compact):
+        return None
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    if not entities:
+        return {'reply': '场景里还没有模型，先召唤一些再让它消失吧。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    # 指定对象消失：优先按道具/角色名匹配（“让火箭和气球都消失”只移除这两个对象）
+    selection = select_scene_group(compact, context, catalog, ROOT)
+    target_assets = set()
+    if selection and re.search(r'消失|移除|删除|清除|拿走|去掉|不见了', compact):
+        target_assets.update(selection.get('members', []))
+    objects = resolve_objects(text, catalog, scene_quantity)
+    target_assets.update(item['asset'] for item in objects)
+    if target_assets:
+        ids = [eid for eid, entity in entities.items() if entity.get('asset') in target_assets]
+        if not ids:
+            return {'reply': '场景里还没有这个模型。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+        return {'reply': f'好，{len(ids)} 个模型消失啦。', 'commands': [{'type': 'entity.remove', 'id': eid} for eid in ids], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    # 全部消失 / 清空场景（未点名具体对象时）
+    if re.search(r'全部|所有|全都|统统|清空|整个场景|都没了', compact):
+        ids = list(entities.keys())[:300]
+        return {'reply': f'好，{len(ids)} 个模型都收起来啦。', 'commands': [{'type': 'entity.remove', 'id': eid} for eid in ids], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    return {'reply': '想让谁消失呢？可以说“让火箭消失”或“全部消失”。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+
+
 def keyword_scene_result(text, context):
     catalog = json.loads((ROOT / 'dev/modules/catalog.json').read_text(encoding='utf-8'))
     edit = appearance_edit(text, context, catalog, ROOT, scene_quantity)
@@ -878,6 +916,8 @@ def keyword_scene_result(text, context):
 def _keyword_scene_result(text, context):
     # Read the generated catalog so newly registered prefabs are callable too.
     catalog = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))
+    removal = removal_scene_result(text, context, catalog)
+    if removal: return removal
     compound = compound_scene_result(text, context, catalog, ROOT, scene_quantity)
     if compound: return compound
     indexed = dict(SCENE_KEYWORDS)
@@ -907,6 +947,9 @@ def _keyword_scene_result(text, context):
     for world, words in SCENE_NAMES.items():
         if any(word in compact and len(word) >= asset_match_length for word in words):
             return {"reply": f"好，我们去{words[0]}看看。", "sceneSwitch": {"world": world}, "commands": [], "source": "keyword", "matches": words}
+    for preset, words in {"night": ["天黑", "夜晚", "晚上", "关灯", "睡觉时间"], "dusk": ["黄昏", "傍晚", "夕阳"], "day": ["天亮", "白天", "早上好", "天亮了", "开灯"]}.items():
+        if any(word in compact for word in words):
+            return {"reply": f"好，把天空变成{preset}的样子。", "commands": [{"type": "environment.set", "preset": preset}], "sceneSwitch": None, "source": "keyword", "matches": words}
     if re.search(r"另一个星球|换个星球|去别的星球", compact):
         worlds = [item for item in (context.get("worlds", []) if isinstance(context, dict) else []) if item != current]
         return {"reply": "好，我们换一颗星球看看。", "sceneSwitch": {"world": worlds[0] if worlds else "moon"}, "commands": [], "source": "keyword", "matches": ["另一个星球"]}
@@ -940,9 +983,21 @@ def resolve_scene_control(text, context):
     text = str(text or "").strip().replace("<", "").replace(">", "")[:180]
     if not text:
         raise ValueError("command_required")
+    key = os.environ.get("ARK_API_KEY", "")
+    # 语言模型是意图理解的主入口：先让模型把这句话映射到最接近的功能，
+    # 失败或未配置时再退回本地关键词规则，保证离线也能用。
+    if key:
+        try:
+            return llm_scene_result(text, context)
+        except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError):
+            pass
     keyword_result = keyword_scene_result(text, context)
     if keyword_result:
         return keyword_result
+    raise RuntimeError("scene_control_not_configured")
+
+
+def llm_scene_result(text, context):
     key = os.environ.get("ARK_API_KEY", "")
     if not key:
         raise RuntimeError("scene_control_not_configured")
@@ -968,19 +1023,36 @@ def resolve_scene_control(text, context):
     allowed_worlds = {"meadow", "pocket", "orchard", "bakery", "bridge", "home", "observatory", "reef", "cloud", "moon", "cove"}
     switch = parsed.get("sceneSwitch")
     switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
-    allowed_assets = {"prop:rocket", "prop:balloon", "prop:house", "npc:jiaojiao", "npc:jiaojiao-mom"}
-    allowed_assets.update(p["id"] for p in props)
+    allowed_assets = set(p["id"] for p in props)
+    known_ids = {eid: item.get("asset") for eid, item in (context.get("entities", {}) if isinstance(context, dict) else {}).items()}
     commands = []
     for command in parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []:
-        if not isinstance(command, dict) or command.get("type") not in {"entity.spawn", "entity.move", "entity.animate"}: continue
-        item = {"type": command["type"], "id": str(command.get("id", ""))[:64]}
-        if command["type"] == "entity.spawn":
+        if not isinstance(command, dict): continue
+        ctype = command.get("type")
+        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate"}:
+            continue
+        item = {"type": ctype, "id": str(command.get("id", ""))[:64]}
+        if ctype == "entity.spawn":
             item.update({"asset": command.get("asset"), "position": command.get("position"), "color": command.get("color"), "scale": command.get("scale")})
             if item["asset"] not in allowed_assets: continue
-        elif command["type"] == "entity.move": item["position"] = command.get("position")
-        else: item["animation"] = "activate"
+        elif ctype in {"entity.move", "entity.scale", "entity.color", "entity.animate"}:
+            if ctype == "entity.move": item["position"] = command.get("position")
+            if ctype == "entity.scale": item["scale"] = command.get("scale")
+            if ctype == "entity.color": item["color"] = command.get("color")
+            if ctype == "entity.animate": item["animation"] = "activate"
+        elif ctype == "feeding.start":
+            item["eaters"] = [str(x)[:64] for x in command.get("eaters", []) if isinstance(x, str) and x in known_ids]
+            item["foods"] = [str(x)[:64] for x in command.get("foods", []) if isinstance(x, str) and x in known_ids]
+            if not item["eaters"] or not item["foods"]: continue
+        elif ctype == "environment.set":
+            preset = command.get("preset")
+            if preset not in {"day", "dusk", "night", "default"}: continue
+            item["preset"] = preset
+        elif ctype == "actor.animate":
+            item["target"] = command.get("target")
+            item["animation"] = command.get("animation")
         commands.append(item)
-    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32]}
+    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model"}
 
 
 def likely_private_info(value):

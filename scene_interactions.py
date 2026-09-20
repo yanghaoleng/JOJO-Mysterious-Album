@@ -46,8 +46,9 @@ def compound_scene_result(text, context, catalog, root, quantity):
         group = select_scene_group(left,context,catalog,root)
         if group and not group['category']:
             actors = [{'asset':asset,'kind':'actor','count':1,'explicit':True} for asset in group['members']]
-        if not actors or not foods or any(a['kind']!='actor' for a in actors) or any(f['category']!='食物' for f in foods):
-            return {'reply':'吃东西需要明确的角色和食物，例如“10个猪小弟吃80个汉堡包”。','commands':[],'sceneSwitch':None,'source':'compound','handled':True}
+        # “A 吃 B”不限定吃者必须是角色、食物必须是食物类：只要两边都能识别出对象即可。
+        if not actors or not foods:
+            return {'reply':'吃东西需要明确的吃者和食物，例如“10个猪小弟吃80个汉堡包”。','commands':[],'sceneSwitch':None,'source':'compound','handled':True}
         objects = actors + foods
     elif not re.search(r'来|生成|变出|召唤|放|加|\d+|[一二两三四五六七八九十]+[个只辆份]',text):
         return None
@@ -70,6 +71,6 @@ def compound_scene_result(text, context, catalog, root, quantity):
         targets=[id for batch in ids[len(actors):] for id in batch]
         if len(eaters)>100 or len(targets)>100: raise ValueError('一次进食最多安排100个角色和100份食物。')
         commands.append({'type':'feeding.start','eaters':eaters,'foods':targets})
-        reply=f'{len(eaters)}个角色和{len(targets)}份食物已安排：各自寻找食物，吃两下消耗一份，吃完继续寻找。'
+        reply=f'{len(eaters)}个对象和{len(targets)}份食物已安排：各自寻找食物，吃两下消耗一份，吃完继续寻找。'
     else: reply=f'已分别安排{len(objects)}类对象，共{len(commands)}个模型。'
     return {'reply':reply,'commands':commands,'sceneSwitch':None,'source':'compound','matches':[o['asset']+' × '+str(len(batch)) for o,batch in zip(objects,ids)],'handled':True}
