@@ -594,8 +594,14 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
     rod('#a38c6a', [0, 0.04, 0], [0, 2.57, 0], 0.045, flagpole);
     ball('#dac59d', 0, 2.63, 0, 0.075, 0.075, 0.075, flagpole);
     const flag = part(1.88, 2.31, -2.2, liveRoot, 0, 'fabric');
-    shapeMesh([[0, 0.17], [0.97, 0.06], [0.97, -0.53], [0, -0.44]], '#bb816f', 0.035, flag, [0, 0, 0], 0.025);
-    cylinder('#edddbb', 0.45, -0.16, 0.055, 0.15, 0.15, 0.02, flag, [Math.PI / 2, 0, 0]);
+    shapeMesh([[0, 0.17], [0.97, 0.06], [0.97, -0.53], [0, -0.44]], '#397fc4', 0.035, flag, [0, 0, 0], 0.025);
+    const flagStar = Array.from({ length: 10 }, (_, i) => {
+      const angle = Math.PI / 2 + i * Math.PI / 5;
+      const radius = i % 2 ? 0.076 : 0.19;
+      return [Math.cos(angle) * radius, Math.sin(angle) * radius];
+    });
+    for (const z of [-0.037, 0.064])
+      shapeMesh(flagStar, '#ffda45', 0.008, flag, [0.45, -0.16, z], 0);
     animators.push(time => { flag.rotation.y = Math.sin(time * 0.8) * 0.09 + (time - reactionAt < 3 ? Math.sin((time - reactionAt) * 4) * 0.12 : 0); });
     const earth = part(-0.75, 3.58, -3.58, liveRoot, 0, 'paint');
     ball('#7fabb1', 0, 0, 0, 0.46, 0.46, 0.46, earth);

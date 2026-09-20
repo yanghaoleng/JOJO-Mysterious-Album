@@ -27,7 +27,12 @@ export function build({
       0.025,
       2 + i * 0.2,
     );
-  const flag = part("box", color, [0.63, 2.05, -0.25], [0.45, 0.28, 0.035]);
+  const flag = new THREE.Group();
+  flag.position.set(0.63, 2.05, -0.25);
+  group.add(flag);
+  part("box", "#397fc4", [0, 0, 0], [0.45, 0.28, 0.035], flag);
+  for (const z of [-0.023, 0.023])
+    part("flag-star", "#ffda45", [0, 0, z], [0.105, 0.105, 0.008], flag);
   moving(flag, "sway", 0.15);
   beam([0.4, 1.8, -0.25], [0.4, 2.3, -0.25], 0.025);
 }

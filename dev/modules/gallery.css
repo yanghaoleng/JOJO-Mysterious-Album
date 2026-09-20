@@ -174,12 +174,16 @@ button[aria-current="true"] {
   overflow: auto;
   scrollbar-width: thin;
   display: grid;
+  align-content: start;
+  grid-auto-rows: 64px;
   gap: 4px;
 }
 .module-row {
   display:flex;
   align-items:center;
   gap:10px;
+  height:64px;
+  min-height:64px;
   text-align: left;
   width: 100%;
   border-color: transparent;
