@@ -162,7 +162,7 @@ export function validateCommand(command) {
       "Position must be two surface coordinates within -9..9",
     );
     for(const field of ['sizeLocked','colorOverride']) requireValue(c[field]===undefined || typeof c[field]==='boolean','Invalid appearance override');
-    requireValue(c.color === undefined || isColor(c.color), "Invalid color");
+    if (c.color !== undefined && !isColor(c.color)) delete c.color;
     requireValue(
       c.scale === undefined ||
         (Number.isFinite(c.scale) && c.scale >= 0.1 && c.scale <= 5.2),
@@ -177,8 +177,9 @@ export function validateCommand(command) {
         c.position.every((n) => Number.isFinite(n) && Math.abs(n) <= 9),
       "Position must be two surface coordinates within -9..9",
     );
-  if (c.type === "entity.color")
-    requireValue(isColor(c.color), "Invalid color");
+  if (c.type === "entity.color") {
+    if (!isColor(c.color)) delete c.color;
+  }
   if (c.type === "entity.state")
     requireValue(
       ["idle", "working", "active"].includes(c.state),
