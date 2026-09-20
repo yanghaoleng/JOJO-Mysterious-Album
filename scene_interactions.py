@@ -1,4 +1,5 @@
 """Resolve bounded multi-object requests before the single-noun fallback."""
+import random
 import re
 import uuid
 from scene_groups import select_scene_group
@@ -86,5 +87,8 @@ def compound_scene_result(text, context, catalog, root, quantity):
         if len(eaters)>100 or len(targets)>100: raise ValueError('一次进食最多安排100个角色和100份食物。')
         commands.append({'type':'feeding.start','eaters':eaters,'foods':targets})
         reply=f'{len(eaters)}个对象和{len(targets)}份食物已安排：各自寻找食物，吃两下消耗一份，吃完继续寻找。'
-    else: reply=f'已分别安排{len(objects)}类对象，共{len(commands)}个模型。'
-    return {'reply':reply,'commands':commands,'sceneSwitch':None,'source':'compound','matches':[o['asset']+' × '+str(len(batch)) for o,batch in zip(objects,ids)],'handled':True}
+        camera = {'move': random.choice(['otd', 'closeup', 'otd'])}
+    else:
+        reply=f'已分别安排{len(objects)}类对象，共{len(commands)}个模型。'
+        camera = None
+    return {'reply':reply,'commands':commands,'sceneSwitch':None,'source':'compound','matches':[o['asset']+' × '+str(len(batch)) for o,batch in zip(objects,ids)],'handled':True,'camera':camera}

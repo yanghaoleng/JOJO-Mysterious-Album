@@ -51,6 +51,7 @@ export class DioramaStage {
     this.zoom = 1;
     this.studio = false;
     this.angleMode = 'ground';
+    this.orbit = null;
     this.cameraAnim = null;
     this.cameraHistory = [];
     this.cameraIndex = -1;
@@ -111,6 +112,12 @@ export class DioramaStage {
       this.worldPresenter?.update(dt);
       this.storyTapTarget?.update(dt);
       if (this.exploration) this.updateCamera();
+      if (this.orbit) {
+        // A slow, deliberate orbit around the current subject. The camera is
+        // retargeted here every frame; drift stays quiet during the spin.
+        this.yaw += dt * this.orbit.speed;
+        this.updateCamera();
+      }
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
       if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();
@@ -124,6 +131,7 @@ export class DioramaStage {
     canvas.addEventListener('contextmenu', event => event.preventDefault());
     canvas.addEventListener('pointerdown', event => {
       if (event.button !== undefined && ![0, 2].includes(event.button)) return;
+      this.stopOrbit();
       this.cameraDrift?.pause();
       this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
       if (this.pointers.size >= 2) {
@@ -174,6 +182,7 @@ export class DioramaStage {
     canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
       event.preventDefault();
+      this.stopOrbit();
       this.cameraDrift?.pause();
       this.zoom = clamp(this.zoom - event.deltaY * .001, .12, 1.8);
       this.resize();
@@ -354,6 +363,7 @@ export class DioramaStage {
   }
   cameraBack() {
     if (this.cameraIndex <= 0) return false;
+    this.stopOrbit();
     this.cameraIndex--;
     // History jumps are moves, not teleports: animate to the previous framing.
     this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
@@ -362,6 +372,7 @@ export class DioramaStage {
   }
   cameraForward() {
     if (this.cameraIndex >= this.cameraHistory.length - 1) return false;
+    this.stopOrbit();
     this.cameraIndex++;
     this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
     if (this.onCameraHistoryChange) this.onCameraHistoryChange();
@@ -369,11 +380,48 @@ export class DioramaStage {
   }
   cameraNavState() { return { index: this.cameraIndex, count: this.cameraHistory.length }; }
 
+  stopOrbit() { this.orbit = null; }
+
+  // Cinematic camera language. The LLM may suggest a shot (kind) or a move
+  // (move); every change transitions through animateCameraTo. The player can
+  // still override any of this with their own drag / pinch / wheel.
+  playCinematic({ kind, move } = {}) {
+    if (this.exploration) return;
+    this.stopOrbit();
+    const subject = this.target.clone(), pan = this.panOffset.clone();
+    if (kind === 'orbit') {
+      // Slow orbiting view: pitch stays gently downward, yaw keeps turning.
+      this.orbit = { speed: .11, pitch: Math.max(.35, this.pitch) };
+      this.angleMode = 'orbit';
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.orbit.pitch, zoom: this.zoom, target: subject, pan }, 1.1);
+    } else if (kind === 'overhead') {
+      this.angleMode = 'overhead';
+      this.animateCameraTo({ yaw: this.yaw, pitch: 1.35, zoom: Math.min(1.8, this.zoom * 1.35), target: subject, pan }, 1);
+    } else if (kind === 'ground') {
+      this.angleMode = 'ground';
+      this.animateCameraTo({ yaw: this.yaw, pitch: .25, zoom: this.zoom, target: subject, pan }, 1);
+    }
+    if (move === 'zoomIn') {
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .7), target: subject, pan }, 1.6);
+    } else if (move === 'zoomOut') {
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.min(1.8, this.zoom * 1.45), target: subject, pan }, 1.6);
+    } else if (move === 'closeup') {
+      // Tight close-up on the subject.
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .4), target: subject, pan }, 1.2);
+    } else if (move === 'otd') {
+      // Over-the-obstacle framing: the subject stays off-centre and close.
+      const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .45), target: subject.clone().addScaledVector(right, .55), pan }, 1.2);
+    }
+    this.onCameraHistoryChange?.();
+  }
+
   // One button toggles between a top-down view and a 45-degree ground view.
   // Both are fixed presets; the other camera controls are untouched.
   toggleCameraAngle() {
     if (this.exploration) return this.angleMode;
-    const overhead = this.angleMode === 'overhead';
+    this.stopOrbit();
+    const overhead = this.angleMode === 'overhead' || this.angleMode === 'orbit';
     this.angleMode = overhead ? 'ground' : 'overhead';
     const pitch = overhead ? .6 : 1.35;
     const zoom = overhead ? Math.max(.22, Math.min(1.8, this.zoom * 1.35)) : Math.max(.22, this.zoom / 1.35);

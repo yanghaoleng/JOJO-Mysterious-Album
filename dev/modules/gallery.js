@@ -353,6 +353,11 @@ async function naturalControl() {
     if(arranged.some(c=>c.type==='group.patrol')) trace.push('[巡逻]','    角色沿直线来回走动，带一点小动作。');
     if(arranged.some(c=>c.type==='group.gather')) trace.push('[聚拢]','    角色/物件集合到一起。');
     if(arranged.some(c=>c.type==='group.surround')) trace.push('[包围]','    包围者围成一圈，被围者先聚拢到中间。');
+    if(result.camera) {
+      const shot = [result.camera.kind, result.camera.move].filter(Boolean).join(' / ');
+      stage.playCinematic(result.camera);
+      trace.push('[运镜]', `    系统调用「${shot}」镜头（切换带过渡）。`);
+    }
     trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
     const spawnCount = arranged.filter(c => c.type === 'entity.spawn').length;
     const arrivalSeconds = stage.reduced ? 0 : 2 + Math.min(8, Math.max(0, spawnCount - 1) * .28);

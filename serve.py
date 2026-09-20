@@ -16,6 +16,7 @@ import hashlib
 import hmac
 import math
 import os
+import random
 import re
 import secrets
 import sqlite3
@@ -826,6 +827,7 @@ SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。孩子会像导演
 - “X 集合/聚拢/围过来/走到一起” → group.gather；
 - “X 包围/围住 Y/X 团团围住 Y” → group.surround（X 是包围者，Y 是被围者）；
 - 一条话组合多步：例如“叫叫小分队开始在月球上巡逻”= sceneSwitch moon + 生成叫叫小分队成员 + group.patrol；“绿豆家族出现了，他们包围住了叫叫小分队”= 生成绿豆家族 + group.surround（绿豆家族围住叫叫小分队）。
+"camera":null或{"kind":"ground|overhead|orbit","move":"zoomIn|zoomOut|closeup|otd"}（可选运镜建议）：包围/围住 → orbit 环绕；A 吃 B → otd 或 closeup（遮挡物旁/近距离特写）；生成很多 → zoomOut；单个主体登场 → zoomIn 或 closeup；切换回正常 → ground。切换都带过渡。
 位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
 
 SCENE_KEYWORDS = {
@@ -924,7 +926,7 @@ def group_action_scene_result(text, context, catalog, root):
             if not surround_ids or not target_ids:
                 return None
             cmds = surround_cmds + target_cmds + [{'type': 'group.surround', 'targets': target_ids, 'surrounders': surround_ids}]
-            return {'reply': f'好，{left_name or "它们"}围住了{right_name or "它们"}。', 'commands': cmds, 'sceneSwitch': world_switch, 'source': 'group', 'matches': [left_name or '', right_name or '']}
+            return {'reply': f'好，{left_name or "它们"}围住了{right_name or "它们"}。', 'commands': cmds, 'sceneSwitch': world_switch, 'source': 'group', 'matches': [left_name or '', right_name or ''], 'camera': {'kind': 'orbit'}}
         return None
     members, name = resolve_group(compact)
     if not members:
@@ -1134,7 +1136,16 @@ def llm_scene_result(text, context):
             item["target"] = command.get("target")
             item["animation"] = command.get("animation")
         commands.append(item)
-    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model"}
+    camera = None
+    shot = parsed.get("camera")
+    if isinstance(shot, dict):
+        kind = shot.get("kind") if shot.get("kind") in {"ground", "overhead", "orbit"} else None
+        move = shot.get("move") if shot.get("move") in {"zoomIn", "zoomOut", "closeup", "otd"} else None
+        if kind or move:
+            camera = {}
+            if kind: camera["kind"] = kind
+            if move: camera["move"] = move
+    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model", "camera": camera}
 
 
 def likely_private_info(value):
