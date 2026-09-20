@@ -8,6 +8,7 @@ import { AnswerSupport } from "../answer-support.js";
 import { planCreation } from "../creation-catalog.js";
 import { resolveSceneIndex } from "../runtime/story-progress.js";
 import { EVENT_PLAYGROUND } from "../content/examples/event-playground.js";
+import { AI_CONTROL_LEVEL } from "../content/examples/ai-control-level.js";
 
 const $ = (id) => document.getElementById(id);
 let stage,
@@ -16,6 +17,7 @@ let stage,
   filter = "all",
   limit = 60,
   cleanup = () => {};
+let controlRecords = [], activeControlRecord = -1;
 const counts = Object.fromEntries(
   Object.keys(MODULE_KINDS).map((kind) => [
     kind,
@@ -80,6 +82,13 @@ $("module-search").oninput = () => {
   limit = 60;
   renderList();
 };
+$("search-submit").onclick = () => { $("module-search").focus(); renderList(); };
+$("sidebar-toggle").onclick = () => {
+  const collapsed = document.body.classList.toggle("sidebar-collapsed");
+  $("sidebar-toggle").setAttribute("aria-expanded", String(!collapsed));
+  $("sidebar-toggle").textContent = collapsed ? "展开模块栏" : "收起模块栏";
+  $("sidebar-toggle").setAttribute("aria-label", collapsed ? "展开模块栏" : "收起模块栏");
+};
 $("load-more").onclick = () => {
   limit += 60;
   renderList();
@@ -124,6 +133,9 @@ function startWorld(
   saved,
   script = { id: "showcase", version: 1 },
 ) {
+  const viewport = $("preview-stage");
+  viewport.classList.remove("scene-transition-in");
+  viewport.classList.add("scene-transition-out");
   $("preview-stage").hidden = false;
   if (!stage) stage = new DioramaStage($("preview-stage"));
   game?.dispose();
@@ -132,6 +144,11 @@ function startWorld(
   stage.setCameraDriftEnabled(false);
   game.bind({ id: "showcase-scene", world }, cast);
   stage.resize();
+  requestAnimationFrame(() => {
+    viewport.classList.remove("scene-transition-out");
+    viewport.classList.add("scene-transition-in");
+    setTimeout(() => viewport.classList.remove("scene-transition-in"), 520);
+  });
 }
 function fillProposal() {
   if (!game) return;
@@ -181,6 +198,74 @@ function eventDemo() {
   $("command-panel").hidden = false;
   fillProposal();
   log();
+}
+function aiControlDemo() {
+  startWorld(AI_CONTROL_LEVEL.world);
+  $("command-panel").dataset.mode = "natural";
+  $("preview-ui").hidden = true;
+  $("command-panel").hidden = false;
+  controlRecords = [];
+  activeControlRecord = -1;
+  renderControlTabs();
+  $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
+}
+function renderControlTabs() {
+  const host = $("control-tabs");
+  if (!host) return;
+  host.replaceChildren(...controlRecords.map((record, index) => {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "control-tab";
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(index === activeControlRecord));
+    tab.textContent = `${record.text.slice(0, 4)}${record.text.length > 4 ? "…" : ""}`;
+    tab.title = record.text;
+    tab.onclick = () => { activeControlRecord = index; renderControlTabs(); controlLog(record.lines, false); };
+    return tab;
+  }));
+}
+function controlLog(lines) {
+  const output = $("runtime-report");
+  output.classList.remove("console-reveal");
+  void output.offsetWidth;
+  output.textContent = lines.join("\n");
+  output.classList.add("console-reveal");
+}
+async function naturalControl() {
+  const input = $("natural-command-input"), status = $("natural-command-status");
+  const text = input.value.trim();
+  if (!text || !game) return;
+  status.textContent = "大模型正在理解这句话……";
+  const context = {
+    world: game.runtime.context.world,
+    entities: game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {},
+    worlds: ["meadow", "pocket", "orchard", "bakery", "bridge", "home", "observatory", "reef", "cloud", "moon", "cove"],
+  };
+  try {
+    const response = await fetch("/api/scene-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, context }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "大模型暂时不可用");
+    const trace = ["[1] 收到用户原始文本", `    ${text}`, "[2] 当前场景", `    ${context.world}`, "[3] 关键词匹配", `    ${result.matches?.join("、") || "无（交给大模型理解）"}`, "[4] 意图解析", `    来源：${result.source || "model"}`, `    ${result.reply}`];
+    if (result.sceneSwitch?.world && result.sceneSwitch.world !== game.runtime.context.world) {
+      startWorld(result.sceneSwitch.world);
+      trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, "    状态：已完成淡出 / 淡入");
+    }
+    const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands: result.commands }, "ai");
+    trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
+    trace.push("[7] 渲染状态", `    ${applied.ok ? "已提交到 3D 表现层，入场动画播放中" : "未渲染"}`);
+    controlRecords.push({ text, lines: trace });
+    activeControlRecord = controlRecords.length - 1;
+    renderControlTabs();
+    controlLog(trace);
+    status.textContent = applied.ok ? `${result.reply} 已执行。` : `已解析，但执行失败：${applied.error}`;
+  } catch (error) {
+    status.textContent = `调试失败：${error.message}`;
+    const trace = ["[1] 收到用户原始文本", `    ${text}`, "[错误]", `    ${error.message}`];
+    controlRecords.push({ text, lines: trace });
+    activeControlRecord = controlRecords.length - 1;
+    renderControlTabs();
+    controlLog(trace);
+  }
 }
 function choicesDemo() {
   const host = document.createElement("div");
@@ -277,7 +362,7 @@ function showLogic(item) {
       "logic:presenter",
     ].includes(item.id)
   ) {
-    eventDemo();
+    item.id === "logic:intent" ? aiControlDemo() : eventDemo();
     return;
   }
   $("preview-ui").hidden = false;
@@ -454,6 +539,10 @@ $("apply-proposal").onclick = () => {
   }
 };
 $("refresh-proposal").onclick = fillProposal;
+$("natural-command-submit").onclick = naturalControl;
+$("natural-command-input").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") naturalControl();
+});
 $("audio-preview").addEventListener("error", () =>
   report("这段声音暂时没能加载，请稍后重试。"),
 );

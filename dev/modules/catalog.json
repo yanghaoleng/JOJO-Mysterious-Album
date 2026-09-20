@@ -7431,6 +7431,10 @@
       "color",
       "scale"
     ],
+    "entity.move": [
+      "id",
+      "position"
+    ],
     "entity.remove": [
       "id"
     ],

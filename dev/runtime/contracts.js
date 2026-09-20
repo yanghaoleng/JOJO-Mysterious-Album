@@ -9,6 +9,7 @@ import { PROP_IDS } from "../content/props.js";
 
 export const COMMANDS = Object.freeze({
   "entity.spawn": ["id", "asset", "position", "color", "scale"],
+  "entity.move": ["id", "position"],
   "entity.remove": ["id"],
   "entity.state": ["id", "state"],
   "entity.animate": ["id", "animation"],
@@ -115,6 +116,13 @@ export function validateCommand(command) {
       "Invalid scale",
     );
   }
+  if (c.type === "entity.move")
+    requireValue(
+      Array.isArray(c.position) &&
+        c.position.length === 2 &&
+        c.position.every((n) => Number.isFinite(n) && Math.abs(n) <= 9),
+      "Position must be two surface coordinates within -9..9",
+    );
   if (c.type === "entity.color")
     requireValue(isColor(c.color), "Invalid color");
   if (c.type === "entity.state")

@@ -801,6 +801,91 @@ def director_result(idea):
     return {"mechanic": mechanic, "abilityLabel": label, "narratorLine": line[:60], "gateLine": gate_line}
 
 
+SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。把孩子的一句话翻译成安全、可执行的结构化世界操作。
+只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
+允许的命令只有：
+1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，asset 只能是 prop:rocket、prop:balloon、prop:house、prop:rocket 或 npc:jiaojiao、npc:jiaojiao-mom；
+2. entity.move: {type,id,position:[x,z]}，只能移动已经存在的实体；
+3. entity.animate: {type,id,animation:"activate"}。
+位置坐标每轴只能在 -9 到 9。需要“巨人的口袋”时切换到 pocket；说“另一个星球/换个星球”时从可用 world 中选择一个与当前不同的 world。不要输出 JS、HTML、URL 或任意属性路径。"""
+
+SCENE_KEYWORDS = {
+    "rocket": {"asset": "prop:rocket", "words": ["好奇火箭", "火箭", "飞船"]},
+    "balloon": {"asset": "prop:balloon", "words": ["云朵气球", "气球"]},
+    "house": {"asset": "prop:house", "words": ["小房子", "房子", "小屋"]},
+    "jiaojiao": {"asset": "npc:jiaojiao", "words": ["叫叫", "小队长"]},
+}
+SCENE_NAMES = {"pocket": ["巨人的口袋", "口袋"], "meadow": ["草地", "萤火草地"], "moon": ["月球", "月亮"], "orchard": ["果园", "苹果园"], "reef": ["海底", "海底维修站"], "cloud": ["云层", "云层导航站"], "bakery": ["面包房", "面包店"], "home": ["家", "小屋"]}
+
+def keyword_scene_result(text, context):
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    current = context.get("world", "meadow") if isinstance(context, dict) else "meadow"
+    for world, words in SCENE_NAMES.items():
+        if any(word in compact for word in words):
+            return {"reply": f"好，我们去{words[0]}看看。", "sceneSwitch": {"world": world}, "commands": [], "source": "keyword", "matches": words}
+    if re.search(r"另一个星球|换个星球|去别的星球", compact):
+        worlds = [item for item in (context.get("worlds", []) if isinstance(context, dict) else []) if item != current]
+        return {"reply": "好，我们换一颗星球看看。", "sceneSwitch": {"world": worlds[0] if worlds else "moon"}, "commands": [], "source": "keyword", "matches": ["另一个星球"]}
+    matches = [(key, item) for key, item in SCENE_KEYWORDS.items() if any(word in compact for word in item["words"])]
+    if not matches:
+        return None
+    key, item = max(matches, key=lambda pair: max(map(len, pair[1]["words"])))
+    count_match = re.search(r"(10|十)个", compact)
+    count = 10 if count_match else 1
+    entities = context.get("entities", {}) if isinstance(context, dict) else {}
+    commands = []
+    existing = next((entity_id for entity_id, entity in entities.items() if entity.get("asset") == item["asset"]), None)
+    if key == "jiaojiao" and existing and re.search(r"移动|走到|去", compact):
+        commands.append({"type": "entity.move", "id": existing, "position": [0, 2.4]})
+    else:
+        for index in range(count):
+            commands.append({"type": "entity.spawn", "id": f"keyword-{key}-{int(time.time() * 1000)}-{index}", "asset": item["asset"], "position": [-4 + (index % 5) * 2, 2 + (index // 5) * 1.2], "color": "#e1b671" if key == "rocket" else "#d7a9a5", "scale": 0.55})
+    return {"reply": f"好，{item['words'][0]}出现啦。", "sceneSwitch": None, "commands": commands, "source": "keyword", "matches": item["words"]}
+
+
+def scene_control_result(text, context):
+    text = str(text or "").strip().replace("<", "").replace(">", "")[:180]
+    if not text:
+        raise ValueError("command_required")
+    keyword_result = keyword_scene_result(text, context)
+    if keyword_result:
+        return keyword_result
+    key = os.environ.get("ARK_API_KEY", "")
+    if not key:
+        raise RuntimeError("scene_control_not_configured")
+    worlds = context.get("worlds", []) if isinstance(context, dict) else []
+    body = json.dumps({
+        "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
+        "messages": [
+            {"role": "system", "content": SCENE_CONTROL_PROMPT},
+            {"role": "user", "content": json.dumps({"request": text, "current": context, "availableWorlds": worlds}, ensure_ascii=False)},
+        ], "reasoning_effort": "minimal", "response_format": {"type": "json_object"}, "max_tokens": 700,
+    }, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        os.environ.get("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/") + "/chat/completions",
+        data=body, method="POST", headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=24) as result:
+        data = json.load(result)
+    raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+    parsed = json.loads(raw.removeprefix("```json").removesuffix("```").strip())
+    allowed_worlds = {"meadow", "pocket", "orchard", "bakery", "bridge", "home", "observatory", "reef", "cloud", "moon", "cove"}
+    switch = parsed.get("sceneSwitch")
+    switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
+    allowed_assets = {"prop:rocket", "prop:balloon", "prop:house", "npc:jiaojiao", "npc:jiaojiao-mom"}
+    commands = []
+    for command in parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []:
+        if not isinstance(command, dict) or command.get("type") not in {"entity.spawn", "entity.move", "entity.animate"}: continue
+        item = {"type": command["type"], "id": str(command.get("id", ""))[:64]}
+        if command["type"] == "entity.spawn":
+            item.update({"asset": command.get("asset"), "position": command.get("position"), "color": command.get("color"), "scale": command.get("scale")})
+            if item["asset"] not in allowed_assets: continue
+        elif command["type"] == "entity.move": item["position"] = command.get("position")
+        else: item["animation"] = "activate"
+        commands.append(item)
+    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32]}
+
+
 def likely_private_info(value):
     return bool(re.search(r"(?:1[3-9]\d{9}|\d{5,}@|(?:住在|地址|学校叫|手机号|微信号|QQ号|身份证))", str(value or "")))
 
@@ -1876,7 +1961,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 code = str(error)
                 self.respond_json(429 if code == "style_rate_limited" else 400, {"error": code})
             return
-        if path not in {"/api/director", "/api/moon-director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call", "/api/debate"}:
+        if path not in {"/api/director", "/api/moon-director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call", "/api/debate", "/api/scene-control"}:
             self.respond_json(404, {"error": "not_found"})
             return
         try:
@@ -1896,6 +1981,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                     self.respond_json(400, {"error": "invalid_debate"})
                     return
                 self.respond_json(200, debate_result(question, speakers))
+                return
+            if path == "/api/scene-control":
+                result = scene_control_result(payload.get("text"), payload.get("context") or {})
+                self.respond_json(200, result)
                 return
             if path == "/api/asr":
                 encoded = str(payload.get("pcm", ""))

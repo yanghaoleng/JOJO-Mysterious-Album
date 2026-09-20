@@ -99,7 +99,9 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           actor,
           state: null,
           actionUntil: 0,
+          entrance: 0,
         };
+        item.anchor.scale.setScalar(0.01);
         entries.set(record.id, item);
         anchor.userData.worldEntity = record.id;
       }
@@ -162,6 +164,13 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
     update(dt) {
       time += dt;
       for (const item of entries.values()) {
+        if (item.entrance < 1) {
+          item.entrance = Math.min(1, item.entrance + dt * 2.4);
+          const t = item.entrance;
+          const eased = 1 - Math.pow(1 - t, 3);
+          item.anchor.scale.setScalar(Math.max(0.01, eased));
+          item.anchor.position.y += Math.sin(Math.min(1, t) * Math.PI) * 0.12;
+        }
         if (item.actor) {
           item.model.setAction(
             item.actionUntil > time

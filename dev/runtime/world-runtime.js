@@ -39,6 +39,9 @@ function reduce(state, c, context) {
       scale: c.scale || 0.65,
       state: entity?.state || "working",
     };
+  } else if (c.type === "entity.move") {
+    requireValue(entity, "Entity is not in the current world");
+    entity.position = c.position;
   } else if (c.type === "entity.remove") {
     delete world.entities[c.id];
   } else if (c.type.startsWith("entity.")) {
