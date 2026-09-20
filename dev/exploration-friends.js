@@ -75,7 +75,7 @@ export function createExplorationFriends(stage, { storyId, canInteract = () => t
         if(distance<2.5&&!item.inside&&moving&&(item.present||item.creationId)&&time>item.cooldown&&canInteract()&&!active){item.inside=true;open(item);}
       }
     },
-    get stats(){return actors.map(item=>{const p=item.anchor.position.clone().addScaledVector(item.normal,.85).project(stage.camera),r=stage.container.getBoundingClientRect();return {id:item.config.id,name:item.config.name,present:item.present,prop:item.props.map(p=>p.kind),normal:item.normal.toArray(),count:item.count,creationId:item.creationId||null,screen:{x:(p.x+1)*r.width/2,y:(1-p.y)*r.height/2}};});},
+    get stats(){return actors.map(item=>{const p=new THREE.Box3().setFromObject(item.actor.group).getCenter(new THREE.Vector3()).project(stage.camera),r=stage.container.getBoundingClientRect();return {id:item.config.id,name:item.config.name,present:item.present,prop:item.props.map(p=>p.kind),normal:item.normal.toArray(),count:item.count,creationId:item.creationId||null,screen:{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2}};});},
     dispose(){finish();view.dispose();actors.forEach(item=>{item.actor.dispose();item.props.forEach(p=>p.dispose());});root.removeFromParent();},
   };
 }
