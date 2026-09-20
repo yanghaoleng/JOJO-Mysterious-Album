@@ -8,6 +8,7 @@ export const WOW_PROPS = {
   radio: { id:'radio', name:'唔姆收音机', description:'旧旅程里留下的声音。' },
   jar: { id:'jar', name:'颜色罐', description:'旧旅程里留下的颜色。' },
 };
+const tapTargets = {'room-hello':'wow','first-sound':'fl-star','world-name':'fl-seed','radio-hello':'fl-seed','garden-response':'fl-seed','first-color':'fl-thread','shell-invitation':'fl-bobo','first-light-page':'fl-book'};
 const beats = [
   ['room-hello','黑暗里的黄毛球','choice','唔……咯？我是咯咯哒，萌萌星第 1 号见习追光员！我在找第一束好奇的光。','轻轻戳戳黄毛球，陪它找光吧。',['戳戳黄毛球']],
   ['first-sound','睡着的星星','choice','以前，小朋友问一个“为什么”，天上就叮地亮一束光。现在，星星睡着啦，只剩我打呼噜充的那一格！','点点那颗灰星星。',['点点灰星星']],
@@ -30,7 +31,7 @@ export const WOW_DEV_STORY = {
   chapters:[{number:1,title:'第一束好奇的光'}],
   events:[{id:'first-light-answer',on:'answer.accepted',effects:[{type:'actor.animate',target:'wow',animation:'wave',expression:'happy'}]}],
   scenes:beats.map(([id,title,inputMode,text,question,labels,prop],i)=>({
-    id,title,inputMode,chapter:1,chapterScene:i,world:'meadow',objective:question,question,questionSpeaker:'wow',
+    id,title,inputMode,tapTarget:tapTargets[id] || null,chapter:1,chapterScene:i,world:'meadow',objective:question,question,questionSpeaker:'wow',
     wow:{kind:i===3?'light':'observe',prop,color:'#efd36e',colorName:'第一束好奇光',momo:'咯咯哒'},
     cast:[{id:'wow',name:'咯咯哒',voice:'star',asset:'npc:jiaojiao',color:'#efd36e'}],
     dialogue:[{speaker:'wow',text}],choices:labels.map((label,n)=>({id:`${id}-${n}`,label})),

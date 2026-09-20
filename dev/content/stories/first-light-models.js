@@ -11,7 +11,7 @@ export const FIRST_LIGHT_MODEL_BEATS = {
  'gugu-question': {enter:[spawn('seed','light-sprout',[.2,1.1],.9)],choices:{'棉花糖':floating('cotton-cloud'),'小鱼':floating('sky-fish')}},
  'gugu-key': {choices:{'想看看远方':[spawn('trail','light-trail',[.1,1],1)],'想和星星做朋友':[spawn('friends','star-friends',[0,-.6],1.2)]}},
  'garden-response': {answer:[spawn('seed','light-sprout',[1.1,1.4],1.15),spawn('trail','light-trail',[.1,1],1)]},
- 'first-color': {answer:[spawn('thread','light-thread',[1.1,1.4],.85)]},
+ 'first-color': {enter:[spawn('thread','light-thread',[1.1,1.4],.85)],answer:[spawn('thread','light-thread',[1.1,1.4],.85)]},
  'shell-invitation': {enter:[remove('seed'),spawn('bobo','bobo-light',[1.1,1.4],.9)]},
  'first-light-page': {enter:[spawn('book','light-book',[-.4,2],.85)]},
 };

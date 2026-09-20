@@ -114,6 +114,7 @@ function syncFirstLightModels(scene, animate = false) {
   const result=game.dispatch([...cleanup,...commands], 'script');
   if(!result.ok) throw new Error(result.error);
   if(animate) game.dispatch([...ids].map(id=>({type:'entity.animate',id,animation:'activate'})), 'script');
+  syncStoryTapTarget();
 }
 
 async function handleWowAnswer(raw) {
@@ -187,7 +188,15 @@ const CAPTURE_LABELS = {
   transcribing: '声音已收到，正在转成文字…', transcript: '已识别，伙伴正在听你的想法',
   quiet: '暂时没有检测到说话声，可以靠近一点再试', paused: '麦克风已暂停',
 };
+function syncStoryTapTarget() {
+  if (!stage) return;
+  const scene=story?.scenes?.[state?.sceneIndex],id=scene?.tapTarget;
+  const object=id && (stage.actors.get(id)?.group || stage.worldPresenter?.getObject(id));
+  const ready=phase==='question' && !busy && !document.body.dataset.encounter && !document.querySelector('dialog[open]') && !menuOpen;
+  stage.setStoryTapTarget(object || null,id || null,ready,()=>handleAnswer(scene.choices[0].label,'scene'));
+}
 function renderVoiceInput() {
+  syncStoryTapTarget();
   const capture = voiceCapture?.state;
   const persistent = ['error', 'quiet', 'short', 'empty', 'paused'].includes(capture);
   const answerable = ['question', 'setup'].includes(phase) && !busy;
@@ -556,6 +565,7 @@ async function handleAnswer(raw, source = 'text') {
   if (busy || document.body.dataset.encounter || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
+  if (story?.firstLight && story.scenes[state.sceneIndex]?.tapTarget) stage.storyTapTarget?.activate();
   if (source !== 'voice') { voiceCapture = null; renderVoiceInput(); }
   voiceInput.setTranscript(text);
   if (!story?.firstLight && isVagueAnswer(text)) { notify('慢慢想，也可以看看下面的小主意。'); return; }

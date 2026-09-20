@@ -44,6 +44,7 @@ flowchart LR
 ## 改脚本
 
 - 第一章正式 12 回合脚本在 `content/stories/wow.js`，版本 2；原六章绘本数据保留在 `src/wow-story-data.js`，兼容旧绘本。`content/stories/first-light.js` 提供纯数据回应校验。版本 1 存档先备份至 `story.wow.before-first-light` 再开启新版，场景 ID 保留作内容锚点。
+- 点选场景用 `tapTarget` 指向演员或脚本实体 ID（如 `wow`、`fl-star`）；舞台提供循环柔光和点击强光，点击与按钮共用回答入口，响应中不重复提交。细丝与镂空模型保留轻微包围盒点击容差；减少动态效果时引导保持常亮。验证入口 `dev/tools/verify-story-tap.mjs`。
 - 第二章的话题、角色立场、备用六轮台词、开场、反思选项和结尾在 `content/stories/debate.js`。
 - 第三章六幕内容在 `content/stories/moon.js`。每幕可以单独声明事件与下一幕。
 - `next: '某个场景ID'` 可指定下一幕，选项的 `next` 优先于场景的 `next`；`next: 'end'` 结束。没有声明时沿数组顺序推进。

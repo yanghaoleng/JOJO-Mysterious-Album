@@ -229,6 +229,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
         } else item.model.update(dt, stage.reduced, item.state !== "idle");
       }
     },
+    getObject(id) { return entries.get(id)?.model.group || null; },
     pick(raycaster) {
       const hits = raycaster.intersectObject(root, true);
       const hit = hits[0];

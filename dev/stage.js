@@ -1,3 +1,4 @@
+import { createStoryTapTarget } from './presentation/story-tap-target.js';
 import * as THREE from '../vendor/three.module.js';
 import { createActor, actorModelKey } from './presentation/actor-factory.js';
 import { createWorld } from './worlds.js';
@@ -103,6 +104,7 @@ export class DioramaStage {
       this.tapFeedback.update(dt);
       this.exploration?.update(dt);
       this.worldPresenter?.update(dt);
+      this.storyTapTarget?.update(dt);
       if (this.exploration) this.updateCamera();
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
@@ -172,11 +174,17 @@ export class DioramaStage {
     }, { passive: false });
   }
 
+  setStoryTapTarget(object, id, enabled, callback) {
+    this.storyTapTarget ||= createStoryTapTarget(this);
+    this.storyTapTarget.set(object, id, enabled, callback);
+  }
+
   pick(event) {
     const bounds = this.renderer.domElement.getBoundingClientRect();
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
     this.scene.updateMatrixWorld(true);
+    if (!document.querySelector('dialog[open], #story-menu:not([hidden])') && !document.body.dataset.encounter && this.storyTapTarget?.pick(this.raycaster)) return;
     if (this.exploration) { this.exploration.pick(this.raycaster); return; }
     if (this.worldPresenter?.pick(this.raycaster)) return;
     const selected = firstTapHit(this.raycaster.intersectObjects(this.scene.children, true));
@@ -586,6 +594,7 @@ export class DioramaStage {
     });
     return {
       scriptedEntities: this.worldPresenter?.stats || [],
+      storyTapTarget: this.storyTapTarget?.stats || null,
       exploration: this.exploration?.stats || null,
       world: this.worldId, actors: [...this.actors.keys()],
       calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,
@@ -605,6 +614,7 @@ export class DioramaStage {
   }
 
   dispose() {
+    this.storyTapTarget?.dispose();
     this.exploration?.dispose();
     this.renderer.setAnimationLoop(null);
     this.tapFeedback.clear();
