@@ -1,3 +1,4 @@
+import { identityReady } from './anonymous-identity.js?v=20260920-user-id';
 import { createJourneyCarousel } from './landing-carousel.js?v=20260918-journal-compact';
 import { journeys, journeyChapters } from './landing-journeys.js?v=20260918-journal-compact';
 import { mountJourneyIcons } from '../vendor/landing-icons.js?v=20260918-journal-compact';
@@ -123,3 +124,10 @@ else if(query.get('preview')==='debate')location.replace('./dev/debate');
 window.addEventListener('pagehide',event=>{stopJourneyAudio();if(!event.persisted){scene?.dispose();carousel.dispose();}});
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopJourneyAudio();});
+
+const footerUserId=document.getElementById('footer-user-id');
+identityReady.then(user=>{
+  if(!footerUserId)return;
+  footerUserId.textContent=user?.id||'暂未连接';
+  footerUserId.dataset.ready=user?.id?'true':'false';
+});

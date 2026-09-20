@@ -1,3 +1,5 @@
+import './anonymous-identity.js?v=20260920-user-id';
+
 const VISITOR_KEY = 'mengmeng-visitor-v1';
 const ENDPOINT = '/api/analytics/collect';
 

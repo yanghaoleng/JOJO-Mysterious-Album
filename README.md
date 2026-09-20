@@ -106,6 +106,18 @@ python3 serve.py 8137
 
 打开 `http://localhost:8137/`。
 
+匿名用户开发使用本地 Docker MySQL 8.4，默认连接为 `root:root@127.0.0.1:3306`。首次启动前安装 Python 依赖并执行 migration：
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python tools/migrate-users.py
+.venv/bin/python tools/hash-admin-password.py
+.venv/bin/python serve.py 8137
+```
+
+把生成的密码哈希与 `.env.example` 中的 MySQL、会话配置写入被 Git 忽略的 `.env.local`。用户后台位于 `http://localhost:8137/admin/`。
+
 如需修改气泡文字或界面音效组件，先安装开发依赖并重新打包：
 
 ```bash
@@ -222,7 +234,7 @@ python3 scripts/generate_star_offline.py
 - 孩子的名字、选择、图鉴、实验室角色配方和兴趣小档案仅保存在当前设备的 `localStorage`；画像不询问姓名、学校、住址或精确生日。
 - 《送豆豆回家》会把 3 轮自由回答文本发送给 `/api/story-turn` 做低敏感度的动物、颜色和名字理解；《登月计划》会把当前发明想法发送给 `/api/moon-director` 组织下一段剧情和受限画面配方。
 - 角色实验室不调用大语言模型；需要朗读的动态台词只发送文字与音色 ID 到所选 TTS 服务，不上传麦克风声音，也不由项目服务端保存。
-- 正式第一关和角色实验室不录音。新版 `/story-v2` 获得麦克风许可后，会把单次发言送到同源 `/api/asr`，服务端再转给豆包识别；当前实现不落盘、不进入统计，但正式上线前仍需单独说明、家长授权和数据保留策略。连续故事不提供文字表单或点选回答，麦克风不可用时只提示授权、重试或更换兼容浏览器。产品不建立儿童账号，匿名统计不保存孩子输入、声音或原始 IP。
+- 正式第一关和角色实验室不录音。新版 `/story-v2` 获得麦克风许可后，会把单次发言送到同源 `/api/asr`，服务端再转给豆包识别；当前实现不落盘、不进入统计，但正式上线前仍需单独说明、家长授权和数据保留策略。连续故事不提供文字表单或点选回答，麦克风不可用时只提示授权、重试或更换兼容浏览器。产品只建立不包含儿童资料的匿名技术账户；匿名账户和访问统计都不保存孩子输入、声音或原始 IP。
 
 ## 部署变量
 
@@ -239,6 +251,9 @@ python3 scripts/generate_star_offline.py
 - `DATA_ADMIN_PASSWORD`：六位统计后台口令，只放服务器环境变量。
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
 - `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
+- `MYSQL_URL`：匿名用户 MySQL 连接；本地 Docker 默认为 `mysql://root:root@127.0.0.1:3306/jojo_mysterious_album_dev`。
+- `SESSION_TOKEN_PEPPER`：匿名会话令牌哈希密钥，生产至少 32 个随机字符。
+- `ADMIN_USERNAME`、`ADMIN_PASSWORD_HASH`、`ADMIN_SESSION_SECRET`：只读用户后台凭据与会话密钥。
 
 正式站 `https://jma.mikeywa.site` 部署在腾讯云轻量服务器 `lhins-qgi1l9jg / 124.221.104.244`，使用 Nginx、受限 systemd 服务、独立发布目录和持久化统计目录。HTTP 自动跳转 HTTPS，Let's Encrypt 证书自动续期。本项目不部署到任何 Serverless 平台，发布只走腾讯云正式站。
 

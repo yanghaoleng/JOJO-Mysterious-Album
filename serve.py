@@ -35,6 +35,17 @@ from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 from volc_asr import transcribe_pcm
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
+from identity_mysql import (
+    ADMIN_SESSION_SECONDS,
+    admin_login_allowed,
+    bootstrap_anonymous,
+    list_users,
+    make_admin_session,
+    record_admin_login,
+    user_detail,
+    valid_admin_session,
+    verify_admin_password,
+)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -1751,6 +1762,38 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
     def data_authorized(self):
         return valid_data_session(self.cookie("mengmeng_data_session"))
 
+    def secure_request(self):
+        return os.environ.get("APP_ENV") == "production" or self.headers.get("X-Forwarded-Proto") == "https"
+
+    def origin_allowed(self):
+        origin = self.headers.get("Origin", "").strip()
+        if not origin:
+            return os.environ.get("APP_ENV") != "production"
+        try:
+            parsed = urlsplit(origin)
+            expected_scheme = "https" if self.secure_request() else "http"
+            return parsed.scheme == expected_scheme and parsed.netloc == self.headers.get("Host", "")
+        except ValueError:
+            return False
+
+    def anonymous_cookie_name(self):
+        return "__Host-jma_session" if self.secure_request() else "jma_session"
+
+    def admin_authorized(self):
+        return valid_admin_session(self.cookie("jma_admin_session"))
+
+    def respond_cookie_json(self, status, payload, name, value, max_age, same_site="Lax"):
+        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        attributes = [f"{name}={value}", "Path=/", "HttpOnly", f"SameSite={same_site}", f"Max-Age={max_age}"]
+        if self.secure_request():
+            attributes.append("Secure")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Set-Cookie", "; ".join(attributes))
+        self.end_headers()
+        self.wfile.write(data)
+
     def respond_data_session(self, value):
         secure = os.environ.get("APP_ENV") == "production" or self.headers.get("X-Forwarded-Proto") == "https"
         attributes = [
@@ -1805,6 +1848,38 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         if path == "/api/data/session":
             self.respond_json(200, {"ok": self.data_authorized()})
             return
+        if path == "/api/admin/session":
+            self.respond_json(200, {"ok": self.admin_authorized()})
+            return
+        if path == "/api/admin/users":
+            if not self.admin_authorized():
+                self.respond_json(401, {"error": "unauthorized"})
+                return
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                result = list_users(
+                    query.get("page", ["1"])[0], query.get("pageSize", ["50"])[0],
+                    query.get("status", [""])[0], query.get("activity", [""])[0],
+                    query.get("sort", ["created_desc"])[0], query.get("id", [""])[0],
+                )
+                self.respond_json(200, result)
+            except (ValueError, TypeError):
+                self.respond_json(400, {"error": "invalid_user_query"})
+            except RuntimeError:
+                self.respond_json(503, {"error": "identity_unavailable"})
+            return
+        if path.startswith("/api/admin/users/"):
+            if not self.admin_authorized():
+                self.respond_json(401, {"error": "unauthorized"})
+                return
+            try:
+                result = user_detail(path.removeprefix("/api/admin/users/"))
+                self.respond_json(200, {"user": result}) if result else self.respond_json(404, {"error": "user_not_found"})
+            except ValueError:
+                self.respond_json(400, {"error": "invalid_user_id"})
+            except RuntimeError:
+                self.respond_json(503, {"error": "identity_unavailable"})
+            return
         if path == "/api/data/summary":
             if not self.data_authorized():
                 self.respond_json(401, {"error": "unauthorized"})
@@ -1822,6 +1897,58 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = urlsplit(self.path).path
+        if path == "/api/auth/anonymous":
+            if not self.origin_allowed():
+                self.respond_json(403, {"error": "origin_not_allowed"})
+                return
+            try:
+                self.read_json(1024)
+                cookie_name = self.anonymous_cookie_name()
+                session, created = bootstrap_anonymous(self.cookie(cookie_name))
+                now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+                max_age = max(0, int((session["expires_at"] - now_utc).total_seconds()))
+                self.respond_cookie_json(201 if created else 200, {
+                    "user": {"id": session["user_id"], "kind": "anonymous"},
+                    "session": {"expiresAt": session["expires_at"].replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")},
+                }, cookie_name, session["token"], max_age)
+            except (ValueError, json.JSONDecodeError):
+                self.respond_json(400, {"error": "invalid_request"})
+            except Exception as error:
+                print(f"Anonymous identity failed: {type(error).__name__}", file=sys.stderr)
+                self.respond_json(503, {"error": "identity_unavailable"})
+            return
+        if path == "/api/admin/login":
+            if not self.origin_allowed():
+                self.respond_json(403, {"error": "origin_not_allowed"})
+                return
+            client = self.client_key()
+            if not admin_login_allowed(client):
+                self.respond_json(429, {"error": "too_many_attempts"})
+                return
+            configured_user = os.environ.get("ADMIN_USERNAME", "admin")
+            configured_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
+            if not configured_hash:
+                self.respond_json(503, {"error": "admin_not_configured"})
+                return
+            try:
+                payload = self.read_json(2048)
+                username = str(payload.get("username", ""))[:80]
+                password = str(payload.get("password", ""))[:256]
+            except (ValueError, json.JSONDecodeError, AttributeError):
+                username = password = ""
+            valid = hmac.compare_digest(username, configured_user) and verify_admin_password(password, configured_hash)
+            record_admin_login(client, valid)
+            if not valid:
+                self.respond_json(401, {"error": "invalid_credentials"})
+                return
+            self.respond_cookie_json(200, {"ok": True}, "jma_admin_session", make_admin_session(username), ADMIN_SESSION_SECONDS, "Strict")
+            return
+        if path == "/api/admin/logout":
+            if not self.origin_allowed():
+                self.respond_json(403, {"error": "origin_not_allowed"})
+                return
+            self.respond_cookie_json(200, {"ok": True}, "jma_admin_session", "", 0, "Strict")
+            return
         if path == "/api/wow-turn":
             try:
                 payload = validate_wow_payload(self.read_json(4096))
