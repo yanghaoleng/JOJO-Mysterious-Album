@@ -53,6 +53,7 @@ export class DioramaStage {
     this.angleMode = 'ground';
     this.orbit = null;
     this.nearestSubjectProvider = null;
+    this.followTarget = null;
     this.cameraAnim = null;
     this.cameraHistory = [];
     this.cameraIndex = -1;
@@ -118,6 +119,24 @@ export class DioramaStage {
         // retargeted here every frame; drift stays quiet during the spin.
         this.yaw += dt * this.orbit.speed;
         this.updateCamera();
+      }
+      if (this.followTarget) {
+        // Locked follow: glide the camera target towards the selected entity.
+        const p = this.followTarget.provider();
+        if (p) {
+          const k = 1 - Math.exp(-dt * 3.2);
+          const nx = this.target.x + (p[0] - this.target.x) * k;
+          const nz = this.target.z + (p[1] - this.target.z) * k;
+          if (Math.abs(nx - this.target.x) > 0.0004 || Math.abs(nz - this.target.z) > 0.0004) {
+            this.target.set(nx, this.target.y, nz);
+            this.updateCamera();
+          }
+        } else {
+          const gone = this.followTarget;
+          this.followTarget = null;
+          this.onFollowChange?.(null);
+          this.onCameraHistoryChange?.();
+        }
       }
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
@@ -387,6 +406,19 @@ export class DioramaStage {
   // to the centre of the scene instead of the camera's current aim point.
   setNearestSubjectProvider(fn) { this.nearestSubjectProvider = fn; }
 
+  // Lock the camera onto an entity: every shot keeps tracking it as it moves.
+  setFollowTarget(provider, name = "") {
+    this.followTarget = { provider, name };
+    this.onFollowChange?.(name);
+    this.onCameraHistoryChange?.();
+  }
+  clearFollowTarget() {
+    if (!this.followTarget) return;
+    this.followTarget = null;
+    this.onFollowChange?.(null);
+    this.onCameraHistoryChange?.();
+  }
+
   // Cycle through the four fixed shot presets. The player can only cycle
   // these; the cinematic moves (zoomIn/zoomOut/otd) stay LLM-only.
   cycleCameraShot() {
@@ -405,7 +437,11 @@ export class DioramaStage {
   playCinematic({ kind, move } = {}) {
     if (this.exploration) return;
     this.stopOrbit();
-    const subject = this.target.clone(), pan = this.panOffset.clone();
+    let subject = this.target.clone(), pan = this.panOffset.clone();
+    if (this.followTarget) {
+      const p = this.followTarget.provider();
+      if (p) subject = new THREE.Vector3(p[0], this.target.y, p[1]);
+    }
     if (kind === 'orbit') {
       // Slow orbiting view from the side: the horizon stays centred, the
       // camera circles the subject at eye level instead of above it.

@@ -194,12 +194,46 @@ function startWorld(
   // The AI scene-play mode keeps the handheld sway on by default.
   if (script === AI_CONTROL_LEVEL) stage.setCameraDriftEnabled(true);
   game.bind({ id: "showcase-scene", world }, cast);
+  stage.worldPresenter.onPickEntity = lockEntity;
+  stage.onFollowChange = renderLockBanner;
   stage.resize();
   requestAnimationFrame(() => {
     viewport.classList.remove("scene-transition-out");
     viewport.classList.add("scene-transition-in");
     setTimeout(() => viewport.classList.remove("scene-transition-in"), 520);
   });
+}
+function entityName(id) {
+  const world = game?.runtime?.context?.world;
+  const entity = world ? game.runtime.snapshot?.worlds?.[world]?.entities?.[id] : null;
+  if (!entity) return id;
+  const entry = MODULE_CATALOG.find((m) => m.id === entity.asset);
+  return entry?.name || String(entity.asset || id).split(":").pop();
+}
+function lockEntity(id) {
+  if (!stage) return;
+  const name = entityName(id);
+  stage.setFollowTarget(() => stage.worldPresenter?.getPosition(id), name);
+}
+function clearLock() {
+  stage?.clearFollowTarget();
+  renderLockBanner(null);
+}
+function renderLockBanner(name) {
+  const host = $("preview-stage");
+  if (!host) return;
+  let banner = $("follow-lock");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "follow-lock";
+    banner.className = "follow-lock";
+    banner.innerHTML =
+      '<span class="lock-eye" aria-hidden="true">👁</span><span class="lock-name"></span><button type="button" class="lock-clear" aria-label="取消锁定" title="取消锁定">×</button>';
+    banner.querySelector(".lock-clear").onclick = clearLock;
+    host.appendChild(banner);
+  }
+  banner.hidden = !name;
+  if (name) banner.querySelector(".lock-name").textContent = `已锁定：${name}`;
 }
 function fillProposal() {
   if (!game) return;
@@ -360,6 +394,7 @@ async function naturalControl() {
     const trace = ["[1] 收到用户原始文本", `    ${text}`, "[2] 当前场景", `    ${context.world}`, "[3] 关键词匹配", `    ${result.matches?.join("、") || "无（交给大模型理解）"}`, "[4] 意图解析", `    来源：${result.source || "model"}`, `    ${result.reply}`];
     if (result.substitution) trace.push('[近似替代]', `    原指令：${result.substitution.request}`, `    替代模型：${result.substitution.replacement} × ${result.substitution.count}`, `    匹配依据：${result.substitution.reason}`);
     if (result.sceneSwitch?.world && result.sceneSwitch.world !== game.runtime.context.world) {
+      clearLock();
       startWorld(result.sceneSwitch.world);
       trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, "    状态：已完成淡出 / 淡入");
     }
@@ -386,6 +421,11 @@ async function naturalControl() {
       trace.push('[运镜]', `    系统调用「${shot}」镜头（切换带过渡）。`);
     }
     trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
+    const newActors = arranged.filter(c => c.type === 'entity.spawn' && String(c.asset || "").startsWith("npc:"));
+    if (applied.ok && newActors.length && !arranged.some(c => c.type === 'feeding.start')) {
+      stage.worldPresenter?.movement?.defaultRoam(newActors.map(c => c.id));
+      trace.push('[游走]', `    ${newActors.length} 个角色站一会儿后自动走动（来回/绕圈/乱走）。`);
+    }
     const spawnCount = arranged.filter(c => c.type === 'entity.spawn').length;
     const arrivalSeconds = stage.reduced ? 0 : 2 + Math.min(8, Math.max(0, spawnCount - 1) * .28);
     trace.push("[7] 渲染状态", `    ${applied.ok ? `${spawnCount} 个新模型依次入场，整批约 ${arrivalSeconds.toFixed(1)} 秒完成` : "未渲染"}`);

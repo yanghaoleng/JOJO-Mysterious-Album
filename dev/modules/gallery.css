@@ -226,6 +226,44 @@ body.preview-resizing, body.preview-resizing * { cursor:ns-resize !important; us
   display: block;
   touch-action: none;
 }
+.follow-lock {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 62%;
+  padding: 5px 8px 5px 10px;
+  border: 1px solid rgba(101, 119, 106, .35);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .9);
+  color: #3f5243;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+  backdrop-filter: blur(4px);
+}
+.follow-lock .lock-eye {
+  font-size: 13px;
+  line-height: 1;
+}
+.follow-lock .lock-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.follow-lock .lock-clear {
+  border: 0;
+  background: transparent;
+  color: #66766a;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.follow-lock .lock-clear:hover { color: #2e6b3a; background: #eef3e9; }
 .camera-nav {
   position: absolute;
   right: 12px;

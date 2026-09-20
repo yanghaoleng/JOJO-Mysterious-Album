@@ -110,6 +110,45 @@ export function createMovementController({ entries, stage }) {
     });
   }
 
+  // Default living behaviour: after a short pause each actor starts moving on
+  // its own. Styles vary per entity: back-and-forth, circling, or wandering.
+  function roam(ids, { speed = 0.9 } = {}) {
+    ids.forEach((id, index) => {
+      const item = entries.get(id);
+      if (!item || jobs.has(id)) return;
+      const [x, z] = item.position;
+      const style = (hashOf(id) + index) % 3;
+      if (style === 0) {
+        // Walk back and forth along one line.
+        const angle = (index / Math.max(1, ids.length)) * Math.PI * 2;
+        const dist = 2.2 + (index % 3) * 1.1;
+        jobs.set(id, { mode: "roam-bounce", origin: [x, z], target: [x + Math.cos(angle) * dist, z + Math.sin(angle) * dist], speed, phase: "to" });
+      } else if (style === 1) {
+        // Keep walking around in a circle (a long lap around the area).
+        const radius = 2.6 + (index % 3) * 1.3;
+        jobs.set(id, { mode: "roam-ring", center: [x, z], radius, angle: index * 1.7, speed, phase: "ring" });
+      } else {
+        // Wander: pick a random nearby point, then pick another.
+        jobs.set(id, { mode: "roam-wander", origin: [x, z], speed, phase: "to", target: [x + (index % 2 ? 2.4 : -2.4), z + (index % 3) * 1.6 - 1.6] });
+      }
+    });
+  }
+
+  // Idle a few seconds, then start roaming on their own.
+  const pendingDefaults = new Map(); // id -> startsAt
+  function defaultRoam(ids, { delayMin = 1.8, delayMax = 4.2 } = {}) {
+    const startsAt = time + delayMin + Math.random() * (delayMax - delayMin);
+    for (const id of ids) {
+      if (entries.has(id) && !jobs.has(id)) pendingDefaults.set(id, startsAt + Math.random() * 0.8);
+    }
+  }
+
+  function hashOf(text) {
+    let h = 0;
+    for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  }
+
   function update(dt, t) {
     time = t;
     dt = Math.min(0.1, Math.max(0, dt));
@@ -131,6 +170,12 @@ export function createMovementController({ entries, stage }) {
               item.model.setAction?.("wave");
               item.actionUntil = t + 0.8;
             }
+          } else if (job.mode === "roam-wander") {
+            // Wander: after a pause, head somewhere new nearby.
+            job.phase = "hold";
+            job.holdUntil = t + 0.8 + Math.random() * 1.6;
+            item.action = "idle";
+            item.actionUntil = t + 1;
           } else {
             job.phase = "done";
             face(item, job.center, t);
@@ -142,9 +187,26 @@ export function createMovementController({ entries, stage }) {
           job.holdUntil = t + 0.5;
         }
       } else if (job.phase === "hold" && t >= job.holdUntil) {
-        // Return leg completed: head back out to the patrol target again.
-        job.phase = "to";
+        if (job.mode === "roam-wander") {
+          const [ox, oz] = job.origin;
+          job.phase = "to";
+          job.target = [ox + (Math.random() - 0.5) * 5.5, oz + (Math.random() - 0.5) * 5.5];
+        } else {
+          // Return leg completed: head back out to the patrol target again.
+          job.phase = "to";
+        }
+      } else if (job.phase === "ring") {
+        const [cx, cz] = job.center;
+        job.angle = (job.angle + (dt * job.speed) / Math.max(0.6, job.radius)) % (Math.PI * 2);
+        const [x, z] = ringPoint(job.center, job.radius, job.angle);
+        place(item, x, z, "walk", t);
       }
+    }
+    // Fire idle defaults.
+    for (const [id, startsAt] of pendingDefaults) {
+      if (t < startsAt) continue;
+      pendingDefaults.delete(id);
+      if (entries.has(id) && !jobs.has(id)) roam([id]);
     }
   }
 
@@ -152,6 +214,8 @@ export function createMovementController({ entries, stage }) {
     patrol,
     gather,
     surround,
+    roam,
+    defaultRoam,
     stop,
     update,
     clear() { stop(); },

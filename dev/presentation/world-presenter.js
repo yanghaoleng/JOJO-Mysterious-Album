@@ -37,6 +37,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   root.name = "scripted-world-entities";
   stage.scene.add(root);
   const entries = new Map();
+  let onPickEntity = () => {};
   const feeding = createFeedingController({entries,stage,consume:onConsume});
   const movement = createMovementController({entries, stage});
   let currentWorld = null,
@@ -291,8 +292,11 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       while (object && !object.userData.worldEntity) object = object.parent;
       if (!object) return false;
       onInteract(object.userData.worldEntity);
+      onPickEntity(object.userData.worldEntity);
       return true;
     },
+    set onPickEntity(fn) { onPickEntity = fn || (() => {}); },
+    getPosition(id) { return entries.get(id)?.position || null; },
     get stats() {
       return [...entries].map(([id, item]) => ({
         id,
