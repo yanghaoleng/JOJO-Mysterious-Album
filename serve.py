@@ -806,6 +806,7 @@ def director_result(idea):
 
 
 SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。孩子会像导演一样连续说出句子来安排画面（先换场景、再调天气、再召唤角色、再让角色行动）。先理解这句话的完整意图，从功能里选出最接近的一项或几项，翻译成安全、可执行的结构化世界操作。一条话可以组合多步。
+commands 必须是数组，每项形如 {"type":"entity.spawn","id":"x1","asset":"prop:rocket","position":[0,0]}（type 的值就是命令名本身，不要嵌套、不要把命令名当作外层键）。
 只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
 允许的命令：
 1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；
@@ -1102,6 +1103,11 @@ def llm_scene_result(text, context):
     commands = []
     for command in raw_commands:
         if not isinstance(command, dict): continue
+        # The model occasionally nests the type as the only key; normalize it.
+        if "type" not in command and len(command) == 1:
+            only = next(iter(command))
+            if only in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"} and isinstance(command[only], dict):
+                command = dict(command[only]); command.setdefault("type", only)
         ctype = command.get("type")
         if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"}:
             continue
