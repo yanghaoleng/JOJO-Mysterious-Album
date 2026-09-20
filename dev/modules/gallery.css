@@ -250,17 +250,20 @@ body.preview-resizing, body.preview-resizing * { cursor:ns-resize !important; us
   transition: background .15s ease, color .15s ease, transform .15s ease;
 }
 .camera-nav #camera-angle {
-  width: 46px;
-  height: 44px;
+  height: 34px;
+  padding: 0 12px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border-radius: 14px;
+  align-items: center;
+  flex-direction: row;
+  gap: 6px;
+  border-radius: 999px;
+  width: auto;
 }
 .camera-nav .shot-label {
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
   letter-spacing: .4px;
+  white-space: nowrap;
 }
 .camera-nav button:hover:not(:disabled) { background: #eef3e9; color: #2e6b3a; transform: translateY(-1px); }
 .camera-nav button:disabled { opacity: .35; cursor: default; }

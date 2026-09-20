@@ -275,8 +275,8 @@ function syncCameraNav() {
     if (svg) svg.innerHTML = meta.icon;
     const label = $("camera-shot-label");
     if (label) label.textContent = meta.label;
-    angle.setAttribute("aria-label", `切换到${meta.next}机位`);
-    angle.title = `切换到${meta.next}机位`;
+    angle.setAttribute("aria-label", `切换到${meta.next}视角`);
+    angle.title = `切换到${meta.next}视角`;
     angle.classList.toggle("is-overhead", mode !== "ground");
     for (const m of Object.keys(SHOT_META)) angle.classList.toggle(`shot-${m}`, mode === m);
   }
