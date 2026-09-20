@@ -33,6 +33,14 @@ for (const name of ["全部", "交通工具", "食物", "玩具", "场景道具"
   categories.append(b);
 }
 const icon = definition => createElement(definition, {width:20,height:20,"stroke-width":1.7,"aria-hidden":"true"});
+const MODULE_KIND_ICONS = {actor:Users,prop:Box,logic:Settings2,ui:Sparkles,encounter:Route,audio:Volume2,world:Library,story:BookOpen};
+function typeIcon(item, extraClass = "") {
+  const badge = document.createElement("span");
+  badge.className = `module-type-icon ${extraClass}`.trim();
+  badge.title = MODULE_KINDS[item.kind] || item.kind;
+  badge.append(icon(MODULE_KIND_ICONS[item.kind] || Sparkles));
+  return badge;
+}
 const searchRow = document.createElement('div');
 searchRow.className = 'sidebar-search-row';
 const searchShell = document.querySelector('.search-shell');
@@ -50,45 +58,6 @@ const counts = Object.fromEntries(
   ]),
 );
 const report = (text) => ($("preview-status").textContent = text);
-const thumbnailCache = new Map(), thumbnailQueue = [];
-let thumbnailBusy = false, thumbnailStage, thumbnailGame;
-const thumbnailHost = document.createElement('div');
-thumbnailHost.className = 'thumbnail-renderer';
-document.body.append(thumbnailHost);
-async function renderThumbnail(item, image) {
-  if (thumbnailCache.has(item.id)) { image.src = thumbnailCache.get(item.id); return; }
-  thumbnailQueue.push({item, image});
-  if (thumbnailBusy) return;
-  thumbnailBusy = true;
-  while (thumbnailQueue.length) {
-    const task = thumbnailQueue.shift();
-    if (!task.image.isConnected || thumbnailCache.has(task.item.id)) continue;
-    try {
-      thumbnailStage ||= new DioramaStage(thumbnailHost);
-      thumbnailGame?.dispose();
-      const world = task.item.kind === 'world' ? task.item.id.slice(6) : task.item.encounter?.world || 'meadow';
-      thumbnailGame = createGameSession({story:{id:'thumbnail',version:1},stage:thumbnailStage,onChange:()=>{}});
-      thumbnailStage.setScene(world, [], {studio:true});
-      thumbnailStage.setCameraDriftEnabled(false);
-      thumbnailGame.bind({id:'thumbnail-scene',world},[]);
-      const asset = task.item.kind === 'actor' || task.item.kind === 'prop' ? task.item.id : task.item.kind === 'encounter' ? (task.item.encounter.yellow ? task.item.encounter.id : `npc:${task.item.encounter.id}`) : null;
-      if (asset) thumbnailGame.dispatch([{type:'entity.spawn',id:'thumbnail-model',asset,position:[0,1.5],scale:.72}]);
-      thumbnailStage.resize();
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const url = thumbnailStage.snapshot();
-      thumbnailCache.set(task.item.id,url);
-      if (task.image.isConnected) task.image.src=url;
-    } catch {}
-  }
-  thumbnailBusy = false;
-}
-const thumbnailObserver = new IntersectionObserver(entries => {
-  for (const entry of entries) if (entry.isIntersecting) {
-    thumbnailObserver.unobserve(entry.target);
-    const item = MODULE_CATALOG.find(candidate => candidate.id === entry.target.dataset.thumbnail);
-    if (item) void renderThumbnail(item, entry.target);
-  }
-},{root:$("module-list"),rootMargin:'160px'});
 const resizeHandle = document.createElement('button');
 resizeHandle.type = 'button';
 resizeHandle.className = 'preview-resize-handle';
@@ -133,7 +102,7 @@ function renderList() {
     (m) =>
       (filter === "all" || m.kind === filter) &&
       (filter !== "prop" || propCategory === "全部" || (PROP_CATEGORIES[m.id.slice(5)] || "场景道具") === propCategory) &&
-      `${m.name} ${m.id} ${m.description}`.toLowerCase().includes(q),
+      `${m.name} ${m.id} ${m.description} ${(m.keywords || []).join(" ")}`.toLowerCase().includes(q),
   );
   $("module-list").replaceChildren(
     ...found.map((item) => {
@@ -146,10 +115,7 @@ function renderList() {
         id = document.createElement("small");
       name.textContent = item.name;
       id.textContent = item.id;
-      if (["actor","prop","world","encounter"].includes(item.kind)) {
-        const image=document.createElement('img'); image.className='module-thumbnail'; image.alt=''; image.dataset.thumbnail=item.id;
-        button.append(image); thumbnailObserver.observe(image);
-      }
+      button.append(typeIcon(item));
       const copy=document.createElement('span'); copy.className='module-row-copy'; copy.append(name,id); button.append(copy);
       button.onclick = () => select(item);
       return button;
@@ -353,7 +319,9 @@ async function naturalControl() {
     trace.push('[5] 视野内散落', `    ${arranged.filter(c => c.type === 'entity.spawn').length} 个新模型，已检查镜头和地面遮挡；采用紧凑排列，密集时允许接触并播放碰撞反馈。`);
     const recycled = capacityEvictions(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}, arranged).length;
     const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands: arranged }, "ai");
+    if(applied.warnings?.length) trace.push('[执行提醒]',...applied.warnings);
     if (applied.ok) trace.push('[物件容量]', `    当前 ${Object.keys(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).length} / 300 个；自动移除最早生成的 ${recycled} 个。`);
+    if(arranged.some(c=>c.type==='feeding.start')) trace.push('[进食计划]','    先生成各组对象；角色分别寻找食物，每吃两下消耗一个，直到吃完或停止。');
     trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
     const spawnCount = arranged.filter(c => c.type === 'entity.spawn').length;
     const arrivalSeconds = stage.reduced ? 0 : 2 + Math.min(8, Math.max(0, spawnCount - 1) * .28);
@@ -681,6 +649,7 @@ window.__MODULE_GALLERY__ = {
           }
         : null,
       stage: stage?.stats(),
+      feeding: stage?.worldPresenter?.feedingStats,
     };
   },
 };

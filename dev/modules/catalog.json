@@ -2,6 +2,22 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:feeding",
+      "kind": "logic",
+      "name": "角色寻找食物与循环进食",
+      "description": "输入“10个猪小弟吃80个汉堡包”：分批生成角色与食物，角色独占目标，靠近后每两下吃掉一份；在 AI 控制台验证，可说停止吃。",
+      "source": "dev/presentation/feeding-controller.js",
+      "capabilities": [
+        "多对象指令",
+        "寻找食物",
+        "两次咀嚼消耗",
+        "停止与清理"
+      ],
+      "dependencies": [
+        "logic:intent"
+      ]
+    },
+    {
       "id": "logic:story-tap-target",
       "kind": "logic",
       "name": "剧情对象点选引导",
@@ -332,6 +348,505 @@
       ]
     },
     {
+      "id": "prop:little-flame",
+      "kind": "prop",
+      "name": "小火苗",
+      "description": "橙黄色火苗轻轻跳动。",
+      "source": "dev/modules/props/little-flame.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:little-flame",
+        "kind": "prop",
+        "edible": false,
+        "name": "小火苗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:little-flame",
+      "tags": [],
+      "keywords": [
+        "小火苗",
+        "火苗",
+        "火焰"
+      ]
+    },
+    {
+      "id": "prop:gold-coin",
+      "kind": "prop",
+      "name": "金币",
+      "description": "厚厚的金币轻轻转动，露出星形浮雕。",
+      "source": "dev/modules/props/gold-coin.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:gold-coin",
+        "kind": "prop",
+        "edible": false,
+        "name": "金币",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:gold-coin",
+      "tags": [],
+      "keywords": [
+        "金币",
+        "金钱",
+        "硬币"
+      ]
+    },
+    {
+      "id": "prop:cash",
+      "kind": "prop",
+      "name": "现金",
+      "description": "绿色纸钞叠成一小摞，轻轻摇摆。",
+      "source": "dev/modules/props/cash.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:cash",
+        "kind": "prop",
+        "edible": false,
+        "name": "现金",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:cash",
+      "tags": [],
+      "keywords": [
+        "现金",
+        "钞票",
+        "纸币",
+        "钱币"
+      ]
+    },
+    {
+      "id": "prop:purple-diamond",
+      "kind": "prop",
+      "name": "紫色钻石",
+      "description": "棱面分明的紫色钻石缓缓转动。",
+      "source": "dev/modules/props/purple-diamond.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:purple-diamond",
+        "kind": "prop",
+        "edible": false,
+        "name": "紫色钻石",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:purple-diamond",
+      "tags": [],
+      "keywords": [
+        "紫色钻石",
+        "钻石",
+        "紫钻",
+        "宝石"
+      ]
+    },
+    {
+      "id": "prop:battery",
+      "kind": "prop",
+      "name": "电池",
+      "description": "电池的三格电量轻轻跳动。",
+      "source": "dev/modules/props/battery.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:battery",
+        "kind": "prop",
+        "edible": false,
+        "name": "电池",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:battery",
+      "tags": [],
+      "keywords": [
+        "电池",
+        "能量电池"
+      ]
+    },
+    {
+      "id": "prop:growth-bean",
+      "kind": "prop",
+      "name": "成长豆（学豆）",
+      "description": "橙色咖啡豆形学豆轻轻弹跳，中间留着弯弯的豆缝。",
+      "source": "dev/modules/props/growth-bean.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:growth-bean",
+        "kind": "prop",
+        "edible": false,
+        "name": "成长豆（学豆）",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:growth-bean",
+      "tags": [],
+      "keywords": [
+        "成长豆",
+        "学豆",
+        "橙色咖啡豆"
+      ]
+    },
+    {
+      "id": "prop:badge-star",
+      "kind": "prop",
+      "name": "星芒徽章",
+      "description": "星芒徽章轻轻摇摆，展示独立轮廓。",
+      "source": "dev/modules/props/badge-star.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:badge-star",
+        "kind": "prop",
+        "edible": false,
+        "name": "星芒徽章",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:badge-star",
+      "tags": [],
+      "keywords": [
+        "星星徽章",
+        "星芒徽章",
+        "徽章"
+      ]
+    },
+    {
+      "id": "prop:badge-shield",
+      "kind": "prop",
+      "name": "守护盾徽章",
+      "description": "守护盾徽章轻轻摇摆，展示独立轮廓。",
+      "source": "dev/modules/props/badge-shield.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:badge-shield",
+        "kind": "prop",
+        "edible": false,
+        "name": "守护盾徽章",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:badge-shield",
+      "tags": [],
+      "keywords": [
+        "守护盾徽章",
+        "盾牌徽章"
+      ]
+    },
+    {
+      "id": "prop:badge-ribbon",
+      "kind": "prop",
+      "name": "绶带奖章",
+      "description": "绶带奖章轻轻摇摆，展示独立轮廓。",
+      "source": "dev/modules/props/badge-ribbon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:badge-ribbon",
+        "kind": "prop",
+        "edible": false,
+        "name": "绶带奖章",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:badge-ribbon",
+      "tags": [],
+      "keywords": [
+        "绶带奖章",
+        "奖章",
+        "圆形徽章"
+      ]
+    },
+    {
+      "id": "prop:badge-crown",
+      "kind": "prop",
+      "name": "皇冠徽章",
+      "description": "皇冠徽章轻轻摇摆，展示独立轮廓。",
+      "source": "dev/modules/props/badge-crown.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:badge-crown",
+        "kind": "prop",
+        "edible": false,
+        "name": "皇冠徽章",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:badge-crown",
+      "tags": [],
+      "keywords": [
+        "皇冠徽章",
+        "王冠徽章"
+      ]
+    },
+    {
+      "id": "prop:badge-leaf",
+      "kind": "prop",
+      "name": "绿叶徽章",
+      "description": "绿叶徽章轻轻摇摆，展示独立轮廓。",
+      "source": "dev/modules/props/badge-leaf.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:badge-leaf",
+        "kind": "prop",
+        "edible": false,
+        "name": "绿叶徽章",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:badge-leaf",
+      "tags": [],
+      "keywords": [
+        "绿叶徽章",
+        "成长徽章"
+      ]
+    },
+    {
+      "id": "prop:bee",
+      "kind": "prop",
+      "name": "蜜蜂",
+      "description": "蜜蜂扇动翅膀，轻轻上下飞舞。",
+      "source": "dev/modules/props/bee.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bee",
+        "kind": "prop",
+        "edible": false,
+        "name": "蜜蜂",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:bee",
+      "tags": [],
+      "keywords": [
+        "蜜蜂",
+        "小蜜蜂"
+      ]
+    },
+    {
+      "id": "prop:fly",
+      "kind": "prop",
+      "name": "苍蝇",
+      "description": "苍蝇扇动翅膀，轻轻上下飞舞。",
+      "source": "dev/modules/props/fly.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:fly",
+        "kind": "prop",
+        "edible": false,
+        "name": "苍蝇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:fly",
+      "tags": [],
+      "keywords": [
+        "苍蝇",
+        "小苍蝇"
+      ]
+    },
+    {
+      "id": "prop:mosquito",
+      "kind": "prop",
+      "name": "蚊子",
+      "description": "蚊子扇动翅膀，轻轻上下飞舞。",
+      "source": "dev/modules/props/mosquito.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:mosquito",
+        "kind": "prop",
+        "edible": false,
+        "name": "蚊子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "category": "玩具",
+      "variety": "prop:mosquito",
+      "tags": [],
+      "keywords": [
+        "蚊子",
+        "小蚊子"
+      ]
+    },
+    {
       "id": "prop:rainbow-sky",
       "kind": "prop",
       "name": "彩虹天空",
@@ -347,6 +862,7 @@
       "asset": {
         "id": "prop:rainbow-sky",
         "kind": "prop",
+        "edible": false,
         "name": "彩虹天空",
         "states": [
           "idle",
@@ -357,6 +873,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:rainbow-sky",
+      "tags": [],
       "keywords": [
         "彩虹天空",
         "rainbow-sky"
@@ -378,6 +897,7 @@
       "asset": {
         "id": "prop:sky-fish",
         "kind": "prop",
+        "edible": false,
         "name": "天空小鱼",
         "states": [
           "idle",
@@ -388,6 +908,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:sky-fish",
+      "tags": [],
       "keywords": [
         "天空小鱼",
         "sky-fish"
@@ -409,6 +932,7 @@
       "asset": {
         "id": "prop:cotton-cloud",
         "kind": "prop",
+        "edible": false,
         "name": "棉花糖云",
         "states": [
           "idle",
@@ -419,6 +943,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:cotton-cloud",
+      "tags": [],
       "keywords": [
         "棉花糖云",
         "cotton-cloud"
@@ -440,6 +967,7 @@
       "asset": {
         "id": "prop:light-seed",
         "kind": "prop",
+        "edible": false,
         "name": "光的种子",
         "states": [
           "idle",
@@ -450,6 +978,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-seed",
+      "tags": [],
       "keywords": [
         "光的种子",
         "light-seed"
@@ -471,6 +1002,7 @@
       "asset": {
         "id": "prop:light-sprout",
         "kind": "prop",
+        "edible": false,
         "name": "好奇光苗",
         "states": [
           "idle",
@@ -481,6 +1013,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-sprout",
+      "tags": [],
       "keywords": [
         "好奇光苗",
         "light-sprout"
@@ -502,6 +1037,7 @@
       "asset": {
         "id": "prop:light-torch",
         "kind": "prop",
+        "edible": false,
         "name": "好奇光筒",
         "states": [
           "idle",
@@ -512,6 +1048,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-torch",
+      "tags": [],
       "keywords": [
         "好奇光筒",
         "light-torch"
@@ -533,6 +1072,7 @@
       "asset": {
         "id": "prop:sleepy-star",
         "kind": "prop",
+        "edible": false,
         "name": "睡着的星星",
         "states": [
           "idle",
@@ -543,6 +1083,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:sleepy-star",
+      "tags": [],
       "keywords": [
         "睡着的星星",
         "sleepy-star"
@@ -564,6 +1107,7 @@
       "asset": {
         "id": "prop:star-friends",
         "kind": "prop",
+        "edible": false,
         "name": "星星朋友",
         "states": [
           "idle",
@@ -574,6 +1118,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:star-friends",
+      "tags": [],
       "keywords": [
         "星星朋友",
         "star-friends"
@@ -595,6 +1142,7 @@
       "asset": {
         "id": "prop:light-trail",
         "kind": "prop",
+        "edible": false,
         "name": "远方光路",
         "states": [
           "idle",
@@ -605,6 +1153,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-trail",
+      "tags": [],
       "keywords": [
         "远方光路",
         "light-trail"
@@ -626,6 +1177,7 @@
       "asset": {
         "id": "prop:light-thread",
         "kind": "prop",
+        "edible": false,
         "name": "光的丝线",
         "states": [
           "idle",
@@ -636,6 +1188,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-thread",
+      "tags": [],
       "keywords": [
         "光的丝线",
         "light-thread"
@@ -657,6 +1212,7 @@
       "asset": {
         "id": "prop:bobo-light",
         "kind": "prop",
+        "edible": false,
         "name": "啵啵兽",
         "states": [
           "idle",
@@ -667,6 +1223,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:bobo-light",
+      "tags": [],
       "keywords": [
         "啵啵兽",
         "bobo-light"
@@ -688,6 +1247,7 @@
       "asset": {
         "id": "prop:light-book",
         "kind": "prop",
+        "edible": false,
         "name": "绘本第一页",
         "states": [
           "idle",
@@ -698,6 +1258,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:light-book",
+      "tags": [],
       "keywords": [
         "绘本第一页",
         "light-book"
@@ -719,6 +1282,7 @@
       "asset": {
         "id": "prop:pink-sky",
         "kind": "prop",
+        "edible": false,
         "name": "粉色天空",
         "states": [
           "idle",
@@ -729,6 +1293,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:pink-sky",
+      "tags": [],
       "keywords": [
         "粉色天空",
         "pink-sky"
@@ -750,6 +1317,7 @@
       "asset": {
         "id": "prop:blue-sky",
         "kind": "prop",
+        "edible": false,
         "name": "蓝色天空",
         "states": [
           "idle",
@@ -760,6 +1328,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:blue-sky",
+      "tags": [],
       "keywords": [
         "蓝色天空",
         "blue-sky"
@@ -781,6 +1352,7 @@
       "asset": {
         "id": "prop:ufo",
         "kind": "prop",
+        "edible": false,
         "name": "飞碟",
         "states": [
           "idle",
@@ -791,6 +1363,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:ufo",
+      "tags": [],
       "keywords": [
         "飞碟",
         "UFO",
@@ -813,6 +1388,7 @@
       "asset": {
         "id": "prop:fighter-jet",
         "kind": "prop",
+        "edible": false,
         "name": "战斗机",
         "states": [
           "idle",
@@ -823,6 +1399,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:fighter-jet",
+      "tags": [],
       "keywords": [
         "战斗机",
         "战机",
@@ -845,6 +1424,7 @@
       "asset": {
         "id": "prop:spaceship",
         "kind": "prop",
+        "edible": false,
         "name": "宇宙飞船",
         "states": [
           "idle",
@@ -855,6 +1435,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:spaceship",
+      "tags": [],
       "keywords": [
         "宇宙飞船",
         "星际飞船",
@@ -877,6 +1460,7 @@
       "asset": {
         "id": "prop:battleship",
         "kind": "prop",
+        "edible": false,
         "name": "战舰",
         "states": [
           "idle",
@@ -887,6 +1471,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:battleship",
+      "tags": [],
       "keywords": [
         "战舰",
         "军舰",
@@ -909,6 +1496,7 @@
       "asset": {
         "id": "prop:tank",
         "kind": "prop",
+        "edible": false,
         "name": "坦克",
         "states": [
           "idle",
@@ -919,6 +1507,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:tank",
+      "tags": [],
       "keywords": [
         "坦克",
         "装甲车"
@@ -940,6 +1531,7 @@
       "asset": {
         "id": "prop:toy-bomb",
         "kind": "prop",
+        "edible": false,
         "name": "炸弹",
         "states": [
           "idle",
@@ -950,6 +1542,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-bomb",
+      "tags": [],
       "keywords": [
         "炸弹",
         "卡通炸弹"
@@ -971,6 +1566,7 @@
       "asset": {
         "id": "prop:toy-pistol",
         "kind": "prop",
+        "edible": false,
         "name": "手枪",
         "states": [
           "idle",
@@ -981,6 +1577,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-pistol",
+      "tags": [],
       "keywords": [
         "手枪",
         "玩具枪",
@@ -1003,6 +1602,7 @@
       "asset": {
         "id": "prop:toy-launcher",
         "kind": "prop",
+        "edible": false,
         "name": "火箭筒",
         "states": [
           "idle",
@@ -1013,6 +1613,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-launcher",
+      "tags": [],
       "keywords": [
         "火箭筒",
         "发射器",
@@ -1035,6 +1638,7 @@
       "asset": {
         "id": "prop:toy-sword",
         "kind": "prop",
+        "edible": false,
         "name": "宝剑",
         "states": [
           "idle",
@@ -1045,6 +1649,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-sword",
+      "tags": [],
       "keywords": [
         "宝剑",
         "剑",
@@ -1067,6 +1674,7 @@
       "asset": {
         "id": "prop:toy-shield",
         "kind": "prop",
+        "edible": false,
         "name": "盾牌",
         "states": [
           "idle",
@@ -1077,6 +1685,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-shield",
+      "tags": [],
       "keywords": [
         "盾牌",
         "盾"
@@ -1098,6 +1709,7 @@
       "asset": {
         "id": "prop:toy-bow",
         "kind": "prop",
+        "edible": false,
         "name": "弓箭",
         "states": [
           "idle",
@@ -1108,6 +1720,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-bow",
+      "tags": [],
       "keywords": [
         "弓箭",
         "弓"
@@ -1129,6 +1744,7 @@
       "asset": {
         "id": "prop:toy-cannon",
         "kind": "prop",
+        "edible": false,
         "name": "大炮",
         "states": [
           "idle",
@@ -1139,6 +1755,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:toy-cannon",
+      "tags": [],
       "keywords": [
         "大炮",
         "炮台",
@@ -1161,6 +1780,7 @@
       "asset": {
         "id": "prop:water-gun",
         "kind": "prop",
+        "edible": false,
         "name": "水枪",
         "states": [
           "idle",
@@ -1171,6 +1791,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:water-gun",
+      "tags": [],
       "keywords": [
         "水枪",
         "喷水枪"
@@ -1192,6 +1815,7 @@
       "asset": {
         "id": "prop:gamepad",
         "kind": "prop",
+        "edible": false,
         "name": "游戏手柄",
         "states": [
           "idle",
@@ -1202,6 +1826,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:gamepad",
+      "tags": [],
       "keywords": [
         "游戏手柄",
         "手柄",
@@ -1224,6 +1851,7 @@
       "asset": {
         "id": "prop:yoyo",
         "kind": "prop",
+        "edible": false,
         "name": "悠悠球",
         "states": [
           "idle",
@@ -1234,6 +1862,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:yoyo",
+      "tags": [],
       "keywords": [
         "悠悠球",
         "溜溜球"
@@ -1255,6 +1886,7 @@
       "asset": {
         "id": "prop:chess",
         "kind": "prop",
+        "edible": false,
         "name": "国际象棋",
         "states": [
           "idle",
@@ -1265,6 +1897,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:chess",
+      "tags": [],
       "keywords": [
         "国际象棋",
         "象棋棋盘",
@@ -1287,6 +1922,7 @@
       "asset": {
         "id": "prop:collection-0-0",
         "kind": "prop",
+        "edible": false,
         "name": "出租车",
         "states": [
           "idle",
@@ -1297,6 +1933,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "0",
+      "tags": [],
       "keywords": [
         "出租车",
         "出租车"
@@ -1318,6 +1957,7 @@
       "asset": {
         "id": "prop:collection-1-0",
         "kind": "prop",
+        "edible": false,
         "name": "警车",
         "states": [
           "idle",
@@ -1328,6 +1968,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "1",
+      "tags": [],
       "keywords": [
         "警车",
         "警车"
@@ -1349,6 +1992,7 @@
       "asset": {
         "id": "prop:collection-2-0",
         "kind": "prop",
+        "edible": false,
         "name": "救护车",
         "states": [
           "idle",
@@ -1359,6 +2003,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "2",
+      "tags": [],
       "keywords": [
         "救护车",
         "救护车"
@@ -1380,6 +2027,7 @@
       "asset": {
         "id": "prop:collection-3-0",
         "kind": "prop",
+        "edible": false,
         "name": "消防车",
         "states": [
           "idle",
@@ -1390,6 +2038,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "3",
+      "tags": [],
       "keywords": [
         "消防车",
         "消防车"
@@ -1411,6 +2062,7 @@
       "asset": {
         "id": "prop:collection-4-0",
         "kind": "prop",
+        "edible": false,
         "name": "校车",
         "states": [
           "idle",
@@ -1421,6 +2073,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "4",
+      "tags": [],
       "keywords": [
         "校车",
         "校车"
@@ -1442,6 +2097,7 @@
       "asset": {
         "id": "prop:collection-5-0",
         "kind": "prop",
+        "edible": false,
         "name": "客车",
         "states": [
           "idle",
@@ -1452,6 +2108,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "5",
+      "tags": [],
       "keywords": [
         "客车",
         "客车"
@@ -1473,6 +2132,7 @@
       "asset": {
         "id": "prop:collection-6-0",
         "kind": "prop",
+        "edible": false,
         "name": "面包车",
         "states": [
           "idle",
@@ -1483,6 +2143,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "6",
+      "tags": [],
       "keywords": [
         "面包车",
         "面包车"
@@ -1504,6 +2167,7 @@
       "asset": {
         "id": "prop:collection-7-0",
         "kind": "prop",
+        "edible": false,
         "name": "皮卡",
         "states": [
           "idle",
@@ -1514,6 +2178,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "7",
+      "tags": [],
       "keywords": [
         "皮卡",
         "皮卡"
@@ -1535,6 +2202,7 @@
       "asset": {
         "id": "prop:collection-8-0",
         "kind": "prop",
+        "edible": false,
         "name": "赛车",
         "states": [
           "idle",
@@ -1545,6 +2213,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "8",
+      "tags": [],
       "keywords": [
         "赛车",
         "赛车"
@@ -1566,6 +2237,7 @@
       "asset": {
         "id": "prop:collection-9-0",
         "kind": "prop",
+        "edible": false,
         "name": "越野车",
         "states": [
           "idle",
@@ -1576,6 +2248,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "9",
+      "tags": [],
       "keywords": [
         "越野车",
         "越野车"
@@ -1597,6 +2272,7 @@
       "asset": {
         "id": "prop:collection-10-0",
         "kind": "prop",
+        "edible": false,
         "name": "拖拉机",
         "states": [
           "idle",
@@ -1607,6 +2283,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "10",
+      "tags": [],
       "keywords": [
         "拖拉机",
         "拖拉机"
@@ -1628,6 +2307,7 @@
       "asset": {
         "id": "prop:collection-11-0",
         "kind": "prop",
+        "edible": false,
         "name": "挖掘机",
         "states": [
           "idle",
@@ -1638,6 +2318,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "11",
+      "tags": [],
       "keywords": [
         "挖掘机",
         "挖掘机"
@@ -1659,6 +2342,7 @@
       "asset": {
         "id": "prop:collection-12-0",
         "kind": "prop",
+        "edible": false,
         "name": "装载机",
         "states": [
           "idle",
@@ -1669,6 +2353,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "12",
+      "tags": [],
       "keywords": [
         "装载机",
         "装载机"
@@ -1690,6 +2377,7 @@
       "asset": {
         "id": "prop:collection-13-0",
         "kind": "prop",
+        "edible": false,
         "name": "起重车",
         "states": [
           "idle",
@@ -1700,6 +2388,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "13",
+      "tags": [],
       "keywords": [
         "起重车",
         "起重车"
@@ -1721,6 +2412,7 @@
       "asset": {
         "id": "prop:collection-14-0",
         "kind": "prop",
+        "edible": false,
         "name": "搅拌车",
         "states": [
           "idle",
@@ -1731,6 +2423,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "14",
+      "tags": [],
       "keywords": [
         "搅拌车",
         "搅拌车"
@@ -1752,6 +2447,7 @@
       "asset": {
         "id": "prop:collection-15-0",
         "kind": "prop",
+        "edible": false,
         "name": "罐车",
         "states": [
           "idle",
@@ -1762,6 +2458,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "15",
+      "tags": [],
       "keywords": [
         "罐车",
         "罐车"
@@ -1783,6 +2482,7 @@
       "asset": {
         "id": "prop:collection-16-0",
         "kind": "prop",
+        "edible": false,
         "name": "集装箱运输车",
         "states": [
           "idle",
@@ -1793,6 +2493,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "16",
+      "tags": [],
       "keywords": [
         "集装箱运输车",
         "集装箱运输车"
@@ -1814,6 +2517,7 @@
       "asset": {
         "id": "prop:collection-17-0",
         "kind": "prop",
+        "edible": false,
         "name": "有轨电车",
         "states": [
           "idle",
@@ -1824,6 +2528,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "17",
+      "tags": [],
       "keywords": [
         "有轨电车",
         "有轨电车"
@@ -1845,6 +2552,7 @@
       "asset": {
         "id": "prop:collection-18-0",
         "kind": "prop",
+        "edible": false,
         "name": "高铁",
         "states": [
           "idle",
@@ -1855,6 +2563,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "18",
+      "tags": [],
       "keywords": [
         "高铁",
         "高铁"
@@ -1876,6 +2587,7 @@
       "asset": {
         "id": "prop:collection-19-0",
         "kind": "prop",
+        "edible": false,
         "name": "摩托车",
         "states": [
           "idle",
@@ -1886,6 +2598,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "19",
+      "tags": [],
       "keywords": [
         "摩托车",
         "摩托车"
@@ -1907,6 +2622,7 @@
       "asset": {
         "id": "prop:collection-20-0",
         "kind": "prop",
+        "edible": false,
         "name": "脚踏车",
         "states": [
           "idle",
@@ -1917,6 +2633,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "20",
+      "tags": [],
       "keywords": [
         "脚踏车",
         "脚踏车"
@@ -1938,6 +2657,7 @@
       "asset": {
         "id": "prop:collection-21-0",
         "kind": "prop",
+        "edible": false,
         "name": "快艇",
         "states": [
           "idle",
@@ -1948,6 +2668,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "21",
+      "tags": [],
       "keywords": [
         "快艇",
         "快艇"
@@ -1969,6 +2692,7 @@
       "asset": {
         "id": "prop:collection-22-0",
         "kind": "prop",
+        "edible": false,
         "name": "轮船",
         "states": [
           "idle",
@@ -1979,6 +2703,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "22",
+      "tags": [],
       "keywords": [
         "轮船",
         "轮船"
@@ -2000,6 +2727,7 @@
       "asset": {
         "id": "prop:collection-23-0",
         "kind": "prop",
+        "edible": false,
         "name": "帆艇",
         "states": [
           "idle",
@@ -2010,6 +2738,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "23",
+      "tags": [],
       "keywords": [
         "帆艇",
         "帆艇"
@@ -2031,6 +2762,7 @@
       "asset": {
         "id": "prop:collection-24-0",
         "kind": "prop",
+        "edible": false,
         "name": "滑翔机",
         "states": [
           "idle",
@@ -2041,6 +2773,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "24",
+      "tags": [],
       "keywords": [
         "滑翔机",
         "滑翔机"
@@ -2062,6 +2797,7 @@
       "asset": {
         "id": "prop:collection-25-0",
         "kind": "prop",
+        "edible": false,
         "name": "旋翼机",
         "states": [
           "idle",
@@ -2072,6 +2808,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "25",
+      "tags": [],
       "keywords": [
         "旋翼机",
         "旋翼机"
@@ -2093,6 +2832,7 @@
       "asset": {
         "id": "prop:collection-26-0",
         "kind": "prop",
+        "edible": false,
         "name": "探测火箭",
         "states": [
           "idle",
@@ -2103,6 +2843,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "26",
+      "tags": [],
       "keywords": [
         "探测火箭",
         "探测火箭"
@@ -2124,6 +2867,7 @@
       "asset": {
         "id": "prop:collection-27-0",
         "kind": "prop",
+        "edible": false,
         "name": "雪橇",
         "states": [
           "idle",
@@ -2134,6 +2878,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "27",
+      "tags": [],
       "keywords": [
         "雪橇",
         "雪橇"
@@ -2155,6 +2902,7 @@
       "asset": {
         "id": "prop:collection-28-0",
         "kind": "prop",
+        "edible": true,
         "name": "青皮梨",
         "states": [
           "idle",
@@ -2165,6 +2913,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "28",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "青皮梨"
       ]
@@ -2185,6 +2938,7 @@
       "asset": {
         "id": "prop:collection-28-1",
         "kind": "prop",
+        "edible": true,
         "name": "黄皮梨",
         "states": [
           "idle",
@@ -2195,6 +2949,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "28",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "黄皮梨"
       ]
@@ -2215,6 +2974,7 @@
       "asset": {
         "id": "prop:collection-28-2",
         "kind": "prop",
+        "edible": true,
         "name": "长颈梨",
         "states": [
           "idle",
@@ -2225,6 +2985,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "28",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "长颈梨"
       ]
@@ -2245,6 +3010,7 @@
       "asset": {
         "id": "prop:collection-28-3",
         "kind": "prop",
+        "edible": true,
         "name": "小圆梨",
         "states": [
           "idle",
@@ -2255,6 +3021,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "28",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小圆梨"
       ]
@@ -2275,6 +3046,7 @@
       "asset": {
         "id": "prop:collection-28-4",
         "kind": "prop",
+        "edible": true,
         "name": "对半梨",
         "states": [
           "idle",
@@ -2285,6 +3057,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "28",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "对半梨"
       ]
@@ -2305,6 +3082,7 @@
       "asset": {
         "id": "prop:collection-29-0",
         "kind": "prop",
+        "edible": true,
         "name": "大圆橙子",
         "states": [
           "idle",
@@ -2315,6 +3093,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "29",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "大圆橙子",
         "橙子"
@@ -2336,6 +3119,7 @@
       "asset": {
         "id": "prop:collection-29-1",
         "kind": "prop",
+        "edible": true,
         "name": "小圆橙子",
         "states": [
           "idle",
@@ -2346,6 +3130,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "29",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小圆橙子"
       ]
@@ -2366,6 +3155,7 @@
       "asset": {
         "id": "prop:collection-29-2",
         "kind": "prop",
+        "edible": true,
         "name": "剥皮橙子",
         "states": [
           "idle",
@@ -2376,6 +3166,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "29",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "剥皮橙子"
       ]
@@ -2396,6 +3191,7 @@
       "asset": {
         "id": "prop:collection-29-3",
         "kind": "prop",
+        "edible": true,
         "name": "切半橙子",
         "states": [
           "idle",
@@ -2406,6 +3202,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "29",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半橙子"
       ]
@@ -2426,6 +3227,7 @@
       "asset": {
         "id": "prop:collection-29-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘橙子",
         "states": [
           "idle",
@@ -2436,6 +3238,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "29",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘橙子"
       ]
@@ -2456,6 +3263,7 @@
       "asset": {
         "id": "prop:collection-30-0",
         "kind": "prop",
+        "edible": true,
         "name": "水蜜桃子",
         "states": [
           "idle",
@@ -2466,6 +3274,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "30",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "水蜜桃子",
         "桃子"
@@ -2487,6 +3300,7 @@
       "asset": {
         "id": "prop:collection-30-1",
         "kind": "prop",
+        "edible": true,
         "name": "黄肉桃子",
         "states": [
           "idle",
@@ -2497,6 +3311,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "30",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "黄肉桃子"
       ]
@@ -2517,6 +3336,7 @@
       "asset": {
         "id": "prop:collection-30-2",
         "kind": "prop",
+        "edible": true,
         "name": "扁圆桃子",
         "states": [
           "idle",
@@ -2527,6 +3347,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "30",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "扁圆桃子"
       ]
@@ -2547,6 +3372,7 @@
       "asset": {
         "id": "prop:collection-30-3",
         "kind": "prop",
+        "edible": true,
         "name": "切半桃子",
         "states": [
           "idle",
@@ -2557,6 +3383,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "30",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半桃子"
       ]
@@ -2577,6 +3408,7 @@
       "asset": {
         "id": "prop:collection-30-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘桃子",
         "states": [
           "idle",
@@ -2587,6 +3419,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "30",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘桃子"
       ]
@@ -2607,6 +3444,7 @@
       "asset": {
         "id": "prop:collection-31-0",
         "kind": "prop",
+        "edible": true,
         "name": "单颗草莓",
         "states": [
           "idle",
@@ -2617,6 +3455,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "31",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "单颗草莓",
         "草莓"
@@ -2638,6 +3481,7 @@
       "asset": {
         "id": "prop:collection-31-1",
         "kind": "prop",
+        "edible": true,
         "name": "双颗草莓",
         "states": [
           "idle",
@@ -2648,6 +3492,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "31",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "双颗草莓"
       ]
@@ -2668,6 +3517,7 @@
       "asset": {
         "id": "prop:collection-31-2",
         "kind": "prop",
+        "edible": true,
         "name": "三颗草莓",
         "states": [
           "idle",
@@ -2678,6 +3528,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "31",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "三颗草莓"
       ]
@@ -2698,6 +3553,7 @@
       "asset": {
         "id": "prop:collection-31-3",
         "kind": "prop",
+        "edible": true,
         "name": "果串草莓",
         "states": [
           "idle",
@@ -2708,6 +3564,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "31",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果串草莓"
       ]
@@ -2728,6 +3589,7 @@
       "asset": {
         "id": "prop:collection-31-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘草莓",
         "states": [
           "idle",
@@ -2738,6 +3600,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "31",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘草莓"
       ]
@@ -2758,6 +3625,7 @@
       "asset": {
         "id": "prop:collection-32-0",
         "kind": "prop",
+        "edible": true,
         "name": "紫色大串葡萄",
         "states": [
           "idle",
@@ -2768,6 +3636,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "32",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "紫色大串葡萄",
         "葡萄"
@@ -2789,6 +3662,7 @@
       "asset": {
         "id": "prop:collection-32-1",
         "kind": "prop",
+        "edible": true,
         "name": "绿色小串葡萄",
         "states": [
           "idle",
@@ -2799,6 +3673,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "32",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "绿色小串葡萄"
       ]
@@ -2819,6 +3698,7 @@
       "asset": {
         "id": "prop:collection-32-2",
         "kind": "prop",
+        "edible": true,
         "name": "双串葡萄",
         "states": [
           "idle",
@@ -2829,6 +3709,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "32",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "双串葡萄"
       ]
@@ -2849,6 +3734,7 @@
       "asset": {
         "id": "prop:collection-32-3",
         "kind": "prop",
+        "edible": true,
         "name": "长串葡萄",
         "states": [
           "idle",
@@ -2859,6 +3745,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "32",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "长串葡萄"
       ]
@@ -2879,6 +3770,7 @@
       "asset": {
         "id": "prop:collection-32-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘葡萄",
         "states": [
           "idle",
@@ -2889,6 +3781,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "32",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘葡萄"
       ]
@@ -2909,6 +3806,7 @@
       "asset": {
         "id": "prop:collection-33-0",
         "kind": "prop",
+        "edible": true,
         "name": "单颗樱桃",
         "states": [
           "idle",
@@ -2919,6 +3817,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "33",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "单颗樱桃",
         "樱桃"
@@ -2940,6 +3843,7 @@
       "asset": {
         "id": "prop:collection-33-1",
         "kind": "prop",
+        "edible": true,
         "name": "双颗樱桃",
         "states": [
           "idle",
@@ -2950,6 +3854,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "33",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "双颗樱桃"
       ]
@@ -2970,6 +3879,7 @@
       "asset": {
         "id": "prop:collection-33-2",
         "kind": "prop",
+        "edible": true,
         "name": "三颗樱桃",
         "states": [
           "idle",
@@ -2980,6 +3890,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "33",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "三颗樱桃"
       ]
@@ -3000,6 +3915,7 @@
       "asset": {
         "id": "prop:collection-33-3",
         "kind": "prop",
+        "edible": true,
         "name": "果串樱桃",
         "states": [
           "idle",
@@ -3010,6 +3926,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "33",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果串樱桃"
       ]
@@ -3030,6 +3951,7 @@
       "asset": {
         "id": "prop:collection-33-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘樱桃",
         "states": [
           "idle",
@@ -3040,6 +3962,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "33",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘樱桃"
       ]
@@ -3060,6 +3987,7 @@
       "asset": {
         "id": "prop:collection-34-0",
         "kind": "prop",
+        "edible": true,
         "name": "大个菠萝",
         "states": [
           "idle",
@@ -3070,6 +3998,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "34",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "大个菠萝",
         "菠萝"
@@ -3091,6 +4024,7 @@
       "asset": {
         "id": "prop:collection-34-1",
         "kind": "prop",
+        "edible": true,
         "name": "小个菠萝",
         "states": [
           "idle",
@@ -3101,6 +4035,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "34",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小个菠萝"
       ]
@@ -3121,6 +4060,7 @@
       "asset": {
         "id": "prop:collection-34-2",
         "kind": "prop",
+        "edible": true,
         "name": "切半菠萝",
         "states": [
           "idle",
@@ -3131,6 +4071,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "34",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半菠萝"
       ]
@@ -3151,6 +4096,7 @@
       "asset": {
         "id": "prop:collection-34-3",
         "kind": "prop",
+        "edible": true,
         "name": "切片菠萝",
         "states": [
           "idle",
@@ -3161,6 +4107,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "34",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切片菠萝"
       ]
@@ -3181,6 +4132,7 @@
       "asset": {
         "id": "prop:collection-34-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘菠萝",
         "states": [
           "idle",
@@ -3191,6 +4143,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "34",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘菠萝"
       ]
@@ -3211,6 +4168,7 @@
       "asset": {
         "id": "prop:collection-35-0",
         "kind": "prop",
+        "edible": true,
         "name": "长圆柠檬",
         "states": [
           "idle",
@@ -3221,6 +4179,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "35",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "长圆柠檬",
         "柠檬"
@@ -3242,6 +4205,7 @@
       "asset": {
         "id": "prop:collection-35-1",
         "kind": "prop",
+        "edible": true,
         "name": "小圆柠檬",
         "states": [
           "idle",
@@ -3252,6 +4216,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "35",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小圆柠檬"
       ]
@@ -3272,6 +4241,7 @@
       "asset": {
         "id": "prop:collection-35-2",
         "kind": "prop",
+        "edible": true,
         "name": "切半柠檬",
         "states": [
           "idle",
@@ -3282,6 +4252,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "35",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半柠檬"
       ]
@@ -3302,6 +4277,7 @@
       "asset": {
         "id": "prop:collection-35-3",
         "kind": "prop",
+        "edible": true,
         "name": "切片柠檬",
         "states": [
           "idle",
@@ -3312,6 +4288,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "35",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切片柠檬"
       ]
@@ -3332,6 +4313,7 @@
       "asset": {
         "id": "prop:collection-35-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘柠檬",
         "states": [
           "idle",
@@ -3342,6 +4324,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "35",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘柠檬"
       ]
@@ -3362,6 +4349,7 @@
       "asset": {
         "id": "prop:collection-36-0",
         "kind": "prop",
+        "edible": true,
         "name": "大个猕猴桃",
         "states": [
           "idle",
@@ -3372,6 +4360,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "36",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "大个猕猴桃",
         "猕猴桃"
@@ -3393,6 +4386,7 @@
       "asset": {
         "id": "prop:collection-36-1",
         "kind": "prop",
+        "edible": true,
         "name": "小个猕猴桃",
         "states": [
           "idle",
@@ -3403,6 +4397,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "36",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小个猕猴桃"
       ]
@@ -3423,6 +4422,7 @@
       "asset": {
         "id": "prop:collection-36-2",
         "kind": "prop",
+        "edible": true,
         "name": "切半猕猴桃",
         "states": [
           "idle",
@@ -3433,6 +4433,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "36",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半猕猴桃"
       ]
@@ -3453,6 +4458,7 @@
       "asset": {
         "id": "prop:collection-36-3",
         "kind": "prop",
+        "edible": true,
         "name": "切片猕猴桃",
         "states": [
           "idle",
@@ -3463,6 +4469,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "36",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切片猕猴桃"
       ]
@@ -3483,6 +4494,7 @@
       "asset": {
         "id": "prop:collection-36-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘猕猴桃",
         "states": [
           "idle",
@@ -3493,6 +4505,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "36",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘猕猴桃"
       ]
@@ -3513,6 +4530,7 @@
       "asset": {
         "id": "prop:collection-37-0",
         "kind": "prop",
+        "edible": true,
         "name": "长圆芒果",
         "states": [
           "idle",
@@ -3523,6 +4541,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "37",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "长圆芒果",
         "芒果"
@@ -3544,6 +4567,7 @@
       "asset": {
         "id": "prop:collection-37-1",
         "kind": "prop",
+        "edible": true,
         "name": "小圆芒果",
         "states": [
           "idle",
@@ -3554,6 +4578,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "37",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "小圆芒果"
       ]
@@ -3574,6 +4603,7 @@
       "asset": {
         "id": "prop:collection-37-2",
         "kind": "prop",
+        "edible": true,
         "name": "切半芒果",
         "states": [
           "idle",
@@ -3584,6 +4614,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "37",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切半芒果"
       ]
@@ -3604,6 +4639,7 @@
       "asset": {
         "id": "prop:collection-37-3",
         "kind": "prop",
+        "edible": true,
         "name": "切块芒果",
         "states": [
           "idle",
@@ -3614,6 +4650,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "37",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "切块芒果"
       ]
@@ -3634,6 +4675,7 @@
       "asset": {
         "id": "prop:collection-37-4",
         "kind": "prop",
+        "edible": true,
         "name": "果盘芒果",
         "states": [
           "idle",
@@ -3644,6 +4686,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "37",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "果盘芒果"
       ]
@@ -3664,6 +4711,7 @@
       "asset": {
         "id": "prop:collection-38-0",
         "kind": "prop",
+        "edible": true,
         "name": "长根胡萝卜",
         "states": [
           "idle",
@@ -3674,6 +4722,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "38",
+      "tags": [],
       "keywords": [
         "长根胡萝卜",
         "胡萝卜"
@@ -3695,6 +4746,7 @@
       "asset": {
         "id": "prop:collection-38-1",
         "kind": "prop",
+        "edible": true,
         "name": "短根胡萝卜",
         "states": [
           "idle",
@@ -3705,6 +4757,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "38",
+      "tags": [],
       "keywords": [
         "短根胡萝卜"
       ]
@@ -3725,6 +4780,7 @@
       "asset": {
         "id": "prop:collection-38-2",
         "kind": "prop",
+        "edible": true,
         "name": "双根胡萝卜",
         "states": [
           "idle",
@@ -3735,6 +4791,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "38",
+      "tags": [],
       "keywords": [
         "双根胡萝卜"
       ]
@@ -3755,6 +4814,7 @@
       "asset": {
         "id": "prop:collection-38-3",
         "kind": "prop",
+        "edible": true,
         "name": "三根胡萝卜",
         "states": [
           "idle",
@@ -3765,6 +4825,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "38",
+      "tags": [],
       "keywords": [
         "三根胡萝卜"
       ]
@@ -3785,6 +4848,7 @@
       "asset": {
         "id": "prop:collection-38-4",
         "kind": "prop",
+        "edible": true,
         "name": "菜篮胡萝卜",
         "states": [
           "idle",
@@ -3795,6 +4859,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "38",
+      "tags": [],
       "keywords": [
         "菜篮胡萝卜"
       ]
@@ -3815,6 +4882,7 @@
       "asset": {
         "id": "prop:collection-39-0",
         "kind": "prop",
+        "edible": true,
         "name": "整根玉米",
         "states": [
           "idle",
@@ -3825,6 +4893,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "39",
+      "tags": [],
       "keywords": [
         "整根玉米",
         "玉米"
@@ -3846,6 +4917,7 @@
       "asset": {
         "id": "prop:collection-39-1",
         "kind": "prop",
+        "edible": true,
         "name": "双根玉米",
         "states": [
           "idle",
@@ -3856,6 +4928,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "39",
+      "tags": [],
       "keywords": [
         "双根玉米"
       ]
@@ -3876,6 +4951,7 @@
       "asset": {
         "id": "prop:collection-39-2",
         "kind": "prop",
+        "edible": true,
         "name": "三根玉米",
         "states": [
           "idle",
@@ -3886,6 +4962,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "39",
+      "tags": [],
       "keywords": [
         "三根玉米"
       ]
@@ -3906,6 +4985,7 @@
       "asset": {
         "id": "prop:collection-39-3",
         "kind": "prop",
+        "edible": true,
         "name": "切段玉米",
         "states": [
           "idle",
@@ -3916,6 +4996,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "39",
+      "tags": [],
       "keywords": [
         "切段玉米"
       ]
@@ -3936,6 +5019,7 @@
       "asset": {
         "id": "prop:collection-39-4",
         "kind": "prop",
+        "edible": true,
         "name": "菜盘玉米",
         "states": [
           "idle",
@@ -3946,6 +5030,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "39",
+      "tags": [],
       "keywords": [
         "菜盘玉米"
       ]
@@ -3966,6 +5053,7 @@
       "asset": {
         "id": "prop:collection-40-0",
         "kind": "prop",
+        "edible": true,
         "name": "大圆南瓜",
         "states": [
           "idle",
@@ -3976,6 +5064,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "40",
+      "tags": [],
       "keywords": [
         "大圆南瓜",
         "南瓜"
@@ -3997,6 +5088,7 @@
       "asset": {
         "id": "prop:collection-40-1",
         "kind": "prop",
+        "edible": true,
         "name": "小圆南瓜",
         "states": [
           "idle",
@@ -4007,6 +5099,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "40",
+      "tags": [],
       "keywords": [
         "小圆南瓜"
       ]
@@ -4027,6 +5122,7 @@
       "asset": {
         "id": "prop:collection-40-2",
         "kind": "prop",
+        "edible": true,
         "name": "扁圆南瓜",
         "states": [
           "idle",
@@ -4037,6 +5133,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "40",
+      "tags": [],
       "keywords": [
         "扁圆南瓜"
       ]
@@ -4057,6 +5156,7 @@
       "asset": {
         "id": "prop:collection-40-3",
         "kind": "prop",
+        "edible": true,
         "name": "长形南瓜",
         "states": [
           "idle",
@@ -4067,6 +5167,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "40",
+      "tags": [],
       "keywords": [
         "长形南瓜"
       ]
@@ -4087,6 +5190,7 @@
       "asset": {
         "id": "prop:collection-40-4",
         "kind": "prop",
+        "edible": true,
         "name": "切块南瓜",
         "states": [
           "idle",
@@ -4097,6 +5201,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "40",
+      "tags": [],
       "keywords": [
         "切块南瓜"
       ]
@@ -4117,6 +5224,7 @@
       "asset": {
         "id": "prop:collection-41-0",
         "kind": "prop",
+        "edible": true,
         "name": "香菇蘑菇",
         "states": [
           "idle",
@@ -4127,6 +5235,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "41",
+      "tags": [],
       "keywords": [
         "香菇蘑菇",
         "蘑菇"
@@ -4148,6 +5259,7 @@
       "asset": {
         "id": "prop:collection-41-1",
         "kind": "prop",
+        "edible": true,
         "name": "白菇蘑菇",
         "states": [
           "idle",
@@ -4158,6 +5270,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "41",
+      "tags": [],
       "keywords": [
         "白菇蘑菇"
       ]
@@ -4178,6 +5293,7 @@
       "asset": {
         "id": "prop:collection-41-2",
         "kind": "prop",
+        "edible": true,
         "name": "双菇蘑菇",
         "states": [
           "idle",
@@ -4188,6 +5304,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "41",
+      "tags": [],
       "keywords": [
         "双菇蘑菇"
       ]
@@ -4208,6 +5327,7 @@
       "asset": {
         "id": "prop:collection-41-3",
         "kind": "prop",
+        "edible": true,
         "name": "三菇蘑菇",
         "states": [
           "idle",
@@ -4218,6 +5338,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "41",
+      "tags": [],
       "keywords": [
         "三菇蘑菇"
       ]
@@ -4238,6 +5361,7 @@
       "asset": {
         "id": "prop:collection-41-4",
         "kind": "prop",
+        "edible": true,
         "name": "菇篮蘑菇",
         "states": [
           "idle",
@@ -4248,6 +5372,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "41",
+      "tags": [],
       "keywords": [
         "菇篮蘑菇"
       ]
@@ -4268,6 +5395,7 @@
       "asset": {
         "id": "prop:collection-42-0",
         "kind": "prop",
+        "edible": true,
         "name": "大圆番茄",
         "states": [
           "idle",
@@ -4278,6 +5406,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "42",
+      "tags": [],
       "keywords": [
         "大圆番茄",
         "番茄"
@@ -4299,6 +5430,7 @@
       "asset": {
         "id": "prop:collection-42-1",
         "kind": "prop",
+        "edible": true,
         "name": "小圆番茄",
         "states": [
           "idle",
@@ -4309,6 +5441,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "42",
+      "tags": [],
       "keywords": [
         "小圆番茄"
       ]
@@ -4329,6 +5464,7 @@
       "asset": {
         "id": "prop:collection-42-2",
         "kind": "prop",
+        "edible": true,
         "name": "双颗番茄",
         "states": [
           "idle",
@@ -4339,6 +5475,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "42",
+      "tags": [],
       "keywords": [
         "双颗番茄"
       ]
@@ -4359,6 +5498,7 @@
       "asset": {
         "id": "prop:collection-42-3",
         "kind": "prop",
+        "edible": true,
         "name": "切半番茄",
         "states": [
           "idle",
@@ -4369,6 +5509,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "42",
+      "tags": [],
       "keywords": [
         "切半番茄"
       ]
@@ -4389,6 +5532,7 @@
       "asset": {
         "id": "prop:collection-42-4",
         "kind": "prop",
+        "edible": true,
         "name": "菜盘番茄",
         "states": [
           "idle",
@@ -4399,6 +5543,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "42",
+      "tags": [],
       "keywords": [
         "菜盘番茄"
       ]
@@ -4419,6 +5566,7 @@
       "asset": {
         "id": "prop:collection-43-0",
         "kind": "prop",
+        "edible": true,
         "name": "圆形饼干",
         "states": [
           "idle",
@@ -4429,6 +5577,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "43",
+      "tags": [],
       "keywords": [
         "圆形饼干",
         "饼干"
@@ -4450,6 +5601,7 @@
       "asset": {
         "id": "prop:collection-43-1",
         "kind": "prop",
+        "edible": true,
         "name": "方形饼干",
         "states": [
           "idle",
@@ -4460,6 +5612,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "43",
+      "tags": [],
       "keywords": [
         "方形饼干"
       ]
@@ -4480,6 +5635,7 @@
       "asset": {
         "id": "prop:collection-43-2",
         "kind": "prop",
+        "edible": true,
         "name": "星形饼干",
         "states": [
           "idle",
@@ -4490,6 +5646,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "43",
+      "tags": [],
       "keywords": [
         "星形饼干"
       ]
@@ -4510,6 +5669,7 @@
       "asset": {
         "id": "prop:collection-43-3",
         "kind": "prop",
+        "edible": true,
         "name": "夹心饼干",
         "states": [
           "idle",
@@ -4520,6 +5680,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "43",
+      "tags": [],
       "keywords": [
         "夹心饼干"
       ]
@@ -4540,6 +5703,7 @@
       "asset": {
         "id": "prop:collection-43-4",
         "kind": "prop",
+        "edible": true,
         "name": "叠叠饼干",
         "states": [
           "idle",
@@ -4550,6 +5714,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "43",
+      "tags": [],
       "keywords": [
         "叠叠饼干"
       ]
@@ -4570,6 +5737,7 @@
       "asset": {
         "id": "prop:collection-44-0",
         "kind": "prop",
+        "edible": true,
         "name": "小块巧克力",
         "states": [
           "idle",
@@ -4580,6 +5748,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "44",
+      "tags": [],
       "keywords": [
         "小块巧克力",
         "巧克力"
@@ -4601,6 +5772,7 @@
       "asset": {
         "id": "prop:collection-44-1",
         "kind": "prop",
+        "edible": true,
         "name": "长条巧克力",
         "states": [
           "idle",
@@ -4611,6 +5783,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "44",
+      "tags": [],
       "keywords": [
         "长条巧克力"
       ]
@@ -4631,6 +5806,7 @@
       "asset": {
         "id": "prop:collection-44-2",
         "kind": "prop",
+        "edible": true,
         "name": "方板巧克力",
         "states": [
           "idle",
@@ -4641,6 +5817,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "44",
+      "tags": [],
       "keywords": [
         "方板巧克力"
       ]
@@ -4661,6 +5840,7 @@
       "asset": {
         "id": "prop:collection-44-3",
         "kind": "prop",
+        "edible": true,
         "name": "夹心巧克力",
         "states": [
           "idle",
@@ -4671,6 +5851,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "44",
+      "tags": [],
       "keywords": [
         "夹心巧克力"
       ]
@@ -4691,6 +5874,7 @@
       "asset": {
         "id": "prop:collection-44-4",
         "kind": "prop",
+        "edible": true,
         "name": "礼盒巧克力",
         "states": [
           "idle",
@@ -4701,6 +5885,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "44",
+      "tags": [],
       "keywords": [
         "礼盒巧克力"
       ]
@@ -4721,6 +5908,7 @@
       "asset": {
         "id": "prop:collection-45-0",
         "kind": "prop",
+        "edible": true,
         "name": "单个马卡龙",
         "states": [
           "idle",
@@ -4731,6 +5919,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "45",
+      "tags": [],
       "keywords": [
         "单个马卡龙",
         "马卡龙"
@@ -4752,6 +5943,7 @@
       "asset": {
         "id": "prop:collection-45-1",
         "kind": "prop",
+        "edible": true,
         "name": "双层马卡龙",
         "states": [
           "idle",
@@ -4762,6 +5954,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "45",
+      "tags": [],
       "keywords": [
         "双层马卡龙"
       ]
@@ -4782,6 +5977,7 @@
       "asset": {
         "id": "prop:collection-45-2",
         "kind": "prop",
+        "edible": true,
         "name": "三层马卡龙",
         "states": [
           "idle",
@@ -4792,6 +5988,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "45",
+      "tags": [],
       "keywords": [
         "三层马卡龙"
       ]
@@ -4812,6 +6011,7 @@
       "asset": {
         "id": "prop:collection-45-3",
         "kind": "prop",
+        "edible": true,
         "name": "拼盘马卡龙",
         "states": [
           "idle",
@@ -4822,6 +6022,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "45",
+      "tags": [],
       "keywords": [
         "拼盘马卡龙"
       ]
@@ -4842,6 +6045,7 @@
       "asset": {
         "id": "prop:collection-45-4",
         "kind": "prop",
+        "edible": true,
         "name": "礼盒马卡龙",
         "states": [
           "idle",
@@ -4852,6 +6056,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "45",
+      "tags": [],
       "keywords": [
         "礼盒马卡龙"
       ]
@@ -4872,6 +6079,7 @@
       "asset": {
         "id": "prop:collection-46-0",
         "kind": "prop",
+        "edible": true,
         "name": "奶油纸杯蛋糕",
         "states": [
           "idle",
@@ -4882,6 +6090,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "46",
+      "tags": [],
       "keywords": [
         "奶油纸杯蛋糕",
         "纸杯蛋糕"
@@ -4903,6 +6114,7 @@
       "asset": {
         "id": "prop:collection-46-1",
         "kind": "prop",
+        "edible": true,
         "name": "草莓纸杯蛋糕",
         "states": [
           "idle",
@@ -4913,6 +6125,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "46",
+      "tags": [],
       "keywords": [
         "草莓纸杯蛋糕"
       ]
@@ -4933,6 +6148,7 @@
       "asset": {
         "id": "prop:collection-46-2",
         "kind": "prop",
+        "edible": true,
         "name": "巧克力纸杯蛋糕",
         "states": [
           "idle",
@@ -4943,6 +6159,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "46",
+      "tags": [],
       "keywords": [
         "巧克力纸杯蛋糕"
       ]
@@ -4963,6 +6182,7 @@
       "asset": {
         "id": "prop:collection-46-3",
         "kind": "prop",
+        "edible": true,
         "name": "樱桃纸杯蛋糕",
         "states": [
           "idle",
@@ -4973,6 +6193,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "46",
+      "tags": [],
       "keywords": [
         "樱桃纸杯蛋糕"
       ]
@@ -4993,6 +6216,7 @@
       "asset": {
         "id": "prop:collection-46-4",
         "kind": "prop",
+        "edible": true,
         "name": "彩糖纸杯蛋糕",
         "states": [
           "idle",
@@ -5003,6 +6227,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "46",
+      "tags": [],
       "keywords": [
         "彩糖纸杯蛋糕"
       ]
@@ -5023,6 +6250,7 @@
       "asset": {
         "id": "prop:collection-47-0",
         "kind": "prop",
+        "edible": true,
         "name": "焦糖布丁",
         "states": [
           "idle",
@@ -5033,6 +6261,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "47",
+      "tags": [],
       "keywords": [
         "焦糖布丁",
         "布丁"
@@ -5054,6 +6285,7 @@
       "asset": {
         "id": "prop:collection-47-1",
         "kind": "prop",
+        "edible": true,
         "name": "牛奶布丁",
         "states": [
           "idle",
@@ -5064,6 +6296,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "47",
+      "tags": [],
       "keywords": [
         "牛奶布丁"
       ]
@@ -5084,6 +6319,7 @@
       "asset": {
         "id": "prop:collection-47-2",
         "kind": "prop",
+        "edible": true,
         "name": "草莓布丁",
         "states": [
           "idle",
@@ -5094,6 +6330,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "47",
+      "tags": [],
       "keywords": [
         "草莓布丁"
       ]
@@ -5114,6 +6353,7 @@
       "asset": {
         "id": "prop:collection-47-3",
         "kind": "prop",
+        "edible": true,
         "name": "芒果布丁",
         "states": [
           "idle",
@@ -5124,6 +6364,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "47",
+      "tags": [],
       "keywords": [
         "芒果布丁"
       ]
@@ -5144,6 +6387,7 @@
       "asset": {
         "id": "prop:collection-47-4",
         "kind": "prop",
+        "edible": true,
         "name": "巧克力布丁",
         "states": [
           "idle",
@@ -5154,6 +6398,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "47",
+      "tags": [],
       "keywords": [
         "巧克力布丁"
       ]
@@ -5174,6 +6421,7 @@
       "asset": {
         "id": "prop:collection-48-0",
         "kind": "prop",
+        "edible": true,
         "name": "双层三明治",
         "states": [
           "idle",
@@ -5184,6 +6432,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "48",
+      "tags": [],
       "keywords": [
         "双层三明治",
         "三明治"
@@ -5205,6 +6456,7 @@
       "asset": {
         "id": "prop:collection-48-1",
         "kind": "prop",
+        "edible": true,
         "name": "三层三明治",
         "states": [
           "idle",
@@ -5215,6 +6467,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "48",
+      "tags": [],
       "keywords": [
         "三层三明治"
       ]
@@ -5235,6 +6490,7 @@
       "asset": {
         "id": "prop:collection-48-2",
         "kind": "prop",
+        "edible": true,
         "name": "蔬菜三明治",
         "states": [
           "idle",
@@ -5245,6 +6501,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "48",
+      "tags": [],
       "keywords": [
         "蔬菜三明治"
       ]
@@ -5265,6 +6524,7 @@
       "asset": {
         "id": "prop:collection-48-3",
         "kind": "prop",
+        "edible": true,
         "name": "鸡蛋三明治",
         "states": [
           "idle",
@@ -5275,6 +6535,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "48",
+      "tags": [],
       "keywords": [
         "鸡蛋三明治"
       ]
@@ -5295,6 +6558,7 @@
       "asset": {
         "id": "prop:collection-48-4",
         "kind": "prop",
+        "edible": true,
         "name": "芝士三明治",
         "states": [
           "idle",
@@ -5305,6 +6569,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "48",
+      "tags": [],
       "keywords": [
         "芝士三明治"
       ]
@@ -5325,6 +6592,7 @@
       "asset": {
         "id": "prop:collection-49-0",
         "kind": "prop",
+        "edible": true,
         "name": "原味热狗",
         "states": [
           "idle",
@@ -5335,6 +6603,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "49",
+      "tags": [],
       "keywords": [
         "原味热狗",
         "热狗"
@@ -5356,6 +6627,7 @@
       "asset": {
         "id": "prop:collection-49-1",
         "kind": "prop",
+        "edible": true,
         "name": "芝士热狗",
         "states": [
           "idle",
@@ -5366,6 +6638,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "49",
+      "tags": [],
       "keywords": [
         "芝士热狗"
       ]
@@ -5386,6 +6661,7 @@
       "asset": {
         "id": "prop:collection-49-2",
         "kind": "prop",
+        "edible": true,
         "name": "蔬菜热狗",
         "states": [
           "idle",
@@ -5396,6 +6672,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "49",
+      "tags": [],
       "keywords": [
         "蔬菜热狗"
       ]
@@ -5416,6 +6695,7 @@
       "asset": {
         "id": "prop:collection-49-3",
         "kind": "prop",
+        "edible": true,
         "name": "双肠热狗",
         "states": [
           "idle",
@@ -5426,6 +6706,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "49",
+      "tags": [],
       "keywords": [
         "双肠热狗"
       ]
@@ -5446,6 +6729,7 @@
       "asset": {
         "id": "prop:collection-49-4",
         "kind": "prop",
+        "edible": true,
         "name": "迷你热狗",
         "states": [
           "idle",
@@ -5456,6 +6740,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "49",
+      "tags": [],
       "keywords": [
         "迷你热狗"
       ]
@@ -5476,6 +6763,7 @@
       "asset": {
         "id": "prop:collection-50-0",
         "kind": "prop",
+        "edible": true,
         "name": "单只饺子",
         "states": [
           "idle",
@@ -5486,6 +6774,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "50",
+      "tags": [],
       "keywords": [
         "单只饺子",
         "饺子"
@@ -5507,6 +6798,7 @@
       "asset": {
         "id": "prop:collection-50-1",
         "kind": "prop",
+        "edible": true,
         "name": "双只饺子",
         "states": [
           "idle",
@@ -5517,6 +6809,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "50",
+      "tags": [],
       "keywords": [
         "双只饺子"
       ]
@@ -5537,6 +6832,7 @@
       "asset": {
         "id": "prop:collection-50-2",
         "kind": "prop",
+        "edible": true,
         "name": "三只饺子",
         "states": [
           "idle",
@@ -5547,6 +6843,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "50",
+      "tags": [],
       "keywords": [
         "三只饺子"
       ]
@@ -5567,6 +6866,7 @@
       "asset": {
         "id": "prop:collection-50-3",
         "kind": "prop",
+        "edible": true,
         "name": "蒸笼饺子",
         "states": [
           "idle",
@@ -5577,6 +6877,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "50",
+      "tags": [],
       "keywords": [
         "蒸笼饺子"
       ]
@@ -5597,6 +6900,7 @@
       "asset": {
         "id": "prop:collection-50-4",
         "kind": "prop",
+        "edible": true,
         "name": "拼盘饺子",
         "states": [
           "idle",
@@ -5607,6 +6911,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "50",
+      "tags": [],
       "keywords": [
         "拼盘饺子"
       ]
@@ -5627,6 +6934,7 @@
       "asset": {
         "id": "prop:collection-51-0",
         "kind": "prop",
+        "edible": true,
         "name": "圆包包子",
         "states": [
           "idle",
@@ -5637,6 +6945,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "51",
+      "tags": [],
       "keywords": [
         "圆包包子",
         "包子"
@@ -5658,6 +6969,7 @@
       "asset": {
         "id": "prop:collection-51-1",
         "kind": "prop",
+        "edible": true,
         "name": "花卷包子",
         "states": [
           "idle",
@@ -5668,6 +6980,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "51",
+      "tags": [],
       "keywords": [
         "花卷包子"
       ]
@@ -5688,6 +7003,7 @@
       "asset": {
         "id": "prop:collection-51-2",
         "kind": "prop",
+        "edible": true,
         "name": "双包包子",
         "states": [
           "idle",
@@ -5698,6 +7014,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "51",
+      "tags": [],
       "keywords": [
         "双包包子"
       ]
@@ -5718,6 +7037,7 @@
       "asset": {
         "id": "prop:collection-51-3",
         "kind": "prop",
+        "edible": true,
         "name": "蒸笼包子",
         "states": [
           "idle",
@@ -5728,6 +7048,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "51",
+      "tags": [],
       "keywords": [
         "蒸笼包子"
       ]
@@ -5748,6 +7071,7 @@
       "asset": {
         "id": "prop:collection-51-4",
         "kind": "prop",
+        "edible": true,
         "name": "拼盘包子",
         "states": [
           "idle",
@@ -5758,6 +7082,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "51",
+      "tags": [],
       "keywords": [
         "拼盘包子"
       ]
@@ -5778,6 +7105,7 @@
       "asset": {
         "id": "prop:collection-52-0",
         "kind": "prop",
+        "edible": true,
         "name": "海苔卷寿司",
         "states": [
           "idle",
@@ -5788,6 +7116,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "52",
+      "tags": [],
       "keywords": [
         "海苔卷寿司",
         "寿司"
@@ -5809,6 +7140,7 @@
       "asset": {
         "id": "prop:collection-52-1",
         "kind": "prop",
+        "edible": true,
         "name": "饭团寿司",
         "states": [
           "idle",
@@ -5819,6 +7151,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "52",
+      "tags": [],
       "keywords": [
         "饭团寿司"
       ]
@@ -5839,6 +7174,7 @@
       "asset": {
         "id": "prop:collection-52-2",
         "kind": "prop",
+        "edible": true,
         "name": "玉子寿司",
         "states": [
           "idle",
@@ -5849,6 +7185,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "52",
+      "tags": [],
       "keywords": [
         "玉子寿司"
       ]
@@ -5869,6 +7208,7 @@
       "asset": {
         "id": "prop:collection-52-3",
         "kind": "prop",
+        "edible": true,
         "name": "黄瓜卷寿司",
         "states": [
           "idle",
@@ -5879,6 +7219,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "52",
+      "tags": [],
       "keywords": [
         "黄瓜卷寿司"
       ]
@@ -5899,6 +7242,7 @@
       "asset": {
         "id": "prop:collection-52-4",
         "kind": "prop",
+        "edible": true,
         "name": "拼盘寿司",
         "states": [
           "idle",
@@ -5909,6 +7253,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "52",
+      "tags": [],
       "keywords": [
         "拼盘寿司"
       ]
@@ -5929,6 +7276,7 @@
       "asset": {
         "id": "prop:collection-53-0",
         "kind": "prop",
+        "edible": true,
         "name": "汤面面条",
         "states": [
           "idle",
@@ -5939,6 +7287,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "53",
+      "tags": [],
       "keywords": [
         "汤面面条",
         "面面条"
@@ -5960,6 +7311,7 @@
       "asset": {
         "id": "prop:collection-53-1",
         "kind": "prop",
+        "edible": true,
         "name": "拌面面条",
         "states": [
           "idle",
@@ -5970,6 +7322,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "53",
+      "tags": [],
       "keywords": [
         "拌面面条"
       ]
@@ -5990,6 +7345,7 @@
       "asset": {
         "id": "prop:collection-53-2",
         "kind": "prop",
+        "edible": true,
         "name": "宽面面条",
         "states": [
           "idle",
@@ -6000,6 +7356,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "53",
+      "tags": [],
       "keywords": [
         "宽面面条"
       ]
@@ -6020,6 +7379,7 @@
       "asset": {
         "id": "prop:collection-53-3",
         "kind": "prop",
+        "edible": true,
         "name": "拉面面条",
         "states": [
           "idle",
@@ -6030,6 +7390,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "53",
+      "tags": [],
       "keywords": [
         "拉面面条"
       ]
@@ -6050,6 +7413,7 @@
       "asset": {
         "id": "prop:collection-53-4",
         "kind": "prop",
+        "edible": true,
         "name": "蔬菜面面条",
         "states": [
           "idle",
@@ -6060,6 +7424,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "53",
+      "tags": [],
       "keywords": [
         "蔬菜面面条"
       ]
@@ -6080,6 +7447,7 @@
       "asset": {
         "id": "prop:collection-54-0",
         "kind": "prop",
+        "edible": true,
         "name": "白饭米饭",
         "states": [
           "idle",
@@ -6090,6 +7458,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "54",
+      "tags": [],
       "keywords": [
         "白饭米饭",
         "饭米饭"
@@ -6111,6 +7482,7 @@
       "asset": {
         "id": "prop:collection-54-1",
         "kind": "prop",
+        "edible": true,
         "name": "炒饭米饭",
         "states": [
           "idle",
@@ -6121,6 +7493,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "54",
+      "tags": [],
       "keywords": [
         "炒饭米饭"
       ]
@@ -6141,6 +7516,7 @@
       "asset": {
         "id": "prop:collection-54-2",
         "kind": "prop",
+        "edible": true,
         "name": "咖喱饭米饭",
         "states": [
           "idle",
@@ -6151,6 +7527,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "54",
+      "tags": [],
       "keywords": [
         "咖喱饭米饭"
       ]
@@ -6171,6 +7550,7 @@
       "asset": {
         "id": "prop:collection-54-3",
         "kind": "prop",
+        "edible": true,
         "name": "盖饭米饭",
         "states": [
           "idle",
@@ -6181,6 +7561,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "54",
+      "tags": [],
       "keywords": [
         "盖饭米饭"
       ]
@@ -6201,6 +7584,7 @@
       "asset": {
         "id": "prop:collection-54-4",
         "kind": "prop",
+        "edible": true,
         "name": "蔬菜饭米饭",
         "states": [
           "idle",
@@ -6211,6 +7595,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "54",
+      "tags": [],
       "keywords": [
         "蔬菜饭米饭"
       ]
@@ -6231,6 +7618,7 @@
       "asset": {
         "id": "prop:collection-55-0",
         "kind": "prop",
+        "edible": true,
         "name": "牛奶",
         "states": [
           "idle",
@@ -6241,6 +7629,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "55",
+      "tags": [],
       "keywords": [
         "牛奶"
       ]
@@ -6261,6 +7652,7 @@
       "asset": {
         "id": "prop:collection-55-1",
         "kind": "prop",
+        "edible": true,
         "name": "果汁",
         "states": [
           "idle",
@@ -6271,6 +7663,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "55",
+      "tags": [],
       "keywords": [
         "果汁"
       ]
@@ -6291,6 +7686,7 @@
       "asset": {
         "id": "prop:collection-55-2",
         "kind": "prop",
+        "edible": true,
         "name": "奶茶",
         "states": [
           "idle",
@@ -6301,6 +7697,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "55",
+      "tags": [],
       "keywords": [
         "奶茶"
       ]
@@ -6321,6 +7720,7 @@
       "asset": {
         "id": "prop:collection-55-3",
         "kind": "prop",
+        "edible": true,
         "name": "可可",
         "states": [
           "idle",
@@ -6331,6 +7731,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "55",
+      "tags": [],
       "keywords": [
         "可可"
       ]
@@ -6351,6 +7754,7 @@
       "asset": {
         "id": "prop:collection-55-4",
         "kind": "prop",
+        "edible": true,
         "name": "柠檬水",
         "states": [
           "idle",
@@ -6361,6 +7765,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "55",
+      "tags": [],
       "keywords": [
         "柠檬水"
       ]
@@ -6381,6 +7788,7 @@
       "asset": {
         "id": "prop:collection-56-0",
         "kind": "prop",
+        "edible": false,
         "name": "足球",
         "states": [
           "idle",
@@ -6391,6 +7799,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "56",
+      "tags": [],
       "keywords": [
         "足球",
         "足球"
@@ -6412,6 +7823,7 @@
       "asset": {
         "id": "prop:collection-57-0",
         "kind": "prop",
+        "edible": false,
         "name": "篮球",
         "states": [
           "idle",
@@ -6422,6 +7834,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "57",
+      "tags": [],
       "keywords": [
         "篮球",
         "篮球"
@@ -6443,6 +7858,7 @@
       "asset": {
         "id": "prop:collection-58-0",
         "kind": "prop",
+        "edible": false,
         "name": "网球",
         "states": [
           "idle",
@@ -6453,6 +7869,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "58",
+      "tags": [],
       "keywords": [
         "网球",
         "网球"
@@ -6474,6 +7893,7 @@
       "asset": {
         "id": "prop:collection-59-0",
         "kind": "prop",
+        "edible": false,
         "name": "保龄球",
         "states": [
           "idle",
@@ -6484,6 +7904,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "59",
+      "tags": [],
       "keywords": [
         "保龄球",
         "保龄球"
@@ -6505,6 +7928,7 @@
       "asset": {
         "id": "prop:collection-60-0",
         "kind": "prop",
+        "edible": false,
         "name": "熊猫玩偶",
         "states": [
           "idle",
@@ -6515,6 +7939,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "60",
+      "tags": [],
       "keywords": [
         "熊猫玩偶",
         "熊猫玩偶"
@@ -6536,6 +7963,7 @@
       "asset": {
         "id": "prop:collection-61-0",
         "kind": "prop",
+        "edible": false,
         "name": "兔子玩偶",
         "states": [
           "idle",
@@ -6546,6 +7974,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "61",
+      "tags": [],
       "keywords": [
         "兔子玩偶",
         "兔子玩偶"
@@ -6567,6 +7998,7 @@
       "asset": {
         "id": "prop:collection-62-0",
         "kind": "prop",
+        "edible": false,
         "name": "小猫玩偶",
         "states": [
           "idle",
@@ -6577,6 +8009,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "62",
+      "tags": [],
       "keywords": [
         "小猫玩偶",
         "小猫玩偶"
@@ -6598,6 +8033,7 @@
       "asset": {
         "id": "prop:collection-63-0",
         "kind": "prop",
+        "edible": false,
         "name": "小狗玩偶",
         "states": [
           "idle",
@@ -6608,6 +8044,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "63",
+      "tags": [],
       "keywords": [
         "小狗玩偶",
         "小狗玩偶"
@@ -6629,6 +8068,7 @@
       "asset": {
         "id": "prop:collection-64-0",
         "kind": "prop",
+        "edible": false,
         "name": "企鹅玩偶",
         "states": [
           "idle",
@@ -6639,6 +8079,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "64",
+      "tags": [],
       "keywords": [
         "企鹅玩偶",
         "企鹅玩偶"
@@ -6660,6 +8103,7 @@
       "asset": {
         "id": "prop:collection-65-0",
         "kind": "prop",
+        "edible": false,
         "name": "大象玩偶",
         "states": [
           "idle",
@@ -6670,6 +8114,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "65",
+      "tags": [],
       "keywords": [
         "大象玩偶",
         "大象玩偶"
@@ -6691,6 +8138,7 @@
       "asset": {
         "id": "prop:collection-66-0",
         "kind": "prop",
+        "edible": false,
         "name": "恐龙玩偶",
         "states": [
           "idle",
@@ -6701,6 +8149,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "66",
+      "tags": [],
       "keywords": [
         "恐龙玩偶",
         "恐龙玩偶"
@@ -6722,6 +8173,7 @@
       "asset": {
         "id": "prop:collection-67-0",
         "kind": "prop",
+        "edible": false,
         "name": "娃娃",
         "states": [
           "idle",
@@ -6732,6 +8184,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "67",
+      "tags": [],
       "keywords": [
         "娃娃",
         "娃娃"
@@ -6753,6 +8208,7 @@
       "asset": {
         "id": "prop:collection-68-0",
         "kind": "prop",
+        "edible": false,
         "name": "积木城堡",
         "states": [
           "idle",
@@ -6763,6 +8219,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "68",
+      "tags": [],
       "keywords": [
         "积木城堡",
         "积木城堡"
@@ -6784,6 +8243,7 @@
       "asset": {
         "id": "prop:collection-69-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具屋",
         "states": [
           "idle",
@@ -6794,6 +8254,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "69",
+      "tags": [],
       "keywords": [
         "玩具屋",
         "玩具屋"
@@ -6815,6 +8278,7 @@
       "asset": {
         "id": "prop:collection-70-0",
         "kind": "prop",
+        "edible": false,
         "name": "叠叠塔",
         "states": [
           "idle",
@@ -6825,6 +8289,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "70",
+      "tags": [],
       "keywords": [
         "叠叠塔",
         "叠叠塔"
@@ -6846,6 +8313,7 @@
       "asset": {
         "id": "prop:collection-71-0",
         "kind": "prop",
+        "edible": false,
         "name": "套圈",
         "states": [
           "idle",
@@ -6856,6 +8324,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "71",
+      "tags": [],
       "keywords": [
         "套圈",
         "套圈"
@@ -6877,6 +8348,7 @@
       "asset": {
         "id": "prop:collection-72-0",
         "kind": "prop",
+        "edible": false,
         "name": "拼图",
         "states": [
           "idle",
@@ -6887,6 +8359,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "72",
+      "tags": [],
       "keywords": [
         "拼图",
         "拼图"
@@ -6908,6 +8383,7 @@
       "asset": {
         "id": "prop:collection-73-0",
         "kind": "prop",
+        "edible": false,
         "name": "魔方",
         "states": [
           "idle",
@@ -6918,6 +8394,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "73",
+      "tags": [],
       "keywords": [
         "魔方",
         "魔方"
@@ -6939,6 +8418,7 @@
       "asset": {
         "id": "prop:collection-74-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具风车",
         "states": [
           "idle",
@@ -6949,6 +8429,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "74",
+      "tags": [],
       "keywords": [
         "玩具风车",
         "玩具风车"
@@ -6970,6 +8453,7 @@
       "asset": {
         "id": "prop:collection-75-0",
         "kind": "prop",
+        "edible": false,
         "name": "摇铃",
         "states": [
           "idle",
@@ -6980,6 +8464,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "75",
+      "tags": [],
       "keywords": [
         "摇铃",
         "摇铃"
@@ -7001,6 +8488,7 @@
       "asset": {
         "id": "prop:collection-76-0",
         "kind": "prop",
+        "edible": false,
         "name": "铃鼓",
         "states": [
           "idle",
@@ -7011,6 +8499,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "76",
+      "tags": [],
       "keywords": [
         "铃鼓",
         "铃鼓"
@@ -7032,6 +8523,7 @@
       "asset": {
         "id": "prop:collection-77-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具吉他",
         "states": [
           "idle",
@@ -7042,6 +8534,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "77",
+      "tags": [],
       "keywords": [
         "玩具吉他",
         "玩具吉他"
@@ -7063,6 +8558,7 @@
       "asset": {
         "id": "prop:collection-78-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具钢琴",
         "states": [
           "idle",
@@ -7073,6 +8569,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "78",
+      "tags": [],
       "keywords": [
         "玩具钢琴",
         "玩具钢琴"
@@ -7094,6 +8593,7 @@
       "asset": {
         "id": "prop:collection-79-0",
         "kind": "prop",
+        "edible": false,
         "name": "滑梯",
         "states": [
           "idle",
@@ -7104,6 +8604,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "79",
+      "tags": [],
       "keywords": [
         "滑梯",
         "滑梯"
@@ -7125,6 +8628,7 @@
       "asset": {
         "id": "prop:collection-80-0",
         "kind": "prop",
+        "edible": false,
         "name": "跷跷板",
         "states": [
           "idle",
@@ -7135,6 +8639,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "80",
+      "tags": [],
       "keywords": [
         "跷跷板",
         "跷跷板"
@@ -7156,6 +8663,7 @@
       "asset": {
         "id": "prop:collection-81-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具秋千",
         "states": [
           "idle",
@@ -7166,6 +8674,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "81",
+      "tags": [],
       "keywords": [
         "玩具秋千",
         "玩具秋千"
@@ -7187,6 +8698,7 @@
       "asset": {
         "id": "prop:collection-82-0",
         "kind": "prop",
+        "edible": false,
         "name": "沙滩玩具",
         "states": [
           "idle",
@@ -7197,6 +8709,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "82",
+      "tags": [],
       "keywords": [
         "沙滩玩具",
         "沙滩玩具"
@@ -7218,6 +8733,7 @@
       "asset": {
         "id": "prop:collection-83-0",
         "kind": "prop",
+        "edible": false,
         "name": "玩具火车",
         "states": [
           "idle",
@@ -7228,6 +8744,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "83",
+      "tags": [],
       "keywords": [
         "玩具火车",
         "玩具火车"
@@ -7249,6 +8768,7 @@
       "asset": {
         "id": "prop:car",
         "kind": "prop",
+        "edible": false,
         "name": "小汽车",
         "states": [
           "idle",
@@ -7259,6 +8779,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:car",
+      "tags": [],
       "keywords": [
         "小汽车",
         "汽车",
@@ -7282,6 +8805,7 @@
       "asset": {
         "id": "prop:bus",
         "kind": "prop",
+        "edible": false,
         "name": "公交车",
         "states": [
           "idle",
@@ -7292,6 +8816,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:bus",
+      "tags": [],
       "keywords": [
         "公交车",
         "巴士",
@@ -7314,6 +8841,7 @@
       "asset": {
         "id": "prop:train",
         "kind": "prop",
+        "edible": false,
         "name": "小火车",
         "states": [
           "idle",
@@ -7324,6 +8852,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:train",
+      "tags": [],
       "keywords": [
         "小火车",
         "火车",
@@ -7346,6 +8877,7 @@
       "asset": {
         "id": "prop:truck",
         "kind": "prop",
+        "edible": false,
         "name": "卡车",
         "states": [
           "idle",
@@ -7356,6 +8888,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:truck",
+      "tags": [],
       "keywords": [
         "卡车",
         "货车",
@@ -7378,6 +8913,7 @@
       "asset": {
         "id": "prop:bicycle",
         "kind": "prop",
+        "edible": false,
         "name": "自行车",
         "states": [
           "idle",
@@ -7388,6 +8924,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:bicycle",
+      "tags": [],
       "keywords": [
         "自行车",
         "单车",
@@ -7410,6 +8949,7 @@
       "asset": {
         "id": "prop:scooter",
         "kind": "prop",
+        "edible": false,
         "name": "滑板车",
         "states": [
           "idle",
@@ -7420,6 +8960,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:scooter",
+      "tags": [],
       "keywords": [
         "滑板车",
         "滑板车",
@@ -7442,6 +8985,7 @@
       "asset": {
         "id": "prop:airplane",
         "kind": "prop",
+        "edible": false,
         "name": "飞机",
         "states": [
           "idle",
@@ -7452,6 +8996,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:airplane",
+      "tags": [],
       "keywords": [
         "飞机",
         "飞机",
@@ -7474,6 +9021,7 @@
       "asset": {
         "id": "prop:helicopter",
         "kind": "prop",
+        "edible": false,
         "name": "直升机",
         "states": [
           "idle",
@@ -7484,6 +9032,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:helicopter",
+      "tags": [],
       "keywords": [
         "直升机",
         "直升机",
@@ -7506,6 +9057,7 @@
       "asset": {
         "id": "prop:submarine",
         "kind": "prop",
+        "edible": false,
         "name": "潜水艇",
         "states": [
           "idle",
@@ -7516,6 +9068,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:submarine",
+      "tags": [],
       "keywords": [
         "潜水艇",
         "潜艇",
@@ -7538,6 +9093,7 @@
       "asset": {
         "id": "prop:sailboat",
         "kind": "prop",
+        "edible": false,
         "name": "帆船",
         "states": [
           "idle",
@@ -7548,6 +9104,9 @@
           "activate"
         ]
       },
+      "category": "交通工具",
+      "variety": "prop:sailboat",
+      "tags": [],
       "keywords": [
         "帆船",
         "帆船",
@@ -7570,6 +9129,7 @@
       "asset": {
         "id": "prop:apple",
         "kind": "prop",
+        "edible": true,
         "name": "苹果",
         "states": [
           "idle",
@@ -7580,6 +9140,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:apple",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "苹果",
         "apple"
@@ -7601,6 +9166,7 @@
       "asset": {
         "id": "prop:banana",
         "kind": "prop",
+        "edible": true,
         "name": "香蕉",
         "states": [
           "idle",
@@ -7611,6 +9177,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:banana",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "香蕉",
         "banana"
@@ -7632,6 +9203,7 @@
       "asset": {
         "id": "prop:watermelon",
         "kind": "prop",
+        "edible": true,
         "name": "西瓜",
         "states": [
           "idle",
@@ -7642,6 +9214,11 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:watermelon",
+      "tags": [
+        "水果"
+      ],
       "keywords": [
         "西瓜",
         "watermelon"
@@ -7663,6 +9240,7 @@
       "asset": {
         "id": "prop:bread",
         "kind": "prop",
+        "edible": true,
         "name": "面包",
         "states": [
           "idle",
@@ -7673,6 +9251,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:bread",
+      "tags": [],
       "keywords": [
         "面包",
         "bread"
@@ -7694,6 +9275,7 @@
       "asset": {
         "id": "prop:cake",
         "kind": "prop",
+        "edible": true,
         "name": "蛋糕",
         "states": [
           "idle",
@@ -7704,6 +9286,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:cake",
+      "tags": [],
       "keywords": [
         "蛋糕",
         "cake"
@@ -7725,6 +9310,7 @@
       "asset": {
         "id": "prop:icecream",
         "kind": "prop",
+        "edible": true,
         "name": "冰淇淋",
         "states": [
           "idle",
@@ -7735,6 +9321,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:icecream",
+      "tags": [],
       "keywords": [
         "冰淇淋",
         "冰激凌",
@@ -7758,6 +9347,7 @@
       "asset": {
         "id": "prop:donut",
         "kind": "prop",
+        "edible": true,
         "name": "甜甜圈",
         "states": [
           "idle",
@@ -7768,6 +9358,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:donut",
+      "tags": [],
       "keywords": [
         "甜甜圈",
         "甜甜圈",
@@ -7790,6 +9383,7 @@
       "asset": {
         "id": "prop:pizza",
         "kind": "prop",
+        "edible": true,
         "name": "披萨",
         "states": [
           "idle",
@@ -7800,6 +9394,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:pizza",
+      "tags": [],
       "keywords": [
         "披萨",
         "pizza"
@@ -7821,6 +9418,7 @@
       "asset": {
         "id": "prop:burger",
         "kind": "prop",
+        "edible": true,
         "name": "汉堡",
         "states": [
           "idle",
@@ -7831,6 +9429,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:burger",
+      "tags": [],
       "keywords": [
         "汉堡",
         "burger"
@@ -7852,6 +9453,7 @@
       "asset": {
         "id": "prop:lollipop",
         "kind": "prop",
+        "edible": true,
         "name": "棒棒糖",
         "states": [
           "idle",
@@ -7862,6 +9464,9 @@
           "activate"
         ]
       },
+      "category": "食物",
+      "variety": "prop:lollipop",
+      "tags": [],
       "keywords": [
         "棒棒糖",
         "lollipop"
@@ -7883,6 +9488,7 @@
       "asset": {
         "id": "prop:ball",
         "kind": "prop",
+        "edible": false,
         "name": "皮球",
         "states": [
           "idle",
@@ -7893,6 +9499,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:ball",
+      "tags": [],
       "keywords": [
         "皮球",
         "ball"
@@ -7914,6 +9523,7 @@
       "asset": {
         "id": "prop:teddy",
         "kind": "prop",
+        "edible": false,
         "name": "泰迪熊",
         "states": [
           "idle",
@@ -7924,6 +9534,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:teddy",
+      "tags": [],
       "keywords": [
         "泰迪熊",
         "小熊",
@@ -7947,6 +9560,7 @@
       "asset": {
         "id": "prop:blocks",
         "kind": "prop",
+        "edible": false,
         "name": "积木",
         "states": [
           "idle",
@@ -7957,6 +9571,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:blocks",
+      "tags": [],
       "keywords": [
         "积木",
         "blocks"
@@ -7978,6 +9595,7 @@
       "asset": {
         "id": "prop:kite",
         "kind": "prop",
+        "edible": false,
         "name": "风筝",
         "states": [
           "idle",
@@ -7988,6 +9606,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:kite",
+      "tags": [],
       "keywords": [
         "风筝",
         "kite"
@@ -8009,6 +9630,7 @@
       "asset": {
         "id": "prop:drum",
         "kind": "prop",
+        "edible": false,
         "name": "小鼓",
         "states": [
           "idle",
@@ -8019,6 +9641,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:drum",
+      "tags": [],
       "keywords": [
         "小鼓",
         "鼓",
@@ -8041,6 +9666,7 @@
       "asset": {
         "id": "prop:top",
         "kind": "prop",
+        "edible": false,
         "name": "陀螺",
         "states": [
           "idle",
@@ -8051,6 +9677,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:top",
+      "tags": [],
       "keywords": [
         "陀螺",
         "top"
@@ -8072,6 +9701,7 @@
       "asset": {
         "id": "prop:duck",
         "kind": "prop",
+        "edible": false,
         "name": "小黄鸭",
         "states": [
           "idle",
@@ -8082,6 +9712,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:duck",
+      "tags": [],
       "keywords": [
         "小黄鸭",
         "鸭子",
@@ -8105,6 +9738,7 @@
       "asset": {
         "id": "prop:robot-toy",
         "kind": "prop",
+        "edible": false,
         "name": "玩具机器人",
         "states": [
           "idle",
@@ -8115,6 +9749,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:robot-toy",
+      "tags": [],
       "keywords": [
         "玩具机器人",
         "玩具机器人",
@@ -8137,6 +9774,7 @@
       "asset": {
         "id": "prop:rocking-horse",
         "kind": "prop",
+        "edible": false,
         "name": "木马",
         "states": [
           "idle",
@@ -8147,6 +9785,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:rocking-horse",
+      "tags": [],
       "keywords": [
         "木马",
         "rocking-horse"
@@ -8168,6 +9809,7 @@
       "asset": {
         "id": "prop:xylophone",
         "kind": "prop",
+        "edible": false,
         "name": "木琴",
         "states": [
           "idle",
@@ -8178,6 +9820,9 @@
           "activate"
         ]
       },
+      "category": "玩具",
+      "variety": "prop:xylophone",
+      "tags": [],
       "keywords": [
         "木琴",
         "木琴",
@@ -8200,6 +9845,7 @@
       "asset": {
         "id": "prop:bridge",
         "kind": "prop",
+        "edible": false,
         "name": "彩虹小桥",
         "states": [
           "idle",
@@ -8210,6 +9856,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:bridge",
+      "tags": [],
       "keywords": [
         "桥"
       ]
@@ -8230,6 +9879,7 @@
       "asset": {
         "id": "prop:garden",
         "kind": "prop",
+        "edible": false,
         "name": "问题花园",
         "states": [
           "idle",
@@ -8240,6 +9890,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:garden",
+      "tags": [],
       "keywords": [
         "花园",
         "花朵",
@@ -8264,6 +9917,7 @@
       "asset": {
         "id": "prop:tree",
         "kind": "prop",
+        "edible": false,
         "name": "发现果树",
         "states": [
           "idle",
@@ -8274,6 +9928,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:tree",
+      "tags": [],
       "keywords": [
         "树",
         "森林"
@@ -8295,6 +9952,7 @@
       "asset": {
         "id": "prop:house",
         "kind": "prop",
+        "edible": false,
         "name": "好奇小屋",
         "states": [
           "idle",
@@ -8305,6 +9963,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:house",
+      "tags": [],
       "keywords": [
         "房子",
         "小屋",
@@ -8330,6 +9991,7 @@
       "asset": {
         "id": "prop:telescope",
         "kind": "prop",
+        "edible": false,
         "name": "星光望远镜",
         "states": [
           "idle",
@@ -8340,6 +10002,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:telescope",
+      "tags": [],
       "keywords": [
         "望远镜",
         "观察镜",
@@ -8362,6 +10027,7 @@
       "asset": {
         "id": "prop:robot",
         "kind": "prop",
+        "edible": false,
         "name": "问题小机器人",
         "states": [
           "idle",
@@ -8372,6 +10038,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:robot",
+      "tags": [],
       "keywords": [
         "机器人",
         "机械伙伴",
@@ -8394,6 +10063,7 @@
       "asset": {
         "id": "prop:boat",
         "kind": "prop",
+        "edible": false,
         "name": "探问小船",
         "states": [
           "idle",
@@ -8404,6 +10074,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:boat",
+      "tags": [],
       "keywords": [
         "船",
         "潜艇",
@@ -8427,6 +10100,7 @@
       "asset": {
         "id": "prop:rocket",
         "kind": "prop",
+        "edible": false,
         "name": "好奇火箭",
         "states": [
           "idle",
@@ -8437,6 +10111,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:rocket",
+      "tags": [],
       "keywords": [
         "火箭",
         "飞行器"
@@ -8458,6 +10135,7 @@
       "asset": {
         "id": "prop:portal",
         "kind": "prop",
+        "edible": false,
         "name": "想象传送门",
         "states": [
           "idle",
@@ -8468,6 +10146,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:portal",
+      "tags": [],
       "keywords": [
         "传送",
         "任意门",
@@ -8491,6 +10172,7 @@
       "asset": {
         "id": "prop:balloon",
         "kind": "prop",
+        "edible": false,
         "name": "云朵气球",
         "states": [
           "idle",
@@ -8501,6 +10183,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:balloon",
+      "tags": [],
       "keywords": [
         "气球",
         "热气球",
@@ -8523,6 +10208,7 @@
       "asset": {
         "id": "prop:windmill",
         "kind": "prop",
+        "edible": false,
         "name": "提问风车",
         "states": [
           "idle",
@@ -8533,6 +10219,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:windmill",
+      "tags": [],
       "keywords": [
         "风车",
         "风力",
@@ -8555,6 +10244,7 @@
       "asset": {
         "id": "prop:fountain",
         "kind": "prop",
+        "edible": false,
         "name": "气泡喷泉",
         "states": [
           "idle",
@@ -8565,6 +10255,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:fountain",
+      "tags": [],
       "keywords": [
         "喷泉",
         "水池",
@@ -8589,6 +10282,7 @@
       "asset": {
         "id": "prop:music",
         "kind": "prop",
+        "edible": false,
         "name": "星星音乐台",
         "states": [
           "idle",
@@ -8599,6 +10293,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:music",
+      "tags": [],
       "keywords": [
         "音乐",
         "钢琴",
@@ -8625,6 +10322,7 @@
       "asset": {
         "id": "prop:bakery",
         "kind": "prop",
+        "edible": false,
         "name": "分享点心台",
         "states": [
           "idle",
@@ -8635,6 +10333,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:bakery",
+      "tags": [],
       "keywords": [
         "包子",
         "面包",
@@ -8661,6 +10362,7 @@
       "asset": {
         "id": "prop:swing",
         "kind": "prop",
+        "edible": false,
         "name": "云朵秋千",
         "states": [
           "idle",
@@ -8671,6 +10373,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:swing",
+      "tags": [],
       "keywords": [
         "秋千",
         "摇椅",
@@ -8693,6 +10398,7 @@
       "asset": {
         "id": "prop:lantern",
         "kind": "prop",
+        "edible": false,
         "name": "好奇灯塔",
         "states": [
           "idle",
@@ -8703,6 +10409,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:lantern",
+      "tags": [],
       "keywords": [
         "灯",
         "灯塔",
@@ -8728,6 +10437,7 @@
       "asset": {
         "id": "prop:stage",
         "kind": "prop",
+        "edible": false,
         "name": "小小表演台",
         "states": [
           "idle",
@@ -8738,6 +10448,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:stage",
+      "tags": [],
       "keywords": [
         "舞台",
         "剧场",
@@ -8761,6 +10474,7 @@
       "asset": {
         "id": "prop:ladder",
         "kind": "prop",
+        "edible": false,
         "name": "折叠探索梯",
         "states": [
           "idle",
@@ -8771,6 +10485,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:ladder",
+      "tags": [],
       "keywords": [
         "梯",
         "绳",
@@ -8793,6 +10510,7 @@
       "asset": {
         "id": "prop:camera",
         "kind": "prop",
+        "edible": false,
         "name": "发现照相机",
         "states": [
           "idle",
@@ -8803,6 +10521,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:camera",
+      "tags": [],
       "keywords": [
         "相机",
         "照相",
@@ -8826,6 +10547,7 @@
       "asset": {
         "id": "prop:prototype",
         "kind": "prop",
+        "edible": false,
         "name": "想象试作品",
         "states": [
           "idle",
@@ -8836,6 +10558,9 @@
           "activate"
         ]
       },
+      "category": "场景道具",
+      "variety": "prop:prototype",
+      "tags": [],
       "keywords": []
     },
     {
@@ -8874,6 +10599,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:jiaojiao",
+      "tags": [],
       "keywords": [
         "叫叫"
       ]
@@ -8914,6 +10642,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:lingdang",
+      "tags": [],
       "keywords": [
         "铃铛"
       ]
@@ -8954,6 +10685,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:zhuxiaodi",
+      "tags": [],
       "keywords": [
         "猪小弟"
       ]
@@ -8994,6 +10728,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:jiaojiao-mom",
+      "tags": [],
       "keywords": [
         "叫叫妈妈"
       ]
@@ -9034,6 +10771,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:jiaojiao-dad",
+      "tags": [],
       "keywords": [
         "叫叫爸爸"
       ]
@@ -9074,6 +10814,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:zhuxiaodi-mom",
+      "tags": [],
       "keywords": [
         "猪小弟妈妈"
       ]
@@ -9114,6 +10857,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:zhuxiaodi-dad",
+      "tags": [],
       "keywords": [
         "猪小弟爸爸"
       ]
@@ -9154,6 +10900,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:lingdang-mom",
+      "tags": [],
       "keywords": [
         "铃铛妈妈"
       ]
@@ -9194,6 +10943,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:lingdang-dad",
+      "tags": [],
       "keywords": [
         "铃铛爸爸"
       ]
@@ -9234,6 +10986,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:nini",
+      "tags": [],
       "keywords": [
         "妮妮"
       ]
@@ -9274,6 +11029,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:xiaomaoqiu",
+      "tags": [],
       "keywords": [
         "小毛球"
       ]
@@ -9314,6 +11072,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:xiaolu-teacher",
+      "tags": [],
       "keywords": [
         "小鹿老师"
       ]
@@ -9354,6 +11115,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:miao-boss",
+      "tags": [],
       "keywords": [
         "喵老板"
       ]
@@ -9394,6 +11158,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:zhuxiaoyu",
+      "tags": [],
       "keywords": [
         "猪小玉"
       ]
@@ -9434,6 +11201,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:lvdou",
+      "tags": [],
       "keywords": [
         "绿豆"
       ]
@@ -9474,6 +11244,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:douya",
+      "tags": [],
       "keywords": [
         "豆芽"
       ]
@@ -9514,6 +11287,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:fendou",
+      "tags": [],
       "keywords": [
         "粉豆"
       ]
@@ -9554,6 +11330,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:landou",
+      "tags": [],
       "keywords": [
         "蓝豆"
       ]
@@ -9594,6 +11373,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:dahongdou",
+      "tags": [],
       "keywords": [
         "大红豆"
       ]
@@ -9634,6 +11416,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:donggaofen",
+      "tags": [],
       "keywords": [
         "董高分"
       ]
@@ -9674,6 +11459,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:qinlianxi",
+      "tags": [],
       "keywords": [
         "秦练习"
       ]
@@ -9714,6 +11502,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:aigaicuo",
+      "tags": [],
       "keywords": [
         "艾改错"
       ]
@@ -9754,6 +11545,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:wulala",
+      "tags": [],
       "keywords": [
         "乌拉拉"
       ]
@@ -9794,6 +11588,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:mili",
+      "tags": [],
       "keywords": [
         "米粒"
       ]
@@ -9834,6 +11631,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:yuanbao",
+      "tags": [],
       "keywords": [
         "圆宝"
       ]
@@ -9874,6 +11674,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:duziteng",
+      "tags": [],
       "keywords": [
         "杜子腾"
       ]
@@ -9914,6 +11717,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:wanneng",
+      "tags": [],
       "keywords": [
         "万能"
       ]
@@ -9954,6 +11760,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:baozai",
+      "tags": [],
       "keywords": [
         "包仔"
       ]
@@ -9994,6 +11803,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:danzai",
+      "tags": [],
       "keywords": [
         "蛋仔"
       ]
@@ -10034,6 +11846,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:maoge",
+      "tags": [],
       "keywords": [
         "帽哥"
       ]
@@ -10074,6 +11889,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:sunwukong",
+      "tags": [],
       "keywords": [
         "孙悟空"
       ]
@@ -10114,6 +11932,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:rusheng",
+      "tags": [],
       "keywords": [
         "如生"
       ]
@@ -10154,6 +11975,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:lanbitou",
+      "tags": [],
       "keywords": [
         "烂笔头哥"
       ]
@@ -10194,6 +12018,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:dengdeng",
+      "tags": [],
       "keywords": [
         "灯灯"
       ]
@@ -10234,6 +12061,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:domi",
+      "tags": [],
       "keywords": [
         "Domi"
       ]
@@ -10274,6 +12104,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:hatty",
+      "tags": [],
       "keywords": [
         "Hatty"
       ]
@@ -10314,6 +12147,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:elfie",
+      "tags": [],
       "keywords": [
         "Elfie"
       ]
@@ -10354,6 +12190,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:hackett",
+      "tags": [],
       "keywords": [
         "Hackett"
       ]
@@ -10394,6 +12233,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:allie",
+      "tags": [],
       "keywords": [
         "Allie（艾丽）"
       ]
@@ -10434,6 +12276,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:sage",
+      "tags": [],
       "keywords": [
         "Sage（赛奇）"
       ]
@@ -10474,6 +12319,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:gulu",
+      "tags": [],
       "keywords": [
         "咕噜"
       ]
@@ -10514,6 +12362,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "npc:prank-doctor",
+      "tags": [],
       "keywords": [
         "恶作剧博士"
       ]
@@ -10554,6 +12405,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "yellow:bull",
+      "tags": [],
       "keywords": [
         "黄牛"
       ]
@@ -10594,6 +12448,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "yellow:round",
+      "tags": [],
       "keywords": [
         "圆滚滚"
       ]
@@ -10634,6 +12491,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "yellow:jiaojiao",
+      "tags": [],
       "keywords": [
         "叫叫"
       ]
@@ -10674,6 +12534,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "yellow:kangaroo",
+      "tags": [],
       "keywords": [
         "袋鼠"
       ]
@@ -10715,6 +12578,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:dog",
+      "tags": [],
       "keywords": [
         "豆豆"
       ]
@@ -10756,6 +12622,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:rabbit",
+      "tags": [],
       "keywords": [
         "雪团"
       ]
@@ -10797,6 +12666,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:otter",
+      "tags": [],
       "keywords": [
         "阿獭"
       ]
@@ -10838,6 +12710,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:owl",
+      "tags": [],
       "keywords": [
         "咕咕"
       ]
@@ -10879,6 +12754,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:cat",
+      "tags": [],
       "keywords": [
         "月牙"
       ]
@@ -10920,6 +12798,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:bear",
+      "tags": [],
       "keywords": [
         "蜜糖"
       ]
@@ -10961,6 +12842,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "clay:frog",
+      "tags": [],
       "keywords": [
         "小荷"
       ]
@@ -10992,6 +12876,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:window",
+      "tags": [],
       "keywords": [
         "星星窗"
       ]
@@ -11031,6 +12918,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:gugu",
+      "tags": [],
       "keywords": [
         "鼓鼓"
       ]
@@ -11070,6 +12960,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:fish",
+      "tags": [],
       "keywords": [
         "海底 MOMO"
       ]
@@ -11109,6 +13002,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:cloud",
+      "tags": [],
       "keywords": [
         "云朵 MOMO"
       ]
@@ -11148,6 +13044,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:clock",
+      "tags": [],
       "keywords": [
         "时钟 MOMO"
       ]
@@ -11187,6 +13086,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:shadow",
+      "tags": [],
       "keywords": [
         "影子 MOMO"
       ]
@@ -11226,6 +13128,9 @@
           "active"
         ]
       },
+      "category": "角色",
+      "variety": "wow:star",
+      "tags": [],
       "keywords": [
         "星星 MOMO"
       ]
@@ -15613,11 +17518,24 @@
     }
   ],
   "commands": {
+    "feeding.start": [
+      "eaters",
+      "foods"
+    ],
+    "feeding.stop": [
+      "eaters"
+    ],
     "entity.spawn": [
       "id",
       "asset",
       "position",
       "color",
+      "scale",
+      "sizeLocked",
+      "colorOverride"
+    ],
+    "entity.scale": [
+      "id",
       "scale"
     ],
     "entity.move": [

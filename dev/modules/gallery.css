@@ -191,8 +191,6 @@ button[aria-current="true"] {
   border-radius: 6px;
 }
 .module-row-copy { min-width:0; display:grid; flex:1; }
-.module-thumbnail { width:54px; height:42px; flex:none; object-fit:cover; border-radius:6px; background:linear-gradient(145deg,#eef2e9,#dce5dc); }
-.thumbnail-renderer { position:fixed; left:-10000px; top:0; width:144px; height:108px; overflow:hidden; pointer-events:none; }
 .module-row strong {
   display: block;
   font-size: 14px;
@@ -482,3 +480,6 @@ footer {
 .story-editor textarea[aria-label="事件配置（JSON）"] { min-height:220px; font-family:ui-monospace,monospace; }
 #preview-stage { position: relative; }
 #preview-stage canvas { touch-action:none; }
+
+.module-type-icon { width:22px; height:22px; flex:none; display:grid; place-items:center; color:#637368; }
+.module-type-icon svg { width:14px; height:14px; }

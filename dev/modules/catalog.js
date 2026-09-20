@@ -2,10 +2,12 @@ import { ASSETS } from "../content/assets.js";
 import { WORLD_CATALOG } from "../content/worlds.js";
 import { AUDIO_CATALOG } from "../content/audio.generated.js";
 import { ENCOUNTERS } from "../content/encounters.js";
-import { CREATION_KITS } from "../content/props.js";
+import { PROP_COLLECTION } from "../content/prop-collection.js";
+import { CREATION_KITS, PROP_CATEGORIES } from "../content/props.js";
 
 // Adding a reusable UI/logic module requires an entry here. Assets are derived automatically.
 export const COMPONENTS = [
+  {id:'logic:feeding',kind:'logic',name:'角色寻找食物与循环进食',description:'输入“10个猪小弟吃80个汉堡包”：分批生成角色与食物，角色独占目标，靠近后每两下吃掉一份；在 AI 控制台验证，可说停止吃。',source:'dev/presentation/feeding-controller.js',capabilities:['多对象指令','寻找食物','两次咀嚼消耗','停止与清理'],dependencies:['logic:intent']},
   {id:'logic:story-tap-target',kind:'logic',name:'剧情对象点选引导',description:'脚本指定目标，循环柔光与点击强光，共用回答入口；验证入口 dev/tools/verify-story-tap.mjs。',source:'dev/presentation/story-tap-target.js',capabilities:['3D 对象点选','循环发光','点击反馈','减少动态效果','资源释放'],dependencies:[]},
   {
     id: "logic:dialogue",
@@ -222,6 +224,9 @@ export const MODULE_CATALOG = [
     capabilities: [...asset.animations, ...asset.states],
     dependencies: [],
     asset,
+    category: asset.kind === 'prop' ? PROP_CATEGORIES[asset.id.slice(5)] || '场景道具' : '角色',
+    variety: PROP_COLLECTION.find(p => `prop:${p.id}` === asset.id)?.seed?.toString() || asset.id,
+    tags: asset.kind === 'prop' && (['apple','banana','watermelon'].includes(asset.id.slice(5)) || PROP_COLLECTION.some(p => `prop:${p.id}` === asset.id && p.seed >= 28 && p.seed <= 37)) ? ['水果'] : [],
     keywords: asset.kind === "prop" ? CREATION_KITS.find(k => `prop:${k.id}` === asset.id)?.words.split("|") || [] : [asset.name],
   })),
   ...WORLD_CATALOG.map((world) => ({

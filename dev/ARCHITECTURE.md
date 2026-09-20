@@ -166,3 +166,15 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 ## 第一章的模型组合
 
 `content/stories/first-light-models.js` 声明预设选项对应的普通实体命令，`wow.js` 将它们纳入场景事件。语音与点选通过同一选项映射，彩虹／粉色天空与小鱼／棉花糖使用不同实体 ID，可组合保留。进入场景按稳定 ID 和已保存回答重建目标模型；已有 v2 存档也能补齐模型。14 个道具均为独立 `modules/props/` 模块，统一登记、清理，并可在陈列馆试用。悬空模型声明 `group.userData.suspended`，表现层不让它落地或阻挡地面行走；运行器仍使用原有实体契约。
+
+## 成组召唤与同类多样化
+
+`content/scene-groups.json` 维护角色组别名、成员和父母/伙伴关系；IP 关系以所列钉钉原文为依据，用户约定的“叫叫家族”指小分队，“叫叫全家”指父母与叫叫。黄色四巨头使用 `yellow:` 模型。`scene_groups.py` 在场景关键词解析时展开组，动作沿用当前实体命令，不自动新增；目录中的 category、tags、variety 用于挑选不同类型，并优先当前没有的模型。未指定数量的同类“一些”默认五个，角色组默认全员；种类不足时明确说明，不拿同款变体充当不同种类。验证入口为 `dev/tools/verify-scene-groups.py` 及陈列馆 AI 控制台。
+
+### 多对象与进食
+
+`scene_interactions.py` 优先按各名词前的数量解析多对象，输出多组 spawn 与 `feeding.start`，一次新增总数仍上限 100。运行器校验角色和可食用目标后统一提交；`presentation/feeding-controller.js` 独占分配最近目标，在落地完成后移动、咀嚼两次，再经会话回调提交食物移除与角色位置。切换场景、移除角色及 feeding.stop 清理任务；食物消耗写入存档，暂态动作不自动恢复。
+
+### 明确尺寸与颜色
+
+`scene_appearance.py` 将正常/大/超大/倍数映射为标准尺寸的 1/1.5/2.5/指定倍数；标准 scale 为 0.65。显式尺寸设置 sizeLocked，自动布局不得缩小；`entity.scale` 与 `entity.color` 作用于已有对象，颜色覆盖保留五官明暗与蓝底黄星旗帜。尺寸与颜色标记进入存档，正常尺寸恢复为 0.65。

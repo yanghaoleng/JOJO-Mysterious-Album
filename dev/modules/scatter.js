@@ -76,11 +76,20 @@ export function scatterCommands(commands, entities, world, random = Math.random,
 // Reframe from physical world dimensions, never multiply an already zoomed-out
 // camera repeatedly. Keep all sampling on the visible, representable hemisphere.
 export function arrangeInView(commands, entities, stage, random = Math.random) {
+  // Explicit resizing preserves positions and sizes, widening the camera when needed.
+  const resizes=commands.filter(c=>c.type==='entity.scale' && entities[c.id]);
+  if(resizes.length){
+    const extent=Math.max(3,...resizes.map(c=>{const asset=entities[c.id].asset;return Math.max(footprint(asset,c.scale),heights.get(asset)*c.scale);}));
+    const diameter=stage.world.planet.radius*2+extent*2;
+    stage.target.copy(stage.world.planet.center);stage.panOffset.set(0,0,0);
+    stage.zoom*=Math.min(1,(stage.camera.right-stage.camera.left)*.8/diameter,(stage.camera.top-stage.camera.bottom)*.8/diameter);stage.resize();
+  }
   const original = {zoom:stage.zoom, pitch:stage.pitch, yaw:stage.yaw, target:stage.target.clone(), pan:stage.panOffset.clone()};
-  const attempt = (factor, contactPacking = false) => scatterCommands(commands.map(c => c.type === 'entity.spawn' ? {...c,scale:Math.max(.2,(c.scale ?? .55)*factor)} : c),entities,stage.world,random,stage.camera,{compact:true,contactPacking});
+  const attempt = (factor, contactPacking = false) => scatterCommands(commands.map(c => c.type === 'entity.spawn' ? {...c,scale:c.sizeLocked ? c.scale : Math.max(.2,(c.scale ?? .55)*factor)} : c),entities,stage.world,random,stage.camera,{compact:true,contactPacking});
   try { return {commands:attempt(1), reframed:false, reduced:false}; }
   catch(error) { if(error.code !== 'placement_retry') throw error; }
-  const diameter = stage.world.planet.radius * 2 + 6;
+  const maxSize=Math.max(3,...commands.filter(c=>c.type==='entity.spawn').map(c=>Math.max(footprint(c.asset,c.scale||.55),heights.get(c.asset)*(c.scale||.55))));
+  const diameter = stage.world.planet.radius * 2 + maxSize*2;
   stage.target.copy(stage.world.planet.center);
   stage.panOffset.set(0,0,0);
   stage.zoom *= Math.min((stage.camera.right-stage.camera.left)*.85/diameter,(stage.camera.top-stage.camera.bottom)*.8/diameter);
@@ -94,7 +103,7 @@ export function arrangeInView(commands, entities, stage, random = Math.random) {
         catch(error) { if(error.code !== 'placement_retry') throw error; }
       }
     }
-    throw new Error('自动布局暂未完成，请重新提交；已有模型保持不变。');
+    throw new Error(commands.some(c=>c.sizeLocked) ? '当前区域放不下指定尺寸与数量，请减少数量或选更大的星球；指定尺寸未被缩小。' : '自动布局暂未完成，请重新提交；已有模型保持不变。');
   } catch(error) {
     Object.assign(stage,{zoom:original.zoom,pitch:original.pitch,yaw:original.yaw});
     stage.target.copy(original.target); stage.panOffset.copy(original.pan); stage.resize();

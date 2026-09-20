@@ -29,6 +29,13 @@ function reduce(state, c, context) {
       ? worldState(state, context.world)
       : null;
   const entity = world?.entities[c.id];
+  if (c.type.startsWith('feeding.')) {
+    const entities=worldState(state,context.world).entities;
+    for(const id of c.eaters) requireValue(entities[id] && ASSETS[entities[id].asset]?.kind==='actor','Eater must be an actor in this world');
+    if(c.type==='feeding.start') for(const id of c.foods) requireValue(entities[id] && ASSETS[entities[id].asset]?.edible,'Target must be edible in this world');
+    return;
+  }
+
   if (c.type === "entity.spawn") {
     const order = entity?.createdOrder ?? (Math.max(0, ...Object.values(world.entities).map(e => e.createdOrder || 0)) + 1);
     if (!entity) for (const id of capacityEvictions(world.entities, [c])) delete world.entities[id];
@@ -39,6 +46,8 @@ function reduce(state, c, context) {
       position: c.position,
       color: c.color || "#9ab8ba",
       scale: c.scale || 0.65,
+      sizeLocked: c.sizeLocked === true,
+      colorOverride: c.colorOverride === true,
       state: entity?.state || "working",
     };
   } else if (c.type === "entity.move") {
@@ -49,7 +58,8 @@ function reduce(state, c, context) {
   } else if (c.type.startsWith("entity.")) {
     requireValue(entity, "Entity is not in the current world");
     if (c.type === "entity.state") entity.state = c.state;
-    if (c.type === "entity.color") entity.color = c.color;
+    if (c.type === "entity.color") { entity.color = c.color; entity.colorOverride = true; }
+    if (c.type === "entity.scale") { entity.scale = c.scale; entity.sizeLocked = true; }
     if (c.type === "entity.animate")
       requireValue(
         ASSETS[entity.asset].animations.includes(c.animation),
@@ -114,6 +124,8 @@ function restore(saved, legacyCreations) {
               position: item.position,
               color: item.color,
               scale: item.scale,
+              sizeLocked: item.sizeLocked === true,
+              colorOverride: item.colorOverride === true,
             }),
             context,
           );
@@ -216,7 +228,7 @@ export class WorldRuntime {
         "Stale world proposal",
       );
       requireValue(
-        Array.isArray(commands) && commands.length <= 100,
+        Array.isArray(commands) && commands.length <= MAX_WORLD_ENTITIES && commands.filter(c=>c?.type==='entity.spawn').length <= 100,
         "Too many world commands",
       );
       const validated = commands.map(validateCommand),

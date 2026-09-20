@@ -8,7 +8,10 @@ import {
 import { PROP_IDS } from "../content/props.js";
 
 export const COMMANDS = Object.freeze({
-  "entity.spawn": ["id", "asset", "position", "color", "scale"],
+  "feeding.start": ["eaters", "foods"],
+  "feeding.stop": ["eaters"],
+  "entity.spawn": ["id", "asset", "position", "color", "scale", "sizeLocked", "colorOverride"],
+  "entity.scale": ["id", "scale"],
   "entity.move": ["id", "position"],
   "entity.remove": ["id"],
   "entity.state": ["id", "state"],
@@ -120,6 +123,11 @@ export function validateCommand(command) {
   const c = copy(command);
   if (c.type.startsWith("entity.") || c.type === "creation.activate")
     requireValue(safeId(c.id), "Invalid entity id");
+  if (c.type.startsWith('feeding.')) {
+    for (const field of c.type === 'feeding.start' ? ['eaters','foods'] : ['eaters'])
+      requireValue(Array.isArray(c[field]) && c[field].length > 0 && c[field].length <= 100 && c[field].every(safeId) && new Set(c[field]).size === c[field].length, 'Invalid feeding participants');
+    if (c.type === 'feeding.start') requireValue(!c.eaters.some(id=>c.foods.includes(id)), 'Cannot eat oneself');
+  }
   if (c.type === "entity.spawn") {
     requireValue(Object.hasOwn(ASSETS, c.asset), "Unknown asset");
     requireValue(
@@ -128,13 +136,15 @@ export function validateCommand(command) {
         c.position.every((n) => Number.isFinite(n) && Math.abs(n) <= 9),
       "Position must be two surface coordinates within -9..9",
     );
+    for(const field of ['sizeLocked','colorOverride']) requireValue(c[field]===undefined || typeof c[field]==='boolean','Invalid appearance override');
     requireValue(c.color === undefined || isColor(c.color), "Invalid color");
     requireValue(
       c.scale === undefined ||
-        (Number.isFinite(c.scale) && c.scale >= 0.2 && c.scale <= 1.5),
+        (Number.isFinite(c.scale) && c.scale >= 0.1 && c.scale <= 5.2),
       "Invalid scale",
     );
   }
+  if (c.type === "entity.scale") requireValue(Number.isFinite(c.scale) && c.scale >= .1 && c.scale <= 5.2, "Invalid scale");
   if (c.type === "entity.move")
     requireValue(
       Array.isArray(c.position) &&

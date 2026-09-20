@@ -1,3 +1,17 @@
+import { build as extra0 } from './little-flame.js';
+import { build as extra1 } from './gold-coin.js';
+import { build as extra2 } from './cash.js';
+import { build as extra3 } from './purple-diamond.js';
+import { build as extra4 } from './battery.js';
+import { build as extra5 } from './growth-bean.js';
+import { build as extra6 } from './badge-star.js';
+import { build as extra7 } from './badge-shield.js';
+import { build as extra8 } from './badge-ribbon.js';
+import { build as extra9 } from './badge-crown.js';
+import { build as extra10 } from './badge-leaf.js';
+import { build as extra11 } from './bee.js';
+import { build as extra12 } from './fly.js';
+import { build as extra13 } from './mosquito.js';
 import { build as rainbow_sky } from "./rainbow-sky.js";
 import { build as sky_fish } from "./sky-fish.js";
 import { build as cotton_cloud } from "./cotton-cloud.js";
@@ -276,6 +290,21 @@ import { build as special13 } from "./gamepad.js";
 import { build as special14 } from "./yoyo.js";
 import { build as special15 } from "./chess.js";
 export const PROP_BUILDERS = Object.freeze({
+  'little-flame':extra0,
+  'gold-coin':extra1,
+  'cash':extra2,
+  'purple-diamond':extra3,
+  'battery':extra4,
+  'growth-bean':extra5,
+  'badge-star':extra6,
+  'badge-shield':extra7,
+  'badge-ribbon':extra8,
+  'badge-crown':extra9,
+  'badge-leaf':extra10,
+  'bee':extra11,
+  'fly':extra12,
+  'mosquito':extra13,
+
   "rainbow-sky": rainbow_sky,
   "sky-fish": sky_fish,
   "cotton-cloud": cotton_cloud,

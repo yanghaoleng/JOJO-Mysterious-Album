@@ -3,6 +3,8 @@ import { ASSETS } from "../content/assets.js";
 import { createCreationModel } from "../creation-models.js";
 import { createActor } from "./actor-factory.js";
 
+import { createFeedingController } from "./feeding-controller.js";
+
 const UP = new THREE.Vector3(0, 1, 0);
 const PRESETS = {
   day: {
@@ -29,11 +31,12 @@ const PRESETS = {
 };
 
 // Reconciles pure world records into Three.js instances; never advances a story.
-export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
+export function createWorldPresenter(stage, { onInteract = () => {}, onConsume = () => ({ok:false}) } = {}) {
   const root = new THREE.Group();
   root.name = "scripted-world-entities";
   stage.scene.add(root);
   const entries = new Map();
+  const feeding = createFeedingController({entries,stage,consume:onConsume});
   let currentWorld = null,
     lastCreations = "",
     lastEnvironment = null,
@@ -47,6 +50,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
     }
   }
   function clear() {
+    feeding.clear();
     for (const id of [...entries.keys()]) remove(id);
     currentWorld = null;
     lastCreations = "";
@@ -71,9 +75,9 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
     for (const record of Object.values(data.entities)) {
       const signature = JSON.stringify([
         record.asset,
-        record.position,
         record.color,
         record.scale,
+        record.colorOverride,
       ]);
       let item = entries.get(record.id);
       if (item?.signature !== signature) {
@@ -97,6 +101,19 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
         const contactRadius = Math.hypot(Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x)),Math.max(Math.abs(bounds.min.z),Math.abs(bounds.max.z)));
         anchor.add(model.group);
         root.add(anchor);
+        if(record.colorOverride) {
+          const palette=new THREE.Color(record.color), hsl={};palette.getHSL(hsl);
+          const touched=new Set();
+          model.group.traverse(node=>{if(!node.isMesh)return;for(const material of Array.isArray(node.material)?node.material:[node.material]) {
+            if(!material.color || touched.has(material))continue;touched.add(material);
+            const original={};material.color.getHSL(original);
+            const protectedFlag=['prop:ladder','prop:battleship'].includes(record.asset) && ['397fc4','ffda45'].includes(material.color.getHexString());
+            if(!protectedFlag && (material.vertexColors || (original.l>.15 && (original.s>.12 || original.l<.85)))) {
+              material.color.setHSL(hsl.h,hsl.s,Math.min(.82,Math.max(.2,hsl.l*(.7+original.l*.5))));
+              if(material.vertexColors){material.vertexColors=false;material.needsUpdate=true;}
+            }
+          }});
+        }
         stage.style.apply(anchor);
         item = {
           model,
@@ -104,6 +121,8 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           anchor,
           normal,
           signature,
+          scale: record.scale,
+          color: record.color,
           actor,
           state: null,
           actionUntil: 0,
@@ -111,6 +130,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
           rest: anchor.position.clone(),
           orientation: anchor.quaternion.clone(),
+          position: [...record.position],
           contactRadius,
           landed: false,
           impact: null,
@@ -119,6 +139,12 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
         item.anchor.visible = item.entrance >= 0;
         entries.set(record.id, item);
         anchor.userData.worldEntity = record.id;
+      }
+      if(record.position.some((value,index)=>value!==item.position[index])) {
+        item.normal.copy(stage.world.surfaceNormal(...record.position));
+        item.rest.copy(stage.world.planet.center).addScaledVector(item.normal,stage.world.planet.radius+.02);
+        item.orientation.setFromUnitVectors(UP,item.normal);item.position=[...record.position];
+        item.anchor.position.copy(item.rest);
       }
       if (item.state !== record.state) {
         item.state = record.state;
@@ -158,6 +184,12 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
       }
     }
     for (const c of commands) {
+      if(c.type==='feeding.start') feeding.start(c.eaters,c.foods);
+      if(c.type==='feeding.stop') feeding.stop(c.eaters);
+      if(['entity.move','entity.motion'].includes(c.type)) {
+        // Consumption persists the current position; other movement cancels feeding.
+        if(!commands.some(other=>other.type==='entity.remove')) feeding.stop([c.id]);
+      }
       if (c.type === "entity.animate") {
         const item = entries.get(c.id);
         if (item?.actor) {
@@ -228,7 +260,9 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           item.model.update(stage.reduced ? 0 : time, dt);
         } else item.model.update(dt, stage.reduced, item.state !== "idle");
       }
+      feeding.update(dt,time);
     },
+    get feedingStats() { return feeding.stats; },
     getObject(id) { return entries.get(id)?.model.group || null; },
     pick(raycaster) {
       const hits = raycaster.intersectObject(root, true);
@@ -253,6 +287,8 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
       return [...entries].map(([id, item]) => ({
         id,
         state: item.state,
+        scale: item.scale,
+        color: item.color,
         assetKind: item.actor ? "actor" : "prop",
         position: item.anchor.position.toArray(),
         settled: item.entrance >= 2,

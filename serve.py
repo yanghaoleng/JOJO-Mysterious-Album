@@ -33,6 +33,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
+from scene_appearance import appearance_edit, decorate_spawns
+from scene_interactions import compound_scene_result
+from scene_groups import select_scene_group, spawn_scene_group
 from volc_asr import transcribe_pcm
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
 
@@ -818,6 +821,7 @@ SCENE_KEYWORDS = {
 SCENE_NAMES = {"pocket": ["巨人的口袋", "口袋"], "meadow": ["草地", "萤火草地"], "moon": ["月球", "月亮"], "orchard": ["果园", "苹果园"], "reef": ["海底", "海底维修站"], "cloud": ["云层", "云层导航站"], "bakery": ["面包房", "面包店"], "home": ["家", "小屋"]}
 
 def scene_quantity(text):
+    text = re.sub(r"(?:\d+(?:\.\d+)?|[一二两三四五六七八九十])倍", "", text)
     match = re.search(r"(\d+|一百|一?十[一二三四五六七八九]?|[二三四五六七八九]十[一二三四五六七八九]?|[一二两三四五六七八九])(?:个|辆|架|艘|只|份|颗|台|把|枚|件)", text)
     if not match:
         match = re.search(r"\d+", text)
@@ -865,8 +869,17 @@ def approximate_scene_result(text, context):
 
 
 def keyword_scene_result(text, context):
+    catalog = json.loads((ROOT / 'dev/modules/catalog.json').read_text(encoding='utf-8'))
+    edit = appearance_edit(text, context, catalog, ROOT, scene_quantity)
+    if edit: return edit
+    return decorate_spawns(_keyword_scene_result(text, context), text, catalog)
+
+
+def _keyword_scene_result(text, context):
     # Read the generated catalog so newly registered prefabs are callable too.
     catalog = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))
+    compound = compound_scene_result(text, context, catalog, ROOT, scene_quantity)
+    if compound: return compound
     indexed = dict(SCENE_KEYWORDS)
     for entry in catalog["modules"]:
         if entry.get("kind") in {"prop", "actor"}:
@@ -874,8 +887,22 @@ def keyword_scene_result(text, context):
             previous = next((item for item in indexed.values() if item["asset"] == asset), {})
             indexed[asset] = {"asset": asset, "words": list(dict.fromkeys([entry["name"], *entry.get("keywords", []), *previous.get("words", [])]))}
     compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    compact = re.sub(r"(叫叫|铃铛|猪小弟)的(爸爸|妈妈)", r"\1\2", compact)
     current = context.get("world", "meadow") if isinstance(context, dict) else "meadow"
     matches = [(key, item) for key, item in indexed.items() if any(word in compact for word in item["words"])]
+    selection = select_scene_group(compact, context, catalog, ROOT)
+    if selection:
+        if re.search(r'招招?手|挥挥?手', compact) and not re.search(r'新增|生成|召唤|变出|出现|来', compact):
+            if re.search(r'不要|别让|不许|除了|除外|以外', compact):
+                return {'reply':'请明确说要招手的成员。','commands':[],'sceneSwitch':None,'handled':True}
+            wave_assets = {entry['id'] for entry in catalog['modules'] if 'wave' in entry.get('capabilities', [])}
+            entities = context.get('entities', {}) if isinstance(context, dict) else {}
+            targets = set(selection.get('targetMembers', selection['members'])) & wave_assets
+            commands = [{'type':'entity.animate','id':key,'animation':'wave'} for key, value in entities.items() if value.get('asset') in targets]
+            return {'reply':f'已安排 {len(commands)} 个成员招手。' if commands else '请先召唤这组角色。','commands':commands,'sceneSwitch':None,'source':'group','handled':True}
+        if re.search(r'清除|移除|删除|消失|走路|跑步|冲锋|起飞|停止|降落', compact):
+            return {'reply':'请先选中具体对象执行这个动作。','commands':[],'sceneSwitch':None,'source':'group','handled':True}
+        return spawn_scene_group(compact, selection, scene_quantity)
     asset_match_length = max((len(word) for _, item in matches for word in item['words'] if word in compact), default=0)
     for world, words in SCENE_NAMES.items():
         if any(word in compact and len(word) >= asset_match_length for word in words):
@@ -902,7 +929,7 @@ def keyword_scene_result(text, context):
 def scene_control_result(text, context):
     try:
         result = resolve_scene_control(text, context)
-        if result.get('commands') or result.get('sceneSwitch'):
+        if result.get('commands') or result.get('sceneSwitch') or result.get('handled'):
             return result
     except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError):
         pass
@@ -921,11 +948,12 @@ def resolve_scene_control(text, context):
         raise RuntimeError("scene_control_not_configured")
     worlds = context.get("worlds", []) if isinstance(context, dict) else []
     props = [entry for entry in json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"] if entry.get("kind") in {"prop", "actor"}]
-    manifest = [{"asset": p["id"], "name": p["name"], "keywords": p.get("keywords", [])} for p in props]
+    manifest = [{"asset": p["id"], "name": p["name"], "keywords": p.get("keywords", []), "category": p.get("category"), "tags": p.get("tags", [])} for p in props]
+    associations = json.loads((ROOT / "dev/content/scene-groups.json").read_text(encoding="utf-8"))
     body = json.dumps({
         "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
         "messages": [
-            {"role": "system", "content": SCENE_CONTROL_PROMPT + "\n允许的完整道具及角色清单（核心角色优先精确匹配，不可替换成道具）：" + json.dumps(manifest, ensure_ascii=False)},
+            {"role": "system", "content": SCENE_CONTROL_PROMPT + "\n允许的完整道具及角色清单（核心角色优先精确匹配，不可替换成道具）：" + json.dumps(manifest, ensure_ascii=False) + "\n角色分组与关联关系（分组名展开为成员；同类请求优先不同种类与尚未出现的模型）：" + json.dumps(associations, ensure_ascii=False)},
             {"role": "user", "content": json.dumps({"request": text, "current": context, "availableWorlds": worlds}, ensure_ascii=False)},
         ], "reasoning_effort": "minimal", "response_format": {"type": "json_object"}, "max_tokens": 700,
     }, ensure_ascii=False).encode("utf-8")

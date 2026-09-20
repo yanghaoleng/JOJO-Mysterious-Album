@@ -1,6 +1,20 @@
 import { PROP_COLLECTION } from './prop-collection.js';
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
+["little-flame", "小火苗", "小火苗|火苗|火焰", "橙黄色火苗轻轻跳动。", "jiaojiao"],
+["gold-coin", "金币", "金币|金钱|硬币", "厚厚的金币轻轻转动，露出星形浮雕。", "jiaojiao"],
+["cash", "现金", "现金|钞票|纸币|钱币", "绿色纸钞叠成一小摞，轻轻摇摆。", "jiaojiao"],
+["purple-diamond", "紫色钻石", "紫色钻石|钻石|紫钻|宝石", "棱面分明的紫色钻石缓缓转动。", "jiaojiao"],
+["battery", "电池", "电池|能量电池", "电池的三格电量轻轻跳动。", "jiaojiao"],
+["growth-bean", "成长豆（学豆）", "成长豆|学豆|橙色咖啡豆", "橙色咖啡豆形学豆轻轻弹跳，中间留着弯弯的豆缝。", "jiaojiao"],
+["badge-star", "星芒徽章", "星星徽章|星芒徽章|徽章", "星芒徽章轻轻摇摆，展示独立轮廓。", "jiaojiao"],
+["badge-shield", "守护盾徽章", "守护盾徽章|盾牌徽章", "守护盾徽章轻轻摇摆，展示独立轮廓。", "jiaojiao"],
+["badge-ribbon", "绶带奖章", "绶带奖章|奖章|圆形徽章", "绶带奖章轻轻摇摆，展示独立轮廓。", "jiaojiao"],
+["badge-crown", "皇冠徽章", "皇冠徽章|王冠徽章", "皇冠徽章轻轻摇摆，展示独立轮廓。", "jiaojiao"],
+["badge-leaf", "绿叶徽章", "绿叶徽章|成长徽章", "绿叶徽章轻轻摇摆，展示独立轮廓。", "jiaojiao"],
+["bee", "蜜蜂", "蜜蜂|小蜜蜂", "蜜蜂扇动翅膀，轻轻上下飞舞。", "jiaojiao"],
+["fly", "苍蝇", "苍蝇|小苍蝇", "苍蝇扇动翅膀，轻轻上下飞舞。", "jiaojiao"],
+["mosquito", "蚊子", "蚊子|小蚊子", "蚊子扇动翅膀，轻轻上下飞舞。", "jiaojiao"],
   ["rainbow-sky", "彩虹天空", "彩虹天空|rainbow-sky", "七色立体圆弧铺开彩虹天空。", "jiaojiao"],
   ["sky-fish", "天空小鱼", "天空小鱼|sky-fish", "三条小鱼在天空里摆尾游动。", "jiaojiao"],
   ["cotton-cloud", "棉花糖云", "棉花糖云|cotton-cloud", "三朵棉花糖在空中轻轻摇摆。", "jiaojiao"],
@@ -210,3 +224,5 @@ export const PROP_CATEGORIES = {"car":"交通工具","bus":"交通工具","train
 export const PROP_IDS = [...CREATION_KITS.map((kit) => kit.id), "prototype"];
 Object.assign(PROP_CATEGORIES, {"ufo":"交通工具","fighter-jet":"交通工具","spaceship":"交通工具","battleship":"交通工具","tank":"交通工具","toy-bomb":"玩具","toy-pistol":"玩具","toy-launcher":"玩具","toy-sword":"玩具","toy-shield":"玩具","toy-bow":"玩具","toy-cannon":"玩具","water-gun":"玩具","gamepad":"玩具","yoyo":"玩具","chess":"玩具"});
 Object.assign(PROP_CATEGORIES, Object.fromEntries(PROP_COLLECTION.map(p => [p.id, p.category])));
+
+Object.assign(PROP_CATEGORIES,{"little-flame": "玩具", "gold-coin": "玩具", "cash": "玩具", "purple-diamond": "玩具", "battery": "玩具", "growth-bean": "玩具", "badge-star": "玩具", "badge-shield": "玩具", "badge-ribbon": "玩具", "badge-crown": "玩具", "badge-leaf": "玩具", "bee": "玩具", "fly": "玩具", "mosquito": "玩具"});

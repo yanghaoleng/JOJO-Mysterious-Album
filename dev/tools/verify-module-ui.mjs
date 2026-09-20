@@ -42,8 +42,8 @@ try {
   await sidebarToggle.click();
   assert.equal(await sidebarToggle.getAttribute("aria-expanded"), "true");
   await page.locator('#filters button').filter({ hasText: '道具' }).click();
-  await page.waitForFunction(() => document.querySelector('.module-thumbnail[src^="data:image/"]'));
-  checks.push("Sidebar stays aligned and reversible, all modules render at once, and 3D thumbnails load");
+  assert.equal(await page.locator('.module-thumbnail, .thumbnail-renderer').count(), 0);
+  checks.push("Sidebar stays aligned and reversible, all modules render at once, without thumbnail rendering");
   await select('prop:windmill');
   await page.getByRole("button", { name: "暂停动作", exact: true }).click();
   assert.equal(
