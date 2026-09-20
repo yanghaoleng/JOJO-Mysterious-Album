@@ -818,7 +818,13 @@ commands 必须是数组，每项形如 {"type":"entity.spawn","id":"x1","asset"
 7. environment.set: {type,preset:"day|dusk|night|default"}，切换白天/黄昏/夜晚；
 8. group.patrol: {type,targets:[id...]}，让一组角色沿直线来回走动巡逻，可带小动作；
 9. group.gather: {type,targets:[id...]}，让一组角色/物件聚拢到一起；
-10. group.surround: {type,targets:[id...],surrounders:[id...]}，让 surrounders 围住 targets（围成一圈，targets 先聚拢到一起）。
+10. group.surround: {type,targets:[id...],surrounders:[id...]}，让 surrounders 围住 targets（围成一圈，targets 先聚拢到一起）；
+11. actor.perform: {type,id,action,duration}，角色表演：run 跑 / sprint 冲刺 / jump 跳 / float 飘浮 / sleep 睡觉(横躺) / roll 打滚 / dance 跳舞 / cheer 欢呼 / fall 晕倒；
+12. fx.play: {type,effect,id?或position}，特效：smoke 烟雾 / sparkle 闪光 / dust 尘土 / firework 烟花 / confetti 撒花 / stars 星星 / vanishStar 爆炸变星星；
+13. weather.set: {type,preset:"rain|snow|clear"}，下雨/下雪/放晴；
+14. world.shake {type,strength,duration} 画面震动；world.zoom {type,scale} 巨化>1 微缩<1；world.float {type,on:true} 无重力漂浮；
+15. group.chase {type,chaser,runner} 追逐；group.hug {type,targets:[a,b]} 拥抱；group.handshake {type,targets:[a,b]} 握手；group.holdhands {type,targets:[...]} 牵手排队走；group.stack {type,targets:[...]} 叠罗汉；group.ride {type,driver,mount} 骑乘（人骑飞机/车，人骑人也行，两个模型叠一起=驾驶）；group.dance {type,targets:[...]} 一起跳舞。
+suggestions：每次输出后续剧情发展（孩子接下来可能看到什么），数组 1~3 条，每项 {kind:"auto-feed"|"auto-ride"|"auto-play"|"socialize"|"weather"|"fun", reason:"一句中文解释"}：场上同时有角色和食物→auto-feed（他们自己去吃）；有角色和飞行器/车→auto-ride（骑上去玩）；角色们都在→socialize（交谈/握手/跳舞）；生成了新角色→auto-play（自己跑跳打滚玩）；可以空数组。
 意图匹配规则：
 - “出现/生成/变出/召唤 X 个 Y” → entity.spawn（X 个就 X 条）；
 - “Y 消失/把 Y 拿走/删掉/清空” → entity.remove；“全部消失/清空场景/都没了” → 列出当前场景所有实体逐一 remove；
@@ -974,11 +980,165 @@ def removal_scene_result(text, context, catalog):
     return {'reply': '想让谁消失呢？可以说“让火箭消失”或“全部消失”。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
 
 
+def _suggest_for(context, commands=None):
+    """Lightweight local suggestions so the offline keyword path still grows the story.
+    `commands` (just applied) lets us reason about the scene right after this batch."""
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    items = list(entities.values())
+    if commands:
+        for c in commands:
+            if isinstance(c, dict) and c.get('type') == 'entity.spawn' and c.get('asset'):
+                items.append({'asset': c['asset']})
+    npcs = [e for e in items if str(e.get('asset', '')).startswith('npc:')]
+    props = [e for e in items if not str(e.get('asset', '')).startswith('npc:')]
+    suggestions = []
+    if npcs and props:
+        if any(any(k in str(e.get('asset', '')) for k in ('spaceship', 'airplane', 'rocket', 'ufo', 'car')) for e in props):
+            suggestions.append({'kind': 'auto-ride', 'reason': '有载具在场，它们会骑上去玩'})
+        else:
+            suggestions.append({'kind': 'auto-feed', 'reason': '有食物和角色，它们会自己去吃'})
+    elif commands and any(isinstance(c, dict) and c.get('type') == 'entity.spawn' and str(c.get('asset', '')).startswith('npc:') for c in commands):
+        suggestions.append({'kind': 'auto-play', 'reason': '新来的角色会自己跑跳玩起来'})
+    elif len(npcs) >= 2 and not suggestions:
+        suggestions.append({'kind': 'socialize', 'reason': '角色们会交谈、握手或一起跳舞'})
+    return suggestions[:3]
+
+
+def motion_scene_result(text, context, catalog):
+    """动作 / 特效 / 天气 / 世界 / 互动：关键词兜底。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    present = {eid: item for eid, item in entities.items()}
+
+    def ids_for(name_part):
+        """Return existing entity ids matching a name fragment, or spawn targets list."""
+        ids = []
+        for eid, item in present.items():
+            if name_part and name_part not in str(item.get('asset', '')) and name_part not in str(item.get('name', '')):
+                continue
+            ids.append(eid)
+        return ids
+
+    def named_ids(subtext):
+        # resolve via catalog names (two-object interactions: left side / right side)
+        resolved = resolve_objects(subtext, catalog, scene_quantity)
+        ids, cmds = [], []
+        for entry in resolved[:4]:
+            found = [eid for eid, item in present.items() if item.get('asset') == entry['asset']]
+            if found:
+                ids.extend(found[:entry['count']])
+                continue
+            token = uuid.uuid4().hex[:8]
+            for i in range(min(entry['count'], 4)):
+                cid = f'motion-{token}-{i}'
+                cmds.append({'type': 'entity.spawn', 'id': cid, 'asset': entry['asset'], 'position': [0, 0], 'scale': .5})
+                ids.append(cid)
+        return cmds, ids
+
+    # ---- interactions with two objects ----
+    for verb, ctype, reply_tpl in [
+        (r'追', 'group.chase', '好，前面那个快跑，后面追上去啦！'),
+        (r'抱|拥抱', 'group.hug', '好，它们抱在一起啦！'),
+        (r'握手|握握手', 'group.handshake', '好，它们握握手。'),
+    ]:
+        m = re.search(verb, compact)
+        if not m:
+            continue
+        left, right = compact[:m.start()], compact[m.end():]
+        # "A 和 B 拥抱" carries both objects before the verb.
+        if not right and re.search(r'(?:和|跟|与)', left):
+            parts = re.split(r'(?:和|跟|与)', left, maxsplit=1)
+            left, right = parts[0], parts[1]
+        left_cmds, left_ids = named_ids(left)
+        right_cmds, right_ids = named_ids(right)
+        if not left_ids or not right_ids:
+            continue
+        if ctype == 'group.chase':
+            cmd = {'type': ctype, 'chaser': left_ids[0], 'runner': right_ids[0]}
+        else:
+            cmd = {'type': ctype, 'targets': [left_ids[0], right_ids[0]]}
+        return {'reply': reply_tpl, 'commands': left_cmds + right_cmds + [cmd], 'sceneSwitch': None, 'source': 'motion', 'matches': [left, right]}
+    # 牵手 / 叠罗汉 / 一起跳舞 / 骑乘（群体或驾驶）
+    if re.search(r'牵手|手拉手|拉着手|排成队|一起走', compact):
+        cmds, ids = named_ids(compact.replace('牵手', '').replace('手拉手', '').replace('拉着手', '').replace('排成队', '').replace('一起走', ''))
+        if len(ids) >= 2:
+            return {'reply': '好，大家手拉手排成一队走。', 'commands': cmds + [{'type': 'group.holdhands', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'叠罗汉|叠起来|堆罗汉', compact):
+        cmds, ids = named_ids(compact)
+        if len(ids) >= 2:
+            return {'reply': '好，叠罗汉啦！', 'commands': cmds + [{'type': 'group.stack', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'一起跳舞|跳个舞|群舞|开派对', compact):
+        cmds, ids = named_ids(compact)
+        if len(ids) >= 2:
+            return {'reply': '好，大家一起跳舞！', 'commands': cmds + [{'type': 'group.dance', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    ride = re.search(r'骑|开(?:着)?(?:飞机|火箭|飞船|车)|驾驶', compact)
+    if ride:
+        rest = compact[:ride.start()] + compact[ride.end():]
+        driver_cmds, driver_ids = named_ids(rest)
+        mount_m = re.search(r'(飞机|火箭|飞船|车|飞碟|汽车)', compact)
+        if mount_m:
+            mount_cmds, mount_ids = named_ids(mount_m.group(1))
+        else:
+            mount_cmds, mount_ids = [], [eid for eid, item in present.items() if any(k in str(item.get('asset', '')) for k in ('spaceship', 'airplane', 'rocket', 'ufo', 'car'))]
+        if driver_ids and mount_ids:
+            return {'reply': '好，骑上去啦！', 'commands': driver_cmds + mount_cmds + [{'type': 'group.ride', 'driver': driver_ids[0], 'mount': mount_ids[0]}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+
+    # ---- single-actor performances ----
+    for action, pattern in [
+        ('sprint', r'冲刺'),
+        ('run', r'跑起来|奔跑|快跑|跑步|跑一跑|跑跑'),
+        ('jump', r'跳一跳|蹦蹦跳跳|跳起来|蹦跳|蹦一蹦|跳跃'),
+        ('float', r'飘起来|飘浮|浮起来|飞起来|飘在空中'),
+        ('sleep', r'睡觉|躺下|躺平|睡一觉|呼呼大睡'),
+        ('roll', r'打滚|滚一滚|滚来滚去'),
+        ('dance', r'跳舞|跳个舞|舞起来'),
+        ('cheer', r'欢呼|庆祝|耶一下|开心得跳'),
+        ('fall', r'晕倒|昏倒|晕过去'),
+    ]:
+        m = re.search(pattern, compact)
+        if not m:
+            continue
+        sub = compact[:m.start()] + compact[m.end():]
+        cmds, ids = named_ids(sub)
+        if not ids:
+            ids = [eid for eid, item in present.items() if str(item.get('asset', '')).startswith('npc:')]
+        if not ids:
+            continue
+        reply = {'sprint': '好，冲刺！', 'run': '好，跑起来！', 'jump': '好，跳起来！', 'float': '好，飘起来啦！', 'sleep': '好，躺下睡觉啦。', 'roll': '好，打滚！', 'dance': '好，跳舞！', 'cheer': '好，欢呼！', 'fall': '好，晕倒啦！'}[action]
+        return {'reply': reply, 'commands': cmds + [{'type': 'actor.perform', 'id': ids[0], 'action': action}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+
+    # ---- effects / weather / world ----
+    fx = [(r'烟花', 'firework'), (r'流星', 'stars'), (r'撒花|花瓣', 'confetti'), (r'闪光|闪亮', 'sparkle'), (r'烟雾|冒烟', 'smoke'), (r'爆炸(?:变)?星星|变成星星', 'vanishStar')]
+    for pattern, effect in fx:
+        if re.search(pattern, compact):
+            return {'reply': '好，来点特效！', 'commands': [{'type': 'fx.play', 'effect': effect}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'下雨|雨|毛毛雨', compact):
+        return {'reply': '好，下雨啦！', 'commands': [{'type': 'weather.set', 'preset': 'rain'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'下雪|雪花', compact):
+        return {'reply': '好，下雪啦！', 'commands': [{'type': 'weather.set', 'preset': 'snow'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'放晴|晴天|雨停|雪停', compact):
+        return {'reply': '好，放晴啦！', 'commands': [{'type': 'weather.set', 'preset': 'clear'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'震动|地震|晃一晃|摇晃', compact):
+        return {'reply': '好，画面震一下！', 'commands': [{'type': 'world.shake', 'strength': 0.05, 'duration': 0.7}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'巨化|变大|变巨人|放大', compact):
+        return {'reply': '好，都变大啦！', 'commands': [{'type': 'world.zoom', 'scale': 1.8}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'微缩|变小|缩小', compact):
+        return {'reply': '好，都变小啦！', 'commands': [{'type': 'world.zoom', 'scale': 0.6}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'都飘起来|无重力|失重|漂浮', compact):
+        return {'reply': '好，全都飘起来啦！', 'commands': [{'type': 'world.float', 'on': True}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    return None
+
+
 def keyword_scene_result(text, context):
     catalog = json.loads((ROOT / 'dev/modules/catalog.json').read_text(encoding='utf-8'))
     edit = appearance_edit(text, context, catalog, ROOT, scene_quantity)
-    if edit: return edit
-    return decorate_spawns(_keyword_scene_result(text, context), text, catalog)
+    if edit:
+        edit.setdefault('suggestions', _suggest_for(context, edit.get('commands')))
+        return edit
+    result = decorate_spawns(_keyword_scene_result(text, context), text, catalog)
+    if result:
+        result.setdefault('suggestions', _suggest_for(context, result.get('commands')))
+    return result
 
 
 def _keyword_scene_result(text, context):
@@ -988,6 +1148,8 @@ def _keyword_scene_result(text, context):
     if removal: return removal
     group_action = group_action_scene_result(text, context, catalog, ROOT)
     if group_action: return group_action
+    motion = motion_scene_result(text, context, catalog)
+    if motion: return motion
     compound = compound_scene_result(text, context, catalog, ROOT, scene_quantity)
     if compound: return compound
     indexed = dict(SCENE_KEYWORDS)
@@ -1109,7 +1271,7 @@ def llm_scene_result(text, context):
             if only in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"} and isinstance(command[only], dict):
                 command = dict(command[only]); command.setdefault("type", only)
         ctype = command.get("type")
-        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"}:
+        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "actor.perform", "fx.play", "weather.set", "world.shake", "world.zoom", "world.float", "group.patrol", "group.gather", "group.surround", "group.chase", "group.hug", "group.handshake", "group.holdhands", "group.stack", "group.ride", "group.dance"}:
             continue
         item = {"type": ctype, "id": str(command.get("id", ""))[:64]}
         if ctype == "entity.spawn":
@@ -1132,6 +1294,42 @@ def llm_scene_result(text, context):
             ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
             if not ids: continue
             item["targets"] = ids
+        elif ctype in {"group.hug", "group.handshake"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if len(ids) < 2: continue
+            item["targets"] = ids[:2]
+        elif ctype in {"group.holdhands", "group.stack", "group.dance"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if len(ids) < 2: continue
+            item["targets"] = ids
+        elif ctype == "group.chase":
+            chaser = str(command.get("chaser", ""))[:64]; runner = str(command.get("runner", ""))[:64]
+            if chaser not in known_ids or runner not in known_ids: continue
+            item["chaser"] = chaser; item["runner"] = runner
+        elif ctype == "group.ride":
+            driver = str(command.get("driver", ""))[:64]; mount = str(command.get("mount", ""))[:64]
+            if driver not in known_ids or mount not in known_ids: continue
+            item["driver"] = driver; item["mount"] = mount
+        elif ctype == "actor.perform":
+            if command.get("action") not in {"run", "sprint", "jump", "float", "sleep", "roll", "dance", "cheer", "fall"}: continue
+            item["action"] = command.get("action")
+            item["duration"] = command.get("duration") or 4
+        elif ctype == "fx.play":
+            if command.get("effect") not in {"smoke", "sparkle", "dust", "firework", "confetti", "stars", "vanishStar"}: continue
+            item["effect"] = command.get("effect")
+            if command.get("id"): item["id"] = str(command["id"])[:64]
+            elif command.get("position"): item["position"] = command["position"]
+        elif ctype == "weather.set":
+            if command.get("preset") not in {"rain", "snow", "clear"}: continue
+            item["preset"] = command.get("preset")
+        elif ctype == "world.shake":
+            item["strength"] = command.get("strength") or 0.05
+            item["duration"] = command.get("duration") or 0.6
+        elif ctype == "world.zoom":
+            try: item["scale"] = max(0.35, min(2.6, float(command.get("scale") or 1)))
+            except (TypeError, ValueError): continue
+        elif ctype == "world.float":
+            item["on"] = bool(command.get("on"))
         elif ctype == "group.surround":
             targets = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
             surrounders = [str(x)[:64] for x in command.get("surrounders", []) if isinstance(x, str) and x in known_ids]
@@ -1151,7 +1349,13 @@ def llm_scene_result(text, context):
             camera = {}
             if kind: camera["kind"] = kind
             if move: camera["move"] = move
-    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model", "camera": camera}
+    suggestions = []
+    raw_suggestions = parsed.get("suggestions")
+    if isinstance(raw_suggestions, list):
+        for item in raw_suggestions[:3]:
+            if isinstance(item, dict) and item.get("kind") in {"auto-feed", "auto-ride", "auto-play", "socialize", "weather", "fun"}:
+                suggestions.append({"kind": item["kind"], "reason": str(item.get("reason") or "")[:60]})
+    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model", "camera": camera, "suggestions": suggestions}
 
 
 def likely_private_info(value):

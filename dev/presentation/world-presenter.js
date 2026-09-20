@@ -5,6 +5,7 @@ import { createActor } from "./actor-factory.js";
 
 import { createFeedingController } from "./feeding-controller.js";
 import { createMovementController } from "./movement-controller.js";
+import { createPfxController } from "./pfx-controller.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 const PRESETS = {
@@ -40,6 +41,8 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   let onPickEntity = () => {};
   const feeding = createFeedingController({entries,stage,consume:onConsume});
   const movement = createMovementController({entries, stage});
+  const pfx = createPfxController({ stage, world: stage.world });
+  let floatMode = false;
   let currentWorld = null,
     lastCreations = "",
     lastEnvironment = null,
@@ -212,6 +215,28 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         stage.exploration?.activateEncounter(c.target);
       if (c.type === "world.react") stage.act(c.action);
       if (c.type === "creation.activate") stage.exploration?.showCreation(c.id);
+      if (c.type === "actor.perform") {
+        const item = entries.get(c.id);
+        if (item) { item.action = c.action; item.actionUntil = time + (c.duration || 4); }
+      }
+      if (c.type === "fx.play") {
+        const at = c.id ? entries.get(c.id)?.anchor?.position?.toArray() : c.position || (stage.target?.toArray() || [0, 0, 0]);
+        if (at) pfx.play(c.effect, { at });
+      }
+      if (c.type === "weather.set") {
+        if (c.preset === "rain" || c.preset === "snow") pfx.startWeather(c.preset, c.strength || 1);
+        else pfx.stopWeather();
+      }
+      if (c.type === "world.shake") pfx.shake(c.strength || 0.05, c.duration || 0.6);
+      if (c.type === "world.zoom") pfx.setZoom(c.scale || 1);
+      if (c.type === "world.float") floatMode = !!c.on;
+      if (c.type === "group.chase") movement.chase(c.chaser, c.runner);
+      if (c.type === "group.hug") movement.hug(c.targets[0], c.targets[1]);
+      if (c.type === "group.handshake") movement.shakeHands(c.targets[0], c.targets[1]);
+      if (c.type === "group.holdhands") movement.holdHands(c.targets);
+      if (c.type === "group.stack") movement.stack(c.targets);
+      if (c.type === "group.ride") movement.ride(c.driver, c.mount);
+      if (c.type === "group.dance") movement.danceParty(c.targets);
     }
   }
   return {
@@ -219,7 +244,16 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
     clear,
     update(dt) {
       time += dt;
+      pfx.update(dt);
+      const zs = pfx.zoomScale;
+      if (Math.abs(zs - 1) > 0.004) root.scale.setScalar(zs);
+      else if (root.scale.x !== 1) root.scale.setScalar(1);
       for (const item of entries.values()) {
+        if (floatMode && item.entrance >= 2) {
+          const wave = Math.sin(time * 2.2 + (item.rest?.x || 0)) * 0.08;
+          item.anchor.position.y = (item.rest?.y || 0) + 1.6 + wave;
+          item.anchor.quaternion.copy(item.orientation).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.sin(time * 1.4) * 0.06));
+        }
         if (item.entrance < 2) {
           // Wall time keeps a busy frame from stretching a batch past 10s.
           item.entrance = stage.reduced ? 2 : Math.min(2, Math.max(item.entrance + dt, (performance.now() - item.arrivalAt) / 1000));
@@ -274,6 +308,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
     },
     get feedingStats() { return feeding.stats; },
     get movementStats() { return movement.stats; },
+    get pfx() { return pfx; },
     getObject(id) { return entries.get(id)?.model.group || null; },
     pick(raycaster) {
       const hits = raycaster.intersectObject(root, true);
@@ -310,6 +345,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
     },
     dispose() {
       clear();
+      pfx.dispose();
       root.removeFromParent();
     },
   };

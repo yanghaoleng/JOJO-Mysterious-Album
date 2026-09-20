@@ -138,6 +138,10 @@ export class DioramaStage {
           this.onCameraHistoryChange?.();
         }
       }
+      if (this.worldPresenter?.pfx) {
+        const offset = this.worldPresenter.pfx.shakeOffset();
+        if (offset) this.camera.position.add(offset);
+      }
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
       if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();

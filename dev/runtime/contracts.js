@@ -27,6 +27,19 @@ export const COMMANDS = Object.freeze({
   "group.patrol": ["targets"],
   "group.gather": ["targets"],
   "group.surround": ["targets", "surrounders"],
+  "group.chase": ["chaser", "runner"],
+  "group.hug": ["targets"],
+  "group.handshake": ["targets"],
+  "group.holdhands": ["targets"],
+  "group.stack": ["targets"],
+  "group.ride": ["driver", "mount"],
+  "group.dance": ["targets"],
+  "actor.perform": ["id", "action", "duration"],
+  "fx.play": ["effect"],
+  "weather.set": ["preset"],
+  "world.shake": ["strength", "duration"],
+  "world.zoom": ["scale"],
+  "world.float": ["on"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
 export const MAX_WORLD_ENTITIES = 300;
@@ -130,6 +143,15 @@ export function validateCommand(command) {
     for (const field of c.type === 'feeding.start' ? ['eaters','foods'] : ['eaters'])
       requireValue(Array.isArray(c[field]) && c[field].length > 0 && c[field].length <= 100 && c[field].every(safeId) && new Set(c[field]).size === c[field].length, 'Invalid feeding participants');
     if (c.type === 'feeding.start') requireValue(!c.eaters.some(id=>c.foods.includes(id)), 'Cannot eat oneself');
+  }
+  if (c.type === "actor.perform") {
+    requireValue(ACTOR_ACTIONS.includes(c.action), "Unknown actor action");
+  }
+  if (c.type === "fx.play") {
+    requireValue(["smoke", "sparkle", "dust", "trail", "firework", "confetti", "stars", "vanishStar", "heart"].includes(c.effect), "Unknown effect");
+  }
+  if (c.type === "weather.set") {
+    requireValue(["clear", "rain", "snow"].includes(c.preset), "Unknown weather");
   }
   if (c.type === "entity.spawn") {
     requireValue(Object.hasOwn(ASSETS, c.asset), "Unknown asset");

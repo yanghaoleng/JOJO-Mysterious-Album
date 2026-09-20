@@ -8,6 +8,7 @@ import { CREATION_KITS, PROP_CATEGORIES } from "../content/props.js";
 // Adding a reusable UI/logic module requires an entry here. Assets are derived automatically.
 export const COMPONENTS = [
   {id:'logic:group-motion',kind:'logic',name:'巡逻、聚拢与包围',description:'输入“叫叫小分队开始在月球上巡逻”或“绿豆家族围住了叫叫小分队”：角色沿直线来回巡逻、集合聚拢或围成一圈，纯表演动作不改变存档。',source:'dev/presentation/movement-controller.js',capabilities:['巡逻走动','聚拢集合','包围成圈','不落盘'],dependencies:['logic:intent']},
+  {id:'logic:fx-play',kind:'logic',name:'特效与天气',description:'输入“放烟花”“下雪”“画面震动”“变大”“都飘起来”：烟雾、闪光、烟花、撒花、流星、雨雪天气、画面震动、巨化微缩与无重力漂浮等视觉特效。',source:'dev/presentation/pfx-controller.js',capabilities:['烟花撒花','下雨下雪','画面震动','巨化微缩','无重力漂浮'],dependencies:['logic:intent']},
   {id:'logic:feeding',kind:'logic',name:'角色寻找食物与循环进食',description:'输入“10个猪小弟吃80个汉堡包”：分批生成角色与食物，角色独占目标，靠近后每两下吃掉一份；在 AI 控制台验证，可说停止吃。',source:'dev/presentation/feeding-controller.js',capabilities:['多对象指令','寻找食物','两次咀嚼消耗','停止与清理'],dependencies:['logic:intent']},
   {id:'logic:story-tap-target',kind:'logic',name:'剧情对象点选引导',description:'脚本指定目标，循环柔光与点击强光，共用回答入口；验证入口 dev/tools/verify-story-tap.mjs。',source:'dev/presentation/story-tap-target.js',capabilities:['3D 对象点选','循环发光','点击反馈','减少动态效果','资源释放'],dependencies:[]},
   {

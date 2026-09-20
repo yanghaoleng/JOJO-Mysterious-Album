@@ -215,6 +215,88 @@ function lockEntity(id) {
   const name = entityName(id);
   stage.setFollowTarget(() => stage.worldPresenter?.getPosition(id), name);
 }
+let autoQueue = [];
+let autoToken = 0;
+let autoTrace = null, autoStatus = null;
+function scheduleAutoNarrative(suggestions) {
+  autoToken++;
+  const token = autoToken;
+  autoQueue = (suggestions || []).slice(0, 3);
+  if (!autoQueue.length) return;
+  autoTrace?.push('[后续剧本]', `    ${autoQueue.map(x => x.reason || x.kind).join('；')}`);
+  if (autoTrace) controlLog(autoTrace);
+  let delay = 4.2;
+  for (const item of autoQueue) {
+    const wait = delay;
+    delay += 5.5 + Math.random() * 3;
+    setTimeout(() => {
+      if (token !== autoToken || !game || !stage) return;
+      autoStage(item);
+    }, wait * 1000);
+  }
+}
+function autoStage(item) {
+  if (!game || !stage) return;
+  const world = game.runtime.context.world;
+  const entities = game.runtime.snapshot?.worlds?.[world]?.entities || {};
+  const list = Object.entries(entities);
+  const npcs = list.filter(([, e]) => String(e.asset || "").startsWith("npc:"));
+  const rides = list.filter(([, e]) => /spaceship|airplane|rocket|ufo|car/.test(String(e.asset || "")));
+  const foods = list.filter(([, e]) => !String(e.asset || "").startsWith("npc:") && !rides.includes(e));
+  let commands = [], note = "";
+  const pick = (arr, n = 1) => arr.sort(() => Math.random() - 0.5).slice(0, n).map(([id]) => id);
+  switch (item.kind) {
+    case "auto-feed": {
+      if (!npcs.length || !foods.length) return;
+      const [eater] = pick(npcs), [food] = pick(foods);
+      commands = [{ type: "feeding.start", eaters: [eater], foods: [food] }];
+      note = `${item.reason || "角色自己去吃东西"}`;
+      break;
+    }
+    case "auto-ride": {
+      if (!npcs.length || !rides.length) return;
+      const [driver] = pick(npcs), [mount] = pick(rides);
+      commands = [{ type: "group.ride", driver, mount }];
+      note = `${item.reason || "骑上载具玩起来"}`;
+      break;
+    }
+    case "auto-play": {
+      if (!npcs.length) return;
+      const [id] = pick(npcs);
+      const action = ["run", "jump", "roll", "dance", "cheer"][Math.floor(Math.random() * 5)];
+      commands = [{ type: "actor.perform", id, action, duration: 4 }];
+      note = `${item.reason || "自己玩起来（${action}）"}`;
+      break;
+    }
+    case "socialize": {
+      if (npcs.length < 2) return;
+      const [a, b] = pick(npcs, 2);
+      const kind = ["group.hug", "group.handshake", "group.dance"][Math.floor(Math.random() * 3)];
+      commands = [kind === "group.dance"
+        ? { type: "group.dance", targets: npcs.map(([id]) => id).slice(0, 4) }
+        : { type: kind, targets: [a, b] }];
+      note = `${item.reason || "角色们聊起来"}`;
+      break;
+    }
+    case "weather": {
+      const preset = ["rain", "snow"][Math.floor(Math.random() * 2)];
+      commands = [{ type: "weather.set", preset }];
+      note = item.reason || (preset === "rain" ? "突然下起小雨" : "飘起了雪花");
+      break;
+    }
+    case "fun": {
+      const effect = ["firework", "confetti", "sparkle", "stars"][Math.floor(Math.random() * 4)];
+      commands = [{ type: "fx.play", effect }];
+      note = item.reason || "来点小惊喜";
+      break;
+    }
+  }
+  if (!commands.length) return;
+  const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands }, "ai");
+  autoTrace?.push('[自发剧情]', `    ${applied.ok ? note : `未上演：${applied.error}`}`);
+  if (autoTrace) controlLog(autoTrace);
+  if (applied.ok && autoStatus) autoStatus.textContent = `（自发）${note}`;
+}
 function clearLock() {
   stage?.clearFollowTarget();
   renderLockBanner(null);
@@ -392,6 +474,7 @@ async function naturalControl() {
     if (!response.ok) throw new Error(result.error || "大模型暂时不可用");
     if (game !== session || game.runtime.token !== token) throw new Error('场景已经变化，请在当前场景重新提交。');
     const trace = ["[1] 收到用户原始文本", `    ${text}`, "[2] 当前场景", `    ${context.world}`, "[3] 关键词匹配", `    ${result.matches?.join("、") || "无（交给大模型理解）"}`, "[4] 意图解析", `    来源：${result.source || "model"}`, `    ${result.reply}`];
+    autoTrace = trace; autoStatus = status;
     if (result.substitution) trace.push('[近似替代]', `    原指令：${result.substitution.request}`, `    替代模型：${result.substitution.replacement} × ${result.substitution.count}`, `    匹配依据：${result.substitution.reason}`);
     if (result.sceneSwitch?.world && result.sceneSwitch.world !== game.runtime.context.world) {
       clearLock();
@@ -408,6 +491,7 @@ async function naturalControl() {
     if (layout.reduced) trace.push('[密度调整]', '    已适当缩小本批模型，采用紧凑排列。');
     trace.push('[5] 视野内散落', `    ${arranged.filter(c => c.type === 'entity.spawn').length} 个新模型，已检查镜头和地面遮挡；采用紧凑排列，密集时允许接触并播放碰撞反馈。`);
     const recycled = capacityEvictions(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}, arranged).length;
+    autoToken++; autoQueue = [];
     const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands: arranged }, "ai");
     if(applied.warnings?.length) trace.push('[执行提醒]',...applied.warnings);
     if (applied.ok) trace.push('[物件容量]', `    当前 ${Object.keys(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).length} / 300 个；自动移除最早生成的 ${recycled} 个。`);
@@ -434,6 +518,7 @@ async function naturalControl() {
     renderControlTabs();
     controlLog(trace);
     status.textContent = applied.ok ? `${result.reply} 已执行。` : `已解析，但执行失败：${applied.error}`;
+    if (applied.ok && result.suggestions?.length) scheduleAutoNarrative(result.suggestions);
   } catch (error) {
     status.textContent = `调试失败：${error.message}`;
     const trace = ["[1] 收到用户原始文本", `    ${text}`, "[错误]", `    ${error.message}`];

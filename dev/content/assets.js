@@ -5,7 +5,7 @@ import { CHARACTER_CATALOG } from "./characters.js";
 import { WORLD_CATALOG } from "./worlds.js";
 
 // Serializable capability manifest. No Three.js, DOM, network or factory closures.
-export const ACTOR_ACTIONS = ["idle", "wave", "hop", "listen", "talk", "walk"];
+export const ACTOR_ACTIONS = ["idle", "talk", "wave", "hop", "listen", "walk", "run", "sprint", "jump", "float", "sleep", "roll", "dance", "cheer", "fall"];
 export const EXPRESSIONS = ["happy", "curious", "sad", "surprised"];
 export const WORLD_IDS = WORLD_CATALOG.map((world) => world.id);
 export const WOW_ACTORS = [
