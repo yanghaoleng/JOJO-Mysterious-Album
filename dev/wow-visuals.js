@@ -324,17 +324,6 @@ export function createWowPresentation(stage) {
     volume.castShadow=false;volume.receiveShadow=false;
     volume.userData.basePosition=[x,y,z];fogVolumes.push(volume);
   });
-  const seed=node('seed');
-  const seedSkin=mat('#847f92',{emissive:'#efd36e',emissiveIntensity:.05});
-  ball(seed,'sleeping-light-seed',seedSkin,[0,.28,0],[.38,.28,.3]);
-  const sprout=ball(seed,'light-sprout',glow,[0,.7,0],[.16,.55,.16]);
-  const questionStar=node('question-star');
-  mesh(questionStar,'sleeping-star',tokenGeometry('star',.36),glow,[0,.7,0]);
-  const bobo=node('bobo');
-  ball(bobo,'bobo-body',glow,[0,.45,0],[.43,.43,.36]);
-  for(const side of [-1,1]) ball(bobo,'bobo-eye',dark,[side*.14,.52,.33],[.045,.065,.025]);
-  const picture=node('picture');
-  let pictureToken=mesh(picture,'imagined-shape',tokenGeometry('star',.5),glow,[0,1.35,0]);
   const caption=document.createElement('div');
   caption.className='first-light-memory'; caption.hidden=true;
   const meter=document.createElement('span'), words=document.createElement('strong'), detail=document.createElement('span');
@@ -354,7 +343,7 @@ export function createWowPresentation(stage) {
       seen:false,shown:false,age:Infinity,diagnostics,
     });
   };
-  [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047],['seed',.06],['question-star',.025],['bobo',.06],['picture',.025]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
+  [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
   tokens.forEach((token,i)=>registerMotion(token,`color-${i}`,.028,i*1.19,true));
   const unregisterTaps = [];
   [['torch','stretch'],['radio','wiggle'],['jar','puff'],['door','twist'],['key','hop']].forEach(([name,mode]) => {
@@ -451,25 +440,15 @@ export function createWowPresentation(stage) {
     state={...state,...next,...(chapterChanged&&next.progress===undefined?{progress:0}:{})};
     if(group.parent!==stage.scene)stage.scene.add(group);
     const props=new Set(state.props||[]);
-    reveal(torch,props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
+    reveal(torch,!state.firstLight && props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
     reveal(door,!state.firstLight && (state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6)),seedMotion);
     reveal(key,!state.firstLight && Boolean(state.visual),seedMotion);
-    reveal(seed,!!state.firstLight && state.scene>=2 && state.scene<10,seedMotion);
-    reveal(questionStar,!!state.firstLight,seedMotion);
-    reveal(bobo,!!state.firstLight && state.scene>=10,seedMotion);
-    reveal(picture,!!state.firstLight && state.scene>=4,seedMotion);
-    sprout.visible=state.scene>=6;
-    sprout.scale.y=.2+Math.max(0,state.scene-5)*.16;
-    seedSkin.emissiveIntensity=state.scene>=4?.5:.05;
     caption.hidden=!state.firstLight;
     if(state.firstLight){
       meter.textContent=`萌萌星 · ${state.energy || 0}%`;
       words.textContent=state.firstWords ? `“${state.firstWords}”` : '第一束光，等着你的好奇';
       detail.textContent=state.scene>=11 ? '绘本第 1 页 · 点亮者：小小追光员' : state.skyThing ? `${state.skyColor}的天空，飘着${state.skyThing}` : state.scene>=4 ? '你的问题，正在长成光' : '咯咯哒和你一起找光';
-      const color=/粉/.test(state.skyColor)?'#e7a5b5':/蓝/.test(state.skyColor)?'#88b6d4':/绿/.test(state.skyColor)?'#86ad83':'#efd36e';
-      seedSkin.emissive.set(color);
-      const shape=/鱼/.test(state.skyThing)?'fish':/棉花|云/.test(state.skyThing)?'cloud':/月/.test(state.skyThing)?'moon':'star';
-      if(pictureToken.userData.shape!==shape){s.releaseGeometry(pictureToken.geometry);pictureToken.geometry=s.ownGeometry(tokenGeometry(shape,.5));pictureToken.userData.shape=shape;}
+
     }
     const requested=Number(state.progress);
     targetProgress=Number.isFinite(requested)?THREE.MathUtils.clamp(requested,0,1):0;
@@ -497,10 +476,6 @@ export function createWowPresentation(stage) {
     anchor('jar',spot.x+1.45,spot.z+1.3,0,.76);
     anchor('door',spot.x+1.1,spot.z-.65,0,.7);
     anchor('key',spot.x+.95,spot.z+.6,.03,.75);
-    anchor('seed',spot.x+.8,spot.z+1.1,0,.85);
-    anchor('question-star',spot.x-.8,spot.z-.5,2,.7);
-    anchor('bobo',spot.x+.9,spot.z+1.1,0,.8);
-    anchor('picture',spot.x+.9,spot.z+.4,.3,.65);
     anchor('mist',spot.x,spot.z,0,1);
     group.userData.state={chapter:state.chapter,scene:state.scene,props:[...props],colors:state.colors?.length||0,key:state.visual?.shape||null,lit:!!state.lit,progress:targetProgress};
     paintLight();

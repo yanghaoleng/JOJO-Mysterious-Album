@@ -141,7 +141,7 @@ export function createExploration(stage, { saved, storyId = 'wow', getName = () 
     update,
     updateCamera() {
       const rotation = cameraFrame;
-      stage.target.copy(world.planet.center).addScaledVector(cameraNormal, world.planet.radius + .55);
+      stage.target.copy(world.planet.center).addScaledVector(cameraNormal, world.planet.radius + (stage.storyFraming?.targetHeight ?? .55));
       const pitch = THREE.MathUtils.clamp(stage.pitch, .25, 1.15), yaw = stage.yaw;
       const offset = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)).applyQuaternion(rotation).multiplyScalar(23);
       stage.camera.position.copy(stage.target).add(offset); stage.camera.up.copy(cameraNormal); stage.camera.lookAt(stage.target); stage.camera.updateMatrixWorld();

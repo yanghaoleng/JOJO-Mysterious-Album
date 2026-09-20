@@ -1,3 +1,4 @@
+import { firstLightWorldCommands, firstLightModelChoice } from './content/stories/first-light-models.js';
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';
 import { prepareCreation } from './features/creation-service.js';
 import { createGameSession } from './runtime/game-session.js';
@@ -104,6 +105,17 @@ function syncWowPresentation(lit = false) {
   wowPresentation.set(visualState);
 }
 
+function syncFirstLightModels(scene, animate = false) {
+  if (!story?.firstLight || !game) return;
+  const commands = firstLightWorldCommands(story, scene, state.wowEntries || []);
+  const ids = new Set(commands.map(c=>c.id));
+  const existing = game.runtime.state.worlds[scene.world]?.entities || {};
+  const cleanup = Object.keys(existing).filter(id=>id.startsWith('fl-') && !ids.has(id)).map(id=>({type:'entity.remove',id}));
+  const result=game.dispatch([...cleanup,...commands], 'script');
+  if(!result.ok) throw new Error(result.error);
+  if(animate) game.dispatch([...ids].map(id=>({type:'entity.animate',id,animation:'activate'})), 'script');
+}
+
 async function handleWowAnswer(raw) {
   if (busy || phase !== 'question') return;
   const answer = String(raw || '').trim().slice(0, 160);
@@ -123,7 +135,7 @@ async function handleWowAnswer(raw) {
   reading.setText(scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
   syncWowPresentation(true);
   const pulseStarted = performance.now();
-  if (story.firstLight) wowPresentation?.pulse();
+  if (story.firstLight) { wowPresentation?.pulse(); syncFirstLightModels(scene,true); }
   const controller = new AbortController(); wowRequest = controller;
   let result;
   try { result = (scene.wow.kind === 'nickname' || (story.firstLight && (scene.inputMode === 'choice' || !safeLightWords(answer) || answer === '先安静看看'))) ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
@@ -143,7 +155,8 @@ async function handleWowAnswer(raw) {
   if (scene.wow.kind === 'create') state.inventions = [...state.inventions.filter(item=>item.chapter!==scene.chapter),{chapter:scene.chapter,scene:scene.title,visual:{...visual,kind:'wow-key',name:`第${scene.chapter}把想象钥匙`,details:answer}}];
   if (scene.wow.kind === 'color' && !state.inventory.some(item=>item.id===`wow-color-${scene.chapter}`)) state.inventory.push({id:`wow-color-${scene.chapter}`,name:scene.wow.colorName,color:scene.wow.color,description:answer});
   if (story.firstLight && scene.id === 'first-light-page' && !state.inventory.some(item=>item.id==='first-light-page')) state.inventory.push({id:'first-light-page',name:'第一束好奇的光 · 绘本第 1 页',description:state.firstWords || '一束安静的光'});
-  persist(); updateBag(); syncWowPresentation(true); game?.emit('answer.accepted', { sceneId: scene.id });
+  persist(); updateBag(); syncWowPresentation(true); game?.emit('answer.accepted', { sceneId: scene.id, modelChoice: story.firstLight ? firstLightModelChoice(scene,entry.answer) : '' });
+  syncFirstLightModels(scene,true);
   await speakLine({speaker:scene.questionSpeaker || 'wow',text:entry.reaction,source:entry.source},token);
   if (token !== epoch) return;
   if (story.firstLight) await wait(Math.max(0, 3400 - (performance.now() - pulseStarted)));
@@ -223,7 +236,7 @@ function scheduleFraming() {
     document.body.style.setProperty('--keyboard-offset', `${Math.max(0, innerHeight - visibleBottom)}px`);
     const bounds = $('stage').getBoundingClientRect();
     if (document.body.dataset.view === 'story') {
-      const top = Math.max(document.querySelector('.topbar').getBoundingClientRect().bottom, $('scene-caption').getBoundingClientRect().bottom);
+      const top = Math.max(document.querySelector('.topbar').getBoundingClientRect().bottom, $('scene-caption').getBoundingClientRect().bottom, story?.firstLight ? 138 : 0);
       const bottom = Math.min($('story-panel').getBoundingClientRect().top, visibleBottom);
       stage.setViewportInsets?.({ top: Math.max(0, top - bounds.top + 22), bottom: Math.max(0, bounds.bottom - bottom + 20), left: 20, right: 20 });
     } else stage.setViewportInsets?.({ top: 20, bottom: document.body.dataset.view === 'studio' ? 48 : 36, left: 18, right: 18 });
@@ -248,6 +261,7 @@ function setWorld(worldId, cast, options) {
     getName: () => state.playerName,
     onSave: position => { state.explorations = { ...state.explorations, [explorationKey]: position }; persist(); },
   } : null;
+  stage.storyFraming = story?.firstLight ? {width:8.4,height:7.3,meanHeight:3.7,targetHeight:2.1} : null;
   stage.setScene(worldId, cast, { ...options, decorations, exploration });
   const environment = stage.world?.atmosphere;
   if (environment) applyEnvironmentTheme(environment);
@@ -365,6 +379,7 @@ function openStory(selected) {
   if(story.id==='moon'&&state.completed){$('resume-note').textContent='你造的世界还在。继续散步，或者回来加一个新点子。';$('start-story').textContent='回到我的造物世界';}
   setWorld(story.scenes[state.sceneIndex].world, storyCast(story.scenes[state.sceneIndex]));
   rememberMountedScene(story.scenes[state.sceneIndex]);
+  syncFirstLightModels(story.scenes[state.sceneIndex]);
   syncWowPresentation();
   if (!['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
@@ -498,6 +513,7 @@ async function enterScene(index) {
   rememberMountedScene(scene);
   syncWowPresentation();
   game?.emit('scene.enter', { sceneId: scene.id });
+  syncFirstLightModels(scene);
   if (!keepWorld && !['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);

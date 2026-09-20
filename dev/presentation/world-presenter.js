@@ -85,6 +85,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
               record.scale,
             )
           : createCreationModel(record.asset.slice(5), record.color);
+        const suspended = model.group.userData.suspended === true;
         const normal = stage.world.surfaceNormal(...record.position),
           anchor = new THREE.Group();
         anchor.position
@@ -99,13 +100,14 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
         stage.style.apply(anchor);
         item = {
           model,
+          suspended,
           anchor,
           normal,
           signature,
           actor,
           state: null,
           actionUntil: 0,
-          entrance: stage.reduced ? 0 : -(arrivalDelays.get(record.id) || 0),
+          entrance: stage.reduced || suspended ? 2 : -(arrivalDelays.get(record.id) || 0),
           arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
           rest: anchor.position.clone(),
           orientation: anchor.quaternion.clone(),
@@ -113,7 +115,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           landed: false,
           impact: null,
         };
-        item.anchor.position.addScaledVector(normal, stage.reduced ? 0 : 3);
+        item.anchor.position.addScaledVector(normal, stage.reduced || suspended ? 0 : 3);
         item.anchor.visible = item.entrance >= 0;
         entries.set(record.id, item);
         anchor.userData.worldEntity = record.id;
@@ -125,7 +127,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
       }
     }
     stage.exploration?.setEventObstacles(
-      [...entries.values()].map((item) => ({
+      [...entries.values()].filter(item=>!item.suspended).map((item) => ({
         normal: item.normal,
         radius: 0.9,
       })),
@@ -186,7 +188,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           if (!item.landed && t >= contact) {
             item.landed = true;
             if (!stage.reduced && t < 2) for (const other of entries.values()) {
-              if (other === item || !other.anchor.visible || other.entrance < contact) continue;
+              if (other.suspended || other === item || !other.anchor.visible || other.entrance < contact) continue;
               const distance = item.rest.distanceTo(other.rest);
               const reach = item.contactRadius + other.contactRadius + .12;
               if (distance > reach || distance < .001) continue;

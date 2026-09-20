@@ -317,6 +317,440 @@
       ]
     },
     {
+      "id": "prop:rainbow-sky",
+      "kind": "prop",
+      "name": "彩虹天空",
+      "description": "七色立体圆弧铺开彩虹天空。",
+      "source": "dev/modules/props/rainbow-sky.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rainbow-sky",
+        "kind": "prop",
+        "name": "彩虹天空",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "彩虹天空",
+        "rainbow-sky"
+      ]
+    },
+    {
+      "id": "prop:sky-fish",
+      "kind": "prop",
+      "name": "天空小鱼",
+      "description": "三条小鱼在天空里摆尾游动。",
+      "source": "dev/modules/props/sky-fish.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:sky-fish",
+        "kind": "prop",
+        "name": "天空小鱼",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "天空小鱼",
+        "sky-fish"
+      ]
+    },
+    {
+      "id": "prop:cotton-cloud",
+      "kind": "prop",
+      "name": "棉花糖云",
+      "description": "三朵棉花糖在空中轻轻摇摆。",
+      "source": "dev/modules/props/cotton-cloud.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:cotton-cloud",
+        "kind": "prop",
+        "name": "棉花糖云",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "棉花糖云",
+        "cotton-cloud"
+      ]
+    },
+    {
+      "id": "prop:light-seed",
+      "kind": "prop",
+      "name": "光的种子",
+      "description": "种子摇晃，壳缝透出暖光。",
+      "source": "dev/modules/props/light-seed.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-seed",
+        "kind": "prop",
+        "name": "光的种子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "光的种子",
+        "light-seed"
+      ]
+    },
+    {
+      "id": "prop:light-sprout",
+      "kind": "prop",
+      "name": "好奇光苗",
+      "description": "光苗伸出两片叶子，轻轻摇摆。",
+      "source": "dev/modules/props/light-sprout.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-sprout",
+        "kind": "prop",
+        "name": "好奇光苗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "好奇光苗",
+        "light-sprout"
+      ]
+    },
+    {
+      "id": "prop:light-torch",
+      "kind": "prop",
+      "name": "好奇光筒",
+      "description": "光筒摇动，镜头上方冒出光点。",
+      "source": "dev/modules/props/light-torch.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-torch",
+        "kind": "prop",
+        "name": "好奇光筒",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "好奇光筒",
+        "light-torch"
+      ]
+    },
+    {
+      "id": "prop:sleepy-star",
+      "kind": "prop",
+      "name": "睡着的星星",
+      "description": "星星轻轻摇动。",
+      "source": "dev/modules/props/sleepy-star.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:sleepy-star",
+        "kind": "prop",
+        "name": "睡着的星星",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "睡着的星星",
+        "sleepy-star"
+      ]
+    },
+    {
+      "id": "prop:star-friends",
+      "kind": "prop",
+      "name": "星星朋友",
+      "description": "五颗星星在空中跳动。",
+      "source": "dev/modules/props/star-friends.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:star-friends",
+        "kind": "prop",
+        "name": "星星朋友",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "星星朋友",
+        "star-friends"
+      ]
+    },
+    {
+      "id": "prop:light-trail",
+      "kind": "prop",
+      "name": "远方光路",
+      "description": "光点接成一条通往远方的小路。",
+      "source": "dev/modules/props/light-trail.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-trail",
+        "kind": "prop",
+        "name": "远方光路",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "远方光路",
+        "light-trail"
+      ]
+    },
+    {
+      "id": "prop:light-thread",
+      "kind": "prop",
+      "name": "光的丝线",
+      "description": "光丝围成螺旋，缓缓转动。",
+      "source": "dev/modules/props/light-thread.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-thread",
+        "kind": "prop",
+        "name": "光的丝线",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "光的丝线",
+        "light-thread"
+      ]
+    },
+    {
+      "id": "prop:bobo-light",
+      "kind": "prop",
+      "name": "啵啵兽",
+      "description": "啵啵兽摇头跳动，冒出三颗小星星。",
+      "source": "dev/modules/props/bobo-light.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bobo-light",
+        "kind": "prop",
+        "name": "啵啵兽",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "啵啵兽",
+        "bobo-light"
+      ]
+    },
+    {
+      "id": "prop:light-book",
+      "kind": "prop",
+      "name": "绘本第一页",
+      "description": "打开的绘本轻轻翻动纸页。",
+      "source": "dev/modules/props/light-book.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:light-book",
+        "kind": "prop",
+        "name": "绘本第一页",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "绘本第一页",
+        "light-book"
+      ]
+    },
+    {
+      "id": "prop:pink-sky",
+      "kind": "prop",
+      "name": "粉色天空",
+      "description": "一片粉色云幕铺在头顶。",
+      "source": "dev/modules/props/pink-sky.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:pink-sky",
+        "kind": "prop",
+        "name": "粉色天空",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "粉色天空",
+        "pink-sky"
+      ]
+    },
+    {
+      "id": "prop:blue-sky",
+      "kind": "prop",
+      "name": "蓝色天空",
+      "description": "一片蓝色云幕铺在头顶。",
+      "source": "dev/modules/props/blue-sky.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:blue-sky",
+        "kind": "prop",
+        "name": "蓝色天空",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蓝色天空",
+        "blue-sky"
+      ]
+    },
+    {
       "id": "prop:ufo",
       "kind": "prop",
       "name": "飞碟",

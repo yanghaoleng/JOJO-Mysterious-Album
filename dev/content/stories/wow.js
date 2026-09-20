@@ -1,3 +1,4 @@
+import { firstLightModelEvents } from './first-light-models.js';
 /** First chapter, authored from the two DingTalk documents dated 2026-09-20.
  * Stable legacy scene IDs remain save anchors; historical book data stays in src/.
  * Choices replace the source's two drag gestures to honor voice / tap only.
@@ -33,7 +34,7 @@ export const WOW_DEV_STORY = {
     wow:{kind:i===3?'light':'observe',prop,color:'#efd36e',colorName:'第一束好奇光',momo:'咯咯哒'},
     cast:[{id:'wow',name:'咯咯哒',voice:'star',asset:'npc:jiaojiao',color:'#efd36e'}],
     dialogue:[{speaker:'wow',text}],choices:labels.map((label,n)=>({id:`${id}-${n}`,label})),
-    closing:[],events:[],final:i===11,
+    closing:[],events:firstLightModelEvents(id),final:i===11,
   })),
   ending:{title:'你的第一束光，亮起来了',text:'萌萌星亮起了 25%。第一页已经收好，前面的林子还有一个新问题。',companionLine:'“{firstWords}”——这句话变成了我们的第一束光。带着它，去和那只鸟聊聊吧！'},
 };

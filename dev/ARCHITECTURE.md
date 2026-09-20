@@ -161,3 +161,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 第一束光的语音回应通过 `/api/wow-turn` 的 `first-light` 策略承接原词，离线也可推进；私密与危险内容不复述。画面使用本地程序化造型和原话文字卡，并非在线 AI 生图。点选取代两次拖拽；减少动态效果设置保留亮光但关闭摇晃。
 
 第一章 v2 的工作台草稿使用 `jma.author.draft.v1.wow.first-light`，原 v1 草稿保留，避免旧稿自动覆盖新版 12 回合。
+
+## 第一章的模型组合
+
+`content/stories/first-light-models.js` 声明预设选项对应的普通实体命令，`wow.js` 将它们纳入场景事件。语音与点选通过同一选项映射，彩虹／粉色天空与小鱼／棉花糖使用不同实体 ID，可组合保留。进入场景按稳定 ID 和已保存回答重建目标模型；已有 v2 存档也能补齐模型。14 个道具均为独立 `modules/props/` 模块，统一登记、清理，并可在陈列馆试用。悬空模型声明 `group.userData.suspended`，表现层不让它落地或阻挡地面行走；运行器仍使用原有实体契约。

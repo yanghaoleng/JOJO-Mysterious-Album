@@ -206,7 +206,7 @@ export class DioramaStage {
     const bottom = height - clamp(this.viewportInsets.bottom, 0, Math.max(0, height - top - 48));
     const safeWidth = right - left, safeHeight = bottom - top;
     this.safeViewport = { left, top, right, bottom, width: safeWidth, height: safeHeight, canvasWidth: width, canvasHeight: height, insets: { ...this.viewportInsets } };
-    const focus = (this.exploration ? { width: 7.5, height: 4.0, meanHeight: 2.2 } : this.characterFocus) || { width: 2.2, height: 2.6, meanHeight: 2.2 };
+    const focus = (this.exploration ? (this.storyFraming || { width: 7.5, height: 4.0, meanHeight: 2.2 }) : this.characterFocus) || { width: 2.2, height: 2.6, meanHeight: 2.2 };
     const compact = width < 640;
     const desiredHeight = this.studio
       ? clamp(safeHeight * .62, Math.min(120, safeHeight * .7), compact ? 260 : 340)

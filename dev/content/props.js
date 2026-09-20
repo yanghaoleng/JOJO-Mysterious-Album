@@ -1,6 +1,21 @@
 import { PROP_COLLECTION } from './prop-collection.js';
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
+  ["rainbow-sky", "彩虹天空", "彩虹天空|rainbow-sky", "七色立体圆弧铺开彩虹天空。", "jiaojiao"],
+  ["sky-fish", "天空小鱼", "天空小鱼|sky-fish", "三条小鱼在天空里摆尾游动。", "jiaojiao"],
+  ["cotton-cloud", "棉花糖云", "棉花糖云|cotton-cloud", "三朵棉花糖在空中轻轻摇摆。", "jiaojiao"],
+  ["light-seed", "光的种子", "光的种子|light-seed", "种子摇晃，壳缝透出暖光。", "jiaojiao"],
+  ["light-sprout", "好奇光苗", "好奇光苗|light-sprout", "光苗伸出两片叶子，轻轻摇摆。", "jiaojiao"],
+  ["light-torch", "好奇光筒", "好奇光筒|light-torch", "光筒摇动，镜头上方冒出光点。", "jiaojiao"],
+  ["sleepy-star", "睡着的星星", "睡着的星星|sleepy-star", "星星轻轻摇动。", "jiaojiao"],
+  ["star-friends", "星星朋友", "星星朋友|star-friends", "五颗星星在空中跳动。", "jiaojiao"],
+  ["light-trail", "远方光路", "远方光路|light-trail", "光点接成一条通往远方的小路。", "jiaojiao"],
+  ["light-thread", "光的丝线", "光的丝线|light-thread", "光丝围成螺旋，缓缓转动。", "jiaojiao"],
+  ["bobo-light", "啵啵兽", "啵啵兽|bobo-light", "啵啵兽摇头跳动，冒出三颗小星星。", "jiaojiao"],
+  ["light-book", "绘本第一页", "绘本第一页|light-book", "打开的绘本轻轻翻动纸页。", "jiaojiao"],
+  ["pink-sky", "粉色天空", "粉色天空|pink-sky", "一片粉色云幕铺在头顶。", "jiaojiao"],
+  ["blue-sky", "蓝色天空", "蓝色天空|blue-sky", "一片蓝色云幕铺在头顶。", "jiaojiao"],
+
 ["ufo","飞碟","飞碟|UFO|不明飞行物","飞碟的轮廓和部件可独立查看。","jiaojiao"],
 ["fighter-jet","战斗机","战斗机|战机|喷气机","战斗机的轮廓和部件可独立查看。","jiaojiao"],
 ["spaceship","宇宙飞船","宇宙飞船|星际飞船|太空飞船","宇宙飞船的轮廓和部件可独立查看。","jiaojiao"],

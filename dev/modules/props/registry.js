@@ -1,3 +1,17 @@
+import { build as rainbow_sky } from "./rainbow-sky.js";
+import { build as sky_fish } from "./sky-fish.js";
+import { build as cotton_cloud } from "./cotton-cloud.js";
+import { build as light_seed } from "./light-seed.js";
+import { build as light_sprout } from "./light-sprout.js";
+import { build as light_torch } from "./light-torch.js";
+import { build as sleepy_star } from "./sleepy-star.js";
+import { build as star_friends } from "./star-friends.js";
+import { build as light_trail } from "./light-trail.js";
+import { build as light_thread } from "./light-thread.js";
+import { build as bobo_light } from "./bobo-light.js";
+import { build as light_book } from "./light-book.js";
+import { build as pink_sky } from "./pink-sky.js";
+import { build as blue_sky } from "./blue-sky.js";
 import { build as bridge } from "./bridge.js";
 import { build as tree } from "./tree.js";
 import { build as garden } from "./garden.js";
@@ -262,6 +276,21 @@ import { build as special13 } from "./gamepad.js";
 import { build as special14 } from "./yoyo.js";
 import { build as special15 } from "./chess.js";
 export const PROP_BUILDERS = Object.freeze({
+  "rainbow-sky": rainbow_sky,
+  "sky-fish": sky_fish,
+  "cotton-cloud": cotton_cloud,
+  "light-seed": light_seed,
+  "light-sprout": light_sprout,
+  "light-torch": light_torch,
+  "sleepy-star": sleepy_star,
+  "star-friends": star_friends,
+  "light-trail": light_trail,
+  "light-thread": light_thread,
+  "bobo-light": bobo_light,
+  "light-book": light_book,
+  "pink-sky": pink_sky,
+  "blue-sky": blue_sky,
+
   "ufo": special0,
   "fighter-jet": special1,
   "spaceship": special2,
