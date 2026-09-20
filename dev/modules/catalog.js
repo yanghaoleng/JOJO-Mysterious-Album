@@ -176,16 +176,23 @@ export const COMPONENTS = [
     capabilities: ["模型增删", "状态同步", "资源释放"],
     dependencies: [],
   },
+  {
+    id: "ui:story-editor", kind: "ui", name: "脚本创作工作台",
+    description: "打开任一故事脚本可编辑对白、选项与事件，保存草稿并导入导出；文字预演验证分支，不运行 AI 或 3D 效果。",
+    source: "dev/modules/story-editor.js",
+    capabilities: ["本地草稿", "场景编排", "脚本导入导出"],
+    dependencies: ["logic:director"],
+  },
   ...["wow", "debate", "moon"].map((id, i) => ({
     id: `story:${id}`,
     kind: "story",
-    name: ["第一章 · 好奇与上手", "第二章 · 辩论与表达", "第三章 · 自由造物"][
+    name: ["第一章 · 第一束好奇的光", "第二章 · 辩论与表达", "第三章 · 自由造物"][
       i
     ],
     description:
       "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
     source: `dev/content/stories/${id}.js`,
-    capabilities: ["纯数据脚本", "事件声明"],
+    capabilities: ["场景可视化", "对白与选项编辑", "事件编辑", "本地草稿", "JSON 导入导出", "文字分支预演"],
     dependencies: ["logic:director"],
   })),
 ];
@@ -214,6 +221,7 @@ export const MODULE_CATALOG = [
     capabilities: [...asset.animations, ...asset.states],
     dependencies: [],
     asset,
+    keywords: asset.kind === "prop" ? CREATION_KITS.find(k => `prop:${k.id}` === asset.id)?.words.split("|") || [] : [asset.name],
   })),
   ...WORLD_CATALOG.map((world) => ({
     id: `world:${world.id}`,

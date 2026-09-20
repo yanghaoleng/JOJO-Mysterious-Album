@@ -64,6 +64,10 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
     };
     for (const id of [...entries.keys()])
       if (!Object.hasOwn(data.entities, id)) remove(id);
+    const arriving = Object.values(data.entities).filter(record => !entries.has(record.id));
+    const arrivalGap = arriving.length > 1 ? Math.min(.28, 8 / (arriving.length - 1)) : 0;
+    const arrivalDelays = new Map(arriving.map((record, index) => [record.id, index * arrivalGap]));
+    const batchStart = performance.now();
     for (const record of Object.values(data.entities)) {
       const signature = JSON.stringify([
         record.asset,
@@ -88,6 +92,8 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           .addScaledVector(normal, stage.world.planet.radius + 0.02);
         anchor.quaternion.setFromUnitVectors(UP, normal);
         if (!actor) model.group.scale.setScalar(record.scale);
+        const bounds = new THREE.Box3().setFromObject(model.group);
+        const contactRadius = Math.hypot(Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x)),Math.max(Math.abs(bounds.min.z),Math.abs(bounds.max.z)));
         anchor.add(model.group);
         root.add(anchor);
         stage.style.apply(anchor);
@@ -99,9 +105,16 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
           actor,
           state: null,
           actionUntil: 0,
-          entrance: 0,
+          entrance: stage.reduced ? 0 : -(arrivalDelays.get(record.id) || 0),
+          arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
+          rest: anchor.position.clone(),
+          orientation: anchor.quaternion.clone(),
+          contactRadius,
+          landed: false,
+          impact: null,
         };
-        item.anchor.scale.setScalar(0.01);
+        item.anchor.position.addScaledVector(normal, stage.reduced ? 0 : 3);
+        item.anchor.visible = item.entrance >= 0;
         entries.set(record.id, item);
         anchor.userData.worldEntity = record.id;
       }
@@ -164,12 +177,43 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
     update(dt) {
       time += dt;
       for (const item of entries.values()) {
-        if (item.entrance < 1) {
-          item.entrance = Math.min(1, item.entrance + dt * 2.4);
-          const t = item.entrance;
-          const eased = 1 - Math.pow(1 - t, 3);
-          item.anchor.scale.setScalar(Math.max(0.01, eased));
-          item.anchor.position.y += Math.sin(Math.min(1, t) * Math.PI) * 0.12;
+        if (item.entrance < 2) {
+          // Wall time keeps a busy frame from stretching a batch past 10s.
+          item.entrance = stage.reduced ? 2 : Math.min(2, Math.max(item.entrance + dt, (performance.now() - item.arrivalAt) / 1000));
+          item.anchor.visible = item.entrance >= 0;
+          if (!item.anchor.visible) continue;
+          const t = item.entrance, contact = .55, age = Math.max(0, t - contact);
+          if (!item.landed && t >= contact) {
+            item.landed = true;
+            if (!stage.reduced && t < 2) for (const other of entries.values()) {
+              if (other === item || !other.anchor.visible || other.entrance < contact) continue;
+              const distance = item.rest.distanceTo(other.rest);
+              const reach = item.contactRadius + other.contactRadius + .12;
+              if (distance > reach || distance < .001) continue;
+              // Contact-driven angular impulse, not an unrelated random wobble.
+              // A damped spring (mass 1, stiffness 100, damping 10) returns upright.
+              const direction = other.rest.clone().sub(item.rest).normalize();
+              const axis = new THREE.Vector3().crossVectors(other.normal,direction).normalize();
+              const amplitude = Math.min(.18, .08 + (reach-distance)*.3);
+              other.impact = {at:performance.now(),axis,amplitude};
+              item.impact = {at:performance.now(),axis:axis.clone().negate(),amplitude};
+            }
+          }
+          const height = t < contact ? 3 * (1 - (t / contact) ** 2) : t < 2 ? .55 * Math.exp(-4 * age) * Math.abs(Math.sin(age * 11)) : 0;
+          const tilt = t < contact ? .16 * t / contact : t < 2 ? .24 * Math.exp(-4 * age) * Math.cos(age * 13) : 0;
+          item.anchor.position.copy(item.rest).addScaledVector(item.normal, height);
+          item.anchor.quaternion.copy(item.orientation).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), tilt));
+          const squash = t >= contact && t < 2 ? .12 * Math.exp(-9 * age) : 0;
+          item.anchor.scale.set(1 + squash, 1 - squash, 1 + squash);
+        }
+        if (item.entrance >= 2) item.anchor.quaternion.copy(item.orientation);
+        if (item.impact) {
+          const age = (performance.now()-item.impact.at)/1000;
+          if (stage.reduced || age >= 1) item.impact = null;
+          else {
+            const angle = item.impact.amplitude * Math.exp(-5*age) * Math.sin(Math.sqrt(75)*age);
+            item.anchor.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(item.impact.axis,angle));
+          }
         }
         if (item.actor) {
           item.model.setAction(
@@ -208,6 +252,7 @@ export function createWorldPresenter(stage, { onInteract = () => {} } = {}) {
         state: item.state,
         assetKind: item.actor ? "actor" : "prop",
         position: item.anchor.position.toArray(),
+        settled: item.entrance >= 2,
       }));
     },
     dispose() {

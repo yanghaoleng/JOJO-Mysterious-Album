@@ -27,7 +27,7 @@ function sculpture() {
     const result = mesh(parent, name, new THREE.CylinderGeometry(radius, radius, delta.length(), 12), material, start.add(end).multiplyScalar(.5).toArray());
     result.quaternion.setFromUnitVectors(UP, delta.normalize()); return result;
   };
-  return { group, mat, mesh, ball, rod, ownMaterial(value) { materials.add(value); return value; }, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
+  return { group, mat, mesh, ball, rod, ownMaterial(value) { materials.add(value); return value; }, ownGeometry(value) { geometries.add(value); return value; }, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
     geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());
     group.removeFromParent();
   } };
@@ -324,6 +324,22 @@ export function createWowPresentation(stage) {
     volume.castShadow=false;volume.receiveShadow=false;
     volume.userData.basePosition=[x,y,z];fogVolumes.push(volume);
   });
+  const seed=node('seed');
+  const seedSkin=mat('#847f92',{emissive:'#efd36e',emissiveIntensity:.05});
+  ball(seed,'sleeping-light-seed',seedSkin,[0,.28,0],[.38,.28,.3]);
+  const sprout=ball(seed,'light-sprout',glow,[0,.7,0],[.16,.55,.16]);
+  const questionStar=node('question-star');
+  mesh(questionStar,'sleeping-star',tokenGeometry('star',.36),glow,[0,.7,0]);
+  const bobo=node('bobo');
+  ball(bobo,'bobo-body',glow,[0,.45,0],[.43,.43,.36]);
+  for(const side of [-1,1]) ball(bobo,'bobo-eye',dark,[side*.14,.52,.33],[.045,.065,.025]);
+  const picture=node('picture');
+  let pictureToken=mesh(picture,'imagined-shape',tokenGeometry('star',.5),glow,[0,1.35,0]);
+  const caption=document.createElement('div');
+  caption.className='first-light-memory'; caption.hidden=true;
+  const meter=document.createElement('span'), words=document.createElement('strong'), detail=document.createElement('span');
+  caption.append(meter,words,detail); document.querySelector('#stage').append(caption);
+  let pulseAge=Infinity;
   stage.style?.apply(group);
   let targetProgress=0, progress=0, live=false, lastTime=0, frame=0, initialized=false, lastWorld=null;
   let motionTime=0;
@@ -338,7 +354,7 @@ export function createWowPresentation(stage) {
       seen:false,shown:false,age:Infinity,diagnostics,
     });
   };
-  [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
+  [['torch',.034],['radio',.023],['jar',.021],['door',.008],['key',.047],['seed',.06],['question-star',.025],['bobo',.06],['picture',.025]].forEach(([name,amount],i)=>registerMotion(nodes[name],name,amount,i*1.31));
   tokens.forEach((token,i)=>registerMotion(token,`color-${i}`,.028,i*1.19,true));
   const unregisterTaps = [];
   [['torch','stretch'],['radio','wiggle'],['jar','puff'],['door','twist'],['key','hop']].forEach(([name,mode]) => {
@@ -380,7 +396,7 @@ export function createWowPresentation(stage) {
       // Ease-out with a single restrained overshoot. Every prop's local
       // origin is its foot, so growing and rocking keep that foot anchored.
       const factor=stage.reduced||t>=1?1:Math.max(.001,1+2.4*u*u*u+1.4*u*u);
-      const roll=stage.reduced?0:Math.sin(motionTime*.77+motion.phase)*motion.amount;
+      const roll=stage.reduced?0:pulseAge<3.4 && state.firstLight ? Math.sin(pulseAge*15)*.3 : Math.sin(motionTime*.77+motion.phase)*motion.amount;
       const yaw=!stage.reduced&&motion.name==='key'?Math.sin(motionTime*.63+motion.phase)*.14:0;
       object.position.copy(motion.position);
       if(motion.token&&!stage.reduced)object.position.x+=Math.sin(motionTime*.64+motion.phase)*.009;
@@ -411,6 +427,8 @@ export function createWowPresentation(stage) {
     lamp.distance=2.1+clarity*1.6;
     doorGlow.emissiveIntensity=state.visual?.shape?.length ? .48 : .1;
     doorGlow.color.set(state.visual ? '#f5e0b1' : '#c1c6c3');
+    if(state.firstLight && pulseAge<3.4) { glow.emissiveIntensity=1.4; lamp.intensity=1.7; beamMaterial.opacity=.28; }
+    group.userData.pulseRemaining=Math.max(0,3.4-pulseAge);
     group.userData.progress=progress;
     group.userData.mistDensity=remaining;
   }
@@ -420,6 +438,7 @@ export function createWowPresentation(stage) {
     const dt=Math.min(.06,elapsed), motionDt=Math.min(.2,elapsed);lastTime=now;
     if(!document.hidden){
       progress=THREE.MathUtils.lerp(progress,targetProgress,1-Math.exp(-dt*2.4));
+      pulseAge+=motionDt;
       paintLight();
       if(!stage.reduced)fogMaterials.forEach(material=>{material.uniforms.uTime.value=now/1000;});
       moveProps(motionDt);
@@ -433,8 +452,25 @@ export function createWowPresentation(stage) {
     if(group.parent!==stage.scene)stage.scene.add(group);
     const props=new Set(state.props||[]);
     reveal(torch,props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
-    reveal(door,state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6),seedMotion);
-    reveal(key,Boolean(state.visual),seedMotion);
+    reveal(door,!state.firstLight && (state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6)),seedMotion);
+    reveal(key,!state.firstLight && Boolean(state.visual),seedMotion);
+    reveal(seed,!!state.firstLight && state.scene>=2 && state.scene<10,seedMotion);
+    reveal(questionStar,!!state.firstLight,seedMotion);
+    reveal(bobo,!!state.firstLight && state.scene>=10,seedMotion);
+    reveal(picture,!!state.firstLight && state.scene>=4,seedMotion);
+    sprout.visible=state.scene>=6;
+    sprout.scale.y=.2+Math.max(0,state.scene-5)*.16;
+    seedSkin.emissiveIntensity=state.scene>=4?.5:.05;
+    caption.hidden=!state.firstLight;
+    if(state.firstLight){
+      meter.textContent=`萌萌星 · ${state.energy || 0}%`;
+      words.textContent=state.firstWords ? `“${state.firstWords}”` : '第一束光，等着你的好奇';
+      detail.textContent=state.scene>=11 ? '绘本第 1 页 · 点亮者：小小追光员' : state.skyThing ? `${state.skyColor}的天空，飘着${state.skyThing}` : state.scene>=4 ? '你的问题，正在长成光' : '咯咯哒和你一起找光';
+      const color=/粉/.test(state.skyColor)?'#e7a5b5':/蓝/.test(state.skyColor)?'#88b6d4':/绿/.test(state.skyColor)?'#86ad83':'#efd36e';
+      seedSkin.emissive.set(color);
+      const shape=/鱼/.test(state.skyThing)?'fish':/棉花|云/.test(state.skyThing)?'cloud':/月/.test(state.skyThing)?'moon':'star';
+      if(pictureToken.userData.shape!==shape){s.releaseGeometry(pictureToken.geometry);pictureToken.geometry=s.ownGeometry(tokenGeometry(shape,.5));pictureToken.userData.shape=shape;}
+    }
     const requested=Number(state.progress);
     targetProgress=Number.isFinite(requested)?THREE.MathUtils.clamp(requested,0,1):0;
     // A newly mounted world starts at its saved chapter progress immediately.
@@ -461,11 +497,15 @@ export function createWowPresentation(stage) {
     anchor('jar',spot.x+1.45,spot.z+1.3,0,.76);
     anchor('door',spot.x+1.1,spot.z-.65,0,.7);
     anchor('key',spot.x+.95,spot.z+.6,.03,.75);
+    anchor('seed',spot.x+.8,spot.z+1.1,0,.85);
+    anchor('question-star',spot.x-.8,spot.z-.5,2,.7);
+    anchor('bobo',spot.x+.9,spot.z+1.1,0,.8);
+    anchor('picture',spot.x+.9,spot.z+.4,.3,.65);
     anchor('mist',spot.x,spot.z,0,1);
     group.userData.state={chapter:state.chapter,scene:state.scene,props:[...props],colors:state.colors?.length||0,key:state.visual?.shape||null,lit:!!state.lit,progress:targetProgress};
     paintLight();
     moveProps();
     if(!live){live=true;frame=requestAnimationFrame(animate);}
   }
-  return {set,dispose(){live=false;cancelAnimationFrame(frame);unregisterTaps.forEach(unregister=>unregister());s.dispose();}};
+  return {set,pulse(){pulseAge=0;caption.dataset.pulsing='true';},dispose(){caption.remove();live=false;cancelAnimationFrame(frame);unregisterTaps.forEach(unregister=>unregister());s.dispose();}};
 }

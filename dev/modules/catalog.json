@@ -248,14 +248,33 @@
       "dependencies": []
     },
     {
+      "id": "ui:story-editor",
+      "kind": "ui",
+      "name": "脚本创作工作台",
+      "description": "打开任一故事脚本可编辑对白、选项与事件，保存草稿并导入导出；文字预演验证分支，不运行 AI 或 3D 效果。",
+      "source": "dev/modules/story-editor.js",
+      "capabilities": [
+        "本地草稿",
+        "场景编排",
+        "脚本导入导出"
+      ],
+      "dependencies": [
+        "logic:director"
+      ]
+    },
+    {
       "id": "story:wow",
       "kind": "story",
-      "name": "第一章 · 好奇与上手",
+      "name": "第一章 · 第一束好奇的光",
       "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
       "source": "dev/content/stories/wow.js",
       "capabilities": [
-        "纯数据脚本",
-        "事件声明"
+        "场景可视化",
+        "对白与选项编辑",
+        "事件编辑",
+        "本地草稿",
+        "JSON 导入导出",
+        "文字分支预演"
       ],
       "dependencies": [
         "logic:director"
@@ -268,8 +287,12 @@
       "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
       "source": "dev/content/stories/debate.js",
       "capabilities": [
-        "纯数据脚本",
-        "事件声明"
+        "场景可视化",
+        "对白与选项编辑",
+        "事件编辑",
+        "本地草稿",
+        "JSON 导入导出",
+        "文字分支预演"
       ],
       "dependencies": [
         "logic:director"
@@ -282,11 +305,7434 @@
       "description": "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
       "source": "dev/content/stories/moon.js",
       "capabilities": [
-        "纯数据脚本",
-        "事件声明"
+        "场景可视化",
+        "对白与选项编辑",
+        "事件编辑",
+        "本地草稿",
+        "JSON 导入导出",
+        "文字分支预演"
       ],
       "dependencies": [
         "logic:director"
+      ]
+    },
+    {
+      "id": "prop:ufo",
+      "kind": "prop",
+      "name": "飞碟",
+      "description": "飞碟的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/ufo.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:ufo",
+        "kind": "prop",
+        "name": "飞碟",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "飞碟",
+        "UFO",
+        "不明飞行物"
+      ]
+    },
+    {
+      "id": "prop:fighter-jet",
+      "kind": "prop",
+      "name": "战斗机",
+      "description": "战斗机的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/fighter-jet.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:fighter-jet",
+        "kind": "prop",
+        "name": "战斗机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "战斗机",
+        "战机",
+        "喷气机"
+      ]
+    },
+    {
+      "id": "prop:spaceship",
+      "kind": "prop",
+      "name": "宇宙飞船",
+      "description": "宇宙飞船的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/spaceship.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:spaceship",
+        "kind": "prop",
+        "name": "宇宙飞船",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "宇宙飞船",
+        "星际飞船",
+        "太空飞船"
+      ]
+    },
+    {
+      "id": "prop:battleship",
+      "kind": "prop",
+      "name": "战舰",
+      "description": "战舰的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/battleship.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:battleship",
+        "kind": "prop",
+        "name": "战舰",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "战舰",
+        "军舰",
+        "驱逐舰"
+      ]
+    },
+    {
+      "id": "prop:tank",
+      "kind": "prop",
+      "name": "坦克",
+      "description": "坦克的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/tank.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:tank",
+        "kind": "prop",
+        "name": "坦克",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "坦克",
+        "装甲车"
+      ]
+    },
+    {
+      "id": "prop:toy-bomb",
+      "kind": "prop",
+      "name": "炸弹",
+      "description": "炸弹的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-bomb.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-bomb",
+        "kind": "prop",
+        "name": "炸弹",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "炸弹",
+        "卡通炸弹"
+      ]
+    },
+    {
+      "id": "prop:toy-pistol",
+      "kind": "prop",
+      "name": "手枪",
+      "description": "手枪的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-pistol.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-pistol",
+        "kind": "prop",
+        "name": "手枪",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "手枪",
+        "玩具枪",
+        "玩具手枪"
+      ]
+    },
+    {
+      "id": "prop:toy-launcher",
+      "kind": "prop",
+      "name": "火箭筒",
+      "description": "火箭筒的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-launcher.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-launcher",
+        "kind": "prop",
+        "name": "火箭筒",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "火箭筒",
+        "发射器",
+        "火箭发射器"
+      ]
+    },
+    {
+      "id": "prop:toy-sword",
+      "kind": "prop",
+      "name": "宝剑",
+      "description": "宝剑的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-sword.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-sword",
+        "kind": "prop",
+        "name": "宝剑",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "宝剑",
+        "剑",
+        "长剑"
+      ]
+    },
+    {
+      "id": "prop:toy-shield",
+      "kind": "prop",
+      "name": "盾牌",
+      "description": "盾牌的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-shield.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-shield",
+        "kind": "prop",
+        "name": "盾牌",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "盾牌",
+        "盾"
+      ]
+    },
+    {
+      "id": "prop:toy-bow",
+      "kind": "prop",
+      "name": "弓箭",
+      "description": "弓箭的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-bow.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-bow",
+        "kind": "prop",
+        "name": "弓箭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "弓箭",
+        "弓"
+      ]
+    },
+    {
+      "id": "prop:toy-cannon",
+      "kind": "prop",
+      "name": "大炮",
+      "description": "大炮的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/toy-cannon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:toy-cannon",
+        "kind": "prop",
+        "name": "大炮",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大炮",
+        "炮台",
+        "加农炮"
+      ]
+    },
+    {
+      "id": "prop:water-gun",
+      "kind": "prop",
+      "name": "水枪",
+      "description": "水枪的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/water-gun.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:water-gun",
+        "kind": "prop",
+        "name": "水枪",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "水枪",
+        "喷水枪"
+      ]
+    },
+    {
+      "id": "prop:gamepad",
+      "kind": "prop",
+      "name": "游戏手柄",
+      "description": "游戏手柄的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/gamepad.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:gamepad",
+        "kind": "prop",
+        "name": "游戏手柄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "游戏手柄",
+        "手柄",
+        "游戏机"
+      ]
+    },
+    {
+      "id": "prop:yoyo",
+      "kind": "prop",
+      "name": "悠悠球",
+      "description": "悠悠球的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/yoyo.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:yoyo",
+        "kind": "prop",
+        "name": "悠悠球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "悠悠球",
+        "溜溜球"
+      ]
+    },
+    {
+      "id": "prop:chess",
+      "kind": "prop",
+      "name": "国际象棋",
+      "description": "国际象棋的轮廓和部件可独立查看。",
+      "source": "dev/modules/props/chess.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:chess",
+        "kind": "prop",
+        "name": "国际象棋",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "国际象棋",
+        "象棋棋盘",
+        "棋盘"
+      ]
+    },
+    {
+      "id": "prop:collection-0-0",
+      "kind": "prop",
+      "name": "出租车",
+      "description": "出租车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-0-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-0-0",
+        "kind": "prop",
+        "name": "出租车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "出租车",
+        "出租车"
+      ]
+    },
+    {
+      "id": "prop:collection-1-0",
+      "kind": "prop",
+      "name": "警车",
+      "description": "警车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-1-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-1-0",
+        "kind": "prop",
+        "name": "警车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "警车",
+        "警车"
+      ]
+    },
+    {
+      "id": "prop:collection-2-0",
+      "kind": "prop",
+      "name": "救护车",
+      "description": "救护车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-2-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-2-0",
+        "kind": "prop",
+        "name": "救护车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "救护车",
+        "救护车"
+      ]
+    },
+    {
+      "id": "prop:collection-3-0",
+      "kind": "prop",
+      "name": "消防车",
+      "description": "消防车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-3-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-3-0",
+        "kind": "prop",
+        "name": "消防车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "消防车",
+        "消防车"
+      ]
+    },
+    {
+      "id": "prop:collection-4-0",
+      "kind": "prop",
+      "name": "校车",
+      "description": "校车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-4-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-4-0",
+        "kind": "prop",
+        "name": "校车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "校车",
+        "校车"
+      ]
+    },
+    {
+      "id": "prop:collection-5-0",
+      "kind": "prop",
+      "name": "客车",
+      "description": "客车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-5-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-5-0",
+        "kind": "prop",
+        "name": "客车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "客车",
+        "客车"
+      ]
+    },
+    {
+      "id": "prop:collection-6-0",
+      "kind": "prop",
+      "name": "面包车",
+      "description": "面包车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-6-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-6-0",
+        "kind": "prop",
+        "name": "面包车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "面包车",
+        "面包车"
+      ]
+    },
+    {
+      "id": "prop:collection-7-0",
+      "kind": "prop",
+      "name": "皮卡",
+      "description": "皮卡轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-7-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-7-0",
+        "kind": "prop",
+        "name": "皮卡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "皮卡",
+        "皮卡"
+      ]
+    },
+    {
+      "id": "prop:collection-8-0",
+      "kind": "prop",
+      "name": "赛车",
+      "description": "赛车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-8-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-8-0",
+        "kind": "prop",
+        "name": "赛车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "赛车",
+        "赛车"
+      ]
+    },
+    {
+      "id": "prop:collection-9-0",
+      "kind": "prop",
+      "name": "越野车",
+      "description": "越野车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-9-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-9-0",
+        "kind": "prop",
+        "name": "越野车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "越野车",
+        "越野车"
+      ]
+    },
+    {
+      "id": "prop:collection-10-0",
+      "kind": "prop",
+      "name": "拖拉机",
+      "description": "拖拉机轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-10-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-10-0",
+        "kind": "prop",
+        "name": "拖拉机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拖拉机",
+        "拖拉机"
+      ]
+    },
+    {
+      "id": "prop:collection-11-0",
+      "kind": "prop",
+      "name": "挖掘机",
+      "description": "挖掘机轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-11-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-11-0",
+        "kind": "prop",
+        "name": "挖掘机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "挖掘机",
+        "挖掘机"
+      ]
+    },
+    {
+      "id": "prop:collection-12-0",
+      "kind": "prop",
+      "name": "装载机",
+      "description": "装载机轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-12-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-12-0",
+        "kind": "prop",
+        "name": "装载机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "装载机",
+        "装载机"
+      ]
+    },
+    {
+      "id": "prop:collection-13-0",
+      "kind": "prop",
+      "name": "起重车",
+      "description": "起重车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-13-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-13-0",
+        "kind": "prop",
+        "name": "起重车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "起重车",
+        "起重车"
+      ]
+    },
+    {
+      "id": "prop:collection-14-0",
+      "kind": "prop",
+      "name": "搅拌车",
+      "description": "搅拌车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-14-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-14-0",
+        "kind": "prop",
+        "name": "搅拌车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "搅拌车",
+        "搅拌车"
+      ]
+    },
+    {
+      "id": "prop:collection-15-0",
+      "kind": "prop",
+      "name": "罐车",
+      "description": "罐车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-15-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-15-0",
+        "kind": "prop",
+        "name": "罐车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "罐车",
+        "罐车"
+      ]
+    },
+    {
+      "id": "prop:collection-16-0",
+      "kind": "prop",
+      "name": "集装箱运输车",
+      "description": "集装箱运输车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-16-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-16-0",
+        "kind": "prop",
+        "name": "集装箱运输车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "集装箱运输车",
+        "集装箱运输车"
+      ]
+    },
+    {
+      "id": "prop:collection-17-0",
+      "kind": "prop",
+      "name": "有轨电车",
+      "description": "有轨电车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-17-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-17-0",
+        "kind": "prop",
+        "name": "有轨电车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "有轨电车",
+        "有轨电车"
+      ]
+    },
+    {
+      "id": "prop:collection-18-0",
+      "kind": "prop",
+      "name": "高铁",
+      "description": "高铁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-18-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-18-0",
+        "kind": "prop",
+        "name": "高铁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "高铁",
+        "高铁"
+      ]
+    },
+    {
+      "id": "prop:collection-19-0",
+      "kind": "prop",
+      "name": "摩托车",
+      "description": "摩托车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-19-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-19-0",
+        "kind": "prop",
+        "name": "摩托车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "摩托车",
+        "摩托车"
+      ]
+    },
+    {
+      "id": "prop:collection-20-0",
+      "kind": "prop",
+      "name": "脚踏车",
+      "description": "脚踏车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-20-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-20-0",
+        "kind": "prop",
+        "name": "脚踏车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "脚踏车",
+        "脚踏车"
+      ]
+    },
+    {
+      "id": "prop:collection-21-0",
+      "kind": "prop",
+      "name": "快艇",
+      "description": "快艇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-21-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-21-0",
+        "kind": "prop",
+        "name": "快艇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "快艇",
+        "快艇"
+      ]
+    },
+    {
+      "id": "prop:collection-22-0",
+      "kind": "prop",
+      "name": "轮船",
+      "description": "轮船轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-22-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-22-0",
+        "kind": "prop",
+        "name": "轮船",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "轮船",
+        "轮船"
+      ]
+    },
+    {
+      "id": "prop:collection-23-0",
+      "kind": "prop",
+      "name": "帆艇",
+      "description": "帆艇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-23-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-23-0",
+        "kind": "prop",
+        "name": "帆艇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "帆艇",
+        "帆艇"
+      ]
+    },
+    {
+      "id": "prop:collection-24-0",
+      "kind": "prop",
+      "name": "滑翔机",
+      "description": "滑翔机轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-24-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-24-0",
+        "kind": "prop",
+        "name": "滑翔机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "滑翔机",
+        "滑翔机"
+      ]
+    },
+    {
+      "id": "prop:collection-25-0",
+      "kind": "prop",
+      "name": "旋翼机",
+      "description": "旋翼机轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-25-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-25-0",
+        "kind": "prop",
+        "name": "旋翼机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "旋翼机",
+        "旋翼机"
+      ]
+    },
+    {
+      "id": "prop:collection-26-0",
+      "kind": "prop",
+      "name": "探测火箭",
+      "description": "探测火箭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-26-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-26-0",
+        "kind": "prop",
+        "name": "探测火箭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "探测火箭",
+        "探测火箭"
+      ]
+    },
+    {
+      "id": "prop:collection-27-0",
+      "kind": "prop",
+      "name": "雪橇",
+      "description": "雪橇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-27-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-27-0",
+        "kind": "prop",
+        "name": "雪橇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "雪橇",
+        "雪橇"
+      ]
+    },
+    {
+      "id": "prop:collection-28-0",
+      "kind": "prop",
+      "name": "青皮梨",
+      "description": "青皮梨轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-28-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-28-0",
+        "kind": "prop",
+        "name": "青皮梨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "青皮梨"
+      ]
+    },
+    {
+      "id": "prop:collection-28-1",
+      "kind": "prop",
+      "name": "黄皮梨",
+      "description": "黄皮梨轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-28-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-28-1",
+        "kind": "prop",
+        "name": "黄皮梨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "黄皮梨"
+      ]
+    },
+    {
+      "id": "prop:collection-28-2",
+      "kind": "prop",
+      "name": "长颈梨",
+      "description": "长颈梨轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-28-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-28-2",
+        "kind": "prop",
+        "name": "长颈梨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长颈梨"
+      ]
+    },
+    {
+      "id": "prop:collection-28-3",
+      "kind": "prop",
+      "name": "小圆梨",
+      "description": "小圆梨轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-28-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-28-3",
+        "kind": "prop",
+        "name": "小圆梨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆梨"
+      ]
+    },
+    {
+      "id": "prop:collection-28-4",
+      "kind": "prop",
+      "name": "对半梨",
+      "description": "对半梨轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-28-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-28-4",
+        "kind": "prop",
+        "name": "对半梨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "对半梨"
+      ]
+    },
+    {
+      "id": "prop:collection-29-0",
+      "kind": "prop",
+      "name": "大圆橙子",
+      "description": "大圆橙子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-29-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-29-0",
+        "kind": "prop",
+        "name": "大圆橙子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大圆橙子",
+        "橙子"
+      ]
+    },
+    {
+      "id": "prop:collection-29-1",
+      "kind": "prop",
+      "name": "小圆橙子",
+      "description": "小圆橙子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-29-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-29-1",
+        "kind": "prop",
+        "name": "小圆橙子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆橙子"
+      ]
+    },
+    {
+      "id": "prop:collection-29-2",
+      "kind": "prop",
+      "name": "剥皮橙子",
+      "description": "剥皮橙子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-29-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-29-2",
+        "kind": "prop",
+        "name": "剥皮橙子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "剥皮橙子"
+      ]
+    },
+    {
+      "id": "prop:collection-29-3",
+      "kind": "prop",
+      "name": "切半橙子",
+      "description": "切半橙子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-29-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-29-3",
+        "kind": "prop",
+        "name": "切半橙子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半橙子"
+      ]
+    },
+    {
+      "id": "prop:collection-29-4",
+      "kind": "prop",
+      "name": "果盘橙子",
+      "description": "果盘橙子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-29-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-29-4",
+        "kind": "prop",
+        "name": "果盘橙子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘橙子"
+      ]
+    },
+    {
+      "id": "prop:collection-30-0",
+      "kind": "prop",
+      "name": "水蜜桃子",
+      "description": "水蜜桃子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-30-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-30-0",
+        "kind": "prop",
+        "name": "水蜜桃子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "水蜜桃子",
+        "桃子"
+      ]
+    },
+    {
+      "id": "prop:collection-30-1",
+      "kind": "prop",
+      "name": "黄肉桃子",
+      "description": "黄肉桃子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-30-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-30-1",
+        "kind": "prop",
+        "name": "黄肉桃子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "黄肉桃子"
+      ]
+    },
+    {
+      "id": "prop:collection-30-2",
+      "kind": "prop",
+      "name": "扁圆桃子",
+      "description": "扁圆桃子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-30-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-30-2",
+        "kind": "prop",
+        "name": "扁圆桃子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "扁圆桃子"
+      ]
+    },
+    {
+      "id": "prop:collection-30-3",
+      "kind": "prop",
+      "name": "切半桃子",
+      "description": "切半桃子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-30-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-30-3",
+        "kind": "prop",
+        "name": "切半桃子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半桃子"
+      ]
+    },
+    {
+      "id": "prop:collection-30-4",
+      "kind": "prop",
+      "name": "果盘桃子",
+      "description": "果盘桃子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-30-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-30-4",
+        "kind": "prop",
+        "name": "果盘桃子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘桃子"
+      ]
+    },
+    {
+      "id": "prop:collection-31-0",
+      "kind": "prop",
+      "name": "单颗草莓",
+      "description": "单颗草莓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-31-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-31-0",
+        "kind": "prop",
+        "name": "单颗草莓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "单颗草莓",
+        "草莓"
+      ]
+    },
+    {
+      "id": "prop:collection-31-1",
+      "kind": "prop",
+      "name": "双颗草莓",
+      "description": "双颗草莓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-31-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-31-1",
+        "kind": "prop",
+        "name": "双颗草莓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双颗草莓"
+      ]
+    },
+    {
+      "id": "prop:collection-31-2",
+      "kind": "prop",
+      "name": "三颗草莓",
+      "description": "三颗草莓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-31-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-31-2",
+        "kind": "prop",
+        "name": "三颗草莓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三颗草莓"
+      ]
+    },
+    {
+      "id": "prop:collection-31-3",
+      "kind": "prop",
+      "name": "果串草莓",
+      "description": "果串草莓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-31-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-31-3",
+        "kind": "prop",
+        "name": "果串草莓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果串草莓"
+      ]
+    },
+    {
+      "id": "prop:collection-31-4",
+      "kind": "prop",
+      "name": "果盘草莓",
+      "description": "果盘草莓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-31-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-31-4",
+        "kind": "prop",
+        "name": "果盘草莓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘草莓"
+      ]
+    },
+    {
+      "id": "prop:collection-32-0",
+      "kind": "prop",
+      "name": "紫色大串葡萄",
+      "description": "紫色大串葡萄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-32-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-32-0",
+        "kind": "prop",
+        "name": "紫色大串葡萄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "紫色大串葡萄",
+        "葡萄"
+      ]
+    },
+    {
+      "id": "prop:collection-32-1",
+      "kind": "prop",
+      "name": "绿色小串葡萄",
+      "description": "绿色小串葡萄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-32-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-32-1",
+        "kind": "prop",
+        "name": "绿色小串葡萄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "绿色小串葡萄"
+      ]
+    },
+    {
+      "id": "prop:collection-32-2",
+      "kind": "prop",
+      "name": "双串葡萄",
+      "description": "双串葡萄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-32-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-32-2",
+        "kind": "prop",
+        "name": "双串葡萄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双串葡萄"
+      ]
+    },
+    {
+      "id": "prop:collection-32-3",
+      "kind": "prop",
+      "name": "长串葡萄",
+      "description": "长串葡萄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-32-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-32-3",
+        "kind": "prop",
+        "name": "长串葡萄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长串葡萄"
+      ]
+    },
+    {
+      "id": "prop:collection-32-4",
+      "kind": "prop",
+      "name": "果盘葡萄",
+      "description": "果盘葡萄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-32-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-32-4",
+        "kind": "prop",
+        "name": "果盘葡萄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘葡萄"
+      ]
+    },
+    {
+      "id": "prop:collection-33-0",
+      "kind": "prop",
+      "name": "单颗樱桃",
+      "description": "单颗樱桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-33-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-33-0",
+        "kind": "prop",
+        "name": "单颗樱桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "单颗樱桃",
+        "樱桃"
+      ]
+    },
+    {
+      "id": "prop:collection-33-1",
+      "kind": "prop",
+      "name": "双颗樱桃",
+      "description": "双颗樱桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-33-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-33-1",
+        "kind": "prop",
+        "name": "双颗樱桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双颗樱桃"
+      ]
+    },
+    {
+      "id": "prop:collection-33-2",
+      "kind": "prop",
+      "name": "三颗樱桃",
+      "description": "三颗樱桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-33-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-33-2",
+        "kind": "prop",
+        "name": "三颗樱桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三颗樱桃"
+      ]
+    },
+    {
+      "id": "prop:collection-33-3",
+      "kind": "prop",
+      "name": "果串樱桃",
+      "description": "果串樱桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-33-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-33-3",
+        "kind": "prop",
+        "name": "果串樱桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果串樱桃"
+      ]
+    },
+    {
+      "id": "prop:collection-33-4",
+      "kind": "prop",
+      "name": "果盘樱桃",
+      "description": "果盘樱桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-33-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-33-4",
+        "kind": "prop",
+        "name": "果盘樱桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘樱桃"
+      ]
+    },
+    {
+      "id": "prop:collection-34-0",
+      "kind": "prop",
+      "name": "大个菠萝",
+      "description": "大个菠萝轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-34-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-34-0",
+        "kind": "prop",
+        "name": "大个菠萝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大个菠萝",
+        "菠萝"
+      ]
+    },
+    {
+      "id": "prop:collection-34-1",
+      "kind": "prop",
+      "name": "小个菠萝",
+      "description": "小个菠萝轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-34-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-34-1",
+        "kind": "prop",
+        "name": "小个菠萝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小个菠萝"
+      ]
+    },
+    {
+      "id": "prop:collection-34-2",
+      "kind": "prop",
+      "name": "切半菠萝",
+      "description": "切半菠萝轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-34-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-34-2",
+        "kind": "prop",
+        "name": "切半菠萝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半菠萝"
+      ]
+    },
+    {
+      "id": "prop:collection-34-3",
+      "kind": "prop",
+      "name": "切片菠萝",
+      "description": "切片菠萝轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-34-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-34-3",
+        "kind": "prop",
+        "name": "切片菠萝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切片菠萝"
+      ]
+    },
+    {
+      "id": "prop:collection-34-4",
+      "kind": "prop",
+      "name": "果盘菠萝",
+      "description": "果盘菠萝轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-34-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-34-4",
+        "kind": "prop",
+        "name": "果盘菠萝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘菠萝"
+      ]
+    },
+    {
+      "id": "prop:collection-35-0",
+      "kind": "prop",
+      "name": "长圆柠檬",
+      "description": "长圆柠檬轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-35-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-35-0",
+        "kind": "prop",
+        "name": "长圆柠檬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长圆柠檬",
+        "柠檬"
+      ]
+    },
+    {
+      "id": "prop:collection-35-1",
+      "kind": "prop",
+      "name": "小圆柠檬",
+      "description": "小圆柠檬轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-35-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-35-1",
+        "kind": "prop",
+        "name": "小圆柠檬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆柠檬"
+      ]
+    },
+    {
+      "id": "prop:collection-35-2",
+      "kind": "prop",
+      "name": "切半柠檬",
+      "description": "切半柠檬轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-35-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-35-2",
+        "kind": "prop",
+        "name": "切半柠檬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半柠檬"
+      ]
+    },
+    {
+      "id": "prop:collection-35-3",
+      "kind": "prop",
+      "name": "切片柠檬",
+      "description": "切片柠檬轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-35-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-35-3",
+        "kind": "prop",
+        "name": "切片柠檬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切片柠檬"
+      ]
+    },
+    {
+      "id": "prop:collection-35-4",
+      "kind": "prop",
+      "name": "果盘柠檬",
+      "description": "果盘柠檬轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-35-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-35-4",
+        "kind": "prop",
+        "name": "果盘柠檬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘柠檬"
+      ]
+    },
+    {
+      "id": "prop:collection-36-0",
+      "kind": "prop",
+      "name": "大个猕猴桃",
+      "description": "大个猕猴桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-36-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-36-0",
+        "kind": "prop",
+        "name": "大个猕猴桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大个猕猴桃",
+        "猕猴桃"
+      ]
+    },
+    {
+      "id": "prop:collection-36-1",
+      "kind": "prop",
+      "name": "小个猕猴桃",
+      "description": "小个猕猴桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-36-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-36-1",
+        "kind": "prop",
+        "name": "小个猕猴桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小个猕猴桃"
+      ]
+    },
+    {
+      "id": "prop:collection-36-2",
+      "kind": "prop",
+      "name": "切半猕猴桃",
+      "description": "切半猕猴桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-36-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-36-2",
+        "kind": "prop",
+        "name": "切半猕猴桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半猕猴桃"
+      ]
+    },
+    {
+      "id": "prop:collection-36-3",
+      "kind": "prop",
+      "name": "切片猕猴桃",
+      "description": "切片猕猴桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-36-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-36-3",
+        "kind": "prop",
+        "name": "切片猕猴桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切片猕猴桃"
+      ]
+    },
+    {
+      "id": "prop:collection-36-4",
+      "kind": "prop",
+      "name": "果盘猕猴桃",
+      "description": "果盘猕猴桃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-36-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-36-4",
+        "kind": "prop",
+        "name": "果盘猕猴桃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘猕猴桃"
+      ]
+    },
+    {
+      "id": "prop:collection-37-0",
+      "kind": "prop",
+      "name": "长圆芒果",
+      "description": "长圆芒果轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-37-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-37-0",
+        "kind": "prop",
+        "name": "长圆芒果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长圆芒果",
+        "芒果"
+      ]
+    },
+    {
+      "id": "prop:collection-37-1",
+      "kind": "prop",
+      "name": "小圆芒果",
+      "description": "小圆芒果轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-37-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-37-1",
+        "kind": "prop",
+        "name": "小圆芒果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆芒果"
+      ]
+    },
+    {
+      "id": "prop:collection-37-2",
+      "kind": "prop",
+      "name": "切半芒果",
+      "description": "切半芒果轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-37-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-37-2",
+        "kind": "prop",
+        "name": "切半芒果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半芒果"
+      ]
+    },
+    {
+      "id": "prop:collection-37-3",
+      "kind": "prop",
+      "name": "切块芒果",
+      "description": "切块芒果轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-37-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-37-3",
+        "kind": "prop",
+        "name": "切块芒果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切块芒果"
+      ]
+    },
+    {
+      "id": "prop:collection-37-4",
+      "kind": "prop",
+      "name": "果盘芒果",
+      "description": "果盘芒果轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-37-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-37-4",
+        "kind": "prop",
+        "name": "果盘芒果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果盘芒果"
+      ]
+    },
+    {
+      "id": "prop:collection-38-0",
+      "kind": "prop",
+      "name": "长根胡萝卜",
+      "description": "长根胡萝卜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-38-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-38-0",
+        "kind": "prop",
+        "name": "长根胡萝卜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长根胡萝卜",
+        "胡萝卜"
+      ]
+    },
+    {
+      "id": "prop:collection-38-1",
+      "kind": "prop",
+      "name": "短根胡萝卜",
+      "description": "短根胡萝卜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-38-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-38-1",
+        "kind": "prop",
+        "name": "短根胡萝卜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "短根胡萝卜"
+      ]
+    },
+    {
+      "id": "prop:collection-38-2",
+      "kind": "prop",
+      "name": "双根胡萝卜",
+      "description": "双根胡萝卜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-38-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-38-2",
+        "kind": "prop",
+        "name": "双根胡萝卜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双根胡萝卜"
+      ]
+    },
+    {
+      "id": "prop:collection-38-3",
+      "kind": "prop",
+      "name": "三根胡萝卜",
+      "description": "三根胡萝卜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-38-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-38-3",
+        "kind": "prop",
+        "name": "三根胡萝卜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三根胡萝卜"
+      ]
+    },
+    {
+      "id": "prop:collection-38-4",
+      "kind": "prop",
+      "name": "菜篮胡萝卜",
+      "description": "菜篮胡萝卜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-38-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-38-4",
+        "kind": "prop",
+        "name": "菜篮胡萝卜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "菜篮胡萝卜"
+      ]
+    },
+    {
+      "id": "prop:collection-39-0",
+      "kind": "prop",
+      "name": "整根玉米",
+      "description": "整根玉米轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-39-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-39-0",
+        "kind": "prop",
+        "name": "整根玉米",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "整根玉米",
+        "玉米"
+      ]
+    },
+    {
+      "id": "prop:collection-39-1",
+      "kind": "prop",
+      "name": "双根玉米",
+      "description": "双根玉米轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-39-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-39-1",
+        "kind": "prop",
+        "name": "双根玉米",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双根玉米"
+      ]
+    },
+    {
+      "id": "prop:collection-39-2",
+      "kind": "prop",
+      "name": "三根玉米",
+      "description": "三根玉米轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-39-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-39-2",
+        "kind": "prop",
+        "name": "三根玉米",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三根玉米"
+      ]
+    },
+    {
+      "id": "prop:collection-39-3",
+      "kind": "prop",
+      "name": "切段玉米",
+      "description": "切段玉米轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-39-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-39-3",
+        "kind": "prop",
+        "name": "切段玉米",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切段玉米"
+      ]
+    },
+    {
+      "id": "prop:collection-39-4",
+      "kind": "prop",
+      "name": "菜盘玉米",
+      "description": "菜盘玉米轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-39-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-39-4",
+        "kind": "prop",
+        "name": "菜盘玉米",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "菜盘玉米"
+      ]
+    },
+    {
+      "id": "prop:collection-40-0",
+      "kind": "prop",
+      "name": "大圆南瓜",
+      "description": "大圆南瓜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-40-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-40-0",
+        "kind": "prop",
+        "name": "大圆南瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大圆南瓜",
+        "南瓜"
+      ]
+    },
+    {
+      "id": "prop:collection-40-1",
+      "kind": "prop",
+      "name": "小圆南瓜",
+      "description": "小圆南瓜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-40-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-40-1",
+        "kind": "prop",
+        "name": "小圆南瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆南瓜"
+      ]
+    },
+    {
+      "id": "prop:collection-40-2",
+      "kind": "prop",
+      "name": "扁圆南瓜",
+      "description": "扁圆南瓜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-40-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-40-2",
+        "kind": "prop",
+        "name": "扁圆南瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "扁圆南瓜"
+      ]
+    },
+    {
+      "id": "prop:collection-40-3",
+      "kind": "prop",
+      "name": "长形南瓜",
+      "description": "长形南瓜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-40-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-40-3",
+        "kind": "prop",
+        "name": "长形南瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长形南瓜"
+      ]
+    },
+    {
+      "id": "prop:collection-40-4",
+      "kind": "prop",
+      "name": "切块南瓜",
+      "description": "切块南瓜轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-40-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-40-4",
+        "kind": "prop",
+        "name": "切块南瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切块南瓜"
+      ]
+    },
+    {
+      "id": "prop:collection-41-0",
+      "kind": "prop",
+      "name": "香菇蘑菇",
+      "description": "香菇蘑菇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-41-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-41-0",
+        "kind": "prop",
+        "name": "香菇蘑菇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "香菇蘑菇",
+        "蘑菇"
+      ]
+    },
+    {
+      "id": "prop:collection-41-1",
+      "kind": "prop",
+      "name": "白菇蘑菇",
+      "description": "白菇蘑菇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-41-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-41-1",
+        "kind": "prop",
+        "name": "白菇蘑菇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "白菇蘑菇"
+      ]
+    },
+    {
+      "id": "prop:collection-41-2",
+      "kind": "prop",
+      "name": "双菇蘑菇",
+      "description": "双菇蘑菇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-41-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-41-2",
+        "kind": "prop",
+        "name": "双菇蘑菇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双菇蘑菇"
+      ]
+    },
+    {
+      "id": "prop:collection-41-3",
+      "kind": "prop",
+      "name": "三菇蘑菇",
+      "description": "三菇蘑菇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-41-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-41-3",
+        "kind": "prop",
+        "name": "三菇蘑菇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三菇蘑菇"
+      ]
+    },
+    {
+      "id": "prop:collection-41-4",
+      "kind": "prop",
+      "name": "菇篮蘑菇",
+      "description": "菇篮蘑菇轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-41-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-41-4",
+        "kind": "prop",
+        "name": "菇篮蘑菇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "菇篮蘑菇"
+      ]
+    },
+    {
+      "id": "prop:collection-42-0",
+      "kind": "prop",
+      "name": "大圆番茄",
+      "description": "大圆番茄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-42-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-42-0",
+        "kind": "prop",
+        "name": "大圆番茄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大圆番茄",
+        "番茄"
+      ]
+    },
+    {
+      "id": "prop:collection-42-1",
+      "kind": "prop",
+      "name": "小圆番茄",
+      "description": "小圆番茄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-42-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-42-1",
+        "kind": "prop",
+        "name": "小圆番茄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小圆番茄"
+      ]
+    },
+    {
+      "id": "prop:collection-42-2",
+      "kind": "prop",
+      "name": "双颗番茄",
+      "description": "双颗番茄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-42-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-42-2",
+        "kind": "prop",
+        "name": "双颗番茄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双颗番茄"
+      ]
+    },
+    {
+      "id": "prop:collection-42-3",
+      "kind": "prop",
+      "name": "切半番茄",
+      "description": "切半番茄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-42-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-42-3",
+        "kind": "prop",
+        "name": "切半番茄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "切半番茄"
+      ]
+    },
+    {
+      "id": "prop:collection-42-4",
+      "kind": "prop",
+      "name": "菜盘番茄",
+      "description": "菜盘番茄轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-42-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-42-4",
+        "kind": "prop",
+        "name": "菜盘番茄",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "菜盘番茄"
+      ]
+    },
+    {
+      "id": "prop:collection-43-0",
+      "kind": "prop",
+      "name": "圆形饼干",
+      "description": "圆形饼干轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-43-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-43-0",
+        "kind": "prop",
+        "name": "圆形饼干",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "圆形饼干",
+        "饼干"
+      ]
+    },
+    {
+      "id": "prop:collection-43-1",
+      "kind": "prop",
+      "name": "方形饼干",
+      "description": "方形饼干轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-43-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-43-1",
+        "kind": "prop",
+        "name": "方形饼干",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "方形饼干"
+      ]
+    },
+    {
+      "id": "prop:collection-43-2",
+      "kind": "prop",
+      "name": "星形饼干",
+      "description": "星形饼干轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-43-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-43-2",
+        "kind": "prop",
+        "name": "星形饼干",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "星形饼干"
+      ]
+    },
+    {
+      "id": "prop:collection-43-3",
+      "kind": "prop",
+      "name": "夹心饼干",
+      "description": "夹心饼干轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-43-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-43-3",
+        "kind": "prop",
+        "name": "夹心饼干",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "夹心饼干"
+      ]
+    },
+    {
+      "id": "prop:collection-43-4",
+      "kind": "prop",
+      "name": "叠叠饼干",
+      "description": "叠叠饼干轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-43-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-43-4",
+        "kind": "prop",
+        "name": "叠叠饼干",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "叠叠饼干"
+      ]
+    },
+    {
+      "id": "prop:collection-44-0",
+      "kind": "prop",
+      "name": "小块巧克力",
+      "description": "小块巧克力轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-44-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-44-0",
+        "kind": "prop",
+        "name": "小块巧克力",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小块巧克力",
+        "巧克力"
+      ]
+    },
+    {
+      "id": "prop:collection-44-1",
+      "kind": "prop",
+      "name": "长条巧克力",
+      "description": "长条巧克力轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-44-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-44-1",
+        "kind": "prop",
+        "name": "长条巧克力",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "长条巧克力"
+      ]
+    },
+    {
+      "id": "prop:collection-44-2",
+      "kind": "prop",
+      "name": "方板巧克力",
+      "description": "方板巧克力轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-44-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-44-2",
+        "kind": "prop",
+        "name": "方板巧克力",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "方板巧克力"
+      ]
+    },
+    {
+      "id": "prop:collection-44-3",
+      "kind": "prop",
+      "name": "夹心巧克力",
+      "description": "夹心巧克力轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-44-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-44-3",
+        "kind": "prop",
+        "name": "夹心巧克力",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "夹心巧克力"
+      ]
+    },
+    {
+      "id": "prop:collection-44-4",
+      "kind": "prop",
+      "name": "礼盒巧克力",
+      "description": "礼盒巧克力轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-44-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-44-4",
+        "kind": "prop",
+        "name": "礼盒巧克力",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "礼盒巧克力"
+      ]
+    },
+    {
+      "id": "prop:collection-45-0",
+      "kind": "prop",
+      "name": "单个马卡龙",
+      "description": "单个马卡龙轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-45-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-45-0",
+        "kind": "prop",
+        "name": "单个马卡龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "单个马卡龙",
+        "马卡龙"
+      ]
+    },
+    {
+      "id": "prop:collection-45-1",
+      "kind": "prop",
+      "name": "双层马卡龙",
+      "description": "双层马卡龙轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-45-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-45-1",
+        "kind": "prop",
+        "name": "双层马卡龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双层马卡龙"
+      ]
+    },
+    {
+      "id": "prop:collection-45-2",
+      "kind": "prop",
+      "name": "三层马卡龙",
+      "description": "三层马卡龙轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-45-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-45-2",
+        "kind": "prop",
+        "name": "三层马卡龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三层马卡龙"
+      ]
+    },
+    {
+      "id": "prop:collection-45-3",
+      "kind": "prop",
+      "name": "拼盘马卡龙",
+      "description": "拼盘马卡龙轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-45-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-45-3",
+        "kind": "prop",
+        "name": "拼盘马卡龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拼盘马卡龙"
+      ]
+    },
+    {
+      "id": "prop:collection-45-4",
+      "kind": "prop",
+      "name": "礼盒马卡龙",
+      "description": "礼盒马卡龙轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-45-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-45-4",
+        "kind": "prop",
+        "name": "礼盒马卡龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "礼盒马卡龙"
+      ]
+    },
+    {
+      "id": "prop:collection-46-0",
+      "kind": "prop",
+      "name": "奶油纸杯蛋糕",
+      "description": "奶油纸杯蛋糕轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-46-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-46-0",
+        "kind": "prop",
+        "name": "奶油纸杯蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "奶油纸杯蛋糕",
+        "纸杯蛋糕"
+      ]
+    },
+    {
+      "id": "prop:collection-46-1",
+      "kind": "prop",
+      "name": "草莓纸杯蛋糕",
+      "description": "草莓纸杯蛋糕轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-46-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-46-1",
+        "kind": "prop",
+        "name": "草莓纸杯蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "草莓纸杯蛋糕"
+      ]
+    },
+    {
+      "id": "prop:collection-46-2",
+      "kind": "prop",
+      "name": "巧克力纸杯蛋糕",
+      "description": "巧克力纸杯蛋糕轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-46-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-46-2",
+        "kind": "prop",
+        "name": "巧克力纸杯蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "巧克力纸杯蛋糕"
+      ]
+    },
+    {
+      "id": "prop:collection-46-3",
+      "kind": "prop",
+      "name": "樱桃纸杯蛋糕",
+      "description": "樱桃纸杯蛋糕轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-46-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-46-3",
+        "kind": "prop",
+        "name": "樱桃纸杯蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "樱桃纸杯蛋糕"
+      ]
+    },
+    {
+      "id": "prop:collection-46-4",
+      "kind": "prop",
+      "name": "彩糖纸杯蛋糕",
+      "description": "彩糖纸杯蛋糕轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-46-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-46-4",
+        "kind": "prop",
+        "name": "彩糖纸杯蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "彩糖纸杯蛋糕"
+      ]
+    },
+    {
+      "id": "prop:collection-47-0",
+      "kind": "prop",
+      "name": "焦糖布丁",
+      "description": "焦糖布丁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-47-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-47-0",
+        "kind": "prop",
+        "name": "焦糖布丁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "焦糖布丁",
+        "布丁"
+      ]
+    },
+    {
+      "id": "prop:collection-47-1",
+      "kind": "prop",
+      "name": "牛奶布丁",
+      "description": "牛奶布丁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-47-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-47-1",
+        "kind": "prop",
+        "name": "牛奶布丁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "牛奶布丁"
+      ]
+    },
+    {
+      "id": "prop:collection-47-2",
+      "kind": "prop",
+      "name": "草莓布丁",
+      "description": "草莓布丁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-47-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-47-2",
+        "kind": "prop",
+        "name": "草莓布丁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "草莓布丁"
+      ]
+    },
+    {
+      "id": "prop:collection-47-3",
+      "kind": "prop",
+      "name": "芒果布丁",
+      "description": "芒果布丁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-47-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-47-3",
+        "kind": "prop",
+        "name": "芒果布丁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "芒果布丁"
+      ]
+    },
+    {
+      "id": "prop:collection-47-4",
+      "kind": "prop",
+      "name": "巧克力布丁",
+      "description": "巧克力布丁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-47-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-47-4",
+        "kind": "prop",
+        "name": "巧克力布丁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "巧克力布丁"
+      ]
+    },
+    {
+      "id": "prop:collection-48-0",
+      "kind": "prop",
+      "name": "双层三明治",
+      "description": "双层三明治轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-48-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-48-0",
+        "kind": "prop",
+        "name": "双层三明治",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双层三明治",
+        "三明治"
+      ]
+    },
+    {
+      "id": "prop:collection-48-1",
+      "kind": "prop",
+      "name": "三层三明治",
+      "description": "三层三明治轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-48-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-48-1",
+        "kind": "prop",
+        "name": "三层三明治",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三层三明治"
+      ]
+    },
+    {
+      "id": "prop:collection-48-2",
+      "kind": "prop",
+      "name": "蔬菜三明治",
+      "description": "蔬菜三明治轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-48-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-48-2",
+        "kind": "prop",
+        "name": "蔬菜三明治",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蔬菜三明治"
+      ]
+    },
+    {
+      "id": "prop:collection-48-3",
+      "kind": "prop",
+      "name": "鸡蛋三明治",
+      "description": "鸡蛋三明治轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-48-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-48-3",
+        "kind": "prop",
+        "name": "鸡蛋三明治",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "鸡蛋三明治"
+      ]
+    },
+    {
+      "id": "prop:collection-48-4",
+      "kind": "prop",
+      "name": "芝士三明治",
+      "description": "芝士三明治轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-48-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-48-4",
+        "kind": "prop",
+        "name": "芝士三明治",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "芝士三明治"
+      ]
+    },
+    {
+      "id": "prop:collection-49-0",
+      "kind": "prop",
+      "name": "原味热狗",
+      "description": "原味热狗轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-49-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-49-0",
+        "kind": "prop",
+        "name": "原味热狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "原味热狗",
+        "热狗"
+      ]
+    },
+    {
+      "id": "prop:collection-49-1",
+      "kind": "prop",
+      "name": "芝士热狗",
+      "description": "芝士热狗轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-49-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-49-1",
+        "kind": "prop",
+        "name": "芝士热狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "芝士热狗"
+      ]
+    },
+    {
+      "id": "prop:collection-49-2",
+      "kind": "prop",
+      "name": "蔬菜热狗",
+      "description": "蔬菜热狗轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-49-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-49-2",
+        "kind": "prop",
+        "name": "蔬菜热狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蔬菜热狗"
+      ]
+    },
+    {
+      "id": "prop:collection-49-3",
+      "kind": "prop",
+      "name": "双肠热狗",
+      "description": "双肠热狗轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-49-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-49-3",
+        "kind": "prop",
+        "name": "双肠热狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双肠热狗"
+      ]
+    },
+    {
+      "id": "prop:collection-49-4",
+      "kind": "prop",
+      "name": "迷你热狗",
+      "description": "迷你热狗轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-49-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-49-4",
+        "kind": "prop",
+        "name": "迷你热狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "迷你热狗"
+      ]
+    },
+    {
+      "id": "prop:collection-50-0",
+      "kind": "prop",
+      "name": "单只饺子",
+      "description": "单只饺子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-50-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-50-0",
+        "kind": "prop",
+        "name": "单只饺子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "单只饺子",
+        "饺子"
+      ]
+    },
+    {
+      "id": "prop:collection-50-1",
+      "kind": "prop",
+      "name": "双只饺子",
+      "description": "双只饺子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-50-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-50-1",
+        "kind": "prop",
+        "name": "双只饺子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双只饺子"
+      ]
+    },
+    {
+      "id": "prop:collection-50-2",
+      "kind": "prop",
+      "name": "三只饺子",
+      "description": "三只饺子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-50-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-50-2",
+        "kind": "prop",
+        "name": "三只饺子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "三只饺子"
+      ]
+    },
+    {
+      "id": "prop:collection-50-3",
+      "kind": "prop",
+      "name": "蒸笼饺子",
+      "description": "蒸笼饺子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-50-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-50-3",
+        "kind": "prop",
+        "name": "蒸笼饺子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蒸笼饺子"
+      ]
+    },
+    {
+      "id": "prop:collection-50-4",
+      "kind": "prop",
+      "name": "拼盘饺子",
+      "description": "拼盘饺子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-50-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-50-4",
+        "kind": "prop",
+        "name": "拼盘饺子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拼盘饺子"
+      ]
+    },
+    {
+      "id": "prop:collection-51-0",
+      "kind": "prop",
+      "name": "圆包包子",
+      "description": "圆包包子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-51-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-51-0",
+        "kind": "prop",
+        "name": "圆包包子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "圆包包子",
+        "包子"
+      ]
+    },
+    {
+      "id": "prop:collection-51-1",
+      "kind": "prop",
+      "name": "花卷包子",
+      "description": "花卷包子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-51-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-51-1",
+        "kind": "prop",
+        "name": "花卷包子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "花卷包子"
+      ]
+    },
+    {
+      "id": "prop:collection-51-2",
+      "kind": "prop",
+      "name": "双包包子",
+      "description": "双包包子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-51-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-51-2",
+        "kind": "prop",
+        "name": "双包包子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "双包包子"
+      ]
+    },
+    {
+      "id": "prop:collection-51-3",
+      "kind": "prop",
+      "name": "蒸笼包子",
+      "description": "蒸笼包子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-51-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-51-3",
+        "kind": "prop",
+        "name": "蒸笼包子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蒸笼包子"
+      ]
+    },
+    {
+      "id": "prop:collection-51-4",
+      "kind": "prop",
+      "name": "拼盘包子",
+      "description": "拼盘包子轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-51-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-51-4",
+        "kind": "prop",
+        "name": "拼盘包子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拼盘包子"
+      ]
+    },
+    {
+      "id": "prop:collection-52-0",
+      "kind": "prop",
+      "name": "海苔卷寿司",
+      "description": "海苔卷寿司轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-52-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-52-0",
+        "kind": "prop",
+        "name": "海苔卷寿司",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "海苔卷寿司",
+        "寿司"
+      ]
+    },
+    {
+      "id": "prop:collection-52-1",
+      "kind": "prop",
+      "name": "饭团寿司",
+      "description": "饭团寿司轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-52-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-52-1",
+        "kind": "prop",
+        "name": "饭团寿司",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "饭团寿司"
+      ]
+    },
+    {
+      "id": "prop:collection-52-2",
+      "kind": "prop",
+      "name": "玉子寿司",
+      "description": "玉子寿司轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-52-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-52-2",
+        "kind": "prop",
+        "name": "玉子寿司",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玉子寿司"
+      ]
+    },
+    {
+      "id": "prop:collection-52-3",
+      "kind": "prop",
+      "name": "黄瓜卷寿司",
+      "description": "黄瓜卷寿司轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-52-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-52-3",
+        "kind": "prop",
+        "name": "黄瓜卷寿司",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "黄瓜卷寿司"
+      ]
+    },
+    {
+      "id": "prop:collection-52-4",
+      "kind": "prop",
+      "name": "拼盘寿司",
+      "description": "拼盘寿司轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-52-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-52-4",
+        "kind": "prop",
+        "name": "拼盘寿司",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拼盘寿司"
+      ]
+    },
+    {
+      "id": "prop:collection-53-0",
+      "kind": "prop",
+      "name": "汤面面条",
+      "description": "汤面面条轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-53-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-53-0",
+        "kind": "prop",
+        "name": "汤面面条",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "汤面面条",
+        "面面条"
+      ]
+    },
+    {
+      "id": "prop:collection-53-1",
+      "kind": "prop",
+      "name": "拌面面条",
+      "description": "拌面面条轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-53-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-53-1",
+        "kind": "prop",
+        "name": "拌面面条",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拌面面条"
+      ]
+    },
+    {
+      "id": "prop:collection-53-2",
+      "kind": "prop",
+      "name": "宽面面条",
+      "description": "宽面面条轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-53-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-53-2",
+        "kind": "prop",
+        "name": "宽面面条",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "宽面面条"
+      ]
+    },
+    {
+      "id": "prop:collection-53-3",
+      "kind": "prop",
+      "name": "拉面面条",
+      "description": "拉面面条轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-53-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-53-3",
+        "kind": "prop",
+        "name": "拉面面条",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拉面面条"
+      ]
+    },
+    {
+      "id": "prop:collection-53-4",
+      "kind": "prop",
+      "name": "蔬菜面面条",
+      "description": "蔬菜面面条轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-53-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-53-4",
+        "kind": "prop",
+        "name": "蔬菜面面条",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蔬菜面面条"
+      ]
+    },
+    {
+      "id": "prop:collection-54-0",
+      "kind": "prop",
+      "name": "白饭米饭",
+      "description": "白饭米饭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-54-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-54-0",
+        "kind": "prop",
+        "name": "白饭米饭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "白饭米饭",
+        "饭米饭"
+      ]
+    },
+    {
+      "id": "prop:collection-54-1",
+      "kind": "prop",
+      "name": "炒饭米饭",
+      "description": "炒饭米饭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-54-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-54-1",
+        "kind": "prop",
+        "name": "炒饭米饭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "炒饭米饭"
+      ]
+    },
+    {
+      "id": "prop:collection-54-2",
+      "kind": "prop",
+      "name": "咖喱饭米饭",
+      "description": "咖喱饭米饭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-54-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-54-2",
+        "kind": "prop",
+        "name": "咖喱饭米饭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "咖喱饭米饭"
+      ]
+    },
+    {
+      "id": "prop:collection-54-3",
+      "kind": "prop",
+      "name": "盖饭米饭",
+      "description": "盖饭米饭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-54-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-54-3",
+        "kind": "prop",
+        "name": "盖饭米饭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "盖饭米饭"
+      ]
+    },
+    {
+      "id": "prop:collection-54-4",
+      "kind": "prop",
+      "name": "蔬菜饭米饭",
+      "description": "蔬菜饭米饭轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-54-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-54-4",
+        "kind": "prop",
+        "name": "蔬菜饭米饭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蔬菜饭米饭"
+      ]
+    },
+    {
+      "id": "prop:collection-55-0",
+      "kind": "prop",
+      "name": "牛奶",
+      "description": "牛奶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-55-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-55-0",
+        "kind": "prop",
+        "name": "牛奶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "牛奶"
+      ]
+    },
+    {
+      "id": "prop:collection-55-1",
+      "kind": "prop",
+      "name": "果汁",
+      "description": "果汁轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-55-1.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-55-1",
+        "kind": "prop",
+        "name": "果汁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "果汁"
+      ]
+    },
+    {
+      "id": "prop:collection-55-2",
+      "kind": "prop",
+      "name": "奶茶",
+      "description": "奶茶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-55-2.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-55-2",
+        "kind": "prop",
+        "name": "奶茶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "奶茶"
+      ]
+    },
+    {
+      "id": "prop:collection-55-3",
+      "kind": "prop",
+      "name": "可可",
+      "description": "可可轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-55-3.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-55-3",
+        "kind": "prop",
+        "name": "可可",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "可可"
+      ]
+    },
+    {
+      "id": "prop:collection-55-4",
+      "kind": "prop",
+      "name": "柠檬水",
+      "description": "柠檬水轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-55-4.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-55-4",
+        "kind": "prop",
+        "name": "柠檬水",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "柠檬水"
+      ]
+    },
+    {
+      "id": "prop:collection-56-0",
+      "kind": "prop",
+      "name": "足球",
+      "description": "足球轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-56-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-56-0",
+        "kind": "prop",
+        "name": "足球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "足球",
+        "足球"
+      ]
+    },
+    {
+      "id": "prop:collection-57-0",
+      "kind": "prop",
+      "name": "篮球",
+      "description": "篮球轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-57-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-57-0",
+        "kind": "prop",
+        "name": "篮球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "篮球",
+        "篮球"
+      ]
+    },
+    {
+      "id": "prop:collection-58-0",
+      "kind": "prop",
+      "name": "网球",
+      "description": "网球轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-58-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-58-0",
+        "kind": "prop",
+        "name": "网球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "网球",
+        "网球"
+      ]
+    },
+    {
+      "id": "prop:collection-59-0",
+      "kind": "prop",
+      "name": "保龄球",
+      "description": "保龄球轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-59-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-59-0",
+        "kind": "prop",
+        "name": "保龄球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "保龄球",
+        "保龄球"
+      ]
+    },
+    {
+      "id": "prop:collection-60-0",
+      "kind": "prop",
+      "name": "熊猫玩偶",
+      "description": "熊猫玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-60-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-60-0",
+        "kind": "prop",
+        "name": "熊猫玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "熊猫玩偶",
+        "熊猫玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-61-0",
+      "kind": "prop",
+      "name": "兔子玩偶",
+      "description": "兔子玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-61-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-61-0",
+        "kind": "prop",
+        "name": "兔子玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "兔子玩偶",
+        "兔子玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-62-0",
+      "kind": "prop",
+      "name": "小猫玩偶",
+      "description": "小猫玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-62-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-62-0",
+        "kind": "prop",
+        "name": "小猫玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小猫玩偶",
+        "小猫玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-63-0",
+      "kind": "prop",
+      "name": "小狗玩偶",
+      "description": "小狗玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-63-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-63-0",
+        "kind": "prop",
+        "name": "小狗玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小狗玩偶",
+        "小狗玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-64-0",
+      "kind": "prop",
+      "name": "企鹅玩偶",
+      "description": "企鹅玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-64-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-64-0",
+        "kind": "prop",
+        "name": "企鹅玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "企鹅玩偶",
+        "企鹅玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-65-0",
+      "kind": "prop",
+      "name": "大象玩偶",
+      "description": "大象玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-65-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-65-0",
+        "kind": "prop",
+        "name": "大象玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "大象玩偶",
+        "大象玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-66-0",
+      "kind": "prop",
+      "name": "恐龙玩偶",
+      "description": "恐龙玩偶轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-66-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-66-0",
+        "kind": "prop",
+        "name": "恐龙玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "恐龙玩偶",
+        "恐龙玩偶"
+      ]
+    },
+    {
+      "id": "prop:collection-67-0",
+      "kind": "prop",
+      "name": "娃娃",
+      "description": "娃娃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-67-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-67-0",
+        "kind": "prop",
+        "name": "娃娃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "娃娃",
+        "娃娃"
+      ]
+    },
+    {
+      "id": "prop:collection-68-0",
+      "kind": "prop",
+      "name": "积木城堡",
+      "description": "积木城堡轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-68-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-68-0",
+        "kind": "prop",
+        "name": "积木城堡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "积木城堡",
+        "积木城堡"
+      ]
+    },
+    {
+      "id": "prop:collection-69-0",
+      "kind": "prop",
+      "name": "玩具屋",
+      "description": "玩具屋轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-69-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-69-0",
+        "kind": "prop",
+        "name": "玩具屋",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具屋",
+        "玩具屋"
+      ]
+    },
+    {
+      "id": "prop:collection-70-0",
+      "kind": "prop",
+      "name": "叠叠塔",
+      "description": "叠叠塔轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-70-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-70-0",
+        "kind": "prop",
+        "name": "叠叠塔",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "叠叠塔",
+        "叠叠塔"
+      ]
+    },
+    {
+      "id": "prop:collection-71-0",
+      "kind": "prop",
+      "name": "套圈",
+      "description": "套圈轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-71-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-71-0",
+        "kind": "prop",
+        "name": "套圈",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "套圈",
+        "套圈"
+      ]
+    },
+    {
+      "id": "prop:collection-72-0",
+      "kind": "prop",
+      "name": "拼图",
+      "description": "拼图轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-72-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-72-0",
+        "kind": "prop",
+        "name": "拼图",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "拼图",
+        "拼图"
+      ]
+    },
+    {
+      "id": "prop:collection-73-0",
+      "kind": "prop",
+      "name": "魔方",
+      "description": "魔方轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-73-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-73-0",
+        "kind": "prop",
+        "name": "魔方",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "魔方",
+        "魔方"
+      ]
+    },
+    {
+      "id": "prop:collection-74-0",
+      "kind": "prop",
+      "name": "玩具风车",
+      "description": "玩具风车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-74-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-74-0",
+        "kind": "prop",
+        "name": "玩具风车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具风车",
+        "玩具风车"
+      ]
+    },
+    {
+      "id": "prop:collection-75-0",
+      "kind": "prop",
+      "name": "摇铃",
+      "description": "摇铃轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-75-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-75-0",
+        "kind": "prop",
+        "name": "摇铃",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "摇铃",
+        "摇铃"
+      ]
+    },
+    {
+      "id": "prop:collection-76-0",
+      "kind": "prop",
+      "name": "铃鼓",
+      "description": "铃鼓轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-76-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-76-0",
+        "kind": "prop",
+        "name": "铃鼓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "铃鼓",
+        "铃鼓"
+      ]
+    },
+    {
+      "id": "prop:collection-77-0",
+      "kind": "prop",
+      "name": "玩具吉他",
+      "description": "玩具吉他轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-77-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-77-0",
+        "kind": "prop",
+        "name": "玩具吉他",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具吉他",
+        "玩具吉他"
+      ]
+    },
+    {
+      "id": "prop:collection-78-0",
+      "kind": "prop",
+      "name": "玩具钢琴",
+      "description": "玩具钢琴轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-78-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-78-0",
+        "kind": "prop",
+        "name": "玩具钢琴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具钢琴",
+        "玩具钢琴"
+      ]
+    },
+    {
+      "id": "prop:collection-79-0",
+      "kind": "prop",
+      "name": "滑梯",
+      "description": "滑梯轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-79-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-79-0",
+        "kind": "prop",
+        "name": "滑梯",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "滑梯",
+        "滑梯"
+      ]
+    },
+    {
+      "id": "prop:collection-80-0",
+      "kind": "prop",
+      "name": "跷跷板",
+      "description": "跷跷板轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-80-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-80-0",
+        "kind": "prop",
+        "name": "跷跷板",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "跷跷板",
+        "跷跷板"
+      ]
+    },
+    {
+      "id": "prop:collection-81-0",
+      "kind": "prop",
+      "name": "玩具秋千",
+      "description": "玩具秋千轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-81-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-81-0",
+        "kind": "prop",
+        "name": "玩具秋千",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具秋千",
+        "玩具秋千"
+      ]
+    },
+    {
+      "id": "prop:collection-82-0",
+      "kind": "prop",
+      "name": "沙滩玩具",
+      "description": "沙滩玩具轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-82-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-82-0",
+        "kind": "prop",
+        "name": "沙滩玩具",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "沙滩玩具",
+        "沙滩玩具"
+      ]
+    },
+    {
+      "id": "prop:collection-83-0",
+      "kind": "prop",
+      "name": "玩具火车",
+      "description": "玩具火车轻轻活动，回应你的触碰。",
+      "source": "dev/modules/props/collection-83-0.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:collection-83-0",
+        "kind": "prop",
+        "name": "玩具火车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具火车",
+        "玩具火车"
+      ]
+    },
+    {
+      "id": "prop:car",
+      "kind": "prop",
+      "name": "小汽车",
+      "description": "小汽车向前滑动，再回到原位。",
+      "source": "dev/modules/props/car.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:car",
+        "kind": "prop",
+        "name": "小汽车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小汽车",
+        "汽车",
+        "轿车",
+        "car"
+      ]
+    },
+    {
+      "id": "prop:bus",
+      "kind": "prop",
+      "name": "公交车",
+      "description": "公交车向前滑动，再回到原位。",
+      "source": "dev/modules/props/bus.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bus",
+        "kind": "prop",
+        "name": "公交车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "公交车",
+        "巴士",
+        "bus"
+      ]
+    },
+    {
+      "id": "prop:train",
+      "kind": "prop",
+      "name": "小火车",
+      "description": "小火车向前滑动，再回到原位。",
+      "source": "dev/modules/props/train.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:train",
+        "kind": "prop",
+        "name": "小火车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小火车",
+        "火车",
+        "train"
+      ]
+    },
+    {
+      "id": "prop:truck",
+      "kind": "prop",
+      "name": "卡车",
+      "description": "卡车向前滑动，再回到原位。",
+      "source": "dev/modules/props/truck.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:truck",
+        "kind": "prop",
+        "name": "卡车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "卡车",
+        "货车",
+        "truck"
+      ]
+    },
+    {
+      "id": "prop:bicycle",
+      "kind": "prop",
+      "name": "自行车",
+      "description": "自行车向前滑动，再回到原位。",
+      "source": "dev/modules/props/bicycle.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bicycle",
+        "kind": "prop",
+        "name": "自行车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "自行车",
+        "单车",
+        "bicycle"
+      ]
+    },
+    {
+      "id": "prop:scooter",
+      "kind": "prop",
+      "name": "滑板车",
+      "description": "滑板车向前滑动，再回到原位。",
+      "source": "dev/modules/props/scooter.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:scooter",
+        "kind": "prop",
+        "name": "滑板车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "滑板车",
+        "滑板车",
+        "scooter"
+      ]
+    },
+    {
+      "id": "prop:airplane",
+      "kind": "prop",
+      "name": "飞机",
+      "description": "飞机向前滑动，再回到原位。",
+      "source": "dev/modules/props/airplane.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:airplane",
+        "kind": "prop",
+        "name": "飞机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "飞机",
+        "飞机",
+        "airplane"
+      ]
+    },
+    {
+      "id": "prop:helicopter",
+      "kind": "prop",
+      "name": "直升机",
+      "description": "直升机向前滑动，再回到原位。",
+      "source": "dev/modules/props/helicopter.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:helicopter",
+        "kind": "prop",
+        "name": "直升机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "直升机",
+        "直升机",
+        "helicopter"
+      ]
+    },
+    {
+      "id": "prop:submarine",
+      "kind": "prop",
+      "name": "潜水艇",
+      "description": "潜水艇向前滑动，再回到原位。",
+      "source": "dev/modules/props/submarine.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:submarine",
+        "kind": "prop",
+        "name": "潜水艇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "潜水艇",
+        "潜艇",
+        "submarine"
+      ]
+    },
+    {
+      "id": "prop:sailboat",
+      "kind": "prop",
+      "name": "帆船",
+      "description": "帆船向前滑动，再回到原位。",
+      "source": "dev/modules/props/sailboat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:sailboat",
+        "kind": "prop",
+        "name": "帆船",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "帆船",
+        "帆船",
+        "sailboat"
+      ]
+    },
+    {
+      "id": "prop:apple",
+      "kind": "prop",
+      "name": "苹果",
+      "description": "苹果轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/apple.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:apple",
+        "kind": "prop",
+        "name": "苹果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "苹果",
+        "apple"
+      ]
+    },
+    {
+      "id": "prop:banana",
+      "kind": "prop",
+      "name": "香蕉",
+      "description": "香蕉轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/banana.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:banana",
+        "kind": "prop",
+        "name": "香蕉",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "香蕉",
+        "banana"
+      ]
+    },
+    {
+      "id": "prop:watermelon",
+      "kind": "prop",
+      "name": "西瓜",
+      "description": "西瓜轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/watermelon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:watermelon",
+        "kind": "prop",
+        "name": "西瓜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "西瓜",
+        "watermelon"
+      ]
+    },
+    {
+      "id": "prop:bread",
+      "kind": "prop",
+      "name": "面包",
+      "description": "面包轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/bread.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:bread",
+        "kind": "prop",
+        "name": "面包",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "面包",
+        "bread"
+      ]
+    },
+    {
+      "id": "prop:cake",
+      "kind": "prop",
+      "name": "蛋糕",
+      "description": "蛋糕轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/cake.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:cake",
+        "kind": "prop",
+        "name": "蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "蛋糕",
+        "cake"
+      ]
+    },
+    {
+      "id": "prop:icecream",
+      "kind": "prop",
+      "name": "冰淇淋",
+      "description": "冰淇淋轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/icecream.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:icecream",
+        "kind": "prop",
+        "name": "冰淇淋",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "冰淇淋",
+        "冰激凌",
+        "雪糕",
+        "icecream"
+      ]
+    },
+    {
+      "id": "prop:donut",
+      "kind": "prop",
+      "name": "甜甜圈",
+      "description": "甜甜圈轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/donut.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:donut",
+        "kind": "prop",
+        "name": "甜甜圈",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "甜甜圈",
+        "甜甜圈",
+        "donut"
+      ]
+    },
+    {
+      "id": "prop:pizza",
+      "kind": "prop",
+      "name": "披萨",
+      "description": "披萨轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/pizza.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:pizza",
+        "kind": "prop",
+        "name": "披萨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "披萨",
+        "pizza"
+      ]
+    },
+    {
+      "id": "prop:burger",
+      "kind": "prop",
+      "name": "汉堡",
+      "description": "汉堡轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/burger.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:burger",
+        "kind": "prop",
+        "name": "汉堡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "汉堡",
+        "burger"
+      ]
+    },
+    {
+      "id": "prop:lollipop",
+      "kind": "prop",
+      "name": "棒棒糖",
+      "description": "棒棒糖轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/lollipop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:lollipop",
+        "kind": "prop",
+        "name": "棒棒糖",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "棒棒糖",
+        "lollipop"
+      ]
+    },
+    {
+      "id": "prop:ball",
+      "kind": "prop",
+      "name": "皮球",
+      "description": "皮球轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/ball.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:ball",
+        "kind": "prop",
+        "name": "皮球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "皮球",
+        "ball"
+      ]
+    },
+    {
+      "id": "prop:teddy",
+      "kind": "prop",
+      "name": "泰迪熊",
+      "description": "泰迪熊轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/teddy.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:teddy",
+        "kind": "prop",
+        "name": "泰迪熊",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "泰迪熊",
+        "小熊",
+        "玩具熊",
+        "teddy"
+      ]
+    },
+    {
+      "id": "prop:blocks",
+      "kind": "prop",
+      "name": "积木",
+      "description": "积木轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/blocks.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:blocks",
+        "kind": "prop",
+        "name": "积木",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "积木",
+        "blocks"
+      ]
+    },
+    {
+      "id": "prop:kite",
+      "kind": "prop",
+      "name": "风筝",
+      "description": "风筝轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/kite.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:kite",
+        "kind": "prop",
+        "name": "风筝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "风筝",
+        "kite"
+      ]
+    },
+    {
+      "id": "prop:drum",
+      "kind": "prop",
+      "name": "小鼓",
+      "description": "小鼓轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/drum.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:drum",
+        "kind": "prop",
+        "name": "小鼓",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小鼓",
+        "鼓",
+        "drum"
+      ]
+    },
+    {
+      "id": "prop:top",
+      "kind": "prop",
+      "name": "陀螺",
+      "description": "陀螺轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/top.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:top",
+        "kind": "prop",
+        "name": "陀螺",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "陀螺",
+        "top"
+      ]
+    },
+    {
+      "id": "prop:duck",
+      "kind": "prop",
+      "name": "小黄鸭",
+      "description": "小黄鸭轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/duck.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:duck",
+        "kind": "prop",
+        "name": "小黄鸭",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "小黄鸭",
+        "鸭子",
+        "黄鸭",
+        "duck"
+      ]
+    },
+    {
+      "id": "prop:robot-toy",
+      "kind": "prop",
+      "name": "玩具机器人",
+      "description": "玩具机器人轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/robot-toy.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot-toy",
+        "kind": "prop",
+        "name": "玩具机器人",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "玩具机器人",
+        "玩具机器人",
+        "robot-toy"
+      ]
+    },
+    {
+      "id": "prop:rocking-horse",
+      "kind": "prop",
+      "name": "木马",
+      "description": "木马轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/rocking-horse.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rocking-horse",
+        "kind": "prop",
+        "name": "木马",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "木马",
+        "rocking-horse"
+      ]
+    },
+    {
+      "id": "prop:xylophone",
+      "kind": "prop",
+      "name": "木琴",
+      "description": "木琴轻轻摇动，回应你的触碰。",
+      "source": "dev/modules/props/xylophone.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:xylophone",
+        "kind": "prop",
+        "name": "木琴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ]
+      },
+      "keywords": [
+        "木琴",
+        "木琴",
+        "xylophone"
       ]
     },
     {
@@ -314,7 +7760,10 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "桥"
+      ]
     },
     {
       "id": "prop:garden",
@@ -341,7 +7790,14 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "花园",
+        "花朵",
+        "花",
+        "种子",
+        "植物"
+      ]
     },
     {
       "id": "prop:tree",
@@ -368,7 +7824,11 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "树",
+        "森林"
+      ]
     },
     {
       "id": "prop:house",
@@ -395,7 +7855,15 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "房子",
+        "小屋",
+        "帐篷",
+        "家园",
+        "城堡",
+        "图书馆"
+      ]
     },
     {
       "id": "prop:telescope",
@@ -422,7 +7890,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "望远镜",
+        "观察镜",
+        "放大镜"
+      ]
     },
     {
       "id": "prop:robot",
@@ -449,7 +7922,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "机器人",
+        "机械伙伴",
+        "机器狗"
+      ]
     },
     {
       "id": "prop:boat",
@@ -476,7 +7954,13 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "船",
+        "潜艇",
+        "潜水艇",
+        "潜航"
+      ]
     },
     {
       "id": "prop:rocket",
@@ -503,7 +7987,11 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "火箭",
+        "飞行器"
+      ]
     },
     {
       "id": "prop:portal",
@@ -530,7 +8018,13 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "传送",
+        "任意门",
+        "通道",
+        "时空门"
+      ]
     },
     {
       "id": "prop:balloon",
@@ -557,7 +8051,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "气球",
+        "热气球",
+        "飞艇"
+      ]
     },
     {
       "id": "prop:windmill",
@@ -584,7 +8083,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "风车",
+        "风力",
+        "风扇"
+      ]
     },
     {
       "id": "prop:fountain",
@@ -611,7 +8115,14 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "喷泉",
+        "水池",
+        "气泡",
+        "泡泡",
+        "水车"
+      ]
     },
     {
       "id": "prop:music",
@@ -638,7 +8149,16 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "音乐",
+        "钢琴",
+        "吉他",
+        "鼓",
+        "唱歌",
+        "琴",
+        "乐器"
+      ]
     },
     {
       "id": "prop:bakery",
@@ -665,7 +8185,16 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "包子",
+        "面包",
+        "厨房",
+        "点心",
+        "蛋糕",
+        "食物",
+        "餐厅"
+      ]
     },
     {
       "id": "prop:swing",
@@ -692,7 +8221,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "秋千",
+        "摇椅",
+        "游乐场"
+      ]
     },
     {
       "id": "prop:lantern",
@@ -719,7 +8253,15 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "灯",
+        "灯塔",
+        "光",
+        "太阳",
+        "导航",
+        "指南针"
+      ]
     },
     {
       "id": "prop:stage",
@@ -746,7 +8288,13 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "舞台",
+        "剧场",
+        "表演",
+        "演出"
+      ]
     },
     {
       "id": "prop:ladder",
@@ -773,7 +8321,12 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "梯",
+        "绳",
+        "攀爬"
+      ]
     },
     {
       "id": "prop:camera",
@@ -800,7 +8353,13 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": [
+        "相机",
+        "照相",
+        "摄影",
+        "照片"
+      ]
     },
     {
       "id": "prop:prototype",
@@ -827,7 +8386,8 @@
         "animations": [
           "activate"
         ]
-      }
+      },
+      "keywords": []
     },
     {
       "id": "npc:jiaojiao",
@@ -864,7 +8424,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "叫叫"
+      ]
     },
     {
       "id": "npc:lingdang",
@@ -901,7 +8464,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "铃铛"
+      ]
     },
     {
       "id": "npc:zhuxiaodi",
@@ -938,7 +8504,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "猪小弟"
+      ]
     },
     {
       "id": "npc:jiaojiao-mom",
@@ -975,7 +8544,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "叫叫妈妈"
+      ]
     },
     {
       "id": "npc:jiaojiao-dad",
@@ -1012,7 +8584,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "叫叫爸爸"
+      ]
     },
     {
       "id": "npc:zhuxiaodi-mom",
@@ -1049,7 +8624,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "猪小弟妈妈"
+      ]
     },
     {
       "id": "npc:zhuxiaodi-dad",
@@ -1086,7 +8664,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "猪小弟爸爸"
+      ]
     },
     {
       "id": "npc:lingdang-mom",
@@ -1123,7 +8704,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "铃铛妈妈"
+      ]
     },
     {
       "id": "npc:lingdang-dad",
@@ -1160,7 +8744,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "铃铛爸爸"
+      ]
     },
     {
       "id": "npc:nini",
@@ -1197,7 +8784,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "妮妮"
+      ]
     },
     {
       "id": "npc:xiaomaoqiu",
@@ -1234,7 +8824,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "小毛球"
+      ]
     },
     {
       "id": "npc:xiaolu-teacher",
@@ -1271,7 +8864,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "小鹿老师"
+      ]
     },
     {
       "id": "npc:miao-boss",
@@ -1308,7 +8904,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "喵老板"
+      ]
     },
     {
       "id": "npc:zhuxiaoyu",
@@ -1345,7 +8944,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "猪小玉"
+      ]
     },
     {
       "id": "npc:lvdou",
@@ -1382,7 +8984,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "绿豆"
+      ]
     },
     {
       "id": "npc:douya",
@@ -1419,7 +9024,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "豆芽"
+      ]
     },
     {
       "id": "npc:fendou",
@@ -1456,7 +9064,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "粉豆"
+      ]
     },
     {
       "id": "npc:landou",
@@ -1493,7 +9104,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "蓝豆"
+      ]
     },
     {
       "id": "npc:dahongdou",
@@ -1530,7 +9144,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "大红豆"
+      ]
     },
     {
       "id": "npc:donggaofen",
@@ -1567,7 +9184,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "董高分"
+      ]
     },
     {
       "id": "npc:qinlianxi",
@@ -1604,7 +9224,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "秦练习"
+      ]
     },
     {
       "id": "npc:aigaicuo",
@@ -1641,7 +9264,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "艾改错"
+      ]
     },
     {
       "id": "npc:wulala",
@@ -1678,7 +9304,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "乌拉拉"
+      ]
     },
     {
       "id": "npc:mili",
@@ -1715,7 +9344,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "米粒"
+      ]
     },
     {
       "id": "npc:yuanbao",
@@ -1752,7 +9384,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "圆宝"
+      ]
     },
     {
       "id": "npc:duziteng",
@@ -1789,7 +9424,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "杜子腾"
+      ]
     },
     {
       "id": "npc:wanneng",
@@ -1826,7 +9464,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "万能"
+      ]
     },
     {
       "id": "npc:baozai",
@@ -1863,7 +9504,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "包仔"
+      ]
     },
     {
       "id": "npc:danzai",
@@ -1900,7 +9544,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "蛋仔"
+      ]
     },
     {
       "id": "npc:maoge",
@@ -1937,7 +9584,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "帽哥"
+      ]
     },
     {
       "id": "npc:sunwukong",
@@ -1974,7 +9624,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "孙悟空"
+      ]
     },
     {
       "id": "npc:rusheng",
@@ -2011,7 +9664,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "如生"
+      ]
     },
     {
       "id": "npc:lanbitou",
@@ -2048,7 +9704,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "烂笔头哥"
+      ]
     },
     {
       "id": "npc:dengdeng",
@@ -2085,7 +9744,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "灯灯"
+      ]
     },
     {
       "id": "npc:domi",
@@ -2122,7 +9784,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Domi"
+      ]
     },
     {
       "id": "npc:hatty",
@@ -2159,7 +9824,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Hatty"
+      ]
     },
     {
       "id": "npc:elfie",
@@ -2196,7 +9864,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Elfie"
+      ]
     },
     {
       "id": "npc:hackett",
@@ -2233,7 +9904,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Hackett"
+      ]
     },
     {
       "id": "npc:allie",
@@ -2270,7 +9944,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Allie（艾丽）"
+      ]
     },
     {
       "id": "npc:sage",
@@ -2307,7 +9984,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "Sage（赛奇）"
+      ]
     },
     {
       "id": "npc:gulu",
@@ -2344,7 +10024,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "咕噜"
+      ]
     },
     {
       "id": "npc:prank-doctor",
@@ -2381,7 +10064,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "恶作剧博士"
+      ]
     },
     {
       "id": "yellow:bull",
@@ -2418,7 +10104,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "黄牛"
+      ]
     },
     {
       "id": "yellow:round",
@@ -2455,7 +10144,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "圆滚滚"
+      ]
     },
     {
       "id": "yellow:jiaojiao",
@@ -2492,7 +10184,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "叫叫"
+      ]
     },
     {
       "id": "yellow:kangaroo",
@@ -2529,7 +10224,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "袋鼠"
+      ]
     },
     {
       "id": "clay:dog",
@@ -2567,7 +10265,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "豆豆"
+      ]
     },
     {
       "id": "clay:rabbit",
@@ -2605,7 +10306,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "雪团"
+      ]
     },
     {
       "id": "clay:otter",
@@ -2643,7 +10347,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "阿獭"
+      ]
     },
     {
       "id": "clay:owl",
@@ -2681,7 +10388,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "咕咕"
+      ]
     },
     {
       "id": "clay:cat",
@@ -2719,7 +10429,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "月牙"
+      ]
     },
     {
       "id": "clay:bear",
@@ -2757,7 +10470,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "蜜糖"
+      ]
     },
     {
       "id": "clay:frog",
@@ -2795,7 +10511,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "小荷"
+      ]
     },
     {
       "id": "wow:window",
@@ -2823,7 +10542,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "星星窗"
+      ]
     },
     {
       "id": "wow:gugu",
@@ -2859,7 +10581,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "鼓鼓"
+      ]
     },
     {
       "id": "wow:fish",
@@ -2895,7 +10620,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "海底 MOMO"
+      ]
     },
     {
       "id": "wow:cloud",
@@ -2931,7 +10659,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "云朵 MOMO"
+      ]
     },
     {
       "id": "wow:clock",
@@ -2967,7 +10698,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "时钟 MOMO"
+      ]
     },
     {
       "id": "wow:shadow",
@@ -3003,7 +10737,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "影子 MOMO"
+      ]
     },
     {
       "id": "wow:star",
@@ -3039,7 +10776,10 @@
           "working",
           "active"
         ]
-      }
+      },
+      "keywords": [
+        "星星 MOMO"
+      ]
     },
     {
       "id": "world:orchard",

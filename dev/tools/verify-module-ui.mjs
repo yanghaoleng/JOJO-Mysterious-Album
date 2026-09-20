@@ -16,6 +16,7 @@ const context = await browser.newContext({
 page.on("pageerror", (error) => errors.push(error.message));
 const status = () => page.evaluate(() => window.__MODULE_GALLERY__.status);
 async function select(id) {
+  await page.locator('#filters [data-choice="all"]').click();
   await page.locator("#module-search").fill(id);
   await page.locator(`[data-module="${id}"]`).click();
   await page.waitForFunction(
@@ -26,8 +27,24 @@ async function select(id) {
 try {
   await page.goto(`${base}/dev/modules/`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
-    () => window.__MODULE_GALLERY__?.status.selected === "prop:windmill",
+    () => window.__MODULE_GALLERY__?.status.selected === "logic:intent",
   );
+  assert.equal(await page.locator("body").innerText().then((text) => text.includes("null")), false);
+  assert.equal(await page.locator("#module-list .module-row").count(), (await status()).count);
+  const searchBox = await page.locator("#module-search").boundingBox();
+  const sidebarToggle = page.locator("#sidebar-toggle");
+  const toggleBox = await sidebarToggle.boundingBox();
+  assert.ok(searchBox && toggleBox);
+  assert.ok(Math.abs((searchBox.y + searchBox.height / 2) - (toggleBox.y + toggleBox.height / 2)) < 2);
+  await sidebarToggle.click();
+  assert.equal(await sidebarToggle.isVisible(), true);
+  assert.equal(await sidebarToggle.getAttribute("aria-expanded"), "false");
+  await sidebarToggle.click();
+  assert.equal(await sidebarToggle.getAttribute("aria-expanded"), "true");
+  await page.locator('#filters button').filter({ hasText: '道具' }).click();
+  await page.waitForFunction(() => document.querySelector('.module-thumbnail[src^="data:image/"]'));
+  checks.push("Sidebar stays aligned and reversible, all modules render at once, and 3D thumbnails load");
+  await select('prop:windmill');
   await page.getByRole("button", { name: "暂停动作", exact: true }).click();
   assert.equal(
     (await status()).runtime.worlds.meadow.entities.preview.state,
@@ -55,7 +72,7 @@ try {
   assert.equal((await status()).runtime.worlds.meadow.environment, "night");
   await page.getByRole("button", { name: "收起花园", exact: true }).click();
   assert.equal((await status()).stage.scriptedEntities.length, 2);
-  await page.locator("#command-panel summary").click();
+  await page.locator("#command-panel").waitFor({state:"visible"});
   await page.locator("#refresh-proposal").click();
   const valid = JSON.parse(await page.locator("#command-input").inputValue());
   await page.locator("#command-input").fill(

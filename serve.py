@@ -817,33 +817,99 @@ SCENE_KEYWORDS = {
 }
 SCENE_NAMES = {"pocket": ["巨人的口袋", "口袋"], "meadow": ["草地", "萤火草地"], "moon": ["月球", "月亮"], "orchard": ["果园", "苹果园"], "reef": ["海底", "海底维修站"], "cloud": ["云层", "云层导航站"], "bakery": ["面包房", "面包店"], "home": ["家", "小屋"]}
 
+def scene_quantity(text):
+    match = re.search(r"(\d+|一百|一?十[一二三四五六七八九]?|[二三四五六七八九]十[一二三四五六七八九]?|[一二两三四五六七八九])(?:个|辆|架|艘|只|份|颗|台|把|枚|件)", text)
+    if not match:
+        match = re.search(r"\d+", text)
+    if not match:
+        return 1, False
+    number = match.group(1) if match.lastindex else match.group(0)
+    digits = {c: i for i, c in enumerate('零一二三四五六七八九')}
+    digits['两'] = 2
+    if number.isdigit(): count = int(number)
+    elif number == '一百': count = 100
+    elif '十' in number:
+        tens, units = number.split('十')
+        count = digits.get(tens, 1) * 10 + digits.get(units, 0)
+    else: count = digits.get(number, 1)
+    if not 1 <= count <= 100:
+        raise ValueError('每次可以生成 1 到 100 个模型，请调整数量后再提交。')
+    return count, True
+
+
+def approximate_scene_result(text, context):
+    count, _ = scene_quantity(text)
+    candidates = [
+        (r'榴莲|菠萝蜜|刺果', 'prop:collection-34-0', '菠萝', '带纹理外壳的水果'),
+        (r'果|梨|荔枝|龙眼|山竹|柿子|枣|椰|柚|瓜', 'prop:apple', '苹果', '水果'),
+        (r'吃|食|饭|菜|点心|饼|糖|蛋|糕', 'prop:bread', '面包', '食物'),
+        (r'宇宙|太空|星际|航天', 'prop:spaceship', '宇宙飞船', '太空交通工具'),
+        (r'飞机|飞行|空中', 'prop:airplane', '飞机', '飞行交通工具'),
+        (r'船|舰|海|艇', 'prop:boat', '小船', '水上交通工具'),
+        (r'车|交通|运输', 'prop:car', '小汽车', '交通工具'),
+        (r'枪|炮|武器|导弹', 'prop:water-gun', '水枪', '玩具武器'),
+        (r'动物|宠物|玩偶|熊|兔|猫|狗', 'prop:teddy', '泰迪熊', '动物玩偶'),
+    ]
+    asset, name, reason = 'prop:ball', '皮球', '可互动玩具'
+    for pattern, candidate, label, category in candidates:
+        if re.search(pattern, text):
+            asset, name, reason = candidate, label, category
+            break
+    stamp = secrets.token_hex(6)
+    return {
+        'reply': f'暂未找到完全对应的模型，先用 {count} 个{name}代替。',
+        'sceneSwitch': None, 'source': 'approximate', 'matches': [reason, name],
+        'substitution': {'request': text, 'replacement': name, 'count': count, 'reason': reason},
+        'commands': [{'type': 'entity.spawn', 'id': f'approx-{stamp}-{i}', 'asset': asset, 'position': [0, 0], 'scale': .36 if count > 32 else .55} for i in range(count)],
+    }
+
+
 def keyword_scene_result(text, context):
+    # Read the generated catalog so newly registered prefabs are callable too.
+    catalog = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))
+    indexed = dict(SCENE_KEYWORDS)
+    for entry in catalog["modules"]:
+        if entry.get("kind") in {"prop", "actor"}:
+            asset = entry["id"]
+            previous = next((item for item in indexed.values() if item["asset"] == asset), {})
+            indexed[asset] = {"asset": asset, "words": list(dict.fromkeys([entry["name"], *entry.get("keywords", []), *previous.get("words", [])]))}
     compact = re.sub(r"[，。！？、,.!?\s]", "", text)
     current = context.get("world", "meadow") if isinstance(context, dict) else "meadow"
+    matches = [(key, item) for key, item in indexed.items() if any(word in compact for word in item["words"])]
+    asset_match_length = max((len(word) for _, item in matches for word in item['words'] if word in compact), default=0)
     for world, words in SCENE_NAMES.items():
-        if any(word in compact for word in words):
+        if any(word in compact and len(word) >= asset_match_length for word in words):
             return {"reply": f"好，我们去{words[0]}看看。", "sceneSwitch": {"world": world}, "commands": [], "source": "keyword", "matches": words}
     if re.search(r"另一个星球|换个星球|去别的星球", compact):
         worlds = [item for item in (context.get("worlds", []) if isinstance(context, dict) else []) if item != current]
         return {"reply": "好，我们换一颗星球看看。", "sceneSwitch": {"world": worlds[0] if worlds else "moon"}, "commands": [], "source": "keyword", "matches": ["另一个星球"]}
-    matches = [(key, item) for key, item in SCENE_KEYWORDS.items() if any(word in compact for word in item["words"])]
     if not matches:
-        return None
-    key, item = max(matches, key=lambda pair: max(map(len, pair[1]["words"])))
-    count_match = re.search(r"(10|十)个", compact)
-    count = 10 if count_match else 1
+        _, has_quantity = scene_quantity(compact)
+        return approximate_scene_result(text, context) if has_quantity or re.search(r'给我|来个|变出|生成|出现|放个|放一个', compact) else None
+    key, item = max(matches, key=lambda pair: max(len(w) for w in pair[1]["words"] if w in compact))
+    count, _ = scene_quantity(compact)
     entities = context.get("entities", {}) if isinstance(context, dict) else {}
     commands = []
     existing = next((entity_id for entity_id, entity in entities.items() if entity.get("asset") == item["asset"]), None)
-    if key == "jiaojiao" and existing and re.search(r"移动|走到|去", compact):
+    if not item["asset"].startswith("prop:") and existing and re.search(r"移动|走到|去", compact):
         commands.append({"type": "entity.move", "id": existing, "position": [0, 2.4]})
     else:
         for index in range(count):
-            commands.append({"type": "entity.spawn", "id": f"keyword-{key}-{int(time.time() * 1000)}-{index}", "asset": item["asset"], "position": [-4 + (index % 5) * 2, 2 + (index // 5) * 1.2], "color": "#e1b671" if key == "rocket" else "#d7a9a5", "scale": 0.55})
+            commands.append({"type": "entity.spawn", "id": f"keyword-{key}-{int(time.time() * 1000)}-{index}", "asset": item["asset"], "position": [0, 0], "scale": 0.36 if count > 32 else 0.55})
     return {"reply": f"好，{item['words'][0]}出现啦。", "sceneSwitch": None, "commands": commands, "source": "keyword", "matches": item["words"]}
 
 
 def scene_control_result(text, context):
+    try:
+        result = resolve_scene_control(text, context)
+        if result.get('commands') or result.get('sceneSwitch'):
+            return result
+    except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+        pass
+    return approximate_scene_result(str(text or ''), context)
+
+
+def resolve_scene_control(text, context):
     text = str(text or "").strip().replace("<", "").replace(">", "")[:180]
     if not text:
         raise ValueError("command_required")
@@ -854,10 +920,12 @@ def scene_control_result(text, context):
     if not key:
         raise RuntimeError("scene_control_not_configured")
     worlds = context.get("worlds", []) if isinstance(context, dict) else []
+    props = [entry for entry in json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"] if entry.get("kind") in {"prop", "actor"}]
+    manifest = [{"asset": p["id"], "name": p["name"], "keywords": p.get("keywords", [])} for p in props]
     body = json.dumps({
         "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
         "messages": [
-            {"role": "system", "content": SCENE_CONTROL_PROMPT},
+            {"role": "system", "content": SCENE_CONTROL_PROMPT + "\n允许的完整道具及角色清单（核心角色优先精确匹配，不可替换成道具）：" + json.dumps(manifest, ensure_ascii=False)},
             {"role": "user", "content": json.dumps({"request": text, "current": context, "availableWorlds": worlds}, ensure_ascii=False)},
         ], "reasoning_effort": "minimal", "response_format": {"type": "json_object"}, "max_tokens": 700,
     }, ensure_ascii=False).encode("utf-8")
@@ -873,6 +941,7 @@ def scene_control_result(text, context):
     switch = parsed.get("sceneSwitch")
     switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
     allowed_assets = {"prop:rocket", "prop:balloon", "prop:house", "npc:jiaojiao", "npc:jiaojiao-mom"}
+    allowed_assets.update(p["id"] for p in props)
     commands = []
     for command in parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []:
         if not isinstance(command, dict) or command.get("type") not in {"entity.spawn", "entity.move", "entity.animate"}: continue
@@ -1965,7 +2034,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             self.respond_json(404, {"error": "not_found"})
             return
         try:
-            payload = self.read_json(1_500_000 if path == "/api/asr" else 32_768 if path in {"/api/character-call", "/api/debate"} else 4096)
+            payload = self.read_json(1_500_000 if path == "/api/asr" else 262_144 if path == "/api/scene-control" else 32_768 if path in {"/api/character-call", "/api/debate"} else 4096)
             if path == "/api/character-call":
                 self.respond_character_call(payload)
                 return
@@ -1983,8 +2052,15 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 self.respond_json(200, debate_result(question, speakers))
                 return
             if path == "/api/scene-control":
-                result = scene_control_result(payload.get("text"), payload.get("context") or {})
-                self.respond_json(200, result)
+                try:
+                    result = scene_control_result(payload.get("text"), payload.get("context") or {})
+                    self.respond_json(200, result)
+                except ValueError as exc:
+                    self.respond_json(400, {"error": "场景指令或目录格式有误，请重试。" if isinstance(exc, json.JSONDecodeError) else str(exc)})
+                except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+                    self.respond_json(502, {"error": "场景模型服务连接失败，请稍后重试。"})
+                except RuntimeError:
+                    self.respond_json(503, {"error": "场景模型服务尚未配置或暂时不可用；已登记道具仍可通过名称生成。"})
                 return
             if path == "/api/asr":
                 encoded = str(payload.get("pcm", ""))
@@ -2057,12 +2133,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 self.respond_json(429, {"error": str(exc)})
                 return
             expected = {
+                "/api/scene-control": "scene_control_not_configured",
                 "/api/tts": "tts_not_configured",
                 "/api/asr": "asr_not_configured",
                 "/api/story-turn": "story_ai_not_configured",
                 "/api/moon-director": "moon_director_not_configured",
                 "/api/director": "director_not_configured",
-            }[path]
+            }.get(path, "director_not_configured")
             if str(exc) == expected:
                 self.respond_json(503, {"error": expected})
             else:
@@ -2071,7 +2148,14 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
             error = "asr_upstream_error" if path == "/api/asr" else "tts_upstream_error" if path == "/api/tts" else "director_upstream_error"
             self.respond_json(502, {"error": error})
-        except Exception:
+        except Exception as exc:
+            if path == "/api/scene-control":
+                if isinstance(exc, ValueError) and str(exc) == 'body_too_large':
+                    self.respond_json(413, {"error": "场景信息过多，请切换到新场景后再提交。"})
+                    return
+                print(f"scene-control failed: {type(exc).__name__}", file=sys.stderr)
+                self.respond_json(502, {"error": "场景指令暂时无法处理，请重试；如果正在更新道具目录，请稍后再提交。"})
+                return
             error = "asr_unavailable" if path == "/api/asr" else "tts_unavailable" if path == "/api/tts" else "director_unavailable"
             self.respond_json(502, {"error": error})
 

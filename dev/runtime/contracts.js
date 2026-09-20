@@ -23,6 +23,25 @@ export const COMMANDS = Object.freeze({
   "creation.activate": ["id"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
+export const MAX_WORLD_ENTITIES = 300;
+export function oldestEntities(entities) {
+  return Object.values(entities).sort((a, b) => (a.createdOrder ?? 0) - (b.createdOrder ?? 0));
+}
+// Same FIFO policy used before scattering and when committing a batch.
+export function capacityEvictions(entities, commands) {
+  const ids = new Set(oldestEntities(entities).map(e => e.id));
+  const removed = [];
+  for (const c of commands) {
+    if (c.type === 'entity.remove') ids.delete(c.id);
+    if (c.type !== 'entity.spawn' || ids.has(c.id)) continue;
+    while (ids.size >= MAX_WORLD_ENTITIES) {
+      const id = ids.values().next().value;
+      ids.delete(id); removed.push(id);
+    }
+    ids.add(c.id);
+  }
+  return removed;
+}
 export const safeId = (value) =>
   typeof value === "string" &&
   /^[a-zA-Z0-9][a-zA-Z0-9:_.-]{0,95}$/.test(value) &&

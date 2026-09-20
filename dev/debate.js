@@ -1,4 +1,6 @@
 import { DEBATE_STORY } from './content/stories/debate.js';
+import { applyPublishedStory } from './content/stories/published.js';
+applyPublishedStory(DEBATE_STORY);
 import { createGameSession } from './runtime/game-session.js';
 import { renderChoices } from './presentation/choice-list.js';
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';

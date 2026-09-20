@@ -53,7 +53,7 @@ try{
   }
   await page.locator('.landing-footer a').click();await page.waitForURL('**/changelog/');
   await page.locator('.page-header>a').last().click();await modules.click();await page.waitForURL('**/dev/modules/');
-  await page.getByRole('heading',{name:'模块陈列馆',exact:true}).waitFor();
+  await page.locator('header').getByText('世界工坊 / 模块陈列馆',{exact:true}).waitFor();
   checks.push('Module gallery belongs to iteration history; footer log and return links work; closing card removed; four responsive widths');
   console.log(checks.at(-1));
   await page.goto(`${base}/?mode=debug`,{waitUntil:'domcontentloaded'});

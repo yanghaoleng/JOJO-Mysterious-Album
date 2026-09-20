@@ -5,6 +5,9 @@ import {
   validateCommand,
   validateCreation,
   safeId,
+  MAX_WORLD_ENTITIES,
+  oldestEntities,
+  capacityEvictions,
 } from "./contracts.js";
 
 const empty = () => ({
@@ -27,12 +30,11 @@ function reduce(state, c, context) {
       : null;
   const entity = world?.entities[c.id];
   if (c.type === "entity.spawn") {
-    requireValue(
-      entity || Object.keys(world.entities).length < 32,
-      "This world has 32 scripted entities",
-    );
+    const order = entity?.createdOrder ?? (Math.max(0, ...Object.values(world.entities).map(e => e.createdOrder || 0)) + 1);
+    if (!entity) for (const id of capacityEvictions(world.entities, [c])) delete world.entities[id];
     world.entities[c.id] = {
       id: c.id,
+      createdOrder: order,
       asset: c.asset,
       position: c.position,
       color: c.color || "#9ab8ba",
@@ -101,7 +103,7 @@ function restore(saved, legacyCreations) {
     for (const [id, world] of Object.entries(saved.worlds || {})) {
       if (!WORLD_IDS.includes(id)) continue;
       const context = { world: id, actors: [] };
-      for (const item of Object.values(world?.entities || {}).slice(0, 32))
+      for (const item of oldestEntities(world?.entities || {}).slice(-MAX_WORLD_ENTITIES))
         try {
           reduce(
             state,
@@ -214,7 +216,7 @@ export class WorldRuntime {
         "Stale world proposal",
       );
       requireValue(
-        Array.isArray(commands) && commands.length <= 32,
+        Array.isArray(commands) && commands.length <= 100,
         "Too many world commands",
       );
       const validated = commands.map(validateCommand),
