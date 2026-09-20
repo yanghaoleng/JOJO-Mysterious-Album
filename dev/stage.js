@@ -52,6 +52,7 @@ export class DioramaStage {
     this.studio = false;
     this.angleMode = 'ground';
     this.orbit = null;
+    this.nearestSubjectProvider = null;
     this.cameraAnim = null;
     this.cameraHistory = [];
     this.cameraIndex = -1;
@@ -382,6 +383,22 @@ export class DioramaStage {
 
   stopOrbit() { this.orbit = null; }
 
+  // The gallery wires this up so close-up shots can focus the entity nearest
+  // to the centre of the scene instead of the camera's current aim point.
+  setNearestSubjectProvider(fn) { this.nearestSubjectProvider = fn; }
+
+  // Cycle through the four fixed shot presets. The player can only cycle
+  // these; the cinematic moves (zoomIn/zoomOut/otd) stay LLM-only.
+  cycleCameraShot() {
+    if (this.exploration) return this.angleMode;
+    this.stopOrbit();
+    const order = ['ground', 'overhead', 'orbit', 'closeup'];
+    const idx = order.indexOf(this.angleMode);
+    const next = order[(idx + 1) % order.length];
+    this.playCinematic({ kind: next });
+    return this.angleMode;
+  }
+
   // Cinematic camera language. The LLM may suggest a shot (kind) or a move
   // (move); every change transitions through animateCameraTo. The player can
   // still override any of this with their own drag / pinch / wheel.
@@ -400,14 +417,22 @@ export class DioramaStage {
     } else if (kind === 'ground') {
       this.angleMode = 'ground';
       this.animateCameraTo({ yaw: this.yaw, pitch: .25, zoom: this.zoom, target: subject, pan }, 1);
+    } else if (kind === 'closeup') {
+      // Tight close-up on the nearest subject to the scene centre.
+      this.angleMode = 'closeup';
+      const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
+      const subj = nz ? new THREE.Vector3(nz[0], 0, nz[1]) : subject;
+      this.animateCameraTo({ yaw: this.yaw, pitch: .35, zoom: Math.max(.18, this.zoom * .38), target: subj, pan }, 1.2);
     }
     if (move === 'zoomIn') {
       this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .7), target: subject, pan }, 1.6);
     } else if (move === 'zoomOut') {
       this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.min(1.8, this.zoom * 1.45), target: subject, pan }, 1.6);
     } else if (move === 'closeup') {
-      // Tight close-up on the subject.
-      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .4), target: subject, pan }, 1.2);
+      // Tight close-up on the nearest subject to the scene centre.
+      const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
+      const subj = nz ? new THREE.Vector3(nz[0], 0, nz[1]) : subject;
+      this.animateCameraTo({ yaw: this.yaw, pitch: .35, zoom: Math.max(.18, this.zoom * .4), target: subj, pan }, 1.2);
     } else if (move === 'otd') {
       // Over-the-obstacle framing: the subject stays off-centre and close.
       const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));

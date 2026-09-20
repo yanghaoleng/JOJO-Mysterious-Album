@@ -249,6 +249,19 @@ body.preview-resizing, body.preview-resizing * { cursor:ns-resize !important; us
   backdrop-filter: blur(4px);
   transition: background .15s ease, color .15s ease, transform .15s ease;
 }
+.camera-nav #camera-angle {
+  width: 46px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 14px;
+}
+.camera-nav .shot-label {
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: .4px;
+}
 .camera-nav button:hover:not(:disabled) { background: #eef3e9; color: #2e6b3a; transform: translateY(-1px); }
 .camera-nav button:disabled { opacity: .35; cursor: default; }
 .camera-nav button.is-overhead { background: #2e6b3a; color: #fffdf8; border-color: #2e6b3a; }

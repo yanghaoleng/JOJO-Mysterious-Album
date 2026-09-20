@@ -250,6 +250,15 @@ function eventDemo() {
   fillProposal();
   log();
 }
+const SHOT_META = {
+  ground:   { label: "平视", next: "俯视", icon: '<line x1="3" y1="13" x2="21" y2="13"/><circle cx="12" cy="9" r="3"/><path d="M12 4.6v1.4M8.8 6.3l1 1M15.2 6.3l-1 1"/>' },
+  overhead: { label: "俯视", next: "环绕", icon: '<circle cx="12" cy="12" r="6.5"/><path d="M12 12l4.6-4.6M12 12l-4.6-4.6M12 12l4.6 4.6M12 12l-4.6 4.6"/>' },
+  orbit:    { label: "环绕", next: "特写", icon: '<circle cx="12" cy="12" r="6.5"/><path d="M18.5 12a6.5 6.5 0 0 1-6.5 6.5"/><path d="M12 18.5v-4"/><path d="M12 12l3-3"/>' },
+  closeup:  { label: "特写", next: "平视", icon: '<circle cx="11" cy="11" r="5"/><line x1="14.8" y1="14.8" x2="20" y2="20"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>' },
+};
+function shotMeta(mode) {
+  return SHOT_META[mode] || SHOT_META.ground;
+}
 function syncCameraNav() {
   const nav = $("camera-nav");
   if (!nav) return;
@@ -260,10 +269,16 @@ function syncCameraNav() {
   $("camera-forward").disabled = index >= count - 1;
   const angle = $("camera-angle");
   if (angle) {
-    const overhead = stage.cameraAngleMode?.() === "overhead";
-    angle.setAttribute("aria-label", overhead ? "切换到45度地面视角" : "切换到俯视角");
-    angle.title = overhead ? "切换到45度地面视角" : "切换到俯视角";
-    angle.classList.toggle("is-overhead", overhead);
+    const mode = stage.cameraAngleMode?.() || "ground";
+    const meta = shotMeta(mode);
+    const svg = angle.querySelector("svg");
+    if (svg) svg.innerHTML = meta.icon;
+    const label = $("camera-shot-label");
+    if (label) label.textContent = meta.label;
+    angle.setAttribute("aria-label", `切换到${meta.next}机位`);
+    angle.title = `切换到${meta.next}机位`;
+    angle.classList.toggle("is-overhead", mode !== "ground");
+    for (const m of Object.keys(SHOT_META)) angle.classList.toggle(`shot-${m}`, mode === m);
   }
 }
 function aiControlDemo() {
@@ -275,9 +290,21 @@ function aiControlDemo() {
   activeControlRecord = -1;
   renderControlTabs();
   stage.onCameraHistoryChange = syncCameraNav;
+  stage.setNearestSubjectProvider(() => {
+    const world = game?.runtime?.context?.world;
+    const ents = world ? game.runtime.snapshot?.worlds?.[world]?.entities || {} : {};
+    let best = null, bestD = Infinity;
+    for (const e of Object.values(ents)) {
+      if (e.dead) continue;
+      const p = e.position || [0, 0];
+      const d = p[0] * p[0] + p[1] * p[1];
+      if (d < bestD) { bestD = d; best = p; }
+    }
+    return best;
+  });
   $("camera-back").onclick = () => stage.cameraBack();
   $("camera-forward").onclick = () => stage.cameraForward();
-  $("camera-angle").onclick = () => { stage.toggleCameraAngle(); syncCameraNav(); };
+  $("camera-angle").onclick = () => { stage.cycleCameraShot(); syncCameraNav(); };
   stage.saveCameraState();
   syncCameraNav();
   $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
