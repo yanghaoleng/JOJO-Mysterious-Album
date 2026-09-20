@@ -349,7 +349,7 @@ export class DioramaStage {
     // Keep the handheld sway from fighting the move while it is in flight;
     // it fades back in once the move has settled.
     this.cameraDrift?.pause(Math.max(.6, duration + .8));
-    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .12, 1.8), target: state.target.clone(), pan: state.pan.clone() } };
+    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .005, 12), target: state.target.clone(), pan: state.pan.clone() } };
   }
   stepCameraAnimation(dt) {
     const anim = this.cameraAnim;
@@ -381,7 +381,7 @@ export class DioramaStage {
   restoreCameraState(state) {
     if (!state || this.exploration) return;
     this.cameraAnim = null;
-    this.yaw = state.yaw; this.pitch = state.pitch; this.zoom = clamp(state.zoom, .12, 1.8);
+    this.yaw = state.yaw; this.pitch = state.pitch; this.zoom = clamp(state.zoom, .005, 12);
     this.target.copy(state.target); this.panOffset.copy(state.pan);
     this.resize();
   }
@@ -464,7 +464,7 @@ export class DioramaStage {
       this.angleMode = 'closeup';
       const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
       const subj = nz ? new THREE.Vector3(nz[0], .28, nz[1]) : subject;
-      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(.045, Math.min(this.zoom, .06)), target: subj, pan }, 1.3);
+      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(5.5, Math.min(this.zoom, 9.0)), target: subj, pan }, 1.3);
     }
     if (move === 'zoomIn') {
       this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .7), target: subject, pan }, 1.6);
@@ -474,7 +474,7 @@ export class DioramaStage {
       // In-your-face close-up on the nearest subject.
       const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
       const subj = nz ? new THREE.Vector3(nz[0], .28, nz[1]) : subject;
-      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(.045, Math.min(this.zoom, .06)), target: subj, pan }, 1.3);
+      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(5.5, Math.min(this.zoom, 9.0)), target: subj, pan }, 1.3);
     } else if (move === 'otd') {
       // Over-the-obstacle framing: the subject stays off-centre and close.
       const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));

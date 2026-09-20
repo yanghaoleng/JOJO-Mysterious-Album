@@ -128,6 +128,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           anchor,
           normal,
           signature,
+          asset: record.asset,
           scale: record.scale,
           color: record.color,
           actor,
@@ -135,13 +136,15 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           actionUntil: 0,
           entrance: stage.reduced || suspended ? 2 : -(arrivalDelays.get(record.id) || 0),
           arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
-          rest: anchor.position.clone(),
+          rest: (() => { const flying = /ufo|spaceship|airplane|rocket/.test(record.asset || ""); return flying ? anchor.position.clone().addScaledVector(normal, 1.7) : anchor.position.clone(); })(),
           orientation: anchor.quaternion.clone(),
           position: [...record.position],
           contactRadius,
           landed: false,
           impact: null,
         };
+        const flyingRideInit = /ufo|spaceship|airplane|rocket/.test(record.asset || "");
+        if (flyingRideInit) item.anchor.position.addScaledVector(normal, 1.7);
         item.anchor.position.addScaledVector(normal, stage.reduced || suspended ? 0 : 3);
         item.anchor.visible = item.entrance >= 0;
         entries.set(record.id, item);
@@ -235,7 +238,19 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       if (c.type === "group.handshake") movement.shakeHands(c.targets[0], c.targets[1]);
       if (c.type === "group.holdhands") movement.holdHands(c.targets);
       if (c.type === "group.stack") movement.stack(c.targets);
-      if (c.type === "group.ride") movement.ride(c.driver, c.mount);
+      if (c.type === "group.ride") {
+        movement.ride(c.driver, c.mount);
+        // Riding a flying vehicle: overhead follow cam so you see the route.
+        const mountItem = entries.get(c.mount);
+        if (mountItem && /ufo|spaceship|airplane|rocket/.test(mountItem.asset || "")) {
+          const mid = c.mount;
+          stage.setFollowTarget(() => {
+            const it = entries.get(mid);
+            return it ? it.position : null;
+          }, mountItem.model?.name || "飞行物");
+          stage.playCinematic({ kind: "overhead" });
+        }
+      }
       if (c.type === "group.dance") movement.danceParty(c.targets);
     }
   }

@@ -160,6 +160,11 @@ export function createMovementController({ entries, stage }) {
     if (!id || !im) return;
     const target = [im.position[0], im.position[1]];
     jobs.set(driver, { mode: "ride-to", mount, target, speed, phase: "to" });
+    // The mount itself must cruise so the ride goes somewhere, not just hover.
+    const flyingRide = /ufo|spaceship|airplane|rocket/.test(im.asset || "");
+    // Flying vehicles circle the whole planet on a bold route; ground vehicles stay local.
+    const R = stage.world.planet.radius;
+    jobs.set(mount, { mode: "ride-cruise", center: [0, 0], angle: Math.atan2(im.position[1], im.position[0]), radius: flyingRide ? R * 0.92 : 1.7, speed: flyingRide ? 1.25 : 0.32, phase: "idle", holdUntil: time + 1.6, flyHeight: flyingRide ? 1.7 : 0 });
   }
   function danceParty(ids, { radius = 1.3, speed = 1.15 } = {}) {
     stop(ids);
@@ -310,10 +315,24 @@ export function createMovementController({ entries, stage }) {
       } else if (job.phase === "dancing") {
         item.action = "dance"; item.actionUntil = t + 1;
         if (job.until && t >= job.until) { job.phase = "done"; face(item, job.center, t); }
+      } else if (job.mode === "ride-cruise") {
+        if (job.phase === "idle" && t < job.holdUntil) {
+          // wait for the driver to climb on
+        } else if (job.phase === "idle") {
+          job.phase = "cruise";
+        } else {
+          const [cx, cz] = job.center;
+          job.angle = (job.angle + (dt * job.speed) / Math.max(0.6, job.radius)) % (Math.PI * 2);
+          const px = cx + Math.cos(job.angle) * job.radius;
+          const pz = cz + Math.sin(job.angle) * job.radius;
+          place(item, px, pz, "idle", t, job.flyHeight || 0);
+          // gentle hover bob so it feels alive
+          item.anchor.position.y += Math.sin(t * 2.1) * 0.12;
+        }
       } else if (job.phase === "riding") {
         const mount = entries.get(job.mount);
         if (!mount) { jobs.delete(id); continue; }
-        item.anchor.position.copy(mount.anchor.position).add(new THREE.Vector3(0, 1.85, 0));
+        item.anchor.position.copy(mount.anchor.position).add(new THREE.Vector3(0, 0.5, 0));
         item.anchor.quaternion.copy(mount.anchor.quaternion);
         item.position = [mount.position[0], mount.position[1]];
         item.action = "cheer"; item.actionUntil = t + 1;
