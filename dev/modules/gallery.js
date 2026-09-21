@@ -10,6 +10,7 @@ import { planCreation } from "../creation-catalog.js";
 import { resolveSceneIndex } from "../runtime/story-progress.js";
 import { EVENT_PLAYGROUND } from "../content/examples/event-playground.js";
 import { AI_CONTROL_LEVEL } from "../content/examples/ai-control-level.js";
+import { UFO_PARTY_STORY } from "../content/examples/ufo-party.js";
 import { PROP_CATEGORIES } from "../content/props.js";
 import { createElement, PanelLeftClose, PanelLeftOpen, Search, Library, BookOpen, Box, Users, Sparkles, Volume2, Route, Settings2 } from "lucide";
 import { arrangeInView } from "./scatter.js";
@@ -199,9 +200,12 @@ function startWorld(
   stage.onFollowChange = renderLockBanner;
   stage.resize();
   requestAnimationFrame(() => {
-    viewport.classList.remove("scene-transition-out");
-    viewport.classList.add("scene-transition-in");
-    setTimeout(() => viewport.classList.remove("scene-transition-in"), 520);
+    // 圆形缩放转场：先收圆（out 停留），再展开（in），形成故事书式的圆形过场。
+    setTimeout(() => {
+      viewport.classList.remove("scene-transition-out");
+      viewport.classList.add("scene-transition-in");
+      setTimeout(() => viewport.classList.remove("scene-transition-in"), 660);
+    }, 430);
   });
 }
 function entityName(id) {
@@ -532,6 +536,42 @@ function aiControlDemo() {
   $("preview-ui").hidden = true;
   $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
 }
+let storyPlayToken = 0;
+async function playStoryDemo(story) {
+  const my = ++storyPlayToken;
+  const status = $("natural-command-status");
+  const report = $("runtime-report");
+  const submit = $("natural-command-submit");
+  startWorld(story.world, [], null, story);
+  enableNaturalControl();
+  $("preview-ui").hidden = true;
+  submit.disabled = true;
+  report.textContent = `沙盒故事：${story.title}\n渲染状态：已就绪`;
+  for (const [i, step] of story.steps.entries()) {
+    if (my !== storyPlayToken) return; // 重复点击/切换模块时，旧播放立即退出。
+    if (step.world && step.world !== game.runtime.context.world) {
+      // 圆形缩放转场 + 随行搬运原星球全部道具与角色。
+      const carry = Object.entries(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).map(([id, e]) => ({
+        type: "entity.spawn", id, asset: e.asset, name: e.name || "", position: e.position, color: e.color, scale: e.scale, sizeLocked: e.sizeLocked === true, colorOverride: e.colorOverride === true,
+      }));
+      startWorld(step.world, [], null, story);
+      if (carry.length) game.gateway.apply({ version: 1, context: game.runtime.token, commands: carry }, "script");
+      report.textContent += `\n[场景切换] 前往${step.world}，随行带上 ${carry.length} 个道具和角色`;
+    }
+    $("natural-command-input").value = step.say;
+    status.textContent = `第 ${i + 1} 幕 / ${story.steps.length}：${step.say}`;
+    report.textContent += `\n[第 ${i + 1} 幕] ${step.say}`;
+    if (step.commands.length) {
+      const applied = game.gateway.apply({ version: 1, context: game.runtime.token, commands: step.commands }, "script");
+      report.textContent += applied.ok ? "（已演出）" : `（失败：${applied.error}）`;
+    }
+    await new Promise((resolve) => setTimeout(resolve, (step.wait || 4) * 1000));
+  }
+  if (my !== storyPlayToken) return;
+  status.textContent = "故事讲完啦！";
+  report.textContent += "\n—— 完 ——";
+  submit.disabled = false;
+}
 function enableNaturalControl() {
   $("command-panel").dataset.mode = "natural";
   $("command-panel").hidden = false;
@@ -763,8 +803,13 @@ async function naturalControl() {
     if (result.substitution) trace.push('[近似替代]', `    原指令：${result.substitution.request}`, `    替代模型：${result.substitution.replacement} × ${result.substitution.count}`, `    匹配依据：${result.substitution.reason}`);
     if (result.sceneSwitch?.world && result.sceneSwitch.world !== game.runtime.context.world) {
       clearLock();
+      // 星球切换带走原星球所有道具与角色（圆形缩放转场期间搬运）。
+      const carry = Object.entries(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).map(([id, e]) => ({
+        type: "entity.spawn", id, asset: e.asset, name: e.name || "", position: e.position, color: e.color, scale: e.scale, sizeLocked: e.sizeLocked === true, colorOverride: e.colorOverride === true,
+      }));
       startWorld(result.sceneSwitch.world);
-      trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, "    状态：已完成淡出 / 淡入");
+      if (carry.length) game.gateway.apply({ version: 1, context: game.runtime.token, commands: carry }, "script");
+      trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, `    随行带上原星球 ${carry.length} 个道具和角色（圆形缩放转场）`);
     }
     stage.saveCameraState();
     const layout = arrangeInView(result.commands, game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}, stage);
@@ -914,6 +959,7 @@ function showLogic(item) {
     return;
   }
   $("preview-ui").hidden = false;
+  if (item.id === "story:ufo-party") { playStoryDemo(UFO_PARTY_STORY); return; }
   if (item.kind === "story" || item.id === "ui:story-editor") { cleanup = mountStoryEditor($("preview-ui"), item.kind === "story" ? item.id.slice(6) : "wow"); return; }
   if (item.id === "ui:choices") {
     choicesDemo();

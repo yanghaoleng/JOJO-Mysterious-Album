@@ -200,6 +200,16 @@ export const COMPONENTS = [
     capabilities: ["场景可视化", "对白与选项编辑", "事件编辑", "本地草稿", "JSON 导入导出", "文字分支预演"],
     dependencies: ["logic:director"],
   })),
+  {
+    id: "story:ufo-party",
+    kind: "story",
+    name: "沙盒故事 · 月球飞碟水果派对",
+    description:
+      "一个孩子口述的故事：叫叫小分队在月球巡逻，绿豆家族突然包围，奶龙与牛来开着飞碟带来水果派对。点击即在 3D 场景里自动演出：圆形缩放转场、星球随行搬运道具与角色。",
+    source: "dev/content/examples/ufo-party.js",
+    capabilities: ["自动剧情播放", "圆形缩放转场", "星球随行搬运", "角色改名"],
+    dependencies: ["logic:intent"],
+  },
 ];
 
 export const MODULE_CATALOG = [

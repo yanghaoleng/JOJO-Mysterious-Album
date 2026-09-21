@@ -100,6 +100,15 @@ export function build(k) {
     return;
   }
 
+  // 水果（果实 + 蒂）
+  if (/苹果|橙子|橘子|香蕉|葡萄|草莓|西瓜|桃子|梨|芒果|水果/.test(name)) {
+    ball(color, [0, .35, 0], [.48, .46, .48]);
+    const stem = cone(cream, [0, .82, 0], [.12, .22, .12]);
+    cone(ink, [0, .72, 0], [.1, .12, .1]);
+    moving(pivot, 'float', .1);
+    return;
+  }
+
   // 食物
   if (/糖|蛋糕|饼干|面包|披萨|汉堡|冰淇淋|巧克力|甜甜圈/.test(name)) {
     cylinder(cream, [0, .35, 0], [.7, .5, .7]);

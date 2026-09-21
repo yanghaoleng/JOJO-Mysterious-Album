@@ -381,6 +381,22 @@
       ]
     },
     {
+      "id": "story:ufo-party",
+      "kind": "story",
+      "name": "沙盒故事 · 月球飞碟水果派对",
+      "description": "一个孩子口述的故事：叫叫小分队在月球巡逻，绿豆家族突然包围，奶龙与牛来开着飞碟带来水果派对。点击即在 3D 场景里自动演出：圆形缩放转场、星球随行搬运道具与角色。",
+      "source": "dev/content/examples/ufo-party.js",
+      "capabilities": [
+        "自动剧情播放",
+        "圆形缩放转场",
+        "星球随行搬运",
+        "角色改名"
+      ],
+      "dependencies": [
+        "logic:intent"
+      ]
+    },
+    {
       "id": "prop:little-flame",
       "kind": "prop",
       "name": "小火苗",
@@ -14991,7 +15007,7 @@
     {
       "id": "yellow:bull",
       "kind": "actor",
-      "name": "黄牛",
+      "name": "牛来",
       "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
       "source": "dev/yellow-four-models.js",
       "capabilities": [
@@ -15018,7 +15034,7 @@
       "asset": {
         "id": "yellow:bull",
         "kind": "actor",
-        "name": "黄牛",
+        "name": "牛来",
         "animations": [
           "idle",
           "talk",
@@ -15051,13 +15067,13 @@
       "variety": "yellow:bull",
       "tags": [],
       "keywords": [
-        "黄牛"
+        "牛来"
       ]
     },
     {
       "id": "yellow:round",
       "kind": "actor",
-      "name": "圆滚滚",
+      "name": "奶龙",
       "description": "可复用的实体角色模型，沿用既有造型与角色身份。",
       "source": "dev/yellow-four-models.js",
       "capabilities": [
@@ -15084,7 +15100,7 @@
       "asset": {
         "id": "yellow:round",
         "kind": "actor",
-        "name": "圆滚滚",
+        "name": "奶龙",
         "animations": [
           "idle",
           "talk",
@@ -15117,7 +15133,7 @@
       "variety": "yellow:round",
       "tags": [],
       "keywords": [
-        "圆滚滚"
+        "奶龙"
       ]
     },
     {
@@ -16409,8 +16425,8 @@
     {
       "id": "encounter:yellow:round",
       "kind": "encounter",
-      "name": "圆滚滚 · 敲快乐节拍",
-      "description": "wow / bakery：我是圆滚滚。叮咚一声，肚子也想跟着摇！",
+      "name": "奶龙 · 敲快乐节拍",
+      "description": "wow / bakery：我是奶龙。叮咚一声，肚子也想跟着摇！",
       "source": "dev/content/encounters.js",
       "capabilities": [
         "靠近招呼",
@@ -16425,8 +16441,8 @@
         "world": "bakery",
         "prop": "music",
         "occupation": "敲快乐节拍",
-        "greeting": "我是圆滚滚。叮咚一声，肚子也想跟着摇！",
-        "name": "圆滚滚",
+        "greeting": "我是奶龙。叮咚一声，肚子也想跟着摇！",
+        "name": "奶龙",
         "yellow": true,
         "voice": "bubble",
         "choices": [
@@ -16565,8 +16581,8 @@
     {
       "id": "encounter:yellow:bull",
       "kind": "encounter",
-      "name": "黄牛 · 扶稳小木桥",
-      "description": "debate / meadow：我是黄牛。桥这头我扶住，你先看看桥板。",
+      "name": "牛来 · 扶稳小木桥",
+      "description": "debate / meadow：我是牛来。桥这头我扶住，你先看看桥板。",
       "source": "dev/content/encounters.js",
       "capabilities": [
         "靠近招呼",
@@ -16581,8 +16597,8 @@
         "world": "meadow",
         "prop": "bridge",
         "occupation": "扶稳小木桥",
-        "greeting": "我是黄牛。桥这头我扶住，你先看看桥板。",
-        "name": "黄牛",
+        "greeting": "我是牛来。桥这头我扶住，你先看看桥板。",
+        "name": "牛来",
         "yellow": true,
         "voice": "bubble",
         "choices": [

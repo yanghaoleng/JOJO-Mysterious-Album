@@ -498,8 +498,14 @@ footer {
     padding: 20px;
   }
 }
-.preview-stage.scene-transition-out { opacity: .1; transform: scale(.985); transition: opacity .18s ease, transform .18s ease; }
-.preview-stage.scene-transition-in { opacity: 1; transform: scale(1); transition: opacity .48s ease, transform .48s ease; }
+.preview-stage.scene-transition-out {
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path .42s ease-in;
+}
+.preview-stage.scene-transition-in {
+  clip-path: circle(140% at 50% 50%);
+  transition: clip-path .62s ease-out;
+}
 .natural-command { margin: 1rem 0; padding: 1rem; border: 1px solid rgba(72,58,48,.16); border-radius: 14px; background: rgba(255,255,255,.45); }
 .natural-command label { display:block; margin-bottom:.45rem; font-weight:600; }
 .natural-command > div { display:flex; gap:.5rem; }
