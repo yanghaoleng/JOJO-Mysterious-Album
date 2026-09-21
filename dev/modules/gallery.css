@@ -87,6 +87,8 @@ p {
 .catalog-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-areas: "detail sidebar";
+  grid-template-rows: 100%;
   gap: 38px;
   transition: grid-template-columns .32s ease;
 }
@@ -94,10 +96,10 @@ body:has(.catalog-layout) { overflow: hidden; }
 .catalog-layout { height: calc(100dvh - 82px); overflow: hidden; }
 .catalog-sidebar, .detail { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .catalog-sidebar { height: 100%; display:flex; flex-direction:column; }
-.detail { grid-column: 1; height: 100%; padding-bottom: 48px; }
+.detail { grid-area: detail; height: 100%; padding-bottom: 48px; }
 .detail > #capabilities, .detail > .source-line { display:none; }
 .catalog-sidebar {
-  grid-column: 2;
+  grid-area: sidebar;
   border-left: 1px solid #deded4;
   padding-left: 24px;
   min-width: 0;
@@ -441,10 +443,12 @@ footer {
   }
   .catalog-layout {
     grid-template-columns: 1fr;
+    grid-template-areas: "sidebar" "detail";
+    grid-template-rows: auto;
     gap: 24px;
   }
   .sidebar-collapsed .catalog-layout { grid-template-columns: 1fr; }
-  .catalog-sidebar, .detail { grid-column: auto; }
+  .catalog-sidebar, .detail { grid-column: auto; grid-row: auto; }
   .catalog-sidebar {
     border: 0;
     padding: 0;
