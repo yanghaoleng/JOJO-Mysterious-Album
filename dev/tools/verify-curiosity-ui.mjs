@@ -33,11 +33,10 @@ try{
   await page.goto(`${base}?story=wow`,{waitUntil:'domcontentloaded'});await ready();await meet();
   // Seed only saved chapter handoff, then exercise actual topic, reflection and link controls.
   await page.evaluate(()=>localStorage.setItem('jma.curiosity-journey.v1',JSON.stringify({wow:{completed:true,question:'星星为什么愿意发光？'}})));
-  await page.goto(`${base}debate`,{waitUntil:'domcontentloaded'});await ready();assert.match(await page.locator('#speech-text').textContent(),/星星为什么/);assert.equal(await page.locator('#answer-choices button').count(),3);await meet();
-  await page.locator('#answer-choices button').first().click();await page.waitForFunction(()=>window.__DEBATE_3D__.status.phase==='discussing');await page.locator('#finish').click();await page.locator('#speech-card').click();
+  await page.goto(`${base}debate`,{waitUntil:'domcontentloaded'});await ready();await page.waitForFunction(()=>window.__DEBATE_3D__.status.phase==='discussing');assert.match(await page.locator('#speech-text').textContent(),/星星为什么/);assert.equal(await page.evaluate(()=>document.querySelector('#round-label').textContent.includes('/4')),true);await page.locator('#finish').click();await page.locator('#speech-card').click();
   await page.waitForFunction(()=>!document.querySelector('#answer-choices').hidden,{},{timeout:12000});await page.locator('#answer-choices button').last().click();await page.locator('#speech-card').click();
-  assert.equal((await state()).phase,'ending');await page.locator('#next-chapter').click();await ready();assert.match(await page.locator('#speech-text').textContent(),/先听大家的点子/);
-  checkpoint('First question carried to debate; three topics; offline authored discussion; child idea carried to chapter three');
+  assert.equal((await state()).phase,'ending');await meet();await page.locator('#next-chapter').click();await ready();assert.match(await page.locator('#speech-text').textContent(),/先听大家的点子/);
+  checkpoint('First question starts the debate automatically; all four fallback turns address it; child idea carried to chapter three');
   await meet();
   await page.locator('#start-story').click();await decision();await make('请铃铛造一个蓝色花园和小桥');
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('jma.dev.clay.v1.story.moon')));assert.equal(saved.creations.length,1);assert.deepEqual(saved.creations[0].parts,['bridge','garden']);assert.equal(saved.creations[0].helper,'lingdang');
@@ -47,12 +46,12 @@ try{
   await page.reload({waitUntil:'domcontentloaded'});await ready();assert.equal((await state()).stage.exploration.friends.filter(n=>n.creationId).length,1);
   checkpoint('Compound blue creation, requested helper, modify existing object, visible world and storage restored on refresh');
   await page.locator('#start-story').click();await decision();await make('一台望远镜');
-  for(let i=1;i<6;i++){
-    await page.locator('#creation-next').click();await decision();assert.equal((await state()).sceneIndex,i);
+  for(let i=1;i<3;i++){
+    await page.locator('#creation-next').click();await decision();assert.equal((await state()).sceneIndex,i);if(i===1)assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('jma.curiosity-journey.v1')).moon.trialHeard),true);
     if(await page.locator('#reply-options').isHidden())await page.locator('#reply-more').click();await page.locator('#choices button').first().click();await decision('creation-review');
   }
   await page.locator('#creation-next').click();await page.waitForFunction(()=>window.__DEV_STORY__.status.phase==='complete');await page.locator('#return-creating').click();await make('请小鹿老师来弹钢琴');
-  await page.screenshot({path:`${out}/moon-workshop.png`});checkpoint('All six creative scenes, explicit onward action, ending and continuing to create');
+  await page.screenshot({path:`${out}/moon-workshop.png`});checkpoint('All three creative scenes, explicit onward action, ending and continuing to create');
   const visibleFriends=(await state()).stage.exploration.friends.filter(n=>n.present);assert.equal(new Set(visibleFriends.map(n=>n.id)).size,visibleFriends.length);
   await page.locator('#open-story-menu').click();await page.locator('#bag-button').click();await page.locator('#bag-content button').first().click();await decision();
   assert.equal((await state()).stage.world,'observatory');assert.ok((await state()).stage.exploration.friends.some(n=>n.creationId));

@@ -11,8 +11,12 @@ export function firstLightReply(scene, raw) {
   const words=safeLightWords(raw), quiet=words==='先安静看看';
   const quote=words ? `“${words.slice(0,48)}”` : '这点小小的光';
   const question=scene.question;
-  const reaction=quiet ? '安静看看也好，光筒亮着陪你。种子啵地摇一摇，我们一起看它长大。'
+  const reaction=quiet ? '可以先安静看看，光也在等你。'
     : !words ? '啵，光筒亮了一下。我们给种子留一束暖暖的光，一起看看它。'
+    : scene.id==='first-sound' ? '星星还在等你的问题。'
+    : scene.id==='gugu-feeling' ? `${quote}，画出来啦！`
+    : scene.id==='garden-response' ? '光种下啦。啵啵兽醒了！'
+    : scene.id==='first-light-page' ? '把问题带给书桌小鸮吧！'
     : scene.inputMode==='voice' ? `${quote}，我听见啦！它像亮亮的小种子，啵地摇出了光。`
     : `${quote}，啵！你的轻轻一点，让这片光又亮了一下。`;
   return {accepted:true,source:'local',reaction,visual:visualFor(words),question};

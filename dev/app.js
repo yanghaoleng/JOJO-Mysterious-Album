@@ -1,4 +1,4 @@
-import { firstLightWorldCommands, firstLightModelChoice } from './content/stories/first-light-models.js';
+import { firstLightWorldCommands, firstLightModelChoice, firstLightSky } from './content/stories/first-light-models.js';
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';
 import { prepareCreation } from './features/creation-service.js';
 import { createGameSession } from './runtime/game-session.js';
@@ -77,8 +77,19 @@ function notify(message) {
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type: 'rabbit', color: '#eee3d5', name: '小团' }, inventory: [], inventions: [], creations: [], wowEntries: [], playerName: '', firstWords: '', completed: false, ...(story?.id === 'wow' ? { journeySeed: newJourneySeed() } : {}) });
 function savedState() {
-  const saved = readStorage(`story.${story.id}`, null);
+  let saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
+  if (story.firstLight && saved.scriptVersion === 3 && story.version === 4) {
+    if (!readStorage('story.wow.before-five-beats', null)) store('story.wow.before-five-beats', saved);
+    const previous = Array.isArray(saved.wowEntries) ? saved.wowEntries : [];
+    const color = firstLightSky(previous.find(entry=>entry.id==='gugu-feeling')?.answer).color;
+    const thing = firstLightSky(previous.find(entry=>entry.id==='gugu-question')?.answer).thing;
+    const combined = color && thing ? `${color}天空里有${thing}` : '';
+    const current = saved.sceneId || ['room-hello','first-sound','voice-light','gugu-feeling','gugu-question','garden-response','shell-invitation','first-light-page'][saved.sceneIndex];
+    const anchor = ({'room-hello':'first-sound','gugu-question':'gugu-feeling','shell-invitation':'garden-response'})[current] || current;
+    saved = {...saved, scriptVersion:4, sceneId:anchor, sceneIndex:Math.max(0,story.scenes.findIndex(scene=>scene.id===anchor)),
+      wowEntries:previous.filter(entry=>story.scenes.some(scene=>scene.id===entry.id) && (entry.id!=='gugu-feeling'||combined)).map(entry=>entry.id==='gugu-feeling'?{...entry,answer:combined}:entry)};
+  }
   if (story.firstLight && saved.scriptVersion !== story.version) {
     if (!readStorage('story.wow.before-first-light', null)) store('story.wow.before-first-light', saved);
     return null;
@@ -133,13 +144,13 @@ async function handleWowAnswer(raw) {
   busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null);
   renderVoiceInput();
   $('speaker').textContent = scene.cast[0].name;
-  reading.setText(scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
+  reading.setText(scene.id === 'voice-light' ? '你的问题正变成光……' : scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
   syncWowPresentation(true);
   const pulseStarted = performance.now();
   if (story.firstLight) { wowPresentation?.pulse(); syncFirstLightModels(scene,true); }
   const controller = new AbortController(); wowRequest = controller;
   let result;
-  try { result = (scene.wow.kind === 'nickname' || (story.firstLight && (scene.inputMode === 'choice' || !safeLightWords(answer) || answer === '先安静看看'))) ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
+  try { result = (scene.wow.kind === 'nickname' || (story.firstLight && (scene.inputMode === 'choice' || scene.id==='voice-light' || scene.id==='gugu-feeling' || !safeLightWords(answer) || answer === '先安静看看'))) ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
   catch { if (controller.signal.aborted || token !== epoch) return; result = fallback; }
   finally { if (wowRequest === controller) wowRequest = null; }
   if (token !== epoch || controller.signal.aborted) return;
@@ -151,16 +162,16 @@ async function handleWowAnswer(raw) {
   const entry = {id:scene.id,chapter:scene.chapter,kind:scene.wow.kind,answer:story.firstLight ? (safeLightWords(answer) || '一束暖暖的光') : nickname || answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
   state.wowEntries = [...state.wowEntries.filter(item=>item.id!==scene.id),entry];
   if (nickname) state.playerName = nickname;
-  else if (story.firstLight) { if (scene.inputMode === 'voice' && !state.firstWords) state.firstWords = entry.answer; }
+  else if (story.firstLight) { if (scene.id === 'voice-light' && !state.firstWords) state.firstWords = entry.answer === '先安静看看' ? '萌萌星为什么变暗了？' : entry.answer; }
   else if (!state.firstWords) state.firstWords = answer;
   if (scene.wow.kind === 'create') state.inventions = [...state.inventions.filter(item=>item.chapter!==scene.chapter),{chapter:scene.chapter,scene:scene.title,visual:{...visual,kind:'wow-key',name:`第${scene.chapter}把想象钥匙`,details:answer}}];
   if (scene.wow.kind === 'color' && !state.inventory.some(item=>item.id===`wow-color-${scene.chapter}`)) state.inventory.push({id:`wow-color-${scene.chapter}`,name:scene.wow.colorName,color:scene.wow.color,description:answer});
   if (story.firstLight && scene.id === 'first-light-page' && !state.inventory.some(item=>item.id==='first-light-page')) state.inventory.push({id:'first-light-page',name:'第一束好奇的光 · 绘本第 1 页',description:state.firstWords || '一束安静的光'});
   persist(); updateBag(); syncWowPresentation(true); game?.emit('answer.accepted', { sceneId: scene.id, modelChoice: story.firstLight ? firstLightModelChoice(scene,entry.answer) : '' });
   syncFirstLightModels(scene,true);
-  await speakLine({speaker:scene.questionSpeaker || 'wow',text:entry.reaction,source:entry.source},token);
+  if (scene.id !== 'voice-light') await speakLine({speaker:scene.questionSpeaker || 'wow',text:entry.reaction,source:entry.source},token);
   if (token !== epoch) return;
-  if (story.firstLight) await wait(Math.max(0, 3400 - (performance.now() - pulseStarted)));
+  if (story.firstLight) await wait(Math.max(0, (scene.id==='voice-light'?3400:scene.id==='garden-response'?1500:350) - (performance.now() - pulseStarted)));
   if (token !== epoch) return;
   await advanceScene();
 }
@@ -358,6 +369,14 @@ function route() {
 
 function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ top: 0, behavior: 'instant' }); }
 
+function storyLine(text) {
+  if (story?.id !== 'moon') return text;
+  const memory = journey();
+  return String(text).replaceAll('{journeyQuestion}', memory.debate?.question || memory.wow?.question || '怎样让朋友继续好奇？')
+    .replaceAll('{journeyIdea}', memory.debate?.idea || '先做一个小尝试')
+    .replaceAll('{firstWork}', memory.moon?.firstWork || state.creations?.[0]?.name || '第一件作品');
+}
+
 function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
   resetVoiceInput();
@@ -532,9 +551,9 @@ async function enterScene(index) {
   $('transition').classList.remove('closed');
   if (circularTransition) await wait(reduced ? 0 : 480);
   if (token !== epoch) return;
-  phase = 'narrating'; await dialogue(scene.dialogue, token);
+  phase = 'narrating'; await dialogue(scene.dialogue.map(line => ({...line,text:storyLine(line.text)})), token);
   if (token !== epoch) return;
-  await speakLine({ speaker: scene.questionSpeaker || scene.cast[0].id, text: scene.question }, token);
+  await speakLine({ speaker: scene.questionSpeaker || scene.cast[0].id, text: storyLine(scene.question) }, token);
   if (token !== epoch) return;
   phase = 'question'; busy = false; pendingChoices = scene.choices;
   $('answer-input').value = ''; renderAnswerOptions(); beginAnswer();
@@ -632,7 +651,9 @@ async function createWorldObject(text, token) {
   answerSupport.stop(); busy = true; phase = 'responding'; voice.listen(false); setReplyMode(null); renderVoiceInput();
   const result = game.dispatch(proposal.commands);
   if (!result.ok) { busy = false; phase = 'question'; beginAnswer(); notify('这件作品还没放好，请再试一次。'); return; }
-  rememberJourney('moon', { created: state.creations.length, lastWork: proposal.record.name });
+  const previousMoon = journey().moon || {};
+  rememberJourney('moon', { ...previousMoon, created: state.creations.length, lastWork: proposal.record.name,
+    firstWork: previousMoon.firstWork || proposal.record.name, completedSteps: Math.max(previousMoon.completedSteps || 0, state.sceneIndex + 1) });
   game.emit('creation.saved', { creationId: proposal.record.id, modifying: proposal.modifying });
   await speakLine({ speaker: scene.inventionSpeaker, text: `${proposal.modifying ? '改好了' : '做出来了'}！${proposal.record.response}` }, token);
   if (token !== epoch) return;
@@ -644,6 +665,20 @@ function continueCreating() {
   $('ending').hidden=true;$('speech-card').hidden=false;$('creation-review').hidden=true;
   const scene=story.scenes[state.sceneIndex];phase='question';busy=false;
   pendingChoices=scene.choices;reading.setText('还想造什么？也可以说“给刚才的作品加……”');renderAnswerOptions();beginAnswer();resumeListening();
+}
+
+async function advanceCreation() {
+  if (phase !== 'creation-review') return;
+  const scene = story.scenes[state.sceneIndex];
+  $('creation-review').hidden = true;
+  if (story.id === 'moon' && scene.id === 'moon-observatory' && !journey().moon?.trialHeard) {
+    phase = 'responding'; busy = true;
+    const work = journey().moon?.firstWork || '这件作品';
+    const feedback = `包仔试了“${work}”：它能帮上忙！云上的朋友也想试，只是有些朋友说话很轻。下一站给他们留个位置吧。`;
+    rememberJourney('moon', {...journey().moon, trialHeard:true, feedback});
+    await speakLine({speaker:'companion',text:feedback}, epoch);
+  }
+  await advanceScene();
 }
 
 async function finishStory() {
@@ -751,7 +786,7 @@ function initializeControls() {
   $('start-story').onclick = startStory;
   $('creation-again').onclick = continueCreating;
   $('return-creating').onclick = continueCreating;
-  $('creation-next').onclick = () => { $('creation-review').hidden=true;void advanceScene(); };
+  $('creation-next').onclick = () => { void advanceCreation(); };
   $('restart').onclick = () => { epoch++; wowRequest?.abort(); wowRequest = null; voice.stop(); setStoryMenu(false); setReplyMode(null); state = defaultState(); persist(); openStory(story); };
   $('open-story-menu').onclick = () => setStoryMenu(!menuOpen);
   $('scene-reset').onclick = () => { stage.resetCamera(); setStoryMenu(false, true); };

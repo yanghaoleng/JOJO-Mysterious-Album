@@ -36,15 +36,32 @@ export function debateFallback(topic, speakers) {
   return {
     allowed: true,
     topic,
-    turns: lines.map((text, i) => ({ speakerId: speakers[i % 2].id, text })),
+    turns: lines.slice(0, 4).map((text, i) => ({ speakerId: speakers[i % 2].id, text })),
     commonGround: "让每个人的问题都有地方落下，再一起试一试。",
     closingQuestion: "你想先试哪种办法？说一个理由，也可以把两种办法合起来。",
   };
 }
 
+export function journeyDebate(question, speakers) {
+  const focus = String(question || '').trim().slice(0, 48);
+  const [owl, rabbit] = speakers;
+  return {
+    allowed: true,
+    topic: focus,
+    turns: [
+      { speakerId: owl.id, text: `关于“${focus}”，我想先观察，找找能看见的线索。` },
+      { speakerId: rabbit.id, text: `我想先做一个小尝试，看看“${focus}”会发生什么。` },
+      { speakerId: owl.id, text: '我们把看到的记下来，再想想还缺哪条线索。' },
+      { speakerId: rabbit.id, text: '我来试一小步，遇到新发现就停下来一起商量。' },
+    ],
+    commonGround: `围绕“${focus}”，先观察，再试一小步。`,
+    closingQuestion: `对于“${focus}”，你想先怎么试？也可以把两种办法合起来。`,
+  };
+}
+
 export const DEBATE_STORY = {
   id: "debate",
-  version: 1,
+  version: 2,
   interaction: "debate",
   world: "meadow",
   speakers: [
@@ -70,13 +87,13 @@ export const DEBATE_STORY = {
     "我想先试一点，再看看有什么新发现。",
     "我想先听大家的点子，再合起来试试。",
   ],
-  rounds: ["先说说自己的理由", "再听听另一种想法", "带走一个新问题"],
+  rounds: ["听听两种办法", "商量下一步"],
   opening:
-    "第一束光唤醒了宇宙。怎样让好奇心继续亮着？我们想听两种理由，也想听你的。先选一个问题吧。",
+    "我是书桌小鸮。我想知道，问出来以后怎样试出答案？雪团小兔有另一个办法。选个问题，我们一起商量。",
   handoff:
-    "上一站你留下了：“{question}”光回来了，可我们对下一步有不同想法。先选一个问题，一起听听吧。",
+    "我是书桌小鸮。咯咯哒带来了你的问题：“{question}”我想先观察，雪团小兔想先试一小步。听完就由你决定下一步。",
   ending:
-    "你的办法我们记下了。下一站，把它做成朋友能试用的东西，让宇宙的好奇心继续亮起来。",
+    "你的试法我们记下了。下一站，先做出一件能用的东西，再请朋友试试。",
   events: [
     {
       id: "ready-to-listen",

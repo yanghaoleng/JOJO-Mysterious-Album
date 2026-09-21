@@ -9,7 +9,7 @@ try {
  await page.route('**/api/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
  await page.goto(base+'?story=wow');await page.locator('#start-story').click();
  async function decision(){for(let i=0;i<300;i++){const s=await page.evaluate(()=>window.__DEV_STORY__?.status);if(s?.phase==='question'&&!s.busy)return s;if(await page.locator('#speech-card').isVisible())await page.locator('#speech-card').click();await page.waitForTimeout(80);}throw Error('question timeout');}
- for(let i=0;i<12;i++) {
+ for(let i=0;i<5;i++) {
  const s=await decision();console.log('tap scene',mobile,i);assert.equal(s.sceneIndex,i);
  const t=s.stage.storyTapTarget;
  if(t?.id){
@@ -29,8 +29,8 @@ try {
    if(await page.locator('#choices').isHidden())await page.locator('#reply-more').click();
    await page.locator('#choices button').first().click();
  }
- if(i<11){await decision();assert.equal((await page.evaluate(()=>window.__DEV_STORY__.status)).wow.entries,i+1);}
+ if(i<4){await decision();assert.equal((await page.evaluate(()=>window.__DEV_STORY__.status)).wow.entries,i+1);}
  }
- assert.deepEqual(errors,[]);await page.close();console.log(`PASS all 8 scene targets, strong feedback, repeated taps, drag and ${mobile?'touch':'mouse'}`);
+ assert.deepEqual(errors,[]);await page.close();console.log(`PASS all 5 scene targets, strong feedback, repeated taps, drag and ${mobile?'touch':'mouse'}`);
  }
 } finally {await browser.close();}
