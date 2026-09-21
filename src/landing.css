@@ -175,3 +175,9 @@
 .making-timeline{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}.making-timeline h3{font-size:18px}.landing-footer{margin-top:54px;border-top:1px solid #deded0;padding:26px 0 32px;color:#718064;font-size:12px}.landing-footer .landing-text-link{font-size:12px}
 @media(min-width:768px) and (max-width:1100px){.making-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}}
 @media(max-width:767px){.making-timeline{grid-template-columns:1fr;gap:32px}.making-timeline h3{font-size:20px}.landing-footer{display:flex;margin-top:33px;gap:15px;font-size:10px}.landing-footer .landing-text-link{font-size:11px}}
+
+/* The anonymous technical identity stays quiet but available for support. */
+.landing-footer .landing-footer-identity{display:grid;gap:8px;min-width:0;color:#6b765e}
+.landing-footer-identity code{font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#53624d;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
+.landing-footer-identity code[data-ready=false]{color:#8a756b}
+@media(max-width:767px){.landing-footer{align-items:flex-start}.landing-footer .landing-footer-identity{max-width:calc(100% - 88px)}.landing-footer-identity code{display:block}}

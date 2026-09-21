@@ -4,6 +4,7 @@ __pycache__/
 !.env.example
 .claude/
 node_modules/
+.venv/
 .data/
 
 # Generated from the full release history after committing.

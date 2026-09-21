@@ -40,7 +40,7 @@ try{
   assert.equal(await page.locator('.landing-closing').count(),0);
   assert.equal(await page.locator('a[href="#top"]').count(),0);
   assert.equal(await page.locator('.making-timeline article').count(),4);
-  const modules=page.locator('.making-timeline .landing-text-link[href="./dev/modules/"]');assert.equal(await modules.count(),1);
+  const modules=page.locator('.making-timeline h3 a[href="./dev/modules/"]');assert.equal(await modules.count(),1);
   assert.equal(await page.locator('.experiment-grid a[href*="modules"]').count(),0);
   await page.locator('.making-history-heading').scrollIntoViewIfNeeded();
   await page.locator('.making-timeline img').last().scrollIntoViewIfNeeded();
@@ -53,7 +53,7 @@ try{
   }
   await page.locator('.landing-footer a').click();await page.waitForURL('**/changelog/');
   await page.locator('.page-header>a').last().click();await modules.click();await page.waitForURL('**/dev/modules/');
-  await page.locator('header').getByText('世界工坊 / 模块陈列馆',{exact:true}).waitFor();
+  await page.locator('header').getByText('世界工坊',{exact:true}).waitFor();
   checks.push('Module gallery belongs to iteration history; footer log and return links work; closing card removed; four responsive widths');
   console.log(checks.at(-1));
   await page.goto(`${base}/?mode=debug`,{waitUntil:'domcontentloaded'});

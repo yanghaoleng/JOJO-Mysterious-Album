@@ -405,11 +405,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -446,11 +441,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -487,11 +477,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -529,11 +514,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -571,11 +551,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -611,11 +586,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -652,11 +622,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -693,11 +658,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -733,11 +693,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -774,11 +729,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -814,11 +764,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -854,11 +799,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -894,11 +834,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -934,11 +869,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -974,11 +904,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1014,11 +939,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1054,11 +974,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1094,11 +1009,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1134,11 +1044,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1174,11 +1079,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1214,11 +1114,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1254,11 +1149,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1294,11 +1184,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1334,11 +1219,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1374,11 +1254,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1414,11 +1289,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1454,11 +1324,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1494,11 +1359,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -1534,11 +1394,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1575,11 +1430,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1616,11 +1466,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1657,12 +1502,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "交通工具",
@@ -1699,12 +1538,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "交通工具",
@@ -1741,12 +1574,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "交通工具",
@@ -1783,11 +1610,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -1824,11 +1646,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -1864,11 +1681,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1904,11 +1716,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1945,11 +1752,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -1986,11 +1788,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2027,11 +1824,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2067,11 +1859,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2107,11 +1894,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2148,11 +1930,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2188,11 +1965,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2229,11 +2001,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2269,11 +2036,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -2310,11 +2072,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2350,11 +2107,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2390,11 +2142,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2430,11 +2177,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2470,11 +2212,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2510,11 +2247,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2550,11 +2282,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2590,11 +2317,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2630,11 +2352,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2670,11 +2387,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2710,11 +2422,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2750,11 +2457,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2790,11 +2492,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2830,11 +2527,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2870,11 +2562,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2910,11 +2597,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2950,11 +2632,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -2990,11 +2667,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3030,11 +2702,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3070,11 +2737,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3110,11 +2772,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3150,11 +2807,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3190,11 +2842,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3230,11 +2877,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3270,11 +2912,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3310,11 +2947,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3350,11 +2982,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3390,11 +3017,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -3430,11 +3052,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3471,11 +3088,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3512,11 +3124,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3553,11 +3160,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3594,11 +3196,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3635,11 +3232,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3677,11 +3269,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3718,11 +3305,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3759,11 +3341,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3800,11 +3377,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3841,11 +3413,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3883,11 +3450,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3924,11 +3486,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -3965,11 +3522,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4006,11 +3558,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4047,11 +3594,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4089,11 +3631,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4130,11 +3667,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4171,11 +3703,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4212,11 +3739,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4253,11 +3775,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4295,11 +3812,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4336,11 +3848,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4377,11 +3884,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4418,11 +3920,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4459,11 +3956,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4501,11 +3993,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4542,11 +4029,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4583,11 +4065,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4624,11 +4101,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4665,11 +4137,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4707,11 +4174,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4748,11 +4210,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4789,11 +4246,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4830,11 +4282,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4871,11 +4318,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4913,11 +4355,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4954,11 +4391,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -4995,11 +4427,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5036,11 +4463,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5077,11 +4499,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5119,11 +4536,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5160,11 +4572,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5201,11 +4608,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5242,11 +4644,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5283,11 +4680,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5325,11 +4717,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5366,11 +4753,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5407,11 +4789,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5448,11 +4825,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5489,11 +4861,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5529,11 +4896,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5568,11 +4930,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5607,11 +4964,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5646,11 +4998,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5685,11 +5032,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5725,11 +5067,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5764,11 +5101,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5803,11 +5135,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5842,11 +5169,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5881,11 +5203,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5921,11 +5238,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5960,11 +5272,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -5999,11 +5306,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6038,11 +5340,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6077,11 +5374,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6117,11 +5409,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6156,11 +5443,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6195,11 +5477,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6234,11 +5511,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6273,11 +5545,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6313,11 +5580,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6352,11 +5614,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6391,11 +5648,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6430,11 +5682,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6469,11 +5716,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6509,11 +5751,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6548,11 +5785,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6587,11 +5819,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6626,11 +5853,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6665,11 +5887,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6705,11 +5922,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6744,11 +5956,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6783,11 +5990,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6822,11 +6024,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6861,11 +6058,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6901,11 +6093,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6940,11 +6127,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -6979,11 +6161,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7018,11 +6195,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7057,11 +6229,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7097,11 +6264,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7136,11 +6298,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7175,11 +6332,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7214,11 +6366,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7253,11 +6400,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7293,11 +6435,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7332,11 +6469,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7371,11 +6503,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7410,11 +6537,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7449,11 +6571,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7489,11 +6606,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7528,11 +6640,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7567,11 +6674,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7606,11 +6708,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7645,11 +6742,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7685,11 +6777,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7724,11 +6811,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7763,11 +6845,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7802,11 +6879,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7841,11 +6913,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7881,11 +6948,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7920,11 +6982,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7959,11 +7016,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -7998,11 +7050,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8037,11 +7084,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8077,11 +7119,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8116,11 +7153,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8155,11 +7187,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8194,11 +7221,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8233,11 +7255,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8273,11 +7290,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8312,11 +7324,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8351,11 +7358,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8390,11 +7392,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8429,11 +7426,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8469,11 +7461,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8508,11 +7495,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8547,11 +7529,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8586,11 +7563,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8625,11 +7597,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8665,11 +7632,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8704,11 +7666,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8743,11 +7700,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8782,11 +7734,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8821,11 +7768,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8860,11 +7802,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8899,11 +7836,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8938,11 +7870,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -8977,11 +7904,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -9016,11 +7938,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9056,11 +7973,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9096,11 +8008,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9136,11 +8043,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9176,11 +8078,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9216,11 +8113,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9256,11 +8148,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9296,11 +8183,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9336,11 +8218,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9376,11 +8253,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9416,11 +8288,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9456,11 +8323,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9496,11 +8358,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9536,11 +8393,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9576,11 +8428,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9616,11 +8463,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9656,11 +8498,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9696,11 +8533,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9736,11 +8568,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9776,11 +8603,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9816,11 +8638,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9856,11 +8673,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9896,11 +8708,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9936,11 +8743,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -9976,11 +8778,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -10016,11 +8813,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -10056,11 +8848,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -10096,11 +8883,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -10136,11 +8918,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10178,11 +8955,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10219,11 +8991,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10260,11 +9027,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10301,11 +9063,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10342,11 +9099,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10383,12 +9135,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "交通工具",
@@ -10425,12 +9171,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "交通工具",
@@ -10467,11 +9207,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10508,11 +9243,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "交通工具",
@@ -10549,11 +9279,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10591,11 +9316,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10633,11 +9353,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10675,11 +9390,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10715,11 +9425,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10755,11 +9460,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10797,11 +9497,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10838,11 +9533,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10878,11 +9568,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10918,11 +9603,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "食物",
@@ -10958,11 +9638,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -10998,11 +9673,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11040,11 +9710,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11080,11 +9745,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11120,11 +9780,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11161,11 +9816,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11201,11 +9851,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11243,11 +9888,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11284,11 +9924,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11324,11 +9959,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "玩具",
@@ -11365,11 +9995,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11404,11 +10029,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11447,11 +10067,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11487,11 +10102,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11531,11 +10141,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11572,11 +10177,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11613,11 +10213,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11655,12 +10250,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop",
-          "fly"
         ]
       },
       "category": "场景道具",
@@ -11696,11 +10285,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11738,11 +10322,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11779,11 +10358,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11820,11 +10394,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11863,11 +10432,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11908,11 +10472,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11953,11 +10512,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -11994,11 +10548,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -12038,11 +10587,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -12080,11 +10624,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -12121,11 +10660,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -12163,11 +10697,6 @@
         ],
         "animations": [
           "activate"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "场景道具",
@@ -12227,11 +10756,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12293,11 +10817,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12359,11 +10878,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12425,11 +10939,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12491,11 +11000,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12557,11 +11061,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12623,11 +11122,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12689,11 +11183,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12755,11 +11244,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12821,11 +11305,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12887,11 +11366,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -12953,11 +11427,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13019,11 +11488,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13085,11 +11549,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13151,11 +11610,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13217,11 +11671,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13283,11 +11732,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13349,11 +11793,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13415,11 +11854,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13481,11 +11915,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13547,11 +11976,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13613,11 +12037,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13679,11 +12098,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13745,11 +12159,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13811,11 +12220,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13877,11 +12281,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -13943,11 +12342,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14009,11 +12403,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14075,11 +12464,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14141,11 +12525,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14207,11 +12586,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14273,11 +12647,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14339,11 +12708,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14405,11 +12769,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14471,11 +12830,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14537,11 +12891,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14603,11 +12952,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14669,11 +13013,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14735,11 +13074,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14801,11 +13135,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14867,11 +13196,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14933,11 +13257,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -14999,11 +13318,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15065,11 +13379,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15131,11 +13440,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15197,11 +13501,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15264,11 +13563,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15331,11 +13625,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15398,11 +13687,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15465,11 +13749,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15532,11 +13811,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15599,11 +13873,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15666,11 +13935,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15705,11 +13969,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15752,11 +14011,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15799,11 +14053,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15846,11 +14095,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15893,11 +14137,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15940,11 +14179,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -15987,11 +14221,6 @@
           "idle",
           "working",
           "active"
-        ],
-        "motions": [
-          "walk",
-          "charge",
-          "stop"
         ]
       },
       "category": "角色",
@@ -16000,110 +14229,6 @@
       "keywords": [
         "星星 MOMO"
       ]
-    },
-    {
-      "id": "world:mercury",
-      "kind": "world",
-      "name": "水星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:venus",
-      "kind": "world",
-      "name": "金星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:earth",
-      "kind": "world",
-      "name": "地球",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:mars",
-      "kind": "world",
-      "name": "火星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:jupiter",
-      "kind": "world",
-      "name": "木星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:saturn",
-      "kind": "world",
-      "name": "土星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:uranus",
-      "kind": "world",
-      "name": "天王星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
-    },
-    {
-      "id": "world:neptune",
-      "kind": "world",
-      "name": "海王星",
-      "description": "完整球面环境，可复用到不同故事与事件。",
-      "source": "dev/worlds.js",
-      "capabilities": [
-        "完整星球",
-        "球面坐标",
-        "环境反馈"
-      ],
-      "dependencies": []
     },
     {
       "id": "world:orchard",

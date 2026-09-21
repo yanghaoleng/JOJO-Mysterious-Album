@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4efe3">
+  <title>用户管理 · 萌萌星</title>
+  <link rel="stylesheet" href="./admin.css?v=20260920-users">
+</head>
+<body>
+  <main id="login-view" class="login-view" aria-labelledby="login-title">
+    <form id="login-form" class="login-card">
+      <p class="eyebrow">萌萌星 · 内部管理</p>
+      <h1 id="login-title">用户管理</h1>
+      <p>登录后可以查看匿名用户和会话状态。这里不会展示孩子的输入内容。</p>
+      <label>管理员账号<input id="username" name="username" autocomplete="username" required maxlength="80"></label>
+      <label>密码<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"></label>
+      <p id="login-error" class="error" role="alert"></p>
+      <button type="submit">登录</button>
+      <a href="/">返回网站</a>
+    </form>
+  </main>
+
+  <main id="users-view" class="users-view" hidden>
+    <header class="topbar">
+      <div><p class="eyebrow">萌萌星 · 内部管理</p><h1>匿名用户</h1></div>
+      <div class="top-actions"><a href="/">打开网站</a><button id="logout" class="quiet" type="button">退出</button></div>
+    </header>
+
+    <form id="filters" class="filters">
+      <label>用户 ID<input id="user-id" placeholder="输入完整 UUID" autocomplete="off"></label>
+      <label>状态<select id="status"><option value="">全部状态</option><option value="active">正常</option><option value="disabled">已停用</option></select></label>
+      <label>活跃<select id="activity"><option value="">全部用户</option><option value="online">最近 10 分钟活跃</option><option value="offline">当前不活跃</option></select></label>
+      <label>排序<select id="sort"><option value="created_desc">最新注册</option><option value="created_asc">最早注册</option><option value="active_desc">最近活跃</option><option value="active_asc">最久未活跃</option></select></label>
+      <button type="submit">查询</button>
+      <button id="clear-filters" class="quiet" type="button">清除</button>
+    </form>
+
+    <section id="list-error" class="notice error-panel" role="alert" hidden>用户数据暂时无法读取。<button id="retry" type="button">重试</button></section>
+    <section class="list-card" aria-live="polite">
+      <div class="list-summary"><strong id="total">0 位用户</strong><span id="page-label"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>用户</th><th>状态</th><th>注册时间</th><th>最近活跃</th><th>会话</th><th></th></tr></thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty" hidden>暂无匿名用户</div>
+      <nav class="pagination" aria-label="用户列表分页"><button id="previous" class="quiet" type="button">上一页</button><button id="next" class="quiet" type="button">下一页</button></nav>
+    </section>
+
+    <dialog id="detail-dialog">
+      <div class="dialog-head"><div><p class="eyebrow">匿名用户详情</p><h2 id="detail-id"></h2></div><button id="close-detail" class="icon" type="button" aria-label="关闭">×</button></div>
+      <dl id="detail-summary"></dl>
+      <h3>会话</h3>
+      <div id="session-list" class="session-list"></div>
+    </dialog>
+  </main>
+  <script type="module" src="./admin.js?v=20260920-users"></script>
+</body>
+</html>
+
