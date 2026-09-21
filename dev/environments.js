@@ -2,6 +2,7 @@
  * Sky colors stay pale even at night; local key light keeps every face readable.
  * Radii are world units used by geometry and gravity, never visual scale factors.
  */
+import { SOLAR_PLANETS } from './content/solar-planets.js';
 const DAY_LIGHT = {
   sky: '#dcebd9', bounce: '#ecd5b1', sun: '#fff0d0', rim: '#e5eef4',
   hemisphereIntensity: 1.9, sunIntensity: 2.35, rimIntensity: 0.72, exposure: 1.06,
@@ -24,6 +25,7 @@ const environment = (radius, period, colors, lighting = {}) => Object.freeze({
 });
 
 export const WORLD_ENVIRONMENTS = Object.freeze({
+  ...Object.fromEntries(SOLAR_PLANETS.map(p=>[p.id,environment(p.radius,'night',{base:'#dce2ed',glow:'#f4ead8',horizon:'#bac8dd'})])),
   orchard: environment(5.6, 'day', {
     base: '#f2efe2', glow: '#fff5d5', horizon: '#dce9d5',
     ink: '#343d30', muted: '#5e6854', accent: '#67834c', paper: '#fffaf0',

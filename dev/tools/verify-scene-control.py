@@ -29,6 +29,18 @@ try:
         assert len(character['commands']) == 10
         assert all(c['asset'] == asset for c in character['commands']), character
         assert 'substitution' not in character
+    context['entities'] = {'pig':{'asset':'npc:zhuxiaodi'},'plane':{'asset':'prop:airplane'},'apple':{'asset':'prop:apple'}}
+    for text, expected in [('猪小弟招手', {'type':'entity.animate','id':'pig','animation':'wave'}), ('猪小弟向前冲锋',{'type':'entity.motion','id':'pig','mode':'charge'}), ('让飞机起飞',{'type':'entity.motion','id':'plane','mode':'fly'}), ('让飞机停止',{'type':'entity.motion','id':'plane','mode':'stop'})]:
+        action,_=submit(text)
+        assert action['commands']==[expected],action
+    cleared,_=submit('清除现在的东西')
+    assert len(cleared['commands'])==3 and all(c['type']=='entity.remove' for c in cleared['commands'])
+    context['entities']={}
+    absent,_=submit('猪小弟招手')
+    assert not absent['commands'] and absent['handled']
+    for name in ['水星','金星','地球','火星','木星','土星','天王星','海王星']:
+        planet,_=submit('去'+name)
+        assert planet['sceneSwitch'],planet
     apples, _ = submit('来100个苹果')
     assert len(apples['commands']) == 100
     context['entities'] = {c['id']: c for c in apples['commands']}

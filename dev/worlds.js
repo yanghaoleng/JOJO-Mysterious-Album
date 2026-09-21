@@ -6,6 +6,8 @@ import { makeDecorationLayout } from './journey-layout.js';
 
 /** Independently modelled, material-batched miniature worlds for the /dev edition. */
 import { WORLD_CATALOG } from './content/worlds.js';
+import { SOLAR_PLANETS } from './content/solar-planets.js';
+import { createSolarWorld } from './solar-worlds.js';
 export { WORLD_CATALOG } from './content/worlds.js';
 
 const PALETTES = {
@@ -23,6 +25,8 @@ function seededRandom(seed) {
 }
 
 export function createWorld(requestedId, { seed = 1, decorations = null, radius: requestedRadius } = {}) {
+  const solar=SOLAR_PLANETS.find(p=>p.id===requestedId);
+  if(solar)return createSolarWorld(solar,requestedRadius);
   const id = PALETTES[requestedId] ? requestedId : 'orchard';
   const palette = requestedRadius && id === 'bakery' ? ['#b6c69a', '#8da47c', '#e0cba5'] : PALETTES[id];
   const environment = WORLD_ENVIRONMENTS[id];

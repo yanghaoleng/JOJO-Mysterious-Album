@@ -181,3 +181,22 @@
 .landing-footer-identity code{font:9px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#53624d;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
 .landing-footer-identity code[data-ready=false]{color:#8a756b}
 @media(max-width:767px){.landing-footer{align-items:flex-start}.landing-footer .landing-footer-identity{max-width:calc(100% - 88px)}.landing-footer-identity code{display:block}}
+
+/* WONDER 素养体系板块 */
+.wonder-section{padding-top:100px}
+.wonder-letters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:6px 0 38px}
+.wonder-letters article{background:#fffcf5;border:1px solid #e5e3d7;border-radius:20px;padding:22px 22px 18px}
+.wonder-cover{width:72px;height:72px;border-radius:16px;object-fit:cover;margin-bottom:14px;border:1px solid #e5e3d7;box-shadow:0 4px 12px rgba(72,58,39,.08)}
+.wonder-letters h3{font-size:16px;letter-spacing:-.02em;margin-bottom:8px;font-weight:760}
+.wonder-letters p{font-size:12.5px;line-height:1.8;color:var(--lp-muted)}
+.wonder-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #e5e3d7;border-radius:20px;background:#fffcf5}
+.wonder-table{display:grid;grid-template-columns:120px repeat(4,minmax(150px,1fr));min-width:760px}
+.wonder-table .wt-head,.wonder-table .wt-row{display:contents}
+.wonder-table>div>span{padding:14px 16px;border-bottom:1px solid #efeadd;font-size:12.5px;line-height:1.65;color:var(--lp-ink);vertical-align:middle}
+.wonder-table .wt-head span{font-size:11px;font-weight:750;letter-spacing:.04em;color:var(--lp-green);background:#f4efe1;border-bottom:2px solid #e2dcc8;position:sticky;top:0}
+.wonder-table .wt-row:last-child span{border-bottom:0}
+.wt-dim{font-weight:750;font-size:13px;display:flex;align-items:center;gap:9px}
+.wt-cover{width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;border:1px solid #e5e3d7}
+.wonder-note{margin-top:26px;padding:18px 22px;background:#f4efe1;border-radius:16px;font-size:13px;line-height:1.9;color:var(--lp-muted)}
+.wonder-note strong{color:var(--lp-ink)}
+@media(max-width:767px){.wonder-section{padding-top:58px}.wonder-letters{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:26px}.wonder-letters article{padding:17px 16px 15px}.wonder-cover{width:60px;height:60px;border-radius:13px;margin-bottom:10px}.wonder-letters h3{font-size:14px}.wonder-letters p{font-size:11.5px}.wonder-table{min-width:680px}.wonder-table>div>span{padding:11px 12px;font-size:11.5px}.wonder-note{font-size:12px;padding:15px 17px}}

@@ -28,6 +28,7 @@ export const ASSETS = Object.freeze(
         name: CREATION_KITS.find((k) => k.id === id)?.name || "想象试作品",
         states: ["idle", "working", "active"],
         animations: ["activate"],
+        motions: ['walk','charge','stop', ...(['airplane','helicopter','rocket','ufo','fighter-jet','spaceship'].includes(id) ? ['fly'] : [])],
       },
     ]),
     ...NPC_CATALOG.map((n) => [
@@ -75,7 +76,7 @@ export const ASSETS = Object.freeze(
         states: ["idle", "working", "active"],
       },
     ]),
-  ]),
+  ].map(([id,asset])=>[id,{...asset,motions:asset.motions||['walk','charge','stop']}])),
 );
 export const isHelper = (id) =>
   typeof id === "string" &&
