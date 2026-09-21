@@ -879,7 +879,7 @@ def approximate_scene_result(text, context):
         (r'枪|炮|武器|导弹', 'prop:water-gun', '水枪', '玩具武器'),
         (r'动物|宠物|玩偶|熊|兔|猫|狗', 'prop:teddy', '泰迪熊', '动物玩偶'),
     ]
-    asset, name, reason = 'prop:ball', '皮球', '可互动玩具'
+    asset, name, reason = 'prop:poop', '便便', '可互动玩具'
     for pattern, candidate, label, category in candidates:
         if re.search(pattern, text):
             asset, name, reason = candidate, label, category
