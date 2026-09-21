@@ -48,6 +48,7 @@ function reduce(state, c, context) {
       id: c.id,
       createdOrder: order,
       asset: c.asset,
+      name: c.name || '',
       position: c.position,
       color: c.color || "#9ab8ba",
       scale: c.scale || 0.65,

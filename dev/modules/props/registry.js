@@ -275,6 +275,7 @@ import { build as collection410 } from "./collection-82-0.js";
 import { build as collection415 } from "./collection-83-0.js";
 import { build as special0 } from "./ufo.js";
 import { build as special1 } from "./fighter-jet.js";
+import { build as procedural1 } from "./procedural.js";
 import { build as special2 } from "./spaceship.js";
 import { build as special3 } from "./battleship.js";
 import { build as special4 } from "./tank.js";
@@ -325,6 +326,7 @@ export const PROP_BUILDERS = Object.freeze({
 
   "ufo": special0,
   "fighter-jet": special1,
+  "procedural": procedural1,
   "spaceship": special2,
   "battleship": special3,
   "tank": special4,

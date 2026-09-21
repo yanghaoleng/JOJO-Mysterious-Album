@@ -95,7 +95,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
               { asset: record.asset, color: record.color },
               record.scale,
             )
-          : createCreationModel(record.asset.slice(5), record.color);
+          : createCreationModel(record.asset.slice(5), record.color, record.name);
         const suspended = model.group.userData.suspended === true;
         const normal = stage.world.surfaceNormal(...record.position),
           anchor = new THREE.Group();

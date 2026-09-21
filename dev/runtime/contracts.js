@@ -10,7 +10,7 @@ import { PROP_IDS } from "../content/props.js";
 export const COMMANDS = Object.freeze({
   "feeding.start": ["eaters", "foods"],
   "feeding.stop": ["eaters"],
-  "entity.spawn": ["id", "asset", "position", "color", "scale", "sizeLocked", "colorOverride"],
+  "entity.spawn": ["id", "asset", "name", "position", "color", "scale", "sizeLocked", "colorOverride"],
   "entity.scale": ["id", "scale"],
   "entity.move": ["id", "position"],
   "entity.remove": ["id"],

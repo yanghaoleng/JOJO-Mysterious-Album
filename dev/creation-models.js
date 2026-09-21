@@ -3,11 +3,12 @@ import { createPropToolkit } from './modules/props/toolkit.js';
 import { PROP_BUILDERS } from './modules/props/registry.js';
 
 // Compatibility factory. Models live in independent modules/props files.
-export function createCreationModel(kind, color = '#9ab8ba') {
+export function createCreationModel(kind, color = '#9ab8ba', name = '') {
   const build = PROP_BUILDERS[kind];
   if (!build) throw new Error(`Unknown prefab: ${kind}`);
   const group = new THREE.Group(); group.name = `creation-${kind}`;
   const kit = createPropToolkit(group, color);
+  kit.name = name || kind.replace(/^prop:/, '');
   const { shapes, materials, movers } = kit;
   build(kit);
   let age = 100, time = 0, enabled = true;

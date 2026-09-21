@@ -820,7 +820,7 @@ SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。孩子会像导演
 commands 必须是数组，每项形如 {"type":"entity.spawn","id":"x1","asset":"prop:rocket","position":[0,0]}（type 的值就是命令名本身，不要嵌套、不要把命令名当作外层键）。
 只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
 允许的命令：
-1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；
+1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；如果孩子明确提到清单里没有的东西（例如“变出一辆坦克”“让叫叫驾驶战斗机”），就用 {"type":"entity.spawn","id":"x1","asset":"prop:procedural","name":"<那个东西的名字>","position":[x,z]} 补全它，name 用孩子说的名称（如“坦克”“战斗机”）；
 2. entity.remove: {type,id}，让指定模型消失（可多条，用于“全部消失/清空”）；
 3. entity.move: {type,id,position:[x,z]}，移动已存在的实体；
 4. entity.animate: {type,id,animation:"activate"}，触发机关；actor.animate: {type,target,animation,expression,duration} 让角色做动作；
@@ -837,7 +837,7 @@ commands 必须是数组，每项形如 {"type":"entity.spawn","id":"x1","asset"
 15. group.chase {type,chaser,runner} 追逐；group.hug {type,targets:[a,b]} 拥抱；group.handshake {type,targets:[a,b]} 握手；group.holdhands {type,targets:[...]} 牵手排队走；group.stack {type,targets:[...]} 叠罗汉；group.ride {type,driver,mount} 骑乘（人骑飞机/车，人骑人也行，两个模型叠一起=驾驶）；group.dance {type,targets:[...]} 一起跳舞。
 suggestions：每次输出后续剧情发展（孩子接下来可能看到什么），数组 1~3 条，每项 {kind:"auto-feed"|"auto-ride"|"auto-play"|"socialize"|"weather"|"fun", reason:"一句中文解释"}：场上同时有角色和食物→auto-feed（他们自己去吃）；有角色和飞行器/车→auto-ride（骑上去玩）；角色们都在→socialize（交谈/握手/跳舞）；生成了新角色→auto-play（自己跑跳打滚玩）；可以空数组。
 意图匹配规则：
-- “出现/生成/变出/召唤 X 个 Y” → entity.spawn（X 个就 X 条）；
+- “出现/生成/变出/召唤 X 个 Y” → entity.spawn（X 个就 X 条）；Y 若不在清单里，必须用 {"type":"entity.spawn","asset":"prop:procedural","name":"Y"} 按 Y 的名字补全新道具，绝不用形状不同的其他道具代替（例如“冰箱”就用 name=冰箱，“奥特曼”就用 name=奥特曼）；
 - “Y 消失/把 Y 拿走/删掉/清空” → entity.remove；“全部消失/清空场景/都没了” → 列出当前场景所有实体逐一 remove；
 - “A 吃 B / 让 A 吃 B” → 先生成 A、B（若不在场），再 feeding.start；吃是开放的，任何对象可以吃任何对象；
 - “去/到 月球/草地/果园/面包房/海底/云层/家/口袋” → sceneSwitch；“天黑/夜晚/关灯” → environment.set night，其余类推；
@@ -877,9 +877,27 @@ def scene_quantity(text):
     return count, True
 
 
+def extract_unknown_object(text, context):
+    t = re.sub(r'\d+(?:个|辆|架|艘|只|份|颗|台|把|枚|件)?', '', text)
+    t = re.sub(r'[，。！？、,.!?\s]', '', t)
+    # 去掉动作/连接/助词，保留核心名词
+    for w in ['去', '驾驶', '开', '坐', '骑', '让', '给', '把', '变成', '变出', '召唤', '生成', '出现', '拿出', '一个', '一只', '一架', '一辆', '一艘', '一台', '我的', '新的', '然后', '想要', '想', '了', '吧', '啊', '呢', '和', '跟', '带', '叫', '看']:
+        t = t.replace(w, '')
+    # 去掉场景中已知角色/分组名
+    known = set()
+    if isinstance(context, dict):
+        for item in context.get('entities', {}).values():
+            known.add(str(item.get('name') or ''))
+            known.add(str(item.get('asset') or '').split(':')[-1])
+    for word in sorted(known, key=len, reverse=True):
+        if word and word in t:
+            t = t.replace(word, '')
+    return t.strip()[:12]
+
 def approximate_scene_result(text, context):
     count, _ = scene_quantity(text)
     candidates = [
+        (r'战斗机|战机|喷气机|歼击机|轰炸机', 'prop:fighter-jet', '战斗机', '飞行交通工具'),
         (r'榴莲|菠萝蜜|刺果', 'prop:collection-34-0', '菠萝', '带纹理外壳的水果'),
         (r'果|梨|荔枝|龙眼|山竹|柿子|枣|椰|柚|瓜', 'prop:apple', '苹果', '水果'),
         (r'吃|食|饭|菜|点心|饼|糖|蛋|糕', 'prop:bread', '面包', '食物'),
@@ -890,17 +908,39 @@ def approximate_scene_result(text, context):
         (r'枪|炮|武器|导弹', 'prop:water-gun', '水枪', '玩具武器'),
         (r'动物|宠物|玩偶|熊|兔|猫|狗', 'prop:teddy', '泰迪熊', '动物玩偶'),
     ]
-    asset, name, reason = 'prop:poop', '便便', '可互动玩具'
+    asset, name, reason = None, None, None
     for pattern, candidate, label, category in candidates:
         if re.search(pattern, text):
             asset, name, reason = candidate, label, category
             break
     stamp = secrets.token_hex(6)
+    if asset is None:
+        # 通用补全：孩子明确提到清单外的东西时，按名称补全一个新道具
+        unknown = extract_unknown_object(text, context)
+        if unknown:
+            asset, name, reason = 'prop:procedural', unknown, '按名称补全的新道具'
+        else:
+            asset, name, reason = 'prop:poop', '便便', '可互动玩具'
+    commands = []
+    for i in range(count):
+        command = {'type': 'entity.spawn', 'id': f'approx-{stamp}-{i}', 'asset': asset, 'position': [0, 0], 'scale': .36 if count > 32 else .55}
+        if asset == 'prop:procedural': command['name'] = name
+        commands.append(command)
+    reply = f'补全了新道具：{name} × {count}。' if asset == 'prop:procedural' else f'暂未找到完全对应的模型，先用 {count} 个{name}代替。'
+    # 驾驶/骑乘：交通工具 + 场景里有角色 → 让角色骑上去（例如“叫叫去驾驶战斗机”）
+    ride = re.search(r'驾驶|开上|开走|开动|坐(上|进)?|骑(上|着)?|登上|乘上', text)
+    vehicle_assets = {'prop:fighter-jet', 'prop:airplane', 'prop:car', 'prop:boat', 'prop:rocket', 'prop:spaceship', 'prop:bicycle', 'prop:balloon', 'prop:battleship'}
+    if ride and asset in vehicle_assets:
+        entities = context.get('entities', {}) if isinstance(context, dict) else {}
+        npc_id = next((eid for eid, item in entities.items() if str(item.get('asset', '')).startswith('npc:')), None)
+        if npc_id:
+            commands.append({'type': 'group.ride', 'driver': npc_id, 'mount': f'approx-{stamp}-0'})
+            reply = f'好，{count} 个{name}登场了，让它们开起来吧。'
     return {
-        'reply': f'暂未找到完全对应的模型，先用 {count} 个{name}代替。',
+        'reply': reply,
         'sceneSwitch': None, 'source': 'approximate', 'matches': [reason, name],
         'substitution': {'request': text, 'replacement': name, 'count': count, 'reason': reason},
-        'commands': [{'type': 'entity.spawn', 'id': f'approx-{stamp}-{i}', 'asset': asset, 'position': [0, 0], 'scale': .36 if count > 32 else .55} for i in range(count)],
+        'commands': commands,
     }
 
 
@@ -1222,11 +1262,49 @@ def scene_control_result(text, context):
     return approximate_scene_result(str(text or ''), context)
 
 
+def exact_object_scene_result(text, context, catalog_modules):
+    m = re.search(r'(?:变出来|变出|生成|出现|召唤|拿出|放个|放一个|来个|变一个|变个|做一个)\s*(?:一(?:个|只|架|辆|艘|台|枚|件|位))?\s*([\u4e00-\u9fa5A-Za-z0-9]{1,10})', text)
+    if not m:
+        return None
+    obj = re.split(r'[的去了让和跟然后想要]', m.group(1).strip())[0]
+    obj = re.sub(r'^(?:一个|一只|一架|一辆|一艘|一台|一枚|一件|一位|个|只|架|辆|台)', '', obj)
+    if len(obj) < 2:
+        return None
+    catalog_names = {p.get('name') for p in catalog_modules}
+    catalog_keywords = {k for p in catalog_modules for k in p.get('keywords', [])}
+    if obj in catalog_names or obj in catalog_keywords:
+        return None
+    try:
+        groups = json.loads((ROOT / "dev/content/scene-groups.json").read_text(encoding="utf-8"))
+        aliases = {a for g in groups.get('groups', []) for a in g.get('aliases', [])}
+        if obj in aliases:
+            return None
+    except Exception:
+        pass
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    for item in entities.values():
+        if obj in str(item.get('name') or '') or obj in str(item.get('asset') or ''):
+            return None
+    count, _ = scene_quantity(text)
+    stamp = secrets.token_hex(6)
+    commands = [{'type': 'entity.spawn', 'id': f'proc-{stamp}-{i}', 'asset': 'prop:procedural', 'name': obj, 'position': [0, 0], 'scale': .36 if count > 32 else .55} for i in range(count)]
+    return {'reply': f'补全了新道具：{obj} × {count}。', 'sceneSwitch': None, 'source': 'exact',
+            'substitution': {'request': text, 'replacement': obj, 'count': count, 'reason': '按名称补全的新道具'},
+            'commands': commands}
+
 def resolve_scene_control(text, context):
     text = str(text or "").strip().replace("<", "").replace(">", "")[:180]
     if not text:
         raise ValueError("command_required")
     key = os.environ.get("ARK_API_KEY", "")
+    # 清单外的明确名词（“变出一辆坦克”若清单没有）先按名称补全新道具，不走模型选型。
+    try:
+        catalog_modules = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"]
+        exact = exact_object_scene_result(text, context, catalog_modules)
+        if exact:
+            return exact
+    except Exception:
+        pass
     # 语言模型是意图理解的主入口：先让模型把这句话映射到最接近的功能，
     # 失败或未配置时再退回本地关键词规则，保证离线也能用。
     if key:
@@ -1268,6 +1346,7 @@ def llm_scene_result(text, context):
     switch = parsed.get("sceneSwitch")
     switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
     allowed_assets = set(p["id"] for p in props)
+    allowed_assets.add("prop:procedural")
     known_ids = {eid: item.get("asset") for eid, item in (context.get("entities", {}) if isinstance(context, dict) else {}).items()}
     raw_commands = parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []
     # A feeding / group action may reference entities this same batch spawns.
@@ -1290,7 +1369,10 @@ def llm_scene_result(text, context):
             item["id"] = str(command.get("id", ""))[:64]
         if ctype == "entity.spawn":
             item.update({"asset": command.get("asset"), "position": command.get("position"), "color": command.get("color"), "scale": command.get("scale")})
-            if item["asset"] not in allowed_assets: continue
+            if item["asset"] == "prop:procedural":
+                item["name"] = str(command.get("name") or "")[:12]
+                if not item["name"]: continue
+            elif item["asset"] not in allowed_assets: continue
         elif ctype in {"entity.move", "entity.scale", "entity.color", "entity.animate"}:
             if ctype == "entity.move": item["position"] = command.get("position")
             if ctype == "entity.scale": item["scale"] = command.get("scale")

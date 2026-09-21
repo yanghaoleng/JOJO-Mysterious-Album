@@ -35,6 +35,7 @@ export const CREATION_KITS = [
 ['fart','一个屁','一个屁|屁|臭屁','黄绿色小气尾摇晃，带着一道闪电。','jiaojiao'],
 ["ufo","飞碟","飞碟|UFO|不明飞行物","飞碟的轮廓和部件可独立查看。","jiaojiao"],
 ["fighter-jet","战斗机","战斗机|战机|喷气机","战斗机的轮廓和部件可独立查看。","jiaojiao"],
+["procedural","新道具","新道具|道具补全|新东西","孩子提到的清单外道具，会按名称补全一个新造型。","jiaojiao"],
 ["spaceship","宇宙飞船","宇宙飞船|星际飞船|太空飞船","宇宙飞船的轮廓和部件可独立查看。","jiaojiao"],
 ["battleship","战舰","战舰|军舰|驱逐舰","战舰的轮廓和部件可独立查看。","jiaojiao"],
 ["tank","坦克","坦克|装甲车","坦克的轮廓和部件可独立查看。","jiaojiao"],
@@ -225,7 +226,7 @@ export const CREATION_KITS = [
 export const PROP_STATES = ["idle", "working", "active"];
 export const PROP_CATEGORIES = {"car":"交通工具","bus":"交通工具","train":"交通工具","truck":"交通工具","bicycle":"交通工具","scooter":"交通工具","airplane":"交通工具","helicopter":"交通工具","submarine":"交通工具","sailboat":"交通工具","apple":"食物","banana":"食物","watermelon":"食物","bread":"食物","cake":"食物","icecream":"食物","donut":"食物","pizza":"食物","burger":"食物","lollipop":"食物","ball":"玩具","teddy":"玩具","blocks":"玩具","kite":"玩具","drum":"玩具","top":"玩具","duck":"玩具","robot-toy":"玩具","rocking-horse":"玩具","xylophone":"玩具"};
 export const PROP_IDS = [...CREATION_KITS.map((kit) => kit.id), "prototype"];
-Object.assign(PROP_CATEGORIES, {"ufo":"交通工具","fighter-jet":"交通工具","spaceship":"交通工具","battleship":"交通工具","tank":"交通工具","toy-bomb":"玩具","toy-pistol":"玩具","toy-launcher":"玩具","toy-sword":"玩具","toy-shield":"玩具","toy-bow":"玩具","toy-cannon":"玩具","water-gun":"玩具","gamepad":"玩具","yoyo":"玩具","chess":"玩具"});
+Object.assign(PROP_CATEGORIES, {"ufo":"交通工具","procedural":"通用","fighter-jet":"交通工具","spaceship":"交通工具","battleship":"交通工具","tank":"交通工具","toy-bomb":"玩具","toy-pistol":"玩具","toy-launcher":"玩具","toy-sword":"玩具","toy-shield":"玩具","toy-bow":"玩具","toy-cannon":"玩具","water-gun":"玩具","gamepad":"玩具","yoyo":"玩具","chess":"玩具"});
 Object.assign(PROP_CATEGORIES, Object.fromEntries(PROP_COLLECTION.map(p => [p.id, p.category])));
 Object.assign(PROP_CATEGORIES,{poop:'玩具','gas-cloud':'玩具',fart:'玩具'});
 
