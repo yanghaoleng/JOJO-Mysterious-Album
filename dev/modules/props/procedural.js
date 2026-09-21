@@ -29,7 +29,7 @@ export function build(k) {
     moving(body, 'slide', .2);
     return;
   }
-  if (/火箭|导弹|飞船|飞碟|卫星|航天/.test(name)) {
+  if (/火箭|导弹|飞船|卫星|航天/.test(name)) {
     const body = box(color, [0, .5, 0], [.55, 1.4, .55]);
     const n = cone(color, [0, 1.45, 0], [.3, .8, .3]); n.rotation.x = 0;
     box(ink, [-.55, .5, 0], [.16, .9, .16]);
@@ -100,9 +100,15 @@ export function build(k) {
     return;
   }
 
-  // 水果（果实 + 蒂）
+  // 水果（果实 + 蒂）：按名称配色，孩子一眼认出是什么水果
   if (/苹果|橙子|橘子|香蕉|葡萄|草莓|西瓜|桃子|梨|芒果|水果/.test(name)) {
-    const body = ball(color, [0, .35, 0], [.48, .46, .48]);
+    const FRUIT_COLORS = {
+      苹果: "#e2574c", 草莓: "#e2574c", 橙子: "#f5a23c", 橘子: "#f5a23c",
+      香蕉: "#f5d547", 葡萄: "#8e6bbf", 西瓜: "#5fae6a", 桃子: "#f7b7a3",
+      梨: "#c8d96f", 芒果: "#ffb347", 水果: "#f5a23c",
+    };
+    const fc = Object.entries(FRUIT_COLORS).find(([k]) => name.includes(k))?.[1] || color;
+    const body = ball(fc, [0, .35, 0], [.48, .46, .48]);
     const stem = cone(cream, [0, .82, 0], [.12, .22, .12]);
     cone(ink, [0, .72, 0], [.1, .12, .1]);
     moving(body, 'float', .1);

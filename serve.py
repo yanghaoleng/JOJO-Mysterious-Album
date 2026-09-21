@@ -849,7 +849,9 @@ suggestions：每次输出后续剧情发展（孩子接下来可能看到什么
 位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
 
 SCENE_KEYWORDS = {
-    "rocket": {"asset": "prop:rocket", "words": ["好奇火箭", "火箭", "飞船"]},
+    "ufo": {"asset": "prop:ufo", "words": ["飞碟", "UFO", "不明飞行物"]},
+    "spaceship": {"asset": "prop:spaceship", "words": ["宇宙飞船", "星际飞船", "太空飞船", "飞船"]},
+    "rocket": {"asset": "prop:rocket", "words": ["好奇火箭", "火箭"]},
     "balloon": {"asset": "prop:balloon", "words": ["云朵气球", "气球"]},
     "house": {"asset": "prop:house", "words": ["小房子", "房子", "小屋"]},
     "jiaojiao": {"asset": "npc:jiaojiao", "words": ["叫叫", "小队长"]},
