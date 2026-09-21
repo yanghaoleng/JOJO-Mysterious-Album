@@ -205,12 +205,14 @@ export class DioramaStage {
     canvas.addEventListener('pointercancel', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
+      // 普通滚轮交给页面滚动；按住 Ctrl / ⌘ 滚动才缩放相机。
+      if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       this.stopOrbit();
       this.cameraDrift?.pause();
       this.zoom = clamp(this.zoom - event.deltaY * .001, .12, 1.8);
       this.resize();
-    }, { passive: false });
+    }, { passive: true });
   }
 
   setStoryTapTarget(object, id, enabled, callback) {
