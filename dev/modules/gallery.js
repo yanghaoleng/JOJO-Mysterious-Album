@@ -401,6 +401,99 @@ function syncCameraNav() {
     for (const m of Object.keys(SHOT_META)) angle.classList.toggle(`shot-${m}`, mode === m);
   }
 }
+
+const BEHAVIOR_EVENTS = [
+  {
+    title: "对象互动",
+    rows: [
+      ["吃", "猪小弟吃现金"],
+      ["追", "叫叫追猪小弟"],
+      ["抱", "铃铛抱小熊"],
+      ["握手", "叫叫和猪小弟握握手"],
+      ["牵手", "大家手拉手排成一队走"],
+      ["叠罗汉", "叫叫和猪小弟叠罗汉"],
+      ["一起跳舞", "大家一起来跳舞"],
+      ["骑乘", "叫叫骑火箭"],
+      ["聚拢", "让所有角色集合"],
+      ["包围", "围住猪小弟"],
+    ],
+  },
+  {
+    title: "单人表演",
+    rows: [
+      ["跑", "猪小弟跑起来"],
+      ["跳", "叫叫跳起来"],
+      ["睡觉", "小猪睡觉"],
+      ["打滚", "小狗打滚"],
+      ["欢呼", "大家欢呼"],
+      ["挥手", "让铃铛招手"],
+    ],
+  },
+  {
+    title: "世界与镜头",
+    rows: [
+      ["换场景", "去果园看看"],
+      ["天气", "下雪"],
+      ["特效", "放烟花"],
+      ["运镜", "把镜头拉近"],
+    ],
+  },
+  {
+    title: "物件操作",
+    rows: [
+      ["生成", "变出来3个好奇火箭"],
+      ["变色", "把火箭变成蓝色"],
+      ["机关", "启动风车"],
+      ["移动", "让叫叫走过去"],
+      ["移除", "把气球收走"],
+    ],
+  },
+];
+function renderBehaviorEvents() {
+  const host = $("behavior-groups");
+  if (!host) return;
+  host.replaceChildren(
+    ...BEHAVIOR_EVENTS.map((group) => {
+      const wrap = document.createElement("section");
+      wrap.className = "behavior-group";
+      const title = document.createElement("h4");
+      title.textContent = group.title;
+      wrap.append(title);
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      thead.innerHTML = "<tr><th>事件</th><th>试试这样说</th></tr>";
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      for (const [name, example] of group.rows) {
+        const tr = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        nameCell.textContent = name;
+        const exampleCell = document.createElement("td");
+        exampleCell.textContent = example;
+        exampleCell.tabIndex = 0;
+        exampleCell.title = "点一下填进输入框";
+        const fill = () => {
+          const input = $("natural-command-input");
+          if (!input) return;
+          input.value = example;
+          input.focus();
+        };
+        exampleCell.onclick = fill;
+        exampleCell.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fill();
+          }
+        };
+        tr.append(nameCell, exampleCell);
+        tbody.append(tr);
+      }
+      table.append(tbody);
+      wrap.append(table);
+      return wrap;
+    }),
+  );
+}
 function aiControlDemo() {
   startWorld(AI_CONTROL_LEVEL.world);
   enableNaturalControl();
@@ -433,6 +526,8 @@ function enableNaturalControl() {
   $("camera-angle").onclick = () => { stage.cycleCameraShot(); syncCameraNav(); };
   stage.saveCameraState();
   syncCameraNav();
+  renderBehaviorEvents();
+  $("behavior-events").hidden = false;
 }
 function renderControlTabs() {
   const host = $("control-tabs");
@@ -718,6 +813,7 @@ function select(item) {
   $("preview-controls").replaceChildren();
   $("command-panel").hidden = true;
   delete $("command-panel").dataset.mode;
+  $("behavior-events").hidden = true;
   selected = item;
   history.replaceState(null, "", `#${encodeURIComponent(item.id)}`);
   const kindLabel = MODULE_KINDS[item.kind];
