@@ -551,6 +551,147 @@ function controlLog(lines) {
   output.textContent = lines.join("\n");
   output.classList.add("console-reveal");
 }
+
+// ---- 一句话控制的语音输入：豆包 ASR ----
+function encodeWorkshopPcm(chunks, sourceRate) {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const joined = new Float32Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.length; }
+  const ratio = sourceRate / 16000;
+  const pcm = new Int16Array(Math.floor(joined.length / ratio));
+  for (let index = 0; index < pcm.length; index++) {
+    const sample = Math.max(-1, Math.min(1, joined[Math.floor(index * ratio)] || 0));
+    pcm[index] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+  }
+  return new Uint8Array(pcm.buffer);
+}
+async function startWorkshopMic() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  });
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  const context = new AudioContextClass();
+  await context.resume();
+  const source = context.createMediaStreamSource(stream);
+  const processor = context.createScriptProcessor(1024, 1, 1);
+  const silent = context.createGain();
+  let chunks = [], buffered = 0, paused = true;
+  let levelListener = () => {};
+  const maxBuffered = context.sampleRate * 45;
+  silent.gain.value = 0;
+  processor.onaudioprocess = event => {
+    const chunk = new Float32Array(event.inputBuffer.getChannelData(0));
+    if (paused) return;
+    let sum = 0;
+    for (let index = 0; index < chunk.length; index += 8) sum += chunk[index] * chunk[index];
+    const rms = Math.sqrt(sum / Math.max(1, Math.ceil(chunk.length / 8)));
+    levelListener(Math.max(0, Math.min(1, Math.pow((rms - .004) / .06, .72))));
+    chunks.push(chunk);
+    buffered += chunk.length;
+    while (buffered > maxBuffered && chunks.length > 1) buffered -= chunks.shift().length;
+  };
+  source.connect(processor);
+  processor.connect(silent);
+  silent.connect(context.destination);
+  stream.getAudioTracks().forEach(track => { track.enabled = false; });
+  return {
+    resume() { chunks = []; buffered = 0; paused = false; stream.getAudioTracks().forEach(track => { track.enabled = true; }); },
+    pause() { paused = true; levelListener(0); stream.getAudioTracks().forEach(track => { track.enabled = false; }); },
+    take() {
+      paused = true; levelListener(0);
+      const captured = chunks; chunks = []; buffered = 0;
+      return encodeWorkshopPcm(captured, context.sampleRate);
+    },
+    async close() {
+      paused = true; processor.onaudioprocess = null;
+      try { source.disconnect(); processor.disconnect(); silent.disconnect(); } catch { /* already closed */ }
+      stream.getTracks().forEach(track => track.stop());
+      await context.close().catch(() => {});
+    },
+    setLevelListener(listener) { levelListener = typeof listener === "function" ? listener : () => {}; },
+  };
+}
+let micCapture = null, micTimer = null, micGeneration = 0;
+async function workshopAsr(pcm) {
+  let binary = "";
+  for (let offset = 0; offset < pcm.length; offset += 32768) {
+    binary += String.fromCharCode(...pcm.subarray(offset, offset + 32768));
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 16000);
+  try {
+    const response = await fetch("/api/asr", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pcm: btoa(binary) }), signal: controller.signal,
+    });
+    if (!response.ok) throw new Error("asr unavailable");
+    const data = await response.json();
+    return String(data.transcript || "").trim().slice(0, 180);
+  } finally { clearTimeout(timer); }
+}
+function stopWorkshopMic() {
+  micGeneration++;
+  clearTimeout(micTimer);
+  const capture = micCapture; micCapture = null;
+  if (capture) capture.close();
+}
+async function finishWorkshopVoice() {
+  const generation = ++micGeneration;
+  clearTimeout(micTimer);
+  const capture = micCapture; micCapture = null;
+  if (!capture) return;
+  capture.pause();
+  voiceInput.setState("transcribing");
+  try {
+    const pcm = capture.take();
+    if (pcm.length < 1600) throw new Error("short");
+    const text = await workshopAsr(pcm);
+    if (generation !== micGeneration) return;
+    voiceInput.reset("setup");
+    if (text) {
+      $("natural-command-input").value = text;
+      naturalControl();
+    } else {
+      voiceInput.setState("error", { message: "这次没听清，可以再说一次，也可以打字。" });
+    }
+  } catch {
+    if (generation !== micGeneration) return;
+    voiceInput.setState("error", { message: "这次没听清，可以再说一次，也可以打字。" });
+  }
+}
+async function startWorkshopVoice() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    voiceInput.setState("error", { message: "这个浏览器不能打开麦克风，可以用文字输入。" });
+    return;
+  }
+  const generation = ++micGeneration;
+  voiceInput.setState("requesting");
+  try {
+    const capture = await startWorkshopMic();
+    if (generation !== micGeneration) { capture.close(); return; }
+    micCapture = capture;
+    capture.setLevelListener(level => voiceInput.setLevel(level));
+    capture.resume();
+    voiceInput.setState("listening");
+    micTimer = setTimeout(finishWorkshopVoice, 25000);
+  } catch {
+    if (generation !== micGeneration) return;
+    micCapture = null;
+    voiceInput.setState("error", { message: "麦克风没有打开。可以检查浏览器权限再试，也可以用文字输入。" });
+  }
+}
+const voiceInput = createVoiceInput({ button: $("natural-command-mic") });
+$("natural-command-mic").addEventListener("click", async () => {
+  const state = voiceInput.getState().state;
+  if (["listening", "receiving", "recording", "quiet", "short", "empty"].includes(state)) {
+    await finishWorkshopVoice();
+  } else if (state === "transcribing" || state === "thinking" || micCapture) {
+    return;
+  } else {
+    await startWorkshopVoice();
+  }
+});
 async function naturalControl() {
   const input = $("natural-command-input"), status = $("natural-command-status");
   const text = input.value.trim();
@@ -796,6 +937,7 @@ function showLogic(item) {
   }
 }
 function select(item) {
+  stopWorkshopMic();
   cleanup();
   cleanup = () => {};
   game?.dispose();
@@ -921,6 +1063,7 @@ $("audio-preview").addEventListener("error", () =>
   report("这段声音暂时没能加载，请稍后重试。"),
 );
 addEventListener("pagehide", () => {
+  stopWorkshopMic();
   cleanup();
   game?.dispose();
   $("audio-preview").pause();
