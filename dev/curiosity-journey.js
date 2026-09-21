@@ -7,4 +7,4 @@ export function rememberJourney(chapter, value) {
   try { localStorage.setItem(KEY, JSON.stringify({ ...journey(), [chapter]: value })); } catch {}
 }
 
-export { CURIOSITY_MISSION, DEBATE_TOPICS, debateFallback } from './content/stories/debate.js';
+export { CURIOSITY_MISSION, DEBATE_TOPICS, debateFallback, journeyDebate } from './content/stories/debate.js';

@@ -4,7 +4,7 @@ applyPublishedStory(DEBATE_STORY);
 import { createGameSession } from './runtime/game-session.js';
 import { renderChoices } from './presentation/choice-list.js';
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';
-import { journey, rememberJourney, DEBATE_TOPICS, debateFallback } from './curiosity-journey.js';
+import { journey, rememberJourney, DEBATE_TOPICS, debateFallback, journeyDebate } from './curiosity-journey.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
 import { DioramaStage } from './stage.js';
 import { StoryVoice, requestJSON } from './voice.js';
@@ -24,7 +24,8 @@ const voice=new StoryVoice({
   onCapture:update=>{answerSupport.capture(update);if(update.text)input.setTranscript(update.text);if(update.message)status(update.message);},onError:status,
 });
 function showChoices(reflection = false) {
-  const choices = reflection ? DEBATE_STORY.reflections : DEBATE_STORY.topics;
+  const previous = journey().wow?.question;
+  const choices = reflection ? DEBATE_STORY.reflections : previous ? [previous, ...DEBATE_STORY.topics.slice(1)] : DEBATE_STORY.topics;
   renderChoices($('answer-choices'),choices,text=>{void speech.unlock();void answer(text);},{className:'quiet',key:text=>text,label:text=>text});
   $('answer-choices').hidden = false; layout();
 }
@@ -55,13 +56,13 @@ new ResizeObserver(layout).observe(document.querySelector('.conversation'));addE
 function setPhase(next){answerSupport.stop();phase=next;$('answer-choices').hidden=true;if(['ready','topic'].includes(next))showChoices();if(next==='reflection')answerSupport.start();document.body.dataset.phase=next;const discussing=next==='discussing';$('toggle-play').hidden=$('next-turn').hidden=$('finish').hidden=!discussing;$('mic-button').hidden=next!=='reflection';$('write-answer').hidden=!['ready','topic','reflection'].includes(next);$('next-chapter').hidden=next!=='ending';$('write-answer').textContent=next==='reflection'?'写下我的看法':'写下想法';resumeAnswer();layout();}
 async function say(text,who=speakers[0]){const token=++speechId;voice.listen(false);stage?.speak(who.id,true);$('speaker-name').textContent=who.name;$('speech-text').textContent=text;input.setState('speaking',{disabled:true});const played=await speech.speak(text,who.voice);if(token!==speechId)return;stage?.speak('',false);resumeAnswer();return played;}
 function cancelSpeech(){speechId++;speech.stop();stage?.speak('',false);}
-async function playTurn(){cancelSpeech();if(phase!=='discussing')return;if(index>=result.turns.length)return reflect();const turn=result.turns[index],who=speakers.find(s=>s.id===turn.speakerId)||speakers[index%2];$('round-label').textContent=`${DEBATE_STORY.rounds[Math.floor(index/2)]} · ${index+1}/6`;$('speaker-name').textContent=who.name;$('speech-text').textContent=turn.text;layout();if(paused)return;const token=epoch,currentIndex=index;const played=await say(turn.text,who);if(token!==epoch||paused||phase!=='discussing'||index!==currentIndex)return;if(!played){status('轻点文字或“下一句”，继续听另一种想法。');return;}index++;void playTurn();}
+async function playTurn(){cancelSpeech();if(phase!=='discussing')return;if(index>=result.turns.length)return reflect();const turn=result.turns[index],who=speakers.find(s=>s.id===turn.speakerId)||speakers[index%2];$('round-label').textContent=`${DEBATE_STORY.rounds[Math.floor(index/2)]} · ${index+1}/${result.turns.length}`;$('speaker-name').textContent=who.name;$('speech-text').textContent=turn.text;layout();if(paused)return;const token=epoch,currentIndex=index;const played=await say(turn.text,who);if(token!==epoch||paused||phase!=='discussing'||index!==currentIndex)return;if(!played){status('轻点文字或“下一句”，继续听另一种想法。');return;}index++;void playTurn();}
 function reflect(){epoch++;cancelSpeech();paused=false;$('toggle-play').textContent='暂停';setPhase('reflection');$('round-label').textContent='轮到你的想法了';void say(result.closingQuestion,speakers[1]);}
 async function answer(raw){const text=String(raw).trim().slice(0,phase==='reflection'?120:80);if(!text||document.body.dataset.encounter||!['ready','topic','reflection'].includes(phase))return;if(isVagueAnswer(text)){showChoices(phase==='reflection');status('慢慢想，也可以选一个想法。');return;}if(/\d{7,}|身份证|住在|学校叫|手机号|自杀|杀人|炸弹|色情/.test(text)){status('个人信息不用告诉我们。选一个关于好奇心的问题吧。');return;}input.setTranscript(text);$('answer-input').value='';$('answer-dialog').close();voice.listen(false);cancelSpeech();status('');
-  if(phase==='reflection'){rememberJourney('debate',{topic:result.topic,idea:text,completed:true});epoch++;game?.emit('debate.completed');setPhase('ending');voice.pause();$('round-label').textContent='把你的理由，带去创造一个世界';$('topic-caption').textContent=result.commonGround;await say(DEBATE_STORY.ending,speakers[1]);return;}
+  if(phase==='reflection'){rememberJourney('debate',{topic:result.topic,idea:text,question:result.topic,completed:true});epoch++;game?.emit('debate.completed');setPhase('ending');voice.pause();$('round-label').textContent='把你的理由，带去创造一个世界';$('topic-caption').textContent=result.commonGround;await say(DEBATE_STORY.ending,speakers[1]);return;}
   const token=++epoch;setPhase('thinking');input.setState('thinking');$('speaker-name').textContent='雪团小兔';$('speech-text').textContent='这个问题很有意思。等一等，我们从两个方向想一想。';status('伙伴正在整理想法……');request?.abort();request=new AbortController();
-  try{const data=await requestJSON('/api/debate',{question:text,speakers:speakers.map(({id,name,hint})=>({id,name,hint}))},45000,request.signal);if(token!==epoch)return;if(data.allowed===false){setPhase('topic');$('speech-text').textContent=data.safeMessage;status(data.safeMessage);return;}if(!Array.isArray(data.turns)||data.turns.length!==6)throw new Error('Invalid debate response');result=data;index=0;paused=false;$('toggle-play').textContent='暂停';$('topic-caption').textContent=data.topic;status('');setPhase('discussing');void playTurn();}
-  catch(error){if(token!==epoch)return;if(DEBATE_TOPICS.includes(text)){result=debateFallback(text,speakers);index=0;paused=false;status('先听听伙伴准备好的两种理由。');setPhase('discussing');void playTurn();}else{setPhase('topic');$('speech-text').textContent='刚才的新问题没能送到。也可以先选一个好奇心话题。';status('新问题暂时没连上，请再试一次。');}}finally{if(token===epoch)request=null;}
+  try{const data=await requestJSON('/api/debate',{question:text,speakers:speakers.map(({id,name,hint})=>({id,name,hint}))},45000,request.signal);if(token!==epoch)return;if(data.allowed===false){setPhase('topic');$('speech-text').textContent=data.safeMessage;status(data.safeMessage);return;}if(!Array.isArray(data.turns)||data.turns.length<4)throw new Error('Invalid debate response');result=text===journey().wow?.question && !data.turns.some(turn=>turn.text?.includes(text.slice(0,12))) ? journeyDebate(text,speakers) : {...data,turns:data.turns.slice(0,4)};index=0;paused=false;$('toggle-play').textContent='暂停';$('topic-caption').textContent=data.topic;status('');setPhase('discussing');void playTurn();}
+  catch(error){if(token!==epoch)return;if(DEBATE_TOPICS.includes(text)||text===journey().wow?.question){result=text===journey().wow?.question?journeyDebate(text,speakers):debateFallback(text,speakers);index=0;paused=false;status('先听听伙伴准备好的两种理由。');setPhase('discussing');void playTurn();}else{setPhase('topic');$('speech-text').textContent='刚才的新问题没能送到。也可以先选一个好奇心话题。';status('新问题暂时没连上，请再试一次。');}}finally{if(token===epoch)request=null;}
 }
 $('mic-button').addEventListener('click',async()=>{
   if(phase !== 'reflection' || speech.isActive())return;
@@ -83,3 +84,5 @@ setPhase('ready');
 function opening(){const previous=journey().wow?.question;$('round-label').textContent='第二章 · 让每个问题都被听见';$('topic-caption').textContent='拯救宇宙的好奇心：先听理由，再表达自己的想法。';$('speech-text').textContent=previous?DEBATE_STORY.handoff.replace('{question}',previous):DEBATE_STORY.opening;}
 document.querySelectorAll('[data-question]').forEach((button,i)=>{button.dataset.question=DEBATE_TOPICS[i];button.textContent=DEBATE_STORY.topicLabels[i];});
 $('restart').addEventListener('click',opening);opening();
+const carriedQuestion=journey().wow?.question;
+if(carriedQuestion) void answer(carriedQuestion);

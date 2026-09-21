@@ -447,7 +447,7 @@ export function createWowPresentation(stage) {
     if(state.firstLight){
       meter.textContent=`萌萌星 · ${state.energy || 0}%`;
       words.textContent=state.firstWords ? `“${state.firstWords}”` : '第一束光，等着你的好奇';
-      detail.textContent=state.scene>=11 ? '绘本第 1 页 · 点亮者：小小追光员' : state.skyThing ? `${state.skyColor}的天空，飘着${state.skyThing}` : state.scene>=4 ? '你的问题，正在长成光' : '咯咯哒和你一起找光';
+      detail.textContent=state.scene>=4 ? '绘本第 1 页 · 点亮者：小小追光员' : state.skyThing ? `${state.skyColor || '亮亮'}的天空，飘着${state.skyThing}` : state.scene>=2 ? '你的问题，正在长成光' : '咯咯哒和你一起找光';
 
     }
     const requested=Number(state.progress);

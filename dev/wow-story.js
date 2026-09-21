@@ -1,6 +1,7 @@
 // Compatibility exports for existing tools.
 import { WOW_DEV_STORY, WOW_PROPS } from './content/stories/wow.js';
 import { applyPublishedStory } from './content/stories/published.js';
+import { firstLightSky } from './content/stories/first-light-models.js';
 applyPublishedStory(WOW_DEV_STORY);
 export { WOW_DEV_STORY, WOW_PROPS } from './content/stories/wow.js';
 
@@ -8,8 +9,8 @@ export function wowVisualState(scene, state, lit = false) {
   if (WOW_DEV_STORY.firstLight) {
     const entries = state.wowEntries || [];
     const words = state.firstWords || '';
-    const color = entries.find(item=>item.id==='gugu-feeling')?.answer || '';
-    return { firstLight:true, chapter:1, scene:scene.chapterScene, kind:scene.wow.kind, props:state.inventory.filter(item=>item.id==='torch').map(item=>item.id), colors:[], visual:null, lit:lit || entries.length>0, progress:Math.min(1,entries.length/11), firstWords:words, skyColor:color, skyThing:entries.find(item=>item.id==='gugu-question')?.answer || '', energy:entries.some(item=>item.id==='shell-invitation')?25:0 };
+    const {color,thing}=firstLightSky(entries.find(item=>item.id==='gugu-feeling')?.answer);
+    return { firstLight:true, chapter:1, scene:scene.chapterScene, kind:scene.wow.kind, props:state.inventory.filter(item=>item.id==='torch').map(item=>item.id), colors:[], visual:null, lit:lit || entries.length>0, progress:Math.min(1,entries.length/4), firstWords:words, skyColor:color, skyThing:thing, energy:entries.some(item=>item.id==='garden-response')?25:0 };
   }
   const chapterScenes = WOW_DEV_STORY.scenes.filter(item => item.chapter === scene.chapter);
   const chapterIds = new Set(chapterScenes.map(item => item.id));
