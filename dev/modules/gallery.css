@@ -290,6 +290,27 @@ body.preview-resizing, body.preview-resizing * { cursor:ns-resize !important; us
   backdrop-filter: blur(4px);
   transition: background .15s ease, color .15s ease, transform .15s ease;
 }
+.camera-nav .camera-shot-picker select {
+  height: 34px;
+  padding: 0 26px 0 12px;
+  border: 1px solid rgba(101, 119, 106, .35);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .9) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233f5243' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: #3f5243;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+  backdrop-filter: blur(4px);
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 128px;
+  text-overflow: ellipsis;
+}
+.camera-nav .camera-shot-picker select:focus-visible {
+  outline: 2px solid rgba(87, 138, 106, .55);
+  outline-offset: 1px;
+}
 .camera-nav #camera-angle {
   height: 34px;
   padding: 0 12px;

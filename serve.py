@@ -845,7 +845,7 @@ suggestions：每次输出后续剧情发展（孩子接下来可能看到什么
 - “X 集合/聚拢/围过来/走到一起” → group.gather；
 - “X 包围/围住 Y/X 团团围住 Y” → group.surround（X 是包围者，Y 是被围者）；
 - 一条话组合多步：例如“叫叫小分队开始在月球上巡逻”= sceneSwitch moon + 生成叫叫小分队成员 + group.patrol；“绿豆家族出现了，他们包围住了叫叫小分队”= 生成绿豆家族 + group.surround（绿豆家族围住叫叫小分队）。
-"camera":null或{"kind":"ground|overhead|orbit","move":"zoomIn|zoomOut|closeup|otd"}（可选运镜建议）：包围/围住 → orbit 环绕；A 吃 B → otd 或 closeup（遮挡物旁/近距离特写）；生成很多 → zoomOut；单个主体登场 → zoomIn 或 closeup；切换回正常 → ground。切换都带过渡。
+"camera":null或{"kind":"ground|overhead|orbit|closeup|tps-far|tps-mid|tps-near|fps","move":"zoomIn|zoomOut|closeup|otd"}（可选运镜建议）：包围/围住 → orbit 环绕；A 吃 B → otd 或 closeup（遮挡物旁/近距离特写）；生成很多 → zoomOut；单个主体登场 → zoomIn 或 closeup；切换回正常 → ground。切换都带过渡。
 位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
 
 SCENE_KEYWORDS = {

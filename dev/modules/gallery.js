@@ -14,6 +14,7 @@ import { PROP_CATEGORIES } from "../content/props.js";
 import { createElement, PanelLeftClose, PanelLeftOpen, Search, Library, BookOpen, Box, Users, Sparkles, Volume2, Route, Settings2 } from "lucide";
 import { arrangeInView } from "./scatter.js";
 import { capacityEvictions } from "../runtime/contracts.js";
+import { CAMERA_SHOTS, cameraShotById } from "../camera-shots.js";
 
 const $ = (id) => document.getElementById(id);
 let stage,
@@ -375,15 +376,46 @@ const SHOT_META = {
   overhead: { label: "俯视", next: "环绕", icon: '<circle cx="12" cy="12" r="6.5"/><path d="M12 12l4.6-4.6M12 12l-4.6-4.6M12 12l4.6 4.6M12 12l-4.6 4.6"/>' },
   orbit:    { label: "环绕", next: "特写", icon: '<circle cx="12" cy="12" r="6.5"/><path d="M18.5 12a6.5 6.5 0 0 1-6.5 6.5"/><path d="M12 18.5v-4"/><path d="M12 12l3-3"/>' },
   closeup:  { label: "特写", next: "平视", icon: '<circle cx="11" cy="11" r="5"/><line x1="14.8" y1="14.8" x2="20" y2="20"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>' },
+  "tps-far": { label: "背后远", next: "平视", icon: '<circle cx="9" cy="10" r="2.6"/><path d="M5 19c.6-4 2.1-6 4-6s3.4 2 4 6"/><path d="M18 12l4-4M18 12l-4-4M18 12l4 4M18 12l-4 4"/>' },
+  "tps-mid": { label: "背后中", next: "平视", icon: '<circle cx="10" cy="9" r="2.8"/><path d="M6 18.5c.7-3.4 2-5 4-5s3.3 1.6 4 5"/><path d="M18 12l3-3M18 12l-3-3M18 12l3 3M18 12l-3 3"/>' },
+  "tps-near": { label: "背后近", next: "平视", icon: '<circle cx="12" cy="8" r="3.4"/><path d="M7.5 18c.8-3.6 2.3-5.4 4.5-5.4s3.7 1.8 4.5 5.4"/><path d="M18 12l2-2M18 12l-2-2M18 12l2 2M18 12l-2 2"/>' },
+  fps:      { label: "第一人称", next: "平视", icon: '<path d="M3 12h4M17 12h4"/><circle cx="12" cy="12" r="2.6"/><path d="M12 5.6V3M12 21v-2.6"/>' },
 };
 function shotMeta(mode) {
   return SHOT_META[mode] || SHOT_META.ground;
+}
+function renderCameraPicker() {
+  const picker = $("camera-shot-select");
+  if (!picker) return;
+  const groups = new Map();
+  for (const shot of CAMERA_SHOTS) {
+    if (!groups.has(shot.group)) groups.set(shot.group, []);
+    groups.get(shot.group).push(shot);
+  }
+  picker.innerHTML = "";
+  for (const [group, shots] of groups) {
+    const optgroup = document.createElement("optgroup");
+    optgroup.label = group;
+    for (const shot of shots) {
+      const option = document.createElement("option");
+      option.value = shot.id;
+      option.textContent = shot.label;
+      optgroup.append(option);
+    }
+    picker.append(optgroup);
+  }
 }
 function syncCameraNav() {
   const nav = $("camera-nav");
   if (!nav) return;
   nav.hidden = !stage;
   if (!stage) return;
+  const picker = $("camera-shot-select");
+  if (picker) {
+    const mode = stage.cameraAngleMode?.() || "ground";
+    const option = picker.querySelector(`option[value="${CSS.escape(mode)}"]`);
+    if (option) picker.value = mode;
+  }
   const { index, count } = stage.cameraNavState();
   $("camera-back").disabled = index <= 0;
   $("camera-forward").disabled = index >= count - 1;
@@ -524,6 +556,14 @@ function enableNaturalControl() {
   $("camera-back").onclick = () => stage.cameraBack();
   $("camera-forward").onclick = () => stage.cameraForward();
   $("camera-angle").onclick = () => { stage.cycleCameraShot(); syncCameraNav(); };
+  renderCameraPicker();
+  const picker = $("camera-shot-select");
+  if (picker) {
+    picker.onchange = () => {
+      const shot = cameraShotById(picker.value);
+      if (shot) { stage.applyCameraShot(shot); syncCameraNav(); }
+    };
+  }
   stage.saveCameraState();
   syncCameraNav();
   renderBehaviorEvents();

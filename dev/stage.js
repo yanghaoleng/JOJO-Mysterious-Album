@@ -7,6 +7,7 @@ import { createStorybookStyle, STORYBOOK_PALETTE } from './storybook.js';
 import { TapFeedback, createObjectTapTarget, firstTapHit } from './tap-feedback.js';
 import { createCameraDrift } from './camera-drift.js';
 import { createExploration } from './exploration.js';
+import { cameraShotById, CAMERA_CYCLE } from './camera-shots.js';
 
 const clamp = THREE.MathUtils.clamp;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -51,6 +52,7 @@ export class DioramaStage {
     this.zoom = 1;
     this.studio = false;
     this.angleMode = 'ground';
+    this.shotMode = null; // { type: 'follow', distance, height } | { type: 'fps' }
     this.orbit = null;
     this.nearestSubjectProvider = null;
     this.followTarget = null;
@@ -278,6 +280,32 @@ export class DioramaStage {
 
   updateCamera() {
     if (this.exploration) { this.exploration.updateCamera(); this.camera.position.add(this.panOffset); this.camera.updateMatrixWorld(); return; }
+    if (this.shotMode?.type === 'follow') {
+      // GTA 式第三人称：相机在目标背后（当前朝向 yaw 的反侧）、略高于头部，看向目标。
+      const yaw = this.yaw;
+      this.camera.position.set(
+        this.target.x - Math.sin(yaw) * this.shotMode.distance,
+        this.target.y + this.shotMode.height,
+        this.target.z - Math.cos(yaw) * this.shotMode.distance,
+      );
+      this.camera.lookAt(this.target.x, this.target.y + .35, this.target.z);
+      this.camera.position.add(this.panOffset);
+      this.camera.updateMatrixWorld();
+      return;
+    }
+    if (this.shotMode?.type === 'fps') {
+      // 第一人称：相机放到目标头部高度，看向当前朝向的前方。
+      const yaw = this.yaw;
+      this.camera.position.set(this.target.x, this.target.y + 1.35, this.target.z);
+      this.camera.lookAt(
+        this.target.x + Math.sin(yaw) * 9,
+        this.target.y + 1.25,
+        this.target.z + Math.cos(yaw) * 9,
+      );
+      this.camera.position.add(this.panOffset);
+      this.camera.updateMatrixWorld();
+      return;
+    }
     const radius = 23;
     const offset = this.cameraDrift?.offset || { yaw: 0, pitch: 0 };
     const yaw = this.yaw + offset.yaw, pitch = this.pitch + offset.pitch;
@@ -383,6 +411,7 @@ export class DioramaStage {
   restoreCameraState(state) {
     if (!state || this.exploration) return;
     this.cameraAnim = null;
+    this.shotMode = null;
     this.yaw = state.yaw; this.pitch = state.pitch; this.zoom = clamp(state.zoom, .005, 12);
     this.target.copy(state.target); this.panOffset.copy(state.pan);
     this.resize();
@@ -425,12 +454,44 @@ export class DioramaStage {
     this.onCameraHistoryChange?.();
   }
 
-  // Cycle through the four fixed shot presets. The player can only cycle
+  // 统一镜头入口：按注册表镜头 id 切换（下拉列表、LLM 运镜、快捷按钮都走这里）。
+  applyCameraShot(shot) {
+    if (this.exploration || !shot) return this.angleMode;
+    this.stopOrbit();
+    this.angleMode = shot.id;
+    if (shot.kind === 'follow' || shot.kind === 'fps') {
+      const subject = this.pickShotSubject();
+      this.shotMode = shot.kind === 'follow'
+        ? { type: 'follow', distance: shot.distance, height: shot.height }
+        : { type: 'fps' };
+      this.animateCameraTo({ yaw: this.yaw, pitch: shot.kind === 'follow' ? 0 : 0, zoom: shot.kind === 'follow' ? 1 : 1.2, target: subject, pan: this.panOffset.clone() }, 1.1);
+    } else {
+      this.shotMode = null;
+      this.playCinematic({ kind: shot.kind });
+    }
+    this.onCameraHistoryChange?.();
+    return this.angleMode;
+  }
+
+  pickShotSubject() {
+    let subject = this.target.clone();
+    if (this.followTarget) {
+      const p = this.followTarget.provider();
+      if (p) subject.set(p[0], this.target.y, p[1]);
+    } else if (this.nearestSubjectProvider) {
+      const n = this.nearestSubjectProvider();
+      if (n) subject.set(n[0], this.target.y, n[1]);
+    }
+    return subject;
+  }
+
+  // Cycle through the fixed shot presets. The player can only cycle
   // these; the cinematic moves (zoomIn/zoomOut/otd) stay LLM-only.
   cycleCameraShot() {
     if (this.exploration) return this.angleMode;
     this.stopOrbit();
-    const order = ['ground', 'overhead', 'orbit', 'closeup'];
+    this.shotMode = null;
+    const order = CAMERA_CYCLE;
     const idx = order.indexOf(this.angleMode);
     const next = order[(idx + 1) % order.length];
     this.playCinematic({ kind: next });
@@ -443,11 +504,18 @@ export class DioramaStage {
   playCinematic({ kind, move } = {}) {
     if (this.exploration) return;
     this.stopOrbit();
+    const registryShot = kind ? cameraShotById(kind) : null;
+    if (registryShot && (registryShot.kind === 'follow' || registryShot.kind === 'fps')) {
+      this.applyCameraShot(registryShot);
+      return;
+    }
+    if (registryShot) kind = registryShot.kind;
     let subject = this.target.clone(), pan = this.panOffset.clone();
     if (this.followTarget) {
       const p = this.followTarget.provider();
       if (p) subject = new THREE.Vector3(p[0], this.target.y, p[1]);
     }
+    this.shotMode = null;
     if (kind === 'orbit') {
       // Slow orbiting view from the side: the horizon stays centred, the
       // camera circles the subject at eye level instead of above it.
@@ -490,6 +558,7 @@ export class DioramaStage {
   toggleCameraAngle() {
     if (this.exploration) return this.angleMode;
     this.stopOrbit();
+    this.shotMode = null;
     const overhead = this.angleMode === 'overhead' || this.angleMode === 'orbit';
     this.angleMode = overhead ? 'ground' : 'overhead';
     const pitch = overhead ? .6 : 1.35;
