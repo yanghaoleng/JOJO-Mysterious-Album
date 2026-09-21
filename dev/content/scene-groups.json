@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "source": "https://alidocs.dingtalk.com/i/nodes/vy20BglGWOeD5vNmH1eKbR0mJA7depqY",
+  "notes": "亲属与小分队依据 IP 原文；黄色四巨头为项目模型组合；叫叫家族、绿豆家族为用户约定的召唤别名。",
+  "groups": [
+    {
+      "id": "yellow-four",
+      "name": "黄色四巨头",
+      "aliases": [
+        "黄色四巨头",
+        "黄色四人组",
+        "黄色四个角色",
+        "四个黄色角色"
+      ],
+      "members": [
+        "yellow:bull",
+        "yellow:round",
+        "yellow:jiaojiao",
+        "yellow:kangaroo"
+      ],
+      "kind": "visual-group"
+    },
+    {
+      "id": "jojo-team",
+      "name": "叫叫小分队",
+      "aliases": [
+        "叫叫的家族",
+        "叫叫家族",
+        "叫叫小分队",
+        "叫叫和他的伙伴们",
+        "叫叫和他的小伙伴"
+      ],
+      "members": [
+        "npc:jiaojiao",
+        "npc:lingdang",
+        "npc:zhuxiaodi"
+      ],
+      "kind": "team"
+    },
+    {
+      "id": "jiaojiao-home",
+      "name": "叫叫一家",
+      "aliases": [
+        "叫叫的全家里头",
+        "叫叫全家里头",
+        "叫叫的全家",
+        "叫叫全家",
+        "叫叫一家人",
+        "叫叫的一家人",
+        "叫叫一家三口",
+        "叫叫的家人",
+        "叫叫家人"
+      ],
+      "members": [
+        "npc:jiaojiao",
+        "npc:jiaojiao-dad",
+        "npc:jiaojiao-mom"
+      ],
+      "kind": "household"
+    },
+    {
+      "id": "jiaojiao-parents",
+      "name": "叫叫的爸爸妈妈",
+      "aliases": [
+        "叫叫的爸爸妈妈",
+        "叫叫爸爸妈妈",
+        "叫叫的父母",
+        "叫叫父母",
+        "叫叫的爸妈",
+        "叫叫爸妈"
+      ],
+      "members": [
+        "npc:jiaojiao-dad",
+        "npc:jiaojiao-mom"
+      ],
+      "kind": "parents"
+    },
+    {
+      "id": "lingdang-home",
+      "name": "铃铛一家",
+      "aliases": [
+        "铃铛全家",
+        "铃铛一家人",
+        "铃铛一家三口",
+        "铃铛的家人",
+        "铃铛家人"
+      ],
+      "members": [
+        "npc:lingdang",
+        "npc:lingdang-dad",
+        "npc:lingdang-mom"
+      ],
+      "kind": "household"
+    },
+    {
+      "id": "lingdang-parents",
+      "name": "铃铛的爸爸妈妈",
+      "aliases": [
+        "铃铛的爸爸妈妈",
+        "铃铛爸爸妈妈",
+        "铃铛的父母",
+        "铃铛父母",
+        "铃铛的爸妈",
+        "铃铛爸妈"
+      ],
+      "members": [
+        "npc:lingdang-dad",
+        "npc:lingdang-mom"
+      ],
+      "kind": "parents"
+    },
+    {
+      "id": "zhuxiaodi-home",
+      "name": "猪小弟一家",
+      "aliases": [
+        "猪小弟全家",
+        "猪小弟一家人",
+        "猪小弟一家三口",
+        "猪小弟的家人",
+        "猪小弟家人"
+      ],
+      "members": [
+        "npc:zhuxiaodi",
+        "npc:zhuxiaodi-dad",
+        "npc:zhuxiaodi-mom"
+      ],
+      "kind": "household"
+    },
+    {
+      "id": "zhuxiaodi-parents",
+      "name": "猪小弟的爸爸妈妈",
+      "aliases": [
+        "猪小弟的爸爸妈妈",
+        "猪小弟爸爸妈妈",
+        "猪小弟的父母",
+        "猪小弟父母",
+        "猪小弟的爸妈",
+        "猪小弟爸妈"
+      ],
+      "members": [
+        "npc:zhuxiaodi-dad",
+        "npc:zhuxiaodi-mom"
+      ],
+      "kind": "parents"
+    },
+    {
+      "id": "bean-family",
+      "name": "豆豆家族",
+      "aliases": [
+        "绿豆家族",
+        "绿豆的家族",
+        "豆豆家族",
+        "绿豆粉豆他们",
+        "绿豆和粉豆他们"
+      ],
+      "members": [
+        "npc:lvdou",
+        "npc:fendou",
+        "npc:douya",
+        "npc:landou",
+        "npc:dahongdou"
+      ],
+      "kind": "team"
+    },
+    {
+      "id": "jojo-friends",
+      "name": "叫叫的伙伴",
+      "aliases": [
+        "叫叫的朋友",
+        "叫叫的伙伴"
+      ],
+      "members": [
+        "npc:lingdang",
+        "npc:zhuxiaodi"
+      ],
+      "kind": "friends"
+    }
+  ],
+  "relationships": [
+    {
+      "subject": "npc:jiaojiao",
+      "predicate": "father",
+      "object": "npc:jiaojiao-dad"
+    },
+    {
+      "subject": "npc:jiaojiao",
+      "predicate": "mother",
+      "object": "npc:jiaojiao-mom"
+    },
+    {
+      "subject": "npc:lingdang",
+      "predicate": "father",
+      "object": "npc:lingdang-dad"
+    },
+    {
+      "subject": "npc:lingdang",
+      "predicate": "mother",
+      "object": "npc:lingdang-mom"
+    },
+    {
+      "subject": "npc:zhuxiaodi",
+      "predicate": "father",
+      "object": "npc:zhuxiaodi-dad"
+    },
+    {
+      "subject": "npc:zhuxiaodi",
+      "predicate": "mother",
+      "object": "npc:zhuxiaodi-mom"
+    },
+    {
+      "subject": "npc:jiaojiao",
+      "predicate": "friend",
+      "object": "npc:lingdang"
+    },
+    {
+      "subject": "npc:jiaojiao",
+      "predicate": "friend",
+      "object": "npc:zhuxiaodi"
+    },
+    {
+      "subject": "npc:lingdang",
+      "predicate": "friend",
+      "object": "npc:zhuxiaodi"
+    }
+  ]
+}

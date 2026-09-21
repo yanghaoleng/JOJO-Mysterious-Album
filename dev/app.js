@@ -1,3 +1,4 @@
+import { firstLightWorldCommands, firstLightModelChoice } from './content/stories/first-light-models.js';
 import { AnswerSupport, isVagueAnswer } from './answer-support.js';
 import { prepareCreation } from './features/creation-service.js';
 import { createGameSession } from './runtime/game-session.js';
@@ -15,6 +16,7 @@ import { describeInvention } from './inventions.js';
 import { mountProductIcons } from '../vendor/ui-icons.js';
 import { getNpc } from '../src/story-npcs/catalog.js';
 import { localResult, PRIVATE } from '../src/wow-local-turn.js';
+import { firstLightReply, acceptLightReply, safeLightWords, lightMemory } from './content/stories/first-light.js';
 import { WOW_PROPS, wowVisualState } from './wow-story.js';
 import { createWowPresentation } from './wow-visuals.js';
 import { chapterDecorationProgress, chapterLayoutOptions, newJourneySeed, savedJourneySeed } from './journey-layout.js';
@@ -77,6 +79,10 @@ const defaultState = () => ({ sceneIndex: 0, setupDone: false, companion: { type
 function savedState() {
   const saved = readStorage(`story.${story.id}`, null);
   if (!saved || !Number.isInteger(saved.sceneIndex) || !Array.isArray(saved.inventory) || !Array.isArray(saved.inventions)) return null;
+  if (story.firstLight && saved.scriptVersion !== story.version) {
+    if (!readStorage('story.wow.before-first-light', null)) store('story.wow.before-first-light', saved);
+    return null;
+  }
   const type = CHARACTER_CATALOG.some(item => item.id === saved.companion?.type) ? saved.companion.type : 'rabbit';
   return { ...defaultState(), ...saved, sceneIndex: resolveSceneIndex(story, saved), ...(story.id === 'wow' ? { journeySeed: savedJourneySeed(saved) } : {}), wowEntries: Array.isArray(saved.wowEntries) ? saved.wowEntries.filter(entry => story.scenes.some(scene => scene.id === entry?.id) && typeof entry.answer === 'string') : [], playerName: String(saved.playerName || '').slice(0,12), firstWords: String(saved.firstWords || '').slice(0,160), companion: { type, color: /^#[0-9a-f]{6}$/i.test(saved.companion?.color) ? saved.companion.color : '#eee3d5', name: String(saved.companion?.name || '小团').slice(0, 10), manner: saved.companion?.manner === 'lively' ? 'lively' : 'calm' } };
 }
@@ -85,6 +91,7 @@ function storyCast(scene) {
   if (story?.id !== 'wow') return [...scene.cast, { ...state.companion, id: 'companion' }];
   // Serializable asset references preserve the same sculpt through a chapter.
   // Only the opening window becomes a different actor.
+  if (story.firstLight) return scene.cast;
   const modelKey = scene.chapter === 1 && scene.chapterScene < 4 ? 'wow:window' : `wow:momo:${scene.chapter}`;
   return scene.cast.map(actor => ({ ...actor, modelKey }));
 }
@@ -94,8 +101,20 @@ function syncWowPresentation(lit = false) {
   if (!wowPresentation) wowPresentation = createWowPresentation(stage);
   const visualState = wowVisualState(story.scenes[state.sceneIndex], state, lit);
   stage.onCuriosityTheme = applyEnvironmentTheme;
-  stage.setCuriosityProgress(visualState.progress, { decorationProgress: chapterDecorationProgress(story.scenes[state.sceneIndex].chapter, state) });
+  stage.setCuriosityProgress(visualState.progress, { decorationProgress: chapterDecorationProgress(story.scenes[state.sceneIndex].chapter, state), explorationFloor: story.firstLight ? 0 : .78 });
   wowPresentation.set(visualState);
+}
+
+function syncFirstLightModels(scene, animate = false) {
+  if (!story?.firstLight || !game) return;
+  const commands = firstLightWorldCommands(story, scene, state.wowEntries || []);
+  const ids = new Set(commands.map(c=>c.id));
+  const existing = game.runtime.state.worlds[scene.world]?.entities || {};
+  const cleanup = Object.keys(existing).filter(id=>id.startsWith('fl-') && !ids.has(id)).map(id=>({type:'entity.remove',id}));
+  const result=game.dispatch([...cleanup,...commands], 'script');
+  if(!result.ok) throw new Error(result.error);
+  if(animate) game.dispatch([...ids].map(id=>({type:'entity.animate',id,animation:'activate'})), 'script');
+  syncStoryTapTarget();
 }
 
 async function handleWowAnswer(raw) {
@@ -103,10 +122,10 @@ async function handleWowAnswer(raw) {
   const answer = String(raw || '').trim().slice(0, 160);
   if (!answer) return;
   const scene = story.scenes[state.sceneIndex], token = epoch;
-  const payload = { chapter:scene.chapter, kind:scene.wow.kind, answer, prompt:scene.question, momo:scene.wow.momo };
+  const payload = { chapter:scene.chapter, kind:scene.wow.kind, answer, prompt:scene.question, momo:scene.wow.momo, ...(story.firstLight ? {policy:'first-light',sceneId:scene.id} : {}) };
   const nickname = scene.wow.kind === 'nickname' ? answer.replace(/^(?:我叫|叫我|你叫我|我的名字是)\s*/u, '').trim().slice(0, 12) : '';
   if (scene.wow.kind === 'nickname' && (/\d{7,}|学校|住址|地址|电话|手机|身份证/u.test(answer) || !nickname)) { notify('给自己起一个短短的冒险昵称吧，比如“小星星”。'); return; }
-  const fallback = scene.wow.kind === 'nickname'
+  const fallback = story.firstLight ? firstLightReply(scene, answer) : scene.wow.kind === 'nickname'
     ? { accepted:true, reaction:`好，${nickname}，我记住啦。我们一起看看房间。`, source:'local', visual:{shape:'star', color:'#efd36e'} }
     : localResult(payload);
   if (!fallback.accepted) { setReplyMode('choices'); notify(fallback.reaction); return; }
@@ -116,24 +135,32 @@ async function handleWowAnswer(raw) {
   $('speaker').textContent = scene.cast[0].name;
   reading.setText(scene.wow.kind === 'create' ? '你的钥匙正在一点点长出来……' : '我在认真听你说……');
   syncWowPresentation(true);
+  const pulseStarted = performance.now();
+  if (story.firstLight) { wowPresentation?.pulse(); syncFirstLightModels(scene,true); }
   const controller = new AbortController(); wowRequest = controller;
   let result;
-  try { result = scene.wow.kind === 'nickname' ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
+  try { result = (scene.wow.kind === 'nickname' || (story.firstLight && (scene.inputMode === 'choice' || !safeLightWords(answer) || answer === '先安静看看'))) ? fallback : await requestJSON('/api/wow-turn', payload, 13000, controller.signal); }
   catch { if (controller.signal.aborted || token !== epoch) return; result = fallback; }
   finally { if (wowRequest === controller) wowRequest = null; }
   if (token !== epoch || controller.signal.aborted) return;
+  if (story.firstLight) result = acceptLightReply(result, fallback, answer);
   if (typeof result?.accepted !== 'boolean' || typeof result?.reaction !== 'string') result = fallback;
   if (!result.accepted) { phase='question';busy=false;notify(result.reaction);renderAnswerOptions();resumeListening();return; }
   const shapes = ['star','moon','leaf','heart','cloud','fish'];
   const visual = {shape:shapes.includes(result.visual?.shape)?result.visual.shape:fallback.visual.shape,color:/^#[0-9a-f]{6}$/i.test(result.visual?.color || '')?result.visual.color:fallback.visual.color};
-  const entry = {id:scene.id,chapter:scene.chapter,kind:scene.wow.kind,answer:nickname || answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
+  const entry = {id:scene.id,chapter:scene.chapter,kind:scene.wow.kind,answer:story.firstLight ? (safeLightWords(answer) || '一束暖暖的光') : nickname || answer,reaction:result.reaction,source:result.source==='ai'?'ai':'local'};
   state.wowEntries = [...state.wowEntries.filter(item=>item.id!==scene.id),entry];
   if (nickname) state.playerName = nickname;
+  else if (story.firstLight) { if (scene.inputMode === 'voice' && !state.firstWords) state.firstWords = entry.answer; }
   else if (!state.firstWords) state.firstWords = answer;
   if (scene.wow.kind === 'create') state.inventions = [...state.inventions.filter(item=>item.chapter!==scene.chapter),{chapter:scene.chapter,scene:scene.title,visual:{...visual,kind:'wow-key',name:`第${scene.chapter}把想象钥匙`,details:answer}}];
   if (scene.wow.kind === 'color' && !state.inventory.some(item=>item.id===`wow-color-${scene.chapter}`)) state.inventory.push({id:`wow-color-${scene.chapter}`,name:scene.wow.colorName,color:scene.wow.color,description:answer});
-  persist(); updateBag(); syncWowPresentation(true); game?.emit('answer.accepted', { sceneId: scene.id });
+  if (story.firstLight && scene.id === 'first-light-page' && !state.inventory.some(item=>item.id==='first-light-page')) state.inventory.push({id:'first-light-page',name:'第一束好奇的光 · 绘本第 1 页',description:state.firstWords || '一束安静的光'});
+  persist(); updateBag(); syncWowPresentation(true); game?.emit('answer.accepted', { sceneId: scene.id, modelChoice: story.firstLight ? firstLightModelChoice(scene,entry.answer) : '' });
+  syncFirstLightModels(scene,true);
   await speakLine({speaker:scene.questionSpeaker || 'wow',text:entry.reaction,source:entry.source},token);
+  if (token !== epoch) return;
+  if (story.firstLight) await wait(Math.max(0, 3400 - (performance.now() - pulseStarted)));
   if (token !== epoch) return;
   await advanceScene();
 }
@@ -141,7 +168,7 @@ async function handleWowAnswer(raw) {
 function downloadWowMemory() {
   const escape = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const content = state.wowEntries.map(entry=>`<article><h2>第${entry.chapter}章 · ${escape(story.scenes.find(scene=>scene.id===entry.id)?.title||'')}</h2><blockquote>${escape(entry.answer)}</blockquote><p>${escape(entry.reaction)}</p></article>`).join('');
-  download(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>我的立体哇呜旅程</title><style>body{max-width:720px;margin:40px auto;padding:20px;font:16px/1.8 system-ui;background:#fcfaf4;color:#314555}h2{font-size:18px}article{border-bottom:1px solid #ddd;padding:16px 0;break-inside:avoid}blockquote{border-left:3px solid #d7b659;padding-left:20px;margin-left:0;overflow-wrap:anywhere}</style><h1>我的立体哇呜旅程</h1><p>六位朋友，六种颜色。故事从这句话开始：</p><blockquote>${escape(state.firstWords)}</blockquote>${content}</html>`,'我的立体哇呜旅程.html','text/html;charset=utf-8');
+  download(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>第一束好奇的光</title><style>body{max-width:720px;margin:40px auto;padding:20px;font:16px/1.8 system-ui;background:#fcfaf4;color:#314555}h2{font-size:18px}article{border-bottom:1px solid #ddd;padding:16px 0;break-inside:avoid}blockquote{border-left:3px solid #d7b659;padding-left:20px;margin-left:0;overflow-wrap:anywhere}</style><h1>第一束好奇的光</h1><p>绘本第 1 页 · 点亮者：小小追光员。你的第一句话：</p><blockquote>${escape(state.firstWords)}</blockquote>${content}</html>`,'第一束好奇的光.html','text/html;charset=utf-8');
   notify('旅程已整理好，可以打开下载的纪念册阅读或打印。');
 }
 const voice = new StoryVoice({
@@ -161,7 +188,15 @@ const CAPTURE_LABELS = {
   transcribing: '声音已收到，正在转成文字…', transcript: '已识别，伙伴正在听你的想法',
   quiet: '暂时没有检测到说话声，可以靠近一点再试', paused: '麦克风已暂停',
 };
+function syncStoryTapTarget() {
+  if (!stage) return;
+  const scene=story?.scenes?.[state?.sceneIndex],id=scene?.tapTarget;
+  const object=id && (stage.actors.get(id)?.group || stage.worldPresenter?.getObject(id));
+  const ready=phase==='question' && !busy && !document.body.dataset.encounter && !document.querySelector('dialog[open]') && !menuOpen;
+  stage.setStoryTapTarget(object || null,id || null,ready,()=>handleAnswer(scene.choices[0].label,'scene'));
+}
 function renderVoiceInput() {
+  syncStoryTapTarget();
   const capture = voiceCapture?.state;
   const persistent = ['error', 'quiet', 'short', 'empty', 'paused'].includes(capture);
   const answerable = ['question', 'setup'].includes(phase) && !busy;
@@ -210,7 +245,7 @@ function scheduleFraming() {
     document.body.style.setProperty('--keyboard-offset', `${Math.max(0, innerHeight - visibleBottom)}px`);
     const bounds = $('stage').getBoundingClientRect();
     if (document.body.dataset.view === 'story') {
-      const top = Math.max(document.querySelector('.topbar').getBoundingClientRect().bottom, $('scene-caption').getBoundingClientRect().bottom);
+      const top = Math.max(document.querySelector('.topbar').getBoundingClientRect().bottom, $('scene-caption').getBoundingClientRect().bottom, story?.firstLight ? 138 : 0);
       const bottom = Math.min($('story-panel').getBoundingClientRect().top, visibleBottom);
       stage.setViewportInsets?.({ top: Math.max(0, top - bounds.top + 22), bottom: Math.max(0, bounds.bottom - bottom + 20), left: 20, right: 20 });
     } else stage.setViewportInsets?.({ top: 20, bottom: document.body.dataset.view === 'studio' ? 48 : 36, left: 18, right: 18 });
@@ -235,6 +270,7 @@ function setWorld(worldId, cast, options) {
     getName: () => state.playerName,
     onSave: position => { state.explorations = { ...state.explorations, [explorationKey]: position }; persist(); },
   } : null;
+  stage.storyFraming = story?.firstLight ? {width:8.4,height:7.3,meanHeight:3.7,targetHeight:2.1} : null;
   stage.setScene(worldId, cast, { ...options, decorations, exploration });
   const environment = stage.world?.atmosphere;
   if (environment) applyEnvironmentTheme(environment);
@@ -280,7 +316,7 @@ function speakerInfo(id) {
 const dialoguePlayer = createDialoguePlayer({
   voice, getStage: () => stage, getEpoch: () => epoch,
   getDisplay: () => phase === 'complete' ? endingReading : reading, resolveSpeaker: speakerInfo,
-  interpolate: text => text.replaceAll('{playerName}', state.playerName || '小伙伴').replaceAll('{firstWords}', state.firstWords || '你好，我在这里。'),
+  interpolate: text => text.replaceAll('{playerName}', state.playerName || '小伙伴').replaceAll('{firstWords}', state.firstWords || '一束安静的光').replaceAll('{skyColor}', lightMemory(state.wowEntries, 'gugu-feeling', '暖暖的')).replaceAll('{skyThing}', lightMemory(state.wowEntries, 'gugu-question', '小星星')),
   speaker: $('speaker'), card: $('speech-card'),
 });
 const speakLine = (line, token = epoch) => dialoguePlayer.line(line, token);
@@ -325,7 +361,7 @@ function navigate(url) { history.pushState(null, '', url); route(); scrollTo({ t
 function openStory(selected) {
   busy = false; $('transition').classList.remove('closed');
   resetVoiceInput();
-  story = selected; state = savedState() || defaultState(); phase = 'ready';
+  story = selected; document.body.dataset.firstLight=String(!!story.firstLight); state = savedState() || defaultState(); phase = 'ready';
   game?.dispose();
   game = createGameSession({
     story, stage, saved: state.worldState, legacyCreations: state.creations,
@@ -346,12 +382,13 @@ function openStory(selected) {
   $('resume-note').textContent = state.setupDone && !state.completed ? '上次走到的地方还在，继续一起走。' : '说出你的想法，也可以随时点选。';
   $('start-story').textContent = state.setupDone && !state.completed ? '继续故事' : '开始对话';
   if (story.id === 'wow' && state.completed) {
-    $('resume-note').textContent = '六种颜色都在这里，你的旅程也保存好了。';
+    $('resume-note').textContent = '第一束光和你的话，都留在这台设备的绘本里了。';
     $('start-story').textContent = '查看我的旅程';
   }
   if(story.id==='moon'&&state.completed){$('resume-note').textContent='你造的世界还在。继续散步，或者回来加一个新点子。';$('start-story').textContent='回到我的造物世界';}
   setWorld(story.scenes[state.sceneIndex].world, storyCast(story.scenes[state.sceneIndex]));
   rememberMountedScene(story.scenes[state.sceneIndex]);
+  syncFirstLightModels(story.scenes[state.sceneIndex]);
   syncWowPresentation();
   if (!['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   updateBag();
@@ -485,6 +522,7 @@ async function enterScene(index) {
   rememberMountedScene(scene);
   syncWowPresentation();
   game?.emit('scene.enter', { sceneId: scene.id });
+  syncFirstLightModels(scene);
   if (!keepWorld && !['wow','moon'].includes(story.id) && state.inventions.length) stage.showInvention(state.inventions.at(-1).visual);
   $('scene-title').textContent = scene.title;
   const chapter = story.chapters.find(item => item.number === scene.chapter);
@@ -527,9 +565,10 @@ async function handleAnswer(raw, source = 'text') {
   if (busy || document.body.dataset.encounter || !['question', 'setup'].includes(phase)) return;
   const text = String(raw || '').trim().slice(0, 180);
   if (!text) return;
+  if (story?.firstLight && story.scenes[state.sceneIndex]?.tapTarget) stage.storyTapTarget?.activate();
   if (source !== 'voice') { voiceCapture = null; renderVoiceInput(); }
   voiceInput.setTranscript(text);
-  if (isVagueAnswer(text)) { notify('慢慢想，也可以看看下面的小主意。'); return; }
+  if (!story?.firstLight && isVagueAnswer(text)) { notify('慢慢想，也可以看看下面的小主意。'); return; }
   if (story?.id === 'wow' && phase === 'question') return handleWowAnswer(text);
   if (/\d{7,}|身份证|我住在|我的学校|我家地址|手机号码/.test(text)) { notify('这些不用告诉我。说说你想怎样帮伙伴吧。'); return; }
   if (/^(嗯+|啊+|哦+|等一下|不知道|我想想|没想好)[。！!]*$/.test(text)) { notify('我会等你，想好了再慢慢说。'); return; }
@@ -613,13 +652,13 @@ async function finishStory() {
   game?.emit('story.completed');
   stage.act('celebrate'); $('answer-dock').hidden = true; $('story-start').hidden = true; $('speech-card').hidden = true;
   $('ending').hidden = false; $('ending-title').textContent = story.ending.title;
-  const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '你好，我在这里。').replaceAll('{playerName}', state.playerName || '小伙伴');
+  const endingLine = story.ending.companionLine.replaceAll('{firstWords}', state.firstWords || '一束安静的光').replaceAll('{skyColor}', lightMemory(state.wowEntries, 'gugu-feeling', '暖暖的')).replaceAll('{skyThing}', lightMemory(state.wowEntries, 'gugu-question', '小星星')).replaceAll('{playerName}', state.playerName || '小伙伴');
   $('ending-text').textContent = story.ending.text;
   $('save-memory').textContent = '收进我的图鉴'; $('save-memory').disabled = false;
   if (story.id === 'wow') $('save-memory').textContent = '下载我的旅程';
   $('journey-next').hidden = story.id !== 'wow';
   $('return-creating').hidden = story.id !== 'moon';
-  if(story.id==='wow')rememberJourney('wow',{completed:true,question:state.wowEntries.findLast(entry=>entry.id==='star-wish')?.answer || state.firstWords || '宇宙里还有什么值得发现？'});
+  if(story.id==='wow')rememberJourney('wow',{completed:true,question:state.firstWords || state.wowEntries.findLast(entry=>entry.id==='star-wish')?.answer || '宇宙里还有什么值得发现？'});
   await speakLine({ speaker: story.id === 'wow' ? 'wow' : 'companion', text: endingLine }, token);
 }
 
@@ -790,7 +829,7 @@ try {
   });
   initializeControls(); route(); $('stage-loading').classList.add('is-ready');
   // Read-only diagnostics for release verification; never changes story progress.
-  window.__DEV_STORY__ = { get status() { return { runtime: game ? { token: game.runtime.token, revision: game.runtime.state.revision, log: game.runtime.log } : null, phase, busy, storyId: story?.id || null, sceneIndex: state?.sceneIndex, setupStep, completed: Boolean(state?.completed), inventory: state?.inventory.map(item => item.id) || [], inventions: state?.inventions.map(item => item.visual.kind) || [], studio: { ...studio }, wow: story?.id === 'wow' ? { entries: state.wowEntries.length, firstWords: state.firstWords, presentation: stage.scene.getObjectByName('wow-story-props')?.userData.state } : null, stage: stage.stats(), voice: { enabled: voice.enabled, opening: Boolean(voice.opening), recording: voice.recording, samples: voice.samples || 0, voicedSeconds: voice.voiced || 0, contextState: voice.context?.state || 'closed' } }; } };
+  window.__DEV_STORY__ = { get status() { return { runtime: game ? { token: game.runtime.token, revision: game.runtime.state.revision, log: game.runtime.log } : null, phase, busy, storyId: story?.id || null, sceneIndex: state?.sceneIndex, setupStep, completed: Boolean(state?.completed), inventory: state?.inventory.map(item => item.id) || [], inventions: state?.inventions.map(item => item.visual.kind) || [], studio: { ...studio }, wow: story?.id === 'wow' ? { entries: state.wowEntries.length, firstWords: state.firstWords, pulseRemaining: stage.scene.getObjectByName('wow-story-props')?.userData.pulseRemaining, presentation: stage.scene.getObjectByName('wow-story-props')?.userData.state } : null, stage: stage.stats(), voice: { enabled: voice.enabled, opening: Boolean(voice.opening), recording: voice.recording, samples: voice.samples || 0, voicedSeconds: voice.voiced || 0, contextState: voice.context?.state || 'closed' } }; } };
 } catch (error) {
   console.error(error);
   $('stage-loading').querySelector('p').textContent = '这个浏览器暂时无法打开立体场景，请换一个支持 WebGL 的浏览器。';

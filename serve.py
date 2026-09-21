@@ -16,6 +16,7 @@ import hashlib
 import hmac
 import math
 import os
+import random
 import re
 import secrets
 import sqlite3
@@ -33,6 +34,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
+from scene_appearance import appearance_edit, decorate_spawns
+from scene_interactions import compound_scene_result, resolve_objects
+from scene_groups import select_scene_group, spawn_scene_group
 from volc_asr import transcribe_pcm
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
 from identity_mysql import (
@@ -810,6 +814,616 @@ def director_result(idea):
     line = f"它害怕时，{body or idea}".rstrip("。") + "。"
     gate_line = str(parsed.get("gateLine") or f"它用“{label}”在雾门上找到了一条刚刚好的小路。").strip()[:60]
     return {"mechanic": mechanic, "abilityLabel": label, "narratorLine": line[:60], "gateLine": gate_line}
+
+
+SCENE_CONTROL_PROMPT = """你是萌萌星的场景控制器。孩子会像导演一样连续说出句子来安排画面（先换场景、再调天气、再召唤角色、再让角色行动）。先理解这句话的完整意图，从功能里选出最接近的一项或几项，翻译成安全、可执行的结构化世界操作。一条话可以组合多步。
+commands 必须是数组，每项形如 {"type":"entity.spawn","id":"x1","asset":"prop:rocket","position":[0,0]}（type 的值就是命令名本身，不要嵌套、不要把命令名当作外层键）。
+只输出 JSON：{"reply":"给孩子看的短句","sceneSwitch":null或{"world":"meadow|pocket|orchard|bakery|bridge|home|observatory|reef|cloud|moon|cove"},"commands":[...]}
+允许的命令：
+1. entity.spawn: {type,id,asset,position:[x,z],color,scale}，生成新模型，asset 必须来自提供的清单；
+2. entity.remove: {type,id}，让指定模型消失（可多条，用于“全部消失/清空”）；
+3. entity.move: {type,id,position:[x,z]}，移动已存在的实体；
+4. entity.animate: {type,id,animation:"activate"}，触发机关；actor.animate: {type,target,animation,expression,duration} 让角色做动作；
+5. entity.scale: {type,id,scale} 调整大小；entity.color: {type,id,color} 改变颜色；
+6. feeding.start: {type,eaters:[id...],foods:[id...]}，“A 吃 B”是开放的表演：任何对象都可以吃任何对象（吃者对着食物播放吃动画，食物随后消失），不限定吃者是角色、食物是食物类，鸡腿可以吃汉堡。吃者与食物必须是场景中已存在的实体 id（或本批 spawn 生成的 id）；若 A 或 B 不在清单里，用清单中相似对象生成，或借用场景已有对象来表演；
+7. environment.set: {type,preset:"day|dusk|night|default"}，切换白天/黄昏/夜晚；
+8. group.patrol: {type,targets:[id...]}，让一组角色沿直线来回走动巡逻，可带小动作；
+9. group.gather: {type,targets:[id...]}，让一组角色/物件聚拢到一起；
+10. group.surround: {type,targets:[id...],surrounders:[id...]}，让 surrounders 围住 targets（围成一圈，targets 先聚拢到一起）；
+11. actor.perform: {type,id,action,duration}，角色表演：run 跑 / sprint 冲刺 / jump 跳 / float 飘浮 / sleep 睡觉(横躺) / roll 打滚 / dance 跳舞 / cheer 欢呼 / fall 晕倒；
+12. fx.play: {type,effect,id?或position}，特效：smoke 烟雾 / sparkle 闪光 / dust 尘土 / firework 烟花 / confetti 撒花 / stars 星星 / vanishStar 爆炸变星星；
+13. weather.set: {type,preset:"rain|snow|clear"}，下雨/下雪/放晴；
+14. world.shake {type,strength,duration} 画面震动；world.zoom {type,scale} 巨化>1 微缩<1；world.float {type,on:true} 无重力漂浮；
+15. group.chase {type,chaser,runner} 追逐；group.hug {type,targets:[a,b]} 拥抱；group.handshake {type,targets:[a,b]} 握手；group.holdhands {type,targets:[...]} 牵手排队走；group.stack {type,targets:[...]} 叠罗汉；group.ride {type,driver,mount} 骑乘（人骑飞机/车，人骑人也行，两个模型叠一起=驾驶）；group.dance {type,targets:[...]} 一起跳舞。
+suggestions：每次输出后续剧情发展（孩子接下来可能看到什么），数组 1~3 条，每项 {kind:"auto-feed"|"auto-ride"|"auto-play"|"socialize"|"weather"|"fun", reason:"一句中文解释"}：场上同时有角色和食物→auto-feed（他们自己去吃）；有角色和飞行器/车→auto-ride（骑上去玩）；角色们都在→socialize（交谈/握手/跳舞）；生成了新角色→auto-play（自己跑跳打滚玩）；可以空数组。
+意图匹配规则：
+- “出现/生成/变出/召唤 X 个 Y” → entity.spawn（X 个就 X 条）；
+- “Y 消失/把 Y 拿走/删掉/清空” → entity.remove；“全部消失/清空场景/都没了” → 列出当前场景所有实体逐一 remove；
+- “A 吃 B / 让 A 吃 B” → 先生成 A、B（若不在场），再 feeding.start；吃是开放的，任何对象可以吃任何对象；
+- “去/到 月球/草地/果园/面包房/海底/云层/家/口袋” → sceneSwitch；“天黑/夜晚/关灯” → environment.set night，其余类推；
+- “X 巡逻/X 开始巡逻/X 走一走” → group.patrol；
+- “X 集合/聚拢/围过来/走到一起” → group.gather；
+- “X 包围/围住 Y/X 团团围住 Y” → group.surround（X 是包围者，Y 是被围者）；
+- 一条话组合多步：例如“叫叫小分队开始在月球上巡逻”= sceneSwitch moon + 生成叫叫小分队成员 + group.patrol；“绿豆家族出现了，他们包围住了叫叫小分队”= 生成绿豆家族 + group.surround（绿豆家族围住叫叫小分队）。
+"camera":null或{"kind":"ground|overhead|orbit","move":"zoomIn|zoomOut|closeup|otd"}（可选运镜建议）：包围/围住 → orbit 环绕；A 吃 B → otd 或 closeup（遮挡物旁/近距离特写）；生成很多 → zoomOut；单个主体登场 → zoomIn 或 closeup；切换回正常 → ground。切换都带过渡。
+位置坐标每轴只能在 -9 到 9。id 用场景中已有的实体 id 或自己生成的 id。不要输出 JS、HTML、URL 或任意属性路径。"""
+
+SCENE_KEYWORDS = {
+    "rocket": {"asset": "prop:rocket", "words": ["好奇火箭", "火箭", "飞船"]},
+    "balloon": {"asset": "prop:balloon", "words": ["云朵气球", "气球"]},
+    "house": {"asset": "prop:house", "words": ["小房子", "房子", "小屋"]},
+    "jiaojiao": {"asset": "npc:jiaojiao", "words": ["叫叫", "小队长"]},
+}
+SCENE_NAMES = {"pocket": ["巨人的口袋", "口袋"], "meadow": ["草地", "萤火草地"], "moon": ["月球", "月亮"], "orchard": ["果园", "苹果园"], "reef": ["海底", "海底维修站"], "cloud": ["云层", "云层导航站"], "bakery": ["面包房", "面包店"], "home": ["家", "小屋"]}
+
+def scene_quantity(text):
+    text = re.sub(r"(?:\d+(?:\.\d+)?|[一二两三四五六七八九十])倍", "", text)
+    match = re.search(r"(\d+|一百|一?十[一二三四五六七八九]?|[二三四五六七八九]十[一二三四五六七八九]?|[一二两三四五六七八九])(?:个|辆|架|艘|只|份|颗|台|把|枚|件)", text)
+    if not match:
+        match = re.search(r"\d+", text)
+    if not match:
+        return 1, False
+    number = match.group(1) if match.lastindex else match.group(0)
+    digits = {c: i for i, c in enumerate('零一二三四五六七八九')}
+    digits['两'] = 2
+    if number.isdigit(): count = int(number)
+    elif number == '一百': count = 100
+    elif '十' in number:
+        tens, units = number.split('十')
+        count = digits.get(tens, 1) * 10 + digits.get(units, 0)
+    else: count = digits.get(number, 1)
+    if not 1 <= count <= 100:
+        raise ValueError('每次可以生成 1 到 100 个模型，请调整数量后再提交。')
+    return count, True
+
+
+def approximate_scene_result(text, context):
+    count, _ = scene_quantity(text)
+    candidates = [
+        (r'榴莲|菠萝蜜|刺果', 'prop:collection-34-0', '菠萝', '带纹理外壳的水果'),
+        (r'果|梨|荔枝|龙眼|山竹|柿子|枣|椰|柚|瓜', 'prop:apple', '苹果', '水果'),
+        (r'吃|食|饭|菜|点心|饼|糖|蛋|糕', 'prop:bread', '面包', '食物'),
+        (r'宇宙|太空|星际|航天', 'prop:spaceship', '宇宙飞船', '太空交通工具'),
+        (r'飞机|飞行|空中', 'prop:airplane', '飞机', '飞行交通工具'),
+        (r'船|舰|海|艇', 'prop:boat', '小船', '水上交通工具'),
+        (r'车|交通|运输', 'prop:car', '小汽车', '交通工具'),
+        (r'枪|炮|武器|导弹', 'prop:water-gun', '水枪', '玩具武器'),
+        (r'动物|宠物|玩偶|熊|兔|猫|狗', 'prop:teddy', '泰迪熊', '动物玩偶'),
+    ]
+    asset, name, reason = 'prop:poop', '便便', '可互动玩具'
+    for pattern, candidate, label, category in candidates:
+        if re.search(pattern, text):
+            asset, name, reason = candidate, label, category
+            break
+    stamp = secrets.token_hex(6)
+    return {
+        'reply': f'暂未找到完全对应的模型，先用 {count} 个{name}代替。',
+        'sceneSwitch': None, 'source': 'approximate', 'matches': [reason, name],
+        'substitution': {'request': text, 'replacement': name, 'count': count, 'reason': reason},
+        'commands': [{'type': 'entity.spawn', 'id': f'approx-{stamp}-{i}', 'asset': asset, 'position': [0, 0], 'scale': .36 if count > 32 else .55} for i in range(count)],
+    }
+
+
+def group_action_scene_result(text, context, catalog, root):
+    """巡逻 / 聚拢 / 包围：分组级表演动作。关键词兜底，LLM 在线时优先由模型产出。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    if not re.search(r'巡逻|巡视|走一走|遛一遛|走动|集合|聚拢|围过来|靠拢|包围|围住|围起来|团团围住', compact):
+        return None
+    world_switch = None
+    for world, words in SCENE_NAMES.items():
+        if any(word in compact and len(word) >= 2 for word in words):
+            world_switch = {"world": world}
+            break
+    present_assets = {item.get('asset') for item in entities.values()}
+    def resolve_group(side):
+        selection = select_scene_group(side, context, catalog, root) if side else None
+        if selection and not selection.get('category'):
+            return selection['members'], selection['name']
+        return None, None
+    def spawn_missing(members):
+        token = uuid.uuid4().hex[:10]
+        commands, ids = [], []
+        for asset in members:
+            existing = [eid for eid, item in entities.items() if item.get('asset') == asset]
+            if existing:
+                ids.append(existing[0])
+                continue
+            cid = f'group-{token}-{len(commands)}'
+            commands.append({'type': 'entity.spawn', 'id': cid, 'asset': asset, 'position': [0, 0], 'scale': .5})
+            ids.append(cid)
+        return commands, ids
+    surround = re.search(r'包围|围住|围起来|团团围住', compact)
+    if surround:
+        left, right = compact[:surround.start()], compact[surround.end():]
+        left_members, left_name = resolve_group(left)
+        right_members, right_name = resolve_group(right)
+        if left_members and right_members:
+            surround_cmds, surround_ids = spawn_missing(left_members)
+            target_cmds, target_ids = spawn_missing(right_members)
+            if not surround_ids or not target_ids:
+                return None
+            cmds = surround_cmds + target_cmds + [{'type': 'group.surround', 'targets': target_ids, 'surrounders': surround_ids}]
+            return {'reply': f'好，{left_name or "它们"}围住了{right_name or "它们"}。', 'commands': cmds, 'sceneSwitch': world_switch, 'source': 'group', 'matches': [left_name or '', right_name or ''], 'camera': {'kind': 'orbit'}}
+        return None
+    members, name = resolve_group(compact)
+    if not members:
+        members = [item.get('asset') for item in entities.values() if str(item.get('asset', '')).startswith('npc:')]
+        name = '大家'
+    if not members:
+        return None
+    spawn_cmds, ids = spawn_missing(members)
+    if not ids:
+        return None
+    if re.search(r'巡逻|巡视|走一走|遛一遛|走动', compact):
+        action = {'type': 'group.patrol', 'targets': ids}
+        reply = f'好，{name or "大家"}开始巡逻啦。'
+    else:
+        action = {'type': 'group.gather', 'targets': ids}
+        reply = f'好，{name or "大家"}集合起来啦。'
+    return {'reply': reply, 'commands': spawn_cmds + [action], 'sceneSwitch': world_switch, 'source': 'group', 'matches': [name or '']}
+
+
+def removal_scene_result(text, context, catalog):
+    """处理“让X消失/全部消失/清空”的意图：移除指定对象或清空当前世界全部实体。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    if not re.search(r'消失|移除|删除|清除|拿走|去掉|不见了|都不见|没了|清空', compact):
+        return None
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    if not entities:
+        return {'reply': '场景里还没有模型，先召唤一些再让它消失吧。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    # 指定对象消失：优先按道具/角色名匹配（“让火箭和气球都消失”只移除这两个对象）
+    selection = select_scene_group(compact, context, catalog, ROOT)
+    target_assets = set()
+    if selection and re.search(r'消失|移除|删除|清除|拿走|去掉|不见了', compact):
+        target_assets.update(selection.get('members', []))
+    objects = resolve_objects(text, catalog, scene_quantity)
+    target_assets.update(item['asset'] for item in objects)
+    if target_assets:
+        ids = [eid for eid, entity in entities.items() if entity.get('asset') in target_assets]
+        if not ids:
+            return {'reply': '场景里还没有这个模型。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+        return {'reply': f'好，{len(ids)} 个模型消失啦。', 'commands': [{'type': 'entity.remove', 'id': eid} for eid in ids], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    # 全部消失 / 清空场景（未点名具体对象时）
+    if re.search(r'全部|所有|全都|统统|清空|整个场景|都没了', compact):
+        ids = list(entities.keys())[:300]
+        return {'reply': f'好，{len(ids)} 个模型都收起来啦。', 'commands': [{'type': 'entity.remove', 'id': eid} for eid in ids], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+    return {'reply': '想让谁消失呢？可以说“让火箭消失”或“全部消失”。', 'commands': [], 'sceneSwitch': None, 'source': 'removal', 'handled': True}
+
+
+def _suggest_for(context, commands=None):
+    """Lightweight local suggestions so the offline keyword path still grows the story.
+    `commands` (just applied) lets us reason about the scene right after this batch."""
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    items = list(entities.values())
+    if commands:
+        for c in commands:
+            if isinstance(c, dict) and c.get('type') == 'entity.spawn' and c.get('asset'):
+                items.append({'asset': c['asset']})
+    npcs = [e for e in items if str(e.get('asset', '')).startswith('npc:')]
+    props = [e for e in items if not str(e.get('asset', '')).startswith('npc:')]
+    suggestions = []
+    if npcs and props:
+        if any(any(k in str(e.get('asset', '')) for k in ('spaceship', 'airplane', 'rocket', 'ufo', 'car')) for e in props):
+            suggestions.append({'kind': 'auto-ride', 'reason': '有载具在场，它们会骑上去玩'})
+        else:
+            suggestions.append({'kind': 'auto-feed', 'reason': '有食物和角色，它们会自己去吃'})
+    elif commands and any(isinstance(c, dict) and c.get('type') == 'entity.spawn' and str(c.get('asset', '')).startswith('npc:') for c in commands):
+        suggestions.append({'kind': 'auto-play', 'reason': '新来的角色会自己跑跳玩起来'})
+    elif len(npcs) >= 2 and not suggestions:
+        suggestions.append({'kind': 'socialize', 'reason': '角色们会交谈、握手或一起跳舞'})
+    return suggestions[:3]
+
+
+def motion_scene_result(text, context, catalog):
+    """动作 / 特效 / 天气 / 世界 / 互动：关键词兜底。"""
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    entities = context.get('entities', {}) if isinstance(context, dict) else {}
+    present = {eid: item for eid, item in entities.items()}
+
+    def ids_for(name_part):
+        """Return existing entity ids matching a name fragment, or spawn targets list."""
+        ids = []
+        for eid, item in present.items():
+            if name_part and name_part not in str(item.get('asset', '')) and name_part not in str(item.get('name', '')):
+                continue
+            ids.append(eid)
+        return ids
+
+    def named_ids(subtext):
+        # resolve via catalog names (two-object interactions: left side / right side)
+        resolved = resolve_objects(subtext, catalog, scene_quantity)
+        ids, cmds = [], []
+        for entry in resolved[:4]:
+            found = [eid for eid, item in present.items() if item.get('asset') == entry['asset']]
+            if found:
+                ids.extend(found[:entry['count']])
+                continue
+            token = uuid.uuid4().hex[:8]
+            for i in range(min(entry['count'], 4)):
+                cid = f'motion-{token}-{i}'
+                cmds.append({'type': 'entity.spawn', 'id': cid, 'asset': entry['asset'], 'position': [0, 0], 'scale': .5})
+                ids.append(cid)
+        return cmds, ids
+
+    # ---- interactions with two objects ----
+    for verb, ctype, reply_tpl in [
+        (r'追', 'group.chase', '好，前面那个快跑，后面追上去啦！'),
+        (r'抱|拥抱', 'group.hug', '好，它们抱在一起啦！'),
+        (r'握手|握握手', 'group.handshake', '好，它们握握手。'),
+    ]:
+        m = re.search(verb, compact)
+        if not m:
+            continue
+        left, right = compact[:m.start()], compact[m.end():]
+        # "A 和 B 拥抱" carries both objects before the verb.
+        if not right and re.search(r'(?:和|跟|与)', left):
+            parts = re.split(r'(?:和|跟|与)', left, maxsplit=1)
+            left, right = parts[0], parts[1]
+        left_cmds, left_ids = named_ids(left)
+        right_cmds, right_ids = named_ids(right)
+        if not left_ids or not right_ids:
+            continue
+        if ctype == 'group.chase':
+            cmd = {'type': ctype, 'chaser': left_ids[0], 'runner': right_ids[0]}
+        else:
+            cmd = {'type': ctype, 'targets': [left_ids[0], right_ids[0]]}
+        return {'reply': reply_tpl, 'commands': left_cmds + right_cmds + [cmd], 'sceneSwitch': None, 'source': 'motion', 'matches': [left, right]}
+    # 牵手 / 叠罗汉 / 一起跳舞 / 骑乘（群体或驾驶）
+    if re.search(r'牵手|手拉手|拉着手|排成队|一起走', compact):
+        cmds, ids = named_ids(compact.replace('牵手', '').replace('手拉手', '').replace('拉着手', '').replace('排成队', '').replace('一起走', ''))
+        if len(ids) >= 2:
+            return {'reply': '好，大家手拉手排成一队走。', 'commands': cmds + [{'type': 'group.holdhands', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'叠罗汉|叠起来|堆罗汉', compact):
+        cmds, ids = named_ids(compact)
+        if len(ids) >= 2:
+            return {'reply': '好，叠罗汉啦！', 'commands': cmds + [{'type': 'group.stack', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'一起跳舞|跳个舞|群舞|开派对', compact):
+        cmds, ids = named_ids(compact)
+        if len(ids) >= 2:
+            return {'reply': '好，大家一起跳舞！', 'commands': cmds + [{'type': 'group.dance', 'targets': ids}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    ride = re.search(r'骑|开(?:着)?(?:飞机|火箭|飞船|车)|驾驶', compact)
+    if ride:
+        rest = compact[:ride.start()] + compact[ride.end():]
+        driver_cmds, driver_ids = named_ids(rest)
+        mount_m = re.search(r'(飞机|火箭|飞船|车|飞碟|汽车)', compact)
+        if mount_m:
+            mount_cmds, mount_ids = named_ids(mount_m.group(1))
+        else:
+            mount_cmds, mount_ids = [], [eid for eid, item in present.items() if any(k in str(item.get('asset', '')) for k in ('spaceship', 'airplane', 'rocket', 'ufo', 'car'))]
+        if driver_ids and mount_ids:
+            return {'reply': '好，骑上去啦！', 'commands': driver_cmds + mount_cmds + [{'type': 'group.ride', 'driver': driver_ids[0], 'mount': mount_ids[0]}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+
+    # ---- single-actor performances ----
+    for action, pattern in [
+        ('sprint', r'冲刺'),
+        ('run', r'跑起来|奔跑|快跑|跑步|跑一跑|跑跑'),
+        ('jump', r'跳一跳|蹦蹦跳跳|跳起来|蹦跳|蹦一蹦|跳跃'),
+        ('float', r'飘起来|飘浮|浮起来|飞起来|飘在空中'),
+        ('sleep', r'睡觉|躺下|躺平|睡一觉|呼呼大睡'),
+        ('roll', r'打滚|滚一滚|滚来滚去'),
+        ('dance', r'跳舞|跳个舞|舞起来'),
+        ('cheer', r'欢呼|庆祝|耶一下|开心得跳'),
+        ('fall', r'晕倒|昏倒|晕过去'),
+    ]:
+        m = re.search(pattern, compact)
+        if not m:
+            continue
+        sub = compact[:m.start()] + compact[m.end():]
+        cmds, ids = named_ids(sub)
+        if not ids:
+            ids = [eid for eid, item in present.items() if str(item.get('asset', '')).startswith('npc:')]
+        if not ids:
+            continue
+        reply = {'sprint': '好，冲刺！', 'run': '好，跑起来！', 'jump': '好，跳起来！', 'float': '好，飘起来啦！', 'sleep': '好，躺下睡觉啦。', 'roll': '好，打滚！', 'dance': '好，跳舞！', 'cheer': '好，欢呼！', 'fall': '好，晕倒啦！'}[action]
+        return {'reply': reply, 'commands': cmds + [{'type': 'actor.perform', 'id': ids[0], 'action': action}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+
+    # ---- effects / weather / world ----
+    fx = [(r'烟花', 'firework'), (r'流星', 'stars'), (r'撒花|花瓣', 'confetti'), (r'闪光|闪亮', 'sparkle'), (r'烟雾|冒烟', 'smoke'), (r'爆炸(?:变)?星星|变成星星', 'vanishStar')]
+    for pattern, effect in fx:
+        if re.search(pattern, compact):
+            return {'reply': '好，来点特效！', 'commands': [{'type': 'fx.play', 'effect': effect}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'下雨|雨|毛毛雨', compact):
+        return {'reply': '好，下雨啦！', 'commands': [{'type': 'weather.set', 'preset': 'rain'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'下雪|雪花', compact):
+        return {'reply': '好，下雪啦！', 'commands': [{'type': 'weather.set', 'preset': 'snow'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'放晴|晴天|雨停|雪停', compact):
+        return {'reply': '好，放晴啦！', 'commands': [{'type': 'weather.set', 'preset': 'clear'}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'震动|地震|晃一晃|摇晃', compact):
+        return {'reply': '好，画面震一下！', 'commands': [{'type': 'world.shake', 'strength': 0.05, 'duration': 0.7}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'巨化|变大|变巨人|放大', compact):
+        return {'reply': '好，都变大啦！', 'commands': [{'type': 'world.zoom', 'scale': 1.8}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'微缩|变小|缩小', compact):
+        return {'reply': '好，都变小啦！', 'commands': [{'type': 'world.zoom', 'scale': 0.6}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    if re.search(r'都飘起来|无重力|失重|漂浮', compact):
+        return {'reply': '好，全都飘起来啦！', 'commands': [{'type': 'world.float', 'on': True}], 'sceneSwitch': None, 'source': 'motion', 'matches': []}
+    return None
+
+
+def keyword_scene_result(text, context):
+    catalog = json.loads((ROOT / 'dev/modules/catalog.json').read_text(encoding='utf-8'))
+    edit = appearance_edit(text, context, catalog, ROOT, scene_quantity)
+    if edit:
+        edit.setdefault('suggestions', _suggest_for(context, edit.get('commands')))
+        return edit
+    result = decorate_spawns(_keyword_scene_result(text, context), text, catalog)
+    if result:
+        result.setdefault('suggestions', _suggest_for(context, result.get('commands')))
+    return result
+
+
+def _keyword_scene_result(text, context):
+    # Read the generated catalog so newly registered prefabs are callable too.
+    catalog = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))
+    removal = removal_scene_result(text, context, catalog)
+    if removal: return removal
+    group_action = group_action_scene_result(text, context, catalog, ROOT)
+    if group_action: return group_action
+    motion = motion_scene_result(text, context, catalog)
+    if motion: return motion
+    compound = compound_scene_result(text, context, catalog, ROOT, scene_quantity)
+    if compound: return compound
+    indexed = dict(SCENE_KEYWORDS)
+    for entry in catalog["modules"]:
+        if entry.get("kind") in {"prop", "actor"}:
+            asset = entry["id"]
+            previous = next((item for item in indexed.values() if item["asset"] == asset), {})
+            indexed[asset] = {"asset": asset, "words": list(dict.fromkeys([entry["name"], *entry.get("keywords", []), *previous.get("words", [])]))}
+    compact = re.sub(r"[，。！？、,.!?\s]", "", text)
+    compact = re.sub(r"(叫叫|铃铛|猪小弟)的(爸爸|妈妈)", r"\1\2", compact)
+    current = context.get("world", "meadow") if isinstance(context, dict) else "meadow"
+    matches = [(key, item) for key, item in indexed.items() if any(word in compact for word in item["words"])]
+    selection = select_scene_group(compact, context, catalog, ROOT)
+    if selection:
+        if re.search(r'招招?手|挥挥?手', compact) and not re.search(r'新增|生成|召唤|变出|出现|来', compact):
+            if re.search(r'不要|别让|不许|除了|除外|以外', compact):
+                return {'reply':'请明确说要招手的成员。','commands':[],'sceneSwitch':None,'handled':True}
+            wave_assets = {entry['id'] for entry in catalog['modules'] if 'wave' in entry.get('capabilities', [])}
+            entities = context.get('entities', {}) if isinstance(context, dict) else {}
+            targets = set(selection.get('targetMembers', selection['members'])) & wave_assets
+            commands = [{'type':'entity.animate','id':key,'animation':'wave'} for key, value in entities.items() if value.get('asset') in targets]
+            return {'reply':f'已安排 {len(commands)} 个成员招手。' if commands else '请先召唤这组角色。','commands':commands,'sceneSwitch':None,'source':'group','handled':True}
+        if re.search(r'清除|移除|删除|消失|走路|跑步|冲锋|起飞|停止|降落', compact):
+            return {'reply':'请先选中具体对象执行这个动作。','commands':[],'sceneSwitch':None,'source':'group','handled':True}
+        return spawn_scene_group(compact, selection, scene_quantity)
+    asset_match_length = max((len(word) for _, item in matches for word in item['words'] if word in compact), default=0)
+    for world, words in SCENE_NAMES.items():
+        if any(word in compact and len(word) >= asset_match_length for word in words):
+            return {"reply": f"好，我们去{words[0]}看看。", "sceneSwitch": {"world": world}, "commands": [], "source": "keyword", "matches": words}
+    for preset, words in {"night": ["天黑", "夜晚", "晚上", "关灯", "睡觉时间"], "dusk": ["黄昏", "傍晚", "夕阳"], "day": ["天亮", "白天", "早上好", "天亮了", "开灯"]}.items():
+        if any(word in compact for word in words):
+            return {"reply": f"好，把天空变成{preset}的样子。", "commands": [{"type": "environment.set", "preset": preset}], "sceneSwitch": None, "source": "keyword", "matches": words}
+    if re.search(r"另一个星球|换个星球|去别的星球", compact):
+        worlds = [item for item in (context.get("worlds", []) if isinstance(context, dict) else []) if item != current]
+        return {"reply": "好，我们换一颗星球看看。", "sceneSwitch": {"world": worlds[0] if worlds else "moon"}, "commands": [], "source": "keyword", "matches": ["另一个星球"]}
+    if not matches:
+        _, has_quantity = scene_quantity(compact)
+        return approximate_scene_result(text, context) if has_quantity or re.search(r'给我|来个|变出|生成|出现|放个|放一个', compact) else None
+    key, item = max(matches, key=lambda pair: max(len(w) for w in pair[1]["words"] if w in compact))
+    count, _ = scene_quantity(compact)
+    entities = context.get("entities", {}) if isinstance(context, dict) else {}
+    commands = []
+    existing = next((entity_id for entity_id, entity in entities.items() if entity.get("asset") == item["asset"]), None)
+    if not item["asset"].startswith("prop:") and existing and re.search(r"移动|走到|去", compact):
+        commands.append({"type": "entity.move", "id": existing, "position": [0, 2.4]})
+    else:
+        for index in range(count):
+            commands.append({"type": "entity.spawn", "id": f"keyword-{key}-{int(time.time() * 1000)}-{index}", "asset": item["asset"], "position": [0, 0], "scale": 0.36 if count > 32 else 0.55})
+    return {"reply": f"好，{item['words'][0]}出现啦。", "sceneSwitch": None, "commands": commands, "source": "keyword", "matches": item["words"]}
+
+
+def scene_control_result(text, context):
+    try:
+        result = resolve_scene_control(text, context)
+        if result.get('commands') or result.get('sceneSwitch') or result.get('handled'):
+            return result
+    except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+        pass
+    return approximate_scene_result(str(text or ''), context)
+
+
+def resolve_scene_control(text, context):
+    text = str(text or "").strip().replace("<", "").replace(">", "")[:180]
+    if not text:
+        raise ValueError("command_required")
+    key = os.environ.get("ARK_API_KEY", "")
+    # 语言模型是意图理解的主入口：先让模型把这句话映射到最接近的功能，
+    # 失败或未配置时再退回本地关键词规则，保证离线也能用。
+    if key:
+        try:
+            return llm_scene_result(text, context)
+        except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError):
+            pass
+    keyword_result = keyword_scene_result(text, context)
+    if keyword_result:
+        return keyword_result
+    raise RuntimeError("scene_control_not_configured")
+
+
+def llm_scene_result(text, context):
+    key = os.environ.get("ARK_API_KEY", "")
+    if not key:
+        raise RuntimeError("scene_control_not_configured")
+    worlds = context.get("worlds", []) if isinstance(context, dict) else []
+    catalog_modules = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"]
+    props = [entry for entry in catalog_modules if entry.get("kind") in {"prop", "actor"}]
+    manifest = [{"asset": p["id"], "name": p["name"], "keywords": p.get("keywords", []), "category": p.get("category"), "tags": p.get("tags", [])} for p in props]
+    associations = json.loads((ROOT / "dev/content/scene-groups.json").read_text(encoding="utf-8"))
+    body = json.dumps({
+        "model": os.environ.get("ARK_LLM_MODEL", "doubao-seed-2-0-mini-260428"),
+        "messages": [
+            {"role": "system", "content": SCENE_CONTROL_PROMPT + "\n允许的完整道具及角色清单（核心角色优先精确匹配，不可替换成道具）：" + json.dumps(manifest, ensure_ascii=False) + "\n角色分组与关联关系（分组名展开为成员；同类请求优先不同种类与尚未出现的模型）：" + json.dumps(associations, ensure_ascii=False)},
+            {"role": "user", "content": json.dumps({"request": text, "current": context, "availableWorlds": worlds}, ensure_ascii=False)},
+        ], "reasoning_effort": "minimal", "response_format": {"type": "json_object"}, "max_tokens": 700,
+    }, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        os.environ.get("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/") + "/chat/completions",
+        data=body, method="POST", headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=24) as result:
+        data = json.load(result)
+    raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+    parsed = json.loads(raw.removeprefix("```json").removesuffix("```").strip())
+    allowed_worlds = {"meadow", "pocket", "orchard", "bakery", "bridge", "home", "observatory", "reef", "cloud", "moon", "cove"}
+    switch = parsed.get("sceneSwitch")
+    switch = {"world": switch.get("world")} if isinstance(switch, dict) and switch.get("world") in allowed_worlds else None
+    allowed_assets = set(p["id"] for p in props)
+    known_ids = {eid: item.get("asset") for eid, item in (context.get("entities", {}) if isinstance(context, dict) else {}).items()}
+    raw_commands = parsed.get("commands", []) if isinstance(parsed.get("commands"), list) else []
+    # A feeding / group action may reference entities this same batch spawns.
+    for command in raw_commands:
+        if isinstance(command, dict) and command.get("type") == "entity.spawn" and isinstance(command.get("id"), str):
+            known_ids.setdefault(command["id"][:64], None)
+    commands = []
+    for command in raw_commands:
+        if not isinstance(command, dict): continue
+        # The model occasionally nests the type as the only key; normalize it.
+        if "type" not in command and len(command) == 1:
+            only = next(iter(command))
+            if only in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "group.patrol", "group.gather", "group.surround"} and isinstance(command[only], dict):
+                command = dict(command[only]); command.setdefault("type", only)
+        ctype = command.get("type")
+        if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "actor.perform", "fx.play", "weather.set", "world.shake", "world.zoom", "world.float", "group.patrol", "group.gather", "group.surround", "group.chase", "group.hug", "group.handshake", "group.holdhands", "group.stack", "group.ride", "group.dance"}:
+            continue
+        item = {"type": ctype}
+        if ctype.startswith("entity.") or ctype == "actor.perform":
+            item["id"] = str(command.get("id", ""))[:64]
+        if ctype == "entity.spawn":
+            item.update({"asset": command.get("asset"), "position": command.get("position"), "color": command.get("color"), "scale": command.get("scale")})
+            if item["asset"] not in allowed_assets: continue
+        elif ctype in {"entity.move", "entity.scale", "entity.color", "entity.animate"}:
+            if ctype == "entity.move": item["position"] = command.get("position")
+            if ctype == "entity.scale": item["scale"] = command.get("scale")
+            if ctype == "entity.color": item["color"] = command.get("color")
+            if ctype == "entity.animate": item["animation"] = "activate"
+        elif ctype == "feeding.start":
+            item["eaters"] = [str(x)[:64] for x in command.get("eaters", []) if isinstance(x, str) and x in known_ids]
+            item["foods"] = [str(x)[:64] for x in command.get("foods", []) if isinstance(x, str) and x in known_ids]
+            if not item["eaters"] or not item["foods"]: continue
+        elif ctype == "environment.set":
+            preset = command.get("preset")
+            if preset not in {"day", "dusk", "night", "default"}: continue
+            item["preset"] = preset
+        elif ctype in {"group.patrol", "group.gather"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if not ids: continue
+            item["targets"] = ids
+        elif ctype in {"group.hug", "group.handshake"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if len(ids) < 2: continue
+            item["targets"] = ids[:2]
+        elif ctype in {"group.holdhands", "group.stack", "group.dance"}:
+            ids = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            if len(ids) < 2: continue
+            item["targets"] = ids
+        elif ctype == "group.chase":
+            chaser = str(command.get("chaser", ""))[:64]; runner = str(command.get("runner", ""))[:64]
+            if chaser not in known_ids or runner not in known_ids: continue
+            item["chaser"] = chaser; item["runner"] = runner
+        elif ctype == "group.ride":
+            driver = str(command.get("driver", ""))[:64]; mount = str(command.get("mount", ""))[:64]
+            if driver not in known_ids or mount not in known_ids: continue
+            item["driver"] = driver; item["mount"] = mount
+        elif ctype == "actor.perform":
+            if command.get("action") not in {"run", "sprint", "jump", "float", "sleep", "roll", "dance", "cheer", "fall"}: continue
+            item["action"] = command.get("action")
+            item["duration"] = command.get("duration") or 4
+        elif ctype == "fx.play":
+            if command.get("effect") not in {"smoke", "sparkle", "dust", "firework", "confetti", "stars", "vanishStar"}: continue
+            item["effect"] = command.get("effect")
+        elif ctype == "weather.set":
+            if command.get("preset") not in {"rain", "snow", "clear"}: continue
+            item["preset"] = command.get("preset")
+        elif ctype == "world.shake":
+            item["strength"] = command.get("strength") or 0.05
+            item["duration"] = command.get("duration") or 0.6
+        elif ctype == "world.zoom":
+            try: item["scale"] = max(0.35, min(2.6, float(command.get("scale") or 1)))
+            except (TypeError, ValueError): continue
+        elif ctype == "world.float":
+            item["on"] = bool(command.get("on"))
+        elif ctype == "group.surround":
+            targets = [str(x)[:64] for x in command.get("targets", []) if isinstance(x, str) and x in known_ids]
+            surrounders = [str(x)[:64] for x in command.get("surrounders", []) if isinstance(x, str) and x in known_ids]
+            if not targets or not surrounders: continue
+            item["targets"] = targets
+            item["surrounders"] = surrounders
+        elif ctype == "actor.animate":
+            item["target"] = command.get("target")
+            item["animation"] = command.get("animation")
+        commands.append(item)
+    camera = None
+    shot = parsed.get("camera")
+    if isinstance(shot, dict):
+        kind = shot.get("kind") if shot.get("kind") in {"ground", "overhead", "orbit"} else None
+        move = shot.get("move") if shot.get("move") in {"zoomIn", "zoomOut", "closeup", "otd"} else None
+        if kind or move:
+            camera = {}
+            if kind: camera["kind"] = kind
+            if move: camera["move"] = move
+    suggestions = []
+    raw_suggestions = parsed.get("suggestions")
+    if isinstance(raw_suggestions, list):
+        for item in raw_suggestions[:3]:
+            if isinstance(item, dict) and item.get("kind") in {"auto-feed", "auto-ride", "auto-play", "socialize", "weather", "fun"}:
+                suggestions.append({"kind": item["kind"], "reason": str(item.get("reason") or "")[:60]})
+    commands = _ensure_feeding(text, commands, context, catalog_modules)
+    return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model", "camera": camera, "suggestions": suggestions}
+
+
+
+
+def _ensure_feeding(text, commands, context, catalog_modules):
+    """“吃”类请求必须产出真正可执行的 feeding.start；食物不足时补齐份数，让“追着剩下的吃”有对象。"""
+    if not re.search(r'吃|吃掉|啃|品尝|喂', str(text or "")):
+        return commands
+    role_prefixes = ("npc:", "wow:", "yellow:", "clay:")
+    spawns = [c for c in commands if c.get("type") == "entity.spawn" and isinstance(c.get("id"), str)]
+    existing_feed = next((c for c in commands if c.get("type") == "feeding.start"), None)
+    if existing_feed:
+        eaters = [str(x) for x in (existing_feed.get("eaters") or []) if x]
+        foods = [str(x) for x in (existing_feed.get("foods") or []) if x]
+    else:
+        eaters = [c["id"] for c in spawns if str(c.get("asset", "")).startswith(role_prefixes)]
+        foods = [c["id"] for c in spawns if str(c.get("asset", "")).startswith("prop:")]
+    entities = context.get("entities", {}) if isinstance(context, dict) else {}
+    if not eaters:
+        eaters = [eid for eid, item in entities.items() if str(item.get("asset", "")).startswith(role_prefixes)][:4]
+    if not foods:
+        foods = [eid for eid, item in entities.items() if str(item.get("asset", "")).startswith("prop:")][:8]
+    count, has_quantity = scene_quantity(str(text or ""))
+    target = max(2, min(count if has_quantity else 4, 8))
+    if not foods:
+        resolved = resolve_objects(str(text or ""), {"modules": catalog_modules}, scene_quantity)
+        for entry in resolved[:1]:
+            if entry["asset"].startswith("prop:"):
+                base = f"feed-{uuid.uuid4().hex[:6]}"
+                for i in range(target):
+                    nid = f"{base}-{i}"
+                    foods.append(nid)
+                    spawns.append({"type": "entity.spawn", "id": nid, "asset": entry["asset"], "position": [0, 0], "scale": .5})
+    elif len(foods) < target:
+        template = next((c for c in spawns if c.get("id") == foods[0]), None)
+        if template is None:
+            template = next((c for c in spawns if str(c.get("asset", "")).startswith("prop:")), None)
+        if template:
+            for i in range(len(foods), target):
+                nid = f"{template['id']}-{i}"
+                foods.append(nid)
+                spawns.append({"type": "entity.spawn", "id": nid, "asset": template.get("asset"), "position": [0, 0], "scale": template.get("scale", .5)})
+    if not eaters:
+        resolved = resolve_objects(str(text or ""), {"modules": catalog_modules}, scene_quantity)
+        for entry in resolved[:1]:
+            if not entry["asset"].startswith("prop:"):
+                nid = f"feed-{uuid.uuid4().hex[:6]}-eater"
+                eaters.append(nid)
+                spawns.append({"type": "entity.spawn", "id": nid, "asset": entry["asset"], "position": [0, 0], "scale": .6})
+                break
+    if not eaters or not foods:
+        return [c for c in commands if c.get("type") != "feeding.start"]
+    commands = [c for c in commands if c.get("type") not in {"entity.spawn", "feeding.start"}] + spawns
+    commands.append({"type": "feeding.start", "eaters": eaters[:4], "foods": foods[:8]})
+    return commands
 
 
 def likely_private_info(value):
@@ -2003,11 +2617,11 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 code = str(error)
                 self.respond_json(429 if code == "style_rate_limited" else 400, {"error": code})
             return
-        if path not in {"/api/director", "/api/moon-director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call", "/api/debate"}:
+        if path not in {"/api/director", "/api/moon-director", "/api/tts", "/api/story-turn", "/api/asr", "/api/character-call", "/api/debate", "/api/scene-control"}:
             self.respond_json(404, {"error": "not_found"})
             return
         try:
-            payload = self.read_json(1_500_000 if path == "/api/asr" else 32_768 if path in {"/api/character-call", "/api/debate"} else 4096)
+            payload = self.read_json(1_500_000 if path == "/api/asr" else 262_144 if path == "/api/scene-control" else 32_768 if path in {"/api/character-call", "/api/debate"} else 4096)
             if path == "/api/character-call":
                 self.respond_character_call(payload)
                 return
@@ -2023,6 +2637,17 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                     self.respond_json(400, {"error": "invalid_debate"})
                     return
                 self.respond_json(200, debate_result(question, speakers))
+                return
+            if path == "/api/scene-control":
+                try:
+                    result = scene_control_result(payload.get("text"), payload.get("context") or {})
+                    self.respond_json(200, result)
+                except ValueError as exc:
+                    self.respond_json(400, {"error": "场景指令或目录格式有误，请重试。" if isinstance(exc, json.JSONDecodeError) else str(exc)})
+                except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+                    self.respond_json(502, {"error": "场景模型服务连接失败，请稍后重试。"})
+                except RuntimeError:
+                    self.respond_json(503, {"error": "场景模型服务尚未配置或暂时不可用；已登记道具仍可通过名称生成。"})
                 return
             if path == "/api/asr":
                 encoded = str(payload.get("pcm", ""))
@@ -2095,12 +2720,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 self.respond_json(429, {"error": str(exc)})
                 return
             expected = {
+                "/api/scene-control": "scene_control_not_configured",
                 "/api/tts": "tts_not_configured",
                 "/api/asr": "asr_not_configured",
                 "/api/story-turn": "story_ai_not_configured",
                 "/api/moon-director": "moon_director_not_configured",
                 "/api/director": "director_not_configured",
-            }[path]
+            }.get(path, "director_not_configured")
             if str(exc) == expected:
                 self.respond_json(503, {"error": expected})
             else:
@@ -2109,7 +2735,14 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
             error = "asr_upstream_error" if path == "/api/asr" else "tts_upstream_error" if path == "/api/tts" else "director_upstream_error"
             self.respond_json(502, {"error": error})
-        except Exception:
+        except Exception as exc:
+            if path == "/api/scene-control":
+                if isinstance(exc, ValueError) and str(exc) == 'body_too_large':
+                    self.respond_json(413, {"error": "场景信息过多，请切换到新场景后再提交。"})
+                    return
+                print(f"scene-control failed: {type(exc).__name__}", file=sys.stderr)
+                self.respond_json(502, {"error": "场景指令暂时无法处理，请重试；如果正在更新道具目录，请稍后再提交。"})
+                return
             error = "asr_unavailable" if path == "/api/asr" else "tts_unavailable" if path == "/api/tts" else "director_unavailable"
             self.respond_json(502, {"error": error})
 

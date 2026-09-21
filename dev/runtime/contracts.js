@@ -8,7 +8,11 @@ import {
 import { PROP_IDS } from "../content/props.js";
 
 export const COMMANDS = Object.freeze({
-  "entity.spawn": ["id", "asset", "position", "color", "scale"],
+  "feeding.start": ["eaters", "foods"],
+  "feeding.stop": ["eaters"],
+  "entity.spawn": ["id", "asset", "position", "color", "scale", "sizeLocked", "colorOverride"],
+  "entity.scale": ["id", "scale"],
+  "entity.move": ["id", "position"],
   "entity.remove": ["id"],
   "entity.state": ["id", "state"],
   "entity.animate": ["id", "animation"],
@@ -20,8 +24,43 @@ export const COMMANDS = Object.freeze({
   "flag.set": ["key", "value"],
   "creation.put": ["record"],
   "creation.activate": ["id"],
+  "group.patrol": ["targets"],
+  "group.gather": ["targets"],
+  "group.surround": ["targets", "surrounders"],
+  "group.chase": ["chaser", "runner"],
+  "group.hug": ["targets"],
+  "group.handshake": ["targets"],
+  "group.holdhands": ["targets"],
+  "group.stack": ["targets"],
+  "group.ride": ["driver", "mount"],
+  "group.dance": ["targets"],
+  "actor.perform": ["id", "action", "duration"],
+  "fx.play": ["effect"],
+  "weather.set": ["preset"],
+  "world.shake": ["strength", "duration"],
+  "world.zoom": ["scale"],
+  "world.float": ["on"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
+export const MAX_WORLD_ENTITIES = 300;
+export function oldestEntities(entities) {
+  return Object.values(entities).sort((a, b) => (a.createdOrder ?? 0) - (b.createdOrder ?? 0));
+}
+// Same FIFO policy used before scattering and when committing a batch.
+export function capacityEvictions(entities, commands) {
+  const ids = new Set(oldestEntities(entities).map(e => e.id));
+  const removed = [];
+  for (const c of commands) {
+    if (c.type === 'entity.remove') ids.delete(c.id);
+    if (c.type !== 'entity.spawn' || ids.has(c.id)) continue;
+    while (ids.size >= MAX_WORLD_ENTITIES) {
+      const id = ids.values().next().value;
+      ids.delete(id); removed.push(id);
+    }
+    ids.add(c.id);
+  }
+  return removed;
+}
 export const safeId = (value) =>
   typeof value === "string" &&
   /^[a-zA-Z0-9][a-zA-Z0-9:_.-]{0,95}$/.test(value) &&
@@ -100,6 +139,20 @@ export function validateCommand(command) {
   const c = copy(command);
   if (c.type.startsWith("entity.") || c.type === "creation.activate")
     requireValue(safeId(c.id), "Invalid entity id");
+  if (c.type.startsWith('feeding.')) {
+    for (const field of c.type === 'feeding.start' ? ['eaters','foods'] : ['eaters'])
+      requireValue(Array.isArray(c[field]) && c[field].length > 0 && c[field].length <= 100 && c[field].every(safeId) && new Set(c[field]).size === c[field].length, 'Invalid feeding participants');
+    if (c.type === 'feeding.start') requireValue(!c.eaters.some(id=>c.foods.includes(id)), 'Cannot eat oneself');
+  }
+  if (c.type === "actor.perform") {
+    requireValue(ACTOR_ACTIONS.includes(c.action), "Unknown actor action");
+  }
+  if (c.type === "fx.play") {
+    requireValue(["smoke", "sparkle", "dust", "trail", "firework", "confetti", "stars", "vanishStar", "heart"].includes(c.effect), "Unknown effect");
+  }
+  if (c.type === "weather.set") {
+    requireValue(["clear", "rain", "snow"].includes(c.preset), "Unknown weather");
+  }
   if (c.type === "entity.spawn") {
     requireValue(Object.hasOwn(ASSETS, c.asset), "Unknown asset");
     requireValue(
@@ -108,15 +161,25 @@ export function validateCommand(command) {
         c.position.every((n) => Number.isFinite(n) && Math.abs(n) <= 9),
       "Position must be two surface coordinates within -9..9",
     );
-    requireValue(c.color === undefined || isColor(c.color), "Invalid color");
+    for(const field of ['sizeLocked','colorOverride']) requireValue(c[field]===undefined || typeof c[field]==='boolean','Invalid appearance override');
+    if (c.color !== undefined && !isColor(c.color)) delete c.color;
     requireValue(
       c.scale === undefined ||
-        (Number.isFinite(c.scale) && c.scale >= 0.2 && c.scale <= 1.5),
+        (Number.isFinite(c.scale) && c.scale >= 0.1 && c.scale <= 5.2),
       "Invalid scale",
     );
   }
-  if (c.type === "entity.color")
-    requireValue(isColor(c.color), "Invalid color");
+  if (c.type === "entity.scale") requireValue(Number.isFinite(c.scale) && c.scale >= .1 && c.scale <= 5.2, "Invalid scale");
+  if (c.type === "entity.move")
+    requireValue(
+      Array.isArray(c.position) &&
+        c.position.length === 2 &&
+        c.position.every((n) => Number.isFinite(n) && Math.abs(n) <= 9),
+      "Position must be two surface coordinates within -9..9",
+    );
+  if (c.type === "entity.color") {
+    if (!isColor(c.color)) delete c.color;
+  }
   if (c.type === "entity.state")
     requireValue(
       ["idle", "working", "active"].includes(c.state),
@@ -151,6 +214,22 @@ export function validateCommand(command) {
     );
   if (c.type === "world.react")
     requireValue(REACTIONS.includes(c.action), "Invalid world reaction");
+  if (c.type === "group.patrol" || c.type === "group.gather")
+    requireValue(
+      Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,
+      "Invalid group targets",
+    );
+  if (c.type === "group.surround") {
+    requireValue(
+      Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,
+      "Invalid surround targets",
+    );
+    requireValue(
+      Array.isArray(c.surrounders) && c.surrounders.length > 0 && c.surrounders.length <= 100 && c.surrounders.every(safeId) && new Set(c.surrounders).size === c.surrounders.length,
+      "Invalid surrounders",
+    );
+    requireValue(!c.surrounders.some(id => c.targets.includes(id)), "Cannot surround oneself");
+  }
   if (c.type === "flag.set")
     requireValue(
       safeId(c.key) &&

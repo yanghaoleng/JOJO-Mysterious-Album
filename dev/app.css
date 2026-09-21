@@ -42,3 +42,7 @@ body[data-view=studio] #experience{display:grid;grid-template-columns:minmax(0,1
 .read-along__phrase.is-read{opacity:.95}
 .read-along__phrase.is-current{opacity:1}
 body[data-view=story] .answer-controls:has(#mic-button[hidden]){display:none}
+
+.first-light-memory{position:absolute;top:100px;left:50%;transform:translateX(-50%);width:min(420px,75vw);display:grid;gap:5px;text-align:center;pointer-events:none;color:#f6e6ac;text-shadow:0 1px 9px #263146;font-size:12px;z-index:2;overflow-wrap:anywhere}.first-light-memory[hidden]{display:none}.first-light-memory strong{font-size:17px;max-height:4.5em;overflow:auto}.first-light-memory span:last-child{font-size:11px}@media(max-width:600px){.first-light-memory{top:112px;width:72vw}.first-light-memory strong{font-size:14px}}
+
+body[data-first-light=true] .exploration-hud{display:none}body[data-first-light=true] .first-light-memory{top:90px}body[data-first-light=true] .first-light-memory strong{color:var(--ink);text-shadow:none}body[data-first-light=true] .first-light-memory span{color:var(--muted);text-shadow:none}

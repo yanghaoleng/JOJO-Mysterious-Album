@@ -9,11 +9,26 @@ export function createPropToolkit(group, color) {
     wood = "#a98c69",
     gold = "#e8c56e",
     ink = "#51636b";
+  function flagStarGeometry() {
+    const outline = new THREE.Shape();
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.PI / 2 + i * Math.PI / 5;
+      const radius = i % 2 ? 0.4 : 1;
+      const x = Math.cos(angle) * radius, y = Math.sin(angle) * radius;
+      if (i === 0) outline.moveTo(x, y); else outline.lineTo(x, y);
+    }
+    outline.closePath();
+    const geometry = new THREE.ExtrudeGeometry(outline, { depth: 1, bevelEnabled: false });
+    geometry.translate(0, 0, -0.5);
+    return geometry;
+  }
   function part(type, tint, p, s, parent = group) {
     if (!shapes.has(type))
       shapes.set(
         type,
-        type === "box"
+        type === "flag-star"
+          ? flagStarGeometry()
+          : type === "box"
           ? new THREE.BoxGeometry(1, 1, 1)
           : type === "ring"
             ? new THREE.TorusGeometry(1, 0.09, 8, 32)

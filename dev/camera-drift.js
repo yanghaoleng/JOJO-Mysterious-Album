@@ -23,8 +23,8 @@ export function createCameraDrift(options = {}) {
   const defaults = CAMERA_DRIFT_DEFAULTS;
   const config = Object.freeze({
     period: setting(options.period, defaults.period, 30, 50),
-    yawAmplitude: setting(options.yawAmplitude, defaults.yawAmplitude, 0, .1),
-    pitchAmplitude: setting(options.pitchAmplitude, defaults.pitchAmplitude, 0, .025),
+    yawAmplitude: setting(options.yawAmplitude, defaults.yawAmplitude, 0, .4),
+    pitchAmplitude: setting(options.pitchAmplitude, defaults.pitchAmplitude, 0, .3),
     quietSeconds: setting(options.quietSeconds, defaults.quietSeconds, 6, 30),
     fadeInSeconds: setting(options.fadeInSeconds, defaults.fadeInSeconds, 1.5, 6),
     fadeOutSeconds: setting(options.fadeOutSeconds, defaults.fadeOutSeconds, .3, 1.5),

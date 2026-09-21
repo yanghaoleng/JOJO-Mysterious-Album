@@ -3,6 +3,9 @@
 import { GUGU_DEV_STORY } from './gugu-story.js';
 import { WOW_DEV_STORY } from './wow-story.js';
 import { MOON_CURIOSITY_STORY } from './moon-story.js';
+import { applyPublishedStory } from './content/stories/published.js';
+applyPublishedStory(WOW_DEV_STORY);
+applyPublishedStory(MOON_CURIOSITY_STORY);
 import { getNpc } from '../src/story-npcs/catalog.js';
 
 // NPC identity stays separate from the player's saved companion.

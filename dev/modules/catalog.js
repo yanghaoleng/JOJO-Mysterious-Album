@@ -2,10 +2,15 @@ import { ASSETS } from "../content/assets.js";
 import { WORLD_CATALOG } from "../content/worlds.js";
 import { AUDIO_CATALOG } from "../content/audio.generated.js";
 import { ENCOUNTERS } from "../content/encounters.js";
-import { CREATION_KITS } from "../content/props.js";
+import { PROP_COLLECTION } from "../content/prop-collection.js";
+import { CREATION_KITS, PROP_CATEGORIES } from "../content/props.js";
 
 // Adding a reusable UI/logic module requires an entry here. Assets are derived automatically.
 export const COMPONENTS = [
+  {id:'logic:group-motion',kind:'logic',name:'巡逻、聚拢与包围',description:'输入“叫叫小分队开始在月球上巡逻”或“绿豆家族围住了叫叫小分队”：角色沿直线来回巡逻、集合聚拢或围成一圈，纯表演动作不改变存档。',source:'dev/presentation/movement-controller.js',capabilities:['巡逻走动','聚拢集合','包围成圈','不落盘'],dependencies:['logic:intent']},
+  {id:'logic:fx-play',kind:'logic',name:'特效与天气',description:'输入“放烟花”“下雪”“画面震动”“变大”“都飘起来”：烟雾、闪光、烟花、撒花、流星、雨雪天气、画面震动、巨化微缩与无重力漂浮等视觉特效。',source:'dev/presentation/pfx-controller.js',capabilities:['烟花撒花','下雨下雪','画面震动','巨化微缩','无重力漂浮'],dependencies:['logic:intent']},
+  {id:'logic:feeding',kind:'logic',name:'角色寻找食物与循环进食',description:'输入“10个猪小弟吃80个汉堡包”：分批生成角色与食物，角色独占目标，靠近后每两下吃掉一份；在 AI 控制台验证，可说停止吃。',source:'dev/presentation/feeding-controller.js',capabilities:['多对象指令','寻找食物','两次咀嚼消耗','停止与清理'],dependencies:['logic:intent']},
+  {id:'logic:story-tap-target',kind:'logic',name:'剧情对象点选引导',description:'脚本指定目标，循环柔光与点击强光，共用回答入口；验证入口 dev/tools/verify-story-tap.mjs。',source:'dev/presentation/story-tap-target.js',capabilities:['3D 对象点选','循环发光','点击反馈','减少动态效果','资源释放'],dependencies:[]},
   {
     id: "logic:dialogue",
     kind: "logic",
@@ -176,16 +181,23 @@ export const COMPONENTS = [
     capabilities: ["模型增删", "状态同步", "资源释放"],
     dependencies: [],
   },
+  {
+    id: "ui:story-editor", kind: "ui", name: "脚本创作工作台",
+    description: "打开任一故事脚本可编辑对白、选项与事件，保存草稿并导入导出；文字预演验证分支，不运行 AI 或 3D 效果。",
+    source: "dev/modules/story-editor.js",
+    capabilities: ["本地草稿", "场景编排", "脚本导入导出"],
+    dependencies: ["logic:director"],
+  },
   ...["wow", "debate", "moon"].map((id, i) => ({
     id: `story:${id}`,
     kind: "story",
-    name: ["第一章 · 好奇与上手", "第二章 · 辩论与表达", "第三章 · 自由造物"][
+    name: ["第一章 · 第一束好奇的光", "第二章 · 辩论与表达", "第三章 · 自由造物"][
       i
     ],
     description:
       "修改台词、问题、选项、场景顺序与事件的入口。故事内容不创建模型，也不操作页面。",
     source: `dev/content/stories/${id}.js`,
-    capabilities: ["纯数据脚本", "事件声明"],
+    capabilities: ["场景可视化", "对白与选项编辑", "事件编辑", "本地草稿", "JSON 导入导出", "文字分支预演"],
     dependencies: ["logic:director"],
   })),
 ];
@@ -214,6 +226,10 @@ export const MODULE_CATALOG = [
     capabilities: [...asset.animations, ...asset.states],
     dependencies: [],
     asset,
+    category: asset.kind === 'prop' ? PROP_CATEGORIES[asset.id.slice(5)] || '场景道具' : '角色',
+    variety: PROP_COLLECTION.find(p => `prop:${p.id}` === asset.id)?.seed?.toString() || asset.id,
+    tags: asset.kind === 'prop' && (['apple','banana','watermelon'].includes(asset.id.slice(5)) || PROP_COLLECTION.some(p => `prop:${p.id}` === asset.id && p.seed >= 28 && p.seed <= 37)) ? ['水果'] : [],
+    keywords: asset.kind === "prop" ? CREATION_KITS.find(k => `prop:${k.id}` === asset.id)?.words.split("|") || [] : [asset.name],
   })),
   ...WORLD_CATALOG.map((world) => ({
     id: `world:${world.id}`,

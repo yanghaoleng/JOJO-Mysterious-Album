@@ -5,6 +5,9 @@ import {
   validateCommand,
   validateCreation,
   safeId,
+  MAX_WORLD_ENTITIES,
+  oldestEntities,
+  capacityEvictions,
 } from "./contracts.js";
 
 const empty = () => ({
@@ -22,29 +25,46 @@ const worldState = (state, world) =>
 // Pure command reducer. A whole batch validates on a copy before any rendering or save.
 function reduce(state, c, context) {
   const world =
-    c.type.startsWith("entity.") || c.type === "environment.set"
+    c.type.startsWith("entity.") ||
+    c.type === "environment.set" ||
+    c.type.startsWith("group.") ||
+    c.type.startsWith("feeding.")
       ? worldState(state, context.world)
       : null;
   const entity = world?.entities[c.id];
+  if (c.type.startsWith('feeding.')) {
+    // “A 吃 B”允许任意对象互吃：吃者与食物只要在当前世界中存在即可，
+    // 不强制吃者是角色、食物是可食用类（例如“鸡腿吃汉堡”也成立）。
+    const entities=worldState(state,context.world).entities;
+    for(const id of c.eaters) requireValue(entities[id], 'Eater must exist in this world');
+    if(c.type==='feeding.start') for(const id of c.foods) requireValue(entities[id], 'Food must exist in this world');
+    return;
+  }
+
   if (c.type === "entity.spawn") {
-    requireValue(
-      entity || Object.keys(world.entities).length < 32,
-      "This world has 32 scripted entities",
-    );
+    const order = entity?.createdOrder ?? (Math.max(0, ...Object.values(world.entities).map(e => e.createdOrder || 0)) + 1);
+    if (!entity) for (const id of capacityEvictions(world.entities, [c])) delete world.entities[id];
     world.entities[c.id] = {
       id: c.id,
+      createdOrder: order,
       asset: c.asset,
       position: c.position,
       color: c.color || "#9ab8ba",
       scale: c.scale || 0.65,
+      sizeLocked: c.sizeLocked === true,
+      colorOverride: c.colorOverride === true,
       state: entity?.state || "working",
     };
+  } else if (c.type === "entity.move") {
+    requireValue(entity, "Entity is not in the current world");
+    entity.position = c.position;
   } else if (c.type === "entity.remove") {
     delete world.entities[c.id];
   } else if (c.type.startsWith("entity.")) {
     requireValue(entity, "Entity is not in the current world");
     if (c.type === "entity.state") entity.state = c.state;
-    if (c.type === "entity.color") entity.color = c.color;
+    if (c.type === "entity.color") { entity.color = c.color; entity.colorOverride = true; }
+    if (c.type === "entity.scale") { entity.scale = c.scale; entity.sizeLocked = true; }
     if (c.type === "entity.animate")
       requireValue(
         ASSETS[entity.asset].animations.includes(c.animation),
@@ -53,6 +73,13 @@ function reduce(state, c, context) {
   } else if (c.type === "actor.animate" || c.type === "encounter.activate")
     requireValue(context.actors.includes(c.target), "Actor is not present");
   else if (c.type === "environment.set") world.environment = c.preset;
+  else if (c.type === "group.patrol" || c.type === "group.gather" || c.type === "group.surround") {
+    // Group actions are presentational (patrol/gather/surround): participants
+    // only need to exist in this world; positions are animated by the
+    // presenter, never persisted back into world records.
+    for (const id of [...(c.targets || []), ...(c.surrounders || [])])
+      requireValue(world.entities[id], "Group participant is not in this world");
+  }
   else if (c.type === "flag.set") {
     requireValue(
       Object.hasOwn(state.flags, c.key) ||
@@ -98,7 +125,7 @@ function restore(saved, legacyCreations) {
     for (const [id, world] of Object.entries(saved.worlds || {})) {
       if (!WORLD_IDS.includes(id)) continue;
       const context = { world: id, actors: [] };
-      for (const item of Object.values(world?.entities || {}).slice(0, 32))
+      for (const item of oldestEntities(world?.entities || {}).slice(-MAX_WORLD_ENTITIES))
         try {
           reduce(
             state,
@@ -109,6 +136,8 @@ function restore(saved, legacyCreations) {
               position: item.position,
               color: item.color,
               scale: item.scale,
+              sizeLocked: item.sizeLocked === true,
+              colorOverride: item.colorOverride === true,
             }),
             context,
           );
@@ -211,7 +240,7 @@ export class WorldRuntime {
         "Stale world proposal",
       );
       requireValue(
-        Array.isArray(commands) && commands.length <= 32,
+        Array.isArray(commands) && commands.length <= MAX_WORLD_ENTITIES && commands.filter(c=>c?.type==='entity.spawn').length <= 100,
         "Too many world commands",
       );
       const validated = commands.map(validateCommand),

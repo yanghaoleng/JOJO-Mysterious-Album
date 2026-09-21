@@ -1,3 +1,4 @@
+import { createStoryTapTarget } from './presentation/story-tap-target.js';
 import * as THREE from '../vendor/three.module.js';
 import { createActor, actorModelKey } from './presentation/actor-factory.js';
 import { createWorld } from './worlds.js';
@@ -18,7 +19,7 @@ const boxCorners = box => [0, 1, 2, 3, 4, 5, 6, 7].map(index => new THREE.Vector
 ));
 
 export class DioramaStage {
-  constructor(container, onTouch = () => {}) {
+  constructor(container, onTouch = () => {}, options = {}) {
     this.container = container;
     this.onTouch = onTouch;
     this.actors = new Map();
@@ -27,7 +28,7 @@ export class DioramaStage {
     this.viewportInsets = { top: 0, bottom: 0, left: 0, right: 0 };
     this.style = createStorybookStyle();
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.cameraDrift = createCameraDrift({ reduced: this.reduced });
+    this.cameraDrift = createCameraDrift({ reduced: this.reduced, ...(options.drift || {}) });
     this.cameraDriftEnabled = false;
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
@@ -43,10 +44,20 @@ export class DioramaStage {
     container.append(this.renderer.domElement);
     this.camera = new THREE.OrthographicCamera(-8, 8, 7, -7, .1, 100);
     this.target = new THREE.Vector3(0, 1, 0);
+    this.panOffset = new THREE.Vector3();
+    this.panMode = false;
     this.yaw = .28;
     this.pitch = DEFAULT_PITCH;
     this.zoom = 1;
     this.studio = false;
+    this.angleMode = 'ground';
+    this.orbit = null;
+    this.nearestSubjectProvider = null;
+    this.followTarget = null;
+    this.cameraAnim = null;
+    this.cameraHistory = [];
+    this.cameraIndex = -1;
+    this.onCameraHistoryChange = null;
     this.hemisphere = new THREE.HemisphereLight(STORYBOOK_PALETTE.sky, STORYBOOK_PALETTE.bounce, STORYBOOK_PALETTE.hemisphereIntensity);
     this.scene.add(this.hemisphere);
     const key = new THREE.DirectionalLight(STORYBOOK_PALETTE.sun, STORYBOOK_PALETTE.sunIntensity);
@@ -101,47 +112,92 @@ export class DioramaStage {
       this.tapFeedback.update(dt);
       this.exploration?.update(dt);
       this.worldPresenter?.update(dt);
+      this.storyTapTarget?.update(dt);
       if (this.exploration) this.updateCamera();
+      if (this.orbit) {
+        // A slow, deliberate orbit around the current subject. The camera is
+        // retargeted here every frame; drift stays quiet during the spin.
+        this.yaw += dt * this.orbit.speed;
+        this.updateCamera();
+      }
+      if (this.followTarget) {
+        // Locked follow: glide the camera target towards the selected entity.
+        const p = this.followTarget.provider();
+        if (p) {
+          const k = 1 - Math.exp(-dt * 3.2);
+          const nx = this.target.x + (p[0] - this.target.x) * k;
+          const nz = this.target.z + (p[1] - this.target.z) * k;
+          if (Math.abs(nx - this.target.x) > 0.0004 || Math.abs(nz - this.target.z) > 0.0004) {
+            this.target.set(nx, this.target.y, nz);
+            this.updateCamera();
+          }
+        } else {
+          const gone = this.followTarget;
+          this.followTarget = null;
+          this.onFollowChange?.(null);
+          this.onCameraHistoryChange?.();
+        }
+      }
+      if (this.worldPresenter?.pfx) {
+        const offset = this.worldPresenter.pfx.shakeOffset();
+        if (offset) this.camera.position.add(offset);
+      }
       const previousOffset = this.cameraDrift.offset;
       const offset = this.cameraDrift.update(dt, { enabled: this.cameraDriftEnabled && !this.studio, reduced: this.reduced, interacting: this.pointers.size > 0 });
       if (offset.yaw !== previousOffset.yaw || offset.pitch !== previousOffset.pitch) this.updateCamera();
+      if (this.cameraAnim) this.stepCameraAnimation(dt);
       this.renderer.render(this.scene, this.camera);
     });
   }
 
   installPointer() {
     const canvas = this.renderer.domElement;
+    canvas.addEventListener('contextmenu', event => event.preventDefault());
     canvas.addEventListener('pointerdown', event => {
-      if (event.button !== undefined && event.button !== 0) return;
+      if (event.button !== undefined && ![0, 2].includes(event.button)) return;
+      this.stopOrbit();
       this.cameraDrift?.pause();
       this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
       if (this.pointers.size >= 2) {
         const [a, b] = [...this.pointers.values()];
-        this.pinch = { distance: a.distanceTo(b), zoom: this.zoom };
+        this.pinch = { distance: a.distanceTo(b), midpoint: a.clone().add(b).multiplyScalar(.5), zoom: this.zoom, offset: this.panOffset.clone(), right: new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 0), up: new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 1) };
         this.drag = null;
         canvas.setPointerCapture(event.pointerId);
         return;
       }
-      this.drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: this.yaw, pitch: this.pitch, moved: false };
+      this.drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: this.yaw, pitch: this.pitch, moved: false, pan: event.button === 2 || this.panMode, offset: this.panOffset.clone(), right: new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 0), up: new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 1) };
       canvas.setPointerCapture(event.pointerId);
     });
     canvas.addEventListener('pointermove', event => {
       if (this.pointers.has(event.pointerId)) this.pointers.set(event.pointerId, new THREE.Vector2(event.clientX, event.clientY));
       if (this.pinch && this.pointers.size === 2) {
         const [a, b] = [...this.pointers.values()];
-        this.zoom = clamp(this.pinch.zoom * a.distanceTo(b) / Math.max(1, this.pinch.distance), .7, 1.8);
+        this.zoom = clamp(this.pinch.zoom * a.distanceTo(b) / Math.max(1, this.pinch.distance), .12, 1.8);
+        const midpoint = a.clone().add(b).multiplyScalar(.5), delta = midpoint.sub(this.pinch.midpoint), bounds = canvas.getBoundingClientRect();
+        this.panOffset.copy(this.pinch.offset)
+          .addScaledVector(this.pinch.right, -delta.x * (this.camera.right - this.camera.left) / bounds.width)
+          .addScaledVector(this.pinch.up, delta.y * (this.camera.top - this.camera.bottom) / bounds.height)
+          .clampLength(0, 18);
         this.resize(); return;
       }
       if (!this.drag || this.drag.id !== event.pointerId) return;
       const dx = event.clientX - this.drag.x;
       const dy = event.clientY - this.drag.y;
       this.drag.moved ||= Math.hypot(dx, dy) > 7;
-      this.yaw = this.drag.yaw - dx * .007;
-      this.pitch = clamp(this.drag.pitch + dy * .004, -1.15, 1.35);
+      if (this.drag.pan) {
+        const bounds = canvas.getBoundingClientRect();
+        this.panOffset.copy(this.drag.offset)
+          .addScaledVector(this.drag.right, -dx * (this.camera.right - this.camera.left) / bounds.width)
+          .addScaledVector(this.drag.up, dy * (this.camera.top - this.camera.bottom) / bounds.height);
+        this.panOffset.clampLength(0, 18);
+      } else {
+        this.yaw = this.drag.yaw - dx * .007;
+        this.pitch = clamp(this.drag.pitch + dy * .004, -1.15, 1.35);
+      }
       this.updateCamera();
     });
     canvas.addEventListener('pointerup', event => {
-      if (this.drag?.id === event.pointerId && !this.drag.moved && !this.pinch && Math.hypot(event.clientX - this.drag.x, event.clientY - this.drag.y) <= 7) this.pick(event);
+      if (this.drag?.id === event.pointerId && !this.drag.pan && !this.drag.moved && !this.pinch && Math.hypot(event.clientX - this.drag.x, event.clientY - this.drag.y) <= 7) this.pick(event);
       this.pointers.delete(event.pointerId);
       this.pinch = null;
       this.drag = null;
@@ -150,10 +206,16 @@ export class DioramaStage {
     canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
       event.preventDefault();
+      this.stopOrbit();
       this.cameraDrift?.pause();
-      this.zoom = clamp(this.zoom - event.deltaY * .001, .7, 1.8);
+      this.zoom = clamp(this.zoom - event.deltaY * .001, .12, 1.8);
       this.resize();
     }, { passive: false });
+  }
+
+  setStoryTapTarget(object, id, enabled, callback) {
+    this.storyTapTarget ||= createStoryTapTarget(this);
+    this.storyTapTarget.set(object, id, enabled, callback);
   }
 
   pick(event) {
@@ -161,6 +223,7 @@ export class DioramaStage {
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
     this.scene.updateMatrixWorld(true);
+    if (!document.querySelector('dialog[open], #story-menu:not([hidden])') && !document.body.dataset.encounter && this.storyTapTarget?.pick(this.raycaster)) return;
     if (this.exploration) { this.exploration.pick(this.raycaster); return; }
     if (this.worldPresenter?.pick(this.raycaster)) return;
     const selected = firstTapHit(this.raycaster.intersectObjects(this.scene.children, true));
@@ -190,7 +253,7 @@ export class DioramaStage {
     const bottom = height - clamp(this.viewportInsets.bottom, 0, Math.max(0, height - top - 48));
     const safeWidth = right - left, safeHeight = bottom - top;
     this.safeViewport = { left, top, right, bottom, width: safeWidth, height: safeHeight, canvasWidth: width, canvasHeight: height, insets: { ...this.viewportInsets } };
-    const focus = (this.exploration ? { width: 7.5, height: 4.0, meanHeight: 2.2 } : this.characterFocus) || { width: 2.2, height: 2.6, meanHeight: 2.2 };
+    const focus = (this.exploration ? (this.storyFraming || { width: 7.5, height: 4.0, meanHeight: 2.2 }) : this.characterFocus) || { width: 2.2, height: 2.6, meanHeight: 2.2 };
     const compact = width < 640;
     const desiredHeight = this.studio
       ? clamp(safeHeight * .62, Math.min(120, safeHeight * .7), compact ? 260 : 340)
@@ -212,7 +275,7 @@ export class DioramaStage {
   }
 
   updateCamera() {
-    if (this.exploration) { this.exploration.updateCamera(); return; }
+    if (this.exploration) { this.exploration.updateCamera(); this.camera.position.add(this.panOffset); this.camera.updateMatrixWorld(); return; }
     const radius = 23;
     const offset = this.cameraDrift?.offset || { yaw: 0, pitch: 0 };
     const yaw = this.yaw + offset.yaw, pitch = this.pitch + offset.pitch;
@@ -222,6 +285,7 @@ export class DioramaStage {
       Math.cos(yaw) * Math.cos(pitch) * radius + this.target.z,
     );
     this.camera.lookAt(this.target);
+    this.camera.position.add(this.panOffset);
     this.camera.updateMatrixWorld();
   }
 
@@ -276,7 +340,162 @@ export class DioramaStage {
     this.resize();
   }
 
-  resetCamera() { if (this.exploration) { this.exploration.goHome(); return; } this.cameraDrift?.reset(); this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+  resetCamera() { if (this.exploration) { this.exploration.goHome(); return; } this.cameraDrift?.reset(); this.cameraAnim = null; this.yaw = .28; this.pitch = DEFAULT_PITCH; this.zoom = 1; this.frameCharacters(); }
+
+  // Smooth, animated camera move for reframes. Interpolates yaw/pitch/zoom/
+  // target/pan so a pull-back reads as a process instead of a jump.
+  animateCameraTo(state, duration = .9, { commit = true } = {}) {
+    if (this.exploration) return;
+    // Keep the handheld sway from fighting the move while it is in flight;
+    // it fades back in once the move has settled.
+    this.cameraDrift?.pause(Math.max(.6, duration + .8));
+    this.cameraAnim = { t: 0, duration: Math.max(.12, duration), commit, from: { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() }, to: { yaw: state.yaw, pitch: state.pitch, zoom: clamp(Number(state.zoom) || this.zoom, .005, 12), target: state.target.clone(), pan: state.pan.clone() } };
+  }
+  stepCameraAnimation(dt) {
+    const anim = this.cameraAnim;
+    if (!anim) return;
+    anim.t = Math.min(1, anim.t + dt / anim.duration);
+    const eased = 1 - Math.pow(1 - anim.t, 3);
+    this.yaw = anim.from.yaw + (anim.to.yaw - anim.from.yaw) * eased;
+    this.pitch = anim.from.pitch + (anim.to.pitch - anim.from.pitch) * eased;
+    this.zoom = anim.from.zoom + (anim.to.zoom - anim.from.zoom) * eased;
+    this.target.lerpVectors(anim.from.target, anim.to.target, eased);
+    this.panOffset.lerpVectors(anim.from.pan, anim.to.pan, eased);
+    this.resize();
+    if (anim.t >= 1) { this.cameraAnim = null; if (anim.commit) this.saveCameraState(); }
+  }
+
+  // Camera history for the back/forward arrows in the module gallery.
+  saveCameraState() {
+    const state = { yaw: this.yaw, pitch: this.pitch, zoom: this.zoom, target: this.target.clone(), pan: this.panOffset.clone() };
+    const last = this.cameraHistory[this.cameraIndex];
+    const same = last && Math.abs(last.yaw - state.yaw) < 1e-4 && Math.abs(last.pitch - state.pitch) < 1e-4 && Math.abs(last.zoom - state.zoom) < 1e-4 && last.target.distanceToSquared(state.target) < 1e-6 && last.pan.distanceToSquared(state.pan) < 1e-6;
+    if (!same) {
+      this.cameraHistory = this.cameraHistory.slice(0, this.cameraIndex + 1);
+      this.cameraHistory.push(state);
+      this.cameraIndex = this.cameraHistory.length - 1;
+      if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    }
+    return this.cameraIndex;
+  }
+  restoreCameraState(state) {
+    if (!state || this.exploration) return;
+    this.cameraAnim = null;
+    this.yaw = state.yaw; this.pitch = state.pitch; this.zoom = clamp(state.zoom, .005, 12);
+    this.target.copy(state.target); this.panOffset.copy(state.pan);
+    this.resize();
+  }
+  cameraBack() {
+    if (this.cameraIndex <= 0) return false;
+    this.stopOrbit();
+    this.cameraIndex--;
+    // History jumps are moves, not teleports: animate to the previous framing.
+    this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
+    if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    return true;
+  }
+  cameraForward() {
+    if (this.cameraIndex >= this.cameraHistory.length - 1) return false;
+    this.stopOrbit();
+    this.cameraIndex++;
+    this.animateCameraTo(this.cameraHistory[this.cameraIndex], .9, { commit: false });
+    if (this.onCameraHistoryChange) this.onCameraHistoryChange();
+    return true;
+  }
+  cameraNavState() { return { index: this.cameraIndex, count: this.cameraHistory.length }; }
+
+  stopOrbit() { this.orbit = null; }
+
+  // The gallery wires this up so close-up shots can focus the entity nearest
+  // to the centre of the scene instead of the camera's current aim point.
+  setNearestSubjectProvider(fn) { this.nearestSubjectProvider = fn; }
+
+  // Lock the camera onto an entity: every shot keeps tracking it as it moves.
+  setFollowTarget(provider, name = "") {
+    this.followTarget = { provider, name };
+    this.onFollowChange?.(name);
+    this.onCameraHistoryChange?.();
+  }
+  clearFollowTarget() {
+    if (!this.followTarget) return;
+    this.followTarget = null;
+    this.onFollowChange?.(null);
+    this.onCameraHistoryChange?.();
+  }
+
+  // Cycle through the four fixed shot presets. The player can only cycle
+  // these; the cinematic moves (zoomIn/zoomOut/otd) stay LLM-only.
+  cycleCameraShot() {
+    if (this.exploration) return this.angleMode;
+    this.stopOrbit();
+    const order = ['ground', 'overhead', 'orbit', 'closeup'];
+    const idx = order.indexOf(this.angleMode);
+    const next = order[(idx + 1) % order.length];
+    this.playCinematic({ kind: next });
+    return this.angleMode;
+  }
+
+  // Cinematic camera language. The LLM may suggest a shot (kind) or a move
+  // (move); every change transitions through animateCameraTo. The player can
+  // still override any of this with their own drag / pinch / wheel.
+  playCinematic({ kind, move } = {}) {
+    if (this.exploration) return;
+    this.stopOrbit();
+    let subject = this.target.clone(), pan = this.panOffset.clone();
+    if (this.followTarget) {
+      const p = this.followTarget.provider();
+      if (p) subject = new THREE.Vector3(p[0], this.target.y, p[1]);
+    }
+    if (kind === 'orbit') {
+      // Slow orbiting view from the side: the horizon stays centred, the
+      // camera circles the subject at eye level instead of above it.
+      const sidePitch = .22;
+      this.orbit = { speed: .11, pitch: sidePitch };
+      this.angleMode = 'orbit';
+      this.animateCameraTo({ yaw: this.yaw, pitch: sidePitch, zoom: Math.min(this.zoom, 1.15), target: subject, pan }, 1.1);
+    } else if (kind === 'overhead') {
+      this.angleMode = 'overhead';
+      this.animateCameraTo({ yaw: this.yaw, pitch: 1.35, zoom: Math.min(1.8, this.zoom * 1.35), target: subject, pan }, 1);
+    } else if (kind === 'ground') {
+      this.angleMode = 'ground';
+      this.animateCameraTo({ yaw: this.yaw, pitch: .25, zoom: this.zoom, target: subject, pan }, 1);
+    } else if (kind === 'closeup') {
+      // In-your-face close-up: the nearest subject fills most of the frame.
+      this.angleMode = 'closeup';
+      const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
+      const subj = nz ? new THREE.Vector3(nz[0], .28, nz[1]) : subject;
+      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(5.5, Math.min(this.zoom, 9.0)), target: subj, pan }, 1.3);
+    }
+    if (move === 'zoomIn') {
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .7), target: subject, pan }, 1.6);
+    } else if (move === 'zoomOut') {
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.min(1.8, this.zoom * 1.45), target: subject, pan }, 1.6);
+    } else if (move === 'closeup') {
+      // In-your-face close-up on the nearest subject.
+      const nz = this.nearestSubjectProvider ? this.nearestSubjectProvider() : null;
+      const subj = nz ? new THREE.Vector3(nz[0], .28, nz[1]) : subject;
+      this.animateCameraTo({ yaw: this.yaw, pitch: .22, zoom: Math.max(5.5, Math.min(this.zoom, 9.0)), target: subj, pan }, 1.3);
+    } else if (move === 'otd') {
+      // Over-the-obstacle framing: the subject stays off-centre and close.
+      const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+      this.animateCameraTo({ yaw: this.yaw, pitch: this.pitch, zoom: Math.max(.22, this.zoom * .45), target: subject.clone().addScaledVector(right, .55), pan }, 1.2);
+    }
+    this.onCameraHistoryChange?.();
+  }
+
+  // One button toggles between a top-down view and a 45-degree ground view.
+  // Both are fixed presets; the other camera controls are untouched.
+  toggleCameraAngle() {
+    if (this.exploration) return this.angleMode;
+    this.stopOrbit();
+    const overhead = this.angleMode === 'overhead' || this.angleMode === 'orbit';
+    this.angleMode = overhead ? 'ground' : 'overhead';
+    const pitch = overhead ? .6 : 1.35;
+    const zoom = overhead ? Math.max(.22, Math.min(1.8, this.zoom * 1.35)) : Math.max(.22, this.zoom / 1.35);
+    this.animateCameraTo({ yaw: this.yaw, pitch, zoom, target: this.target.clone(), pan: this.panOffset.clone() }, .9);
+    return this.angleMode;
+  }
+  cameraAngleMode() { return this.angleMode; }
 
   setLighting(atmosphere = {}) {
     const settings = { ...STORYBOOK_PALETTE, ...atmosphere.lighting };
@@ -290,14 +509,14 @@ export class DioramaStage {
     if (!this.lightingInitialized) { this.updateLighting(1, true); this.lightingInitialized = true; }
   }
 
-  setCuriosityProgress(progress, { decorationProgress = progress } = {}) {
+  setCuriosityProgress(progress, { decorationProgress = progress, explorationFloor = .78 } = {}) {
     const target = clamp(Number(progress) || 0, 0, 1);
     this.tapFeedback?.setRevealProgress(this.world?.tapTargets || [], clamp(Number(decorationProgress) || 0, 0, 1), { immediate: !this.curiosity, reduced: this.reduced });
     if (!this.curiosity) {
-      this.curiosity = { progress: target, target };
+      this.curiosity = { progress: target, target, explorationFloor };
       if (!this.environmentOverride) this.scene.fog = new THREE.Fog('#46566b', 20.2, 28.8);
       this.updateLighting(1, true);
-    } else this.curiosity.target = target;
+    } else { this.curiosity.target = target; this.curiosity.explorationFloor = explorationFloor; }
   }
 
   updateLighting(dt, immediate = false) {
@@ -306,7 +525,7 @@ export class DioramaStage {
       if (!immediate && current.applied && current.progress === current.target) return;
       current.progress = immediate || this.reduced ? current.target : THREE.MathUtils.lerp(current.progress, current.target, 1 - Math.exp(-dt * 1.8));
       if (Math.abs(current.progress - current.target) < .0001) current.progress = current.target;
-      const clarity = THREE.MathUtils.smoothstep(this.exploration ? Math.max(.78, current.progress) : current.progress, 0, 1);
+      const clarity = THREE.MathUtils.smoothstep(this.exploration ? Math.max(current.explorationFloor, current.progress) : current.progress, 0, 1);
       const blend = (from, to) => blendHex(from, to, clarity);
       const mix = (from, to) => THREE.MathUtils.lerp(from, to, clarity);
       this.hemisphere.color.set(blend('#91adc9', '#fff5dc'));
@@ -348,6 +567,7 @@ export class DioramaStage {
   }
 
   setScene(worldId, cast = [], { studio = false, decorations = null, exploration = null } = {}) {
+    this.panOffset.set(0, 0, 0);
     this.worldPresenter?.clear();
     this.exploration?.dispose(); this.exploration = null;
     this.environmentOverride = false;
@@ -568,6 +788,7 @@ export class DioramaStage {
     });
     return {
       scriptedEntities: this.worldPresenter?.stats || [],
+      storyTapTarget: this.storyTapTarget?.stats || null,
       exploration: this.exploration?.stats || null,
       world: this.worldId, actors: [...this.actors.keys()],
       calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles, geometries: this.renderer.info.memory.geometries,
@@ -587,6 +808,7 @@ export class DioramaStage {
   }
 
   dispose() {
+    this.storyTapTarget?.dispose();
     this.exploration?.dispose();
     this.renderer.setAnimationLoop(null);
     this.tapFeedback.clear();

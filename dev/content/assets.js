@@ -1,11 +1,11 @@
 import { NPC_CATALOG } from "../../src/story-npcs/catalog.js";
 import { FOUR } from "./yellow-friends.js";
-import { CREATION_KITS, PROP_IDS } from "./props.js";
+import { CREATION_KITS, PROP_IDS, PROP_CATEGORIES } from "./props.js";
 import { CHARACTER_CATALOG } from "./characters.js";
 import { WORLD_CATALOG } from "./worlds.js";
 
 // Serializable capability manifest. No Three.js, DOM, network or factory closures.
-export const ACTOR_ACTIONS = ["idle", "wave", "hop", "listen", "talk", "walk"];
+export const ACTOR_ACTIONS = ["idle", "talk", "wave", "hop", "listen", "walk", "run", "sprint", "jump", "float", "sleep", "roll", "dance", "cheer", "fall"];
 export const EXPRESSIONS = ["happy", "curious", "sad", "surprised"];
 export const WORLD_IDS = WORLD_CATALOG.map((world) => world.id);
 export const WOW_ACTORS = [
@@ -24,6 +24,7 @@ export const ASSETS = Object.freeze(
       {
         id: `prop:${id}`,
         kind: "prop",
+        edible: PROP_CATEGORIES[id] === "食物",
         name: CREATION_KITS.find((k) => k.id === id)?.name || "想象试作品",
         states: ["idle", "working", "active"],
         animations: ["activate"],

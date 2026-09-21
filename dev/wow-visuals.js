@@ -27,7 +27,7 @@ function sculpture() {
     const result = mesh(parent, name, new THREE.CylinderGeometry(radius, radius, delta.length(), 12), material, start.add(end).multiplyScalar(.5).toArray());
     result.quaternion.setFromUnitVectors(UP, delta.normalize()); return result;
   };
-  return { group, mat, mesh, ball, rod, ownMaterial(value) { materials.add(value); return value; }, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
+  return { group, mat, mesh, ball, rod, ownMaterial(value) { materials.add(value); return value; }, ownGeometry(value) { geometries.add(value); return value; }, releaseGeometry(geometry) { geometries.delete(geometry); geometry.dispose(); }, dispose() {
     geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());
     group.removeFromParent();
   } };
@@ -324,6 +324,11 @@ export function createWowPresentation(stage) {
     volume.castShadow=false;volume.receiveShadow=false;
     volume.userData.basePosition=[x,y,z];fogVolumes.push(volume);
   });
+  const caption=document.createElement('div');
+  caption.className='first-light-memory'; caption.hidden=true;
+  const meter=document.createElement('span'), words=document.createElement('strong'), detail=document.createElement('span');
+  caption.append(meter,words,detail); document.querySelector('#stage').append(caption);
+  let pulseAge=Infinity;
   stage.style?.apply(group);
   let targetProgress=0, progress=0, live=false, lastTime=0, frame=0, initialized=false, lastWorld=null;
   let motionTime=0;
@@ -380,7 +385,7 @@ export function createWowPresentation(stage) {
       // Ease-out with a single restrained overshoot. Every prop's local
       // origin is its foot, so growing and rocking keep that foot anchored.
       const factor=stage.reduced||t>=1?1:Math.max(.001,1+2.4*u*u*u+1.4*u*u);
-      const roll=stage.reduced?0:Math.sin(motionTime*.77+motion.phase)*motion.amount;
+      const roll=stage.reduced?0:pulseAge<3.4 && state.firstLight ? Math.sin(pulseAge*15)*.3 : Math.sin(motionTime*.77+motion.phase)*motion.amount;
       const yaw=!stage.reduced&&motion.name==='key'?Math.sin(motionTime*.63+motion.phase)*.14:0;
       object.position.copy(motion.position);
       if(motion.token&&!stage.reduced)object.position.x+=Math.sin(motionTime*.64+motion.phase)*.009;
@@ -411,6 +416,8 @@ export function createWowPresentation(stage) {
     lamp.distance=2.1+clarity*1.6;
     doorGlow.emissiveIntensity=state.visual?.shape?.length ? .48 : .1;
     doorGlow.color.set(state.visual ? '#f5e0b1' : '#c1c6c3');
+    if(state.firstLight && pulseAge<3.4) { glow.emissiveIntensity=1.4; lamp.intensity=1.7; beamMaterial.opacity=.28; }
+    group.userData.pulseRemaining=Math.max(0,3.4-pulseAge);
     group.userData.progress=progress;
     group.userData.mistDensity=remaining;
   }
@@ -420,6 +427,7 @@ export function createWowPresentation(stage) {
     const dt=Math.min(.06,elapsed), motionDt=Math.min(.2,elapsed);lastTime=now;
     if(!document.hidden){
       progress=THREE.MathUtils.lerp(progress,targetProgress,1-Math.exp(-dt*2.4));
+      pulseAge+=motionDt;
       paintLight();
       if(!stage.reduced)fogMaterials.forEach(material=>{material.uniforms.uTime.value=now/1000;});
       moveProps(motionDt);
@@ -432,9 +440,16 @@ export function createWowPresentation(stage) {
     state={...state,...next,...(chapterChanged&&next.progress===undefined?{progress:0}:{})};
     if(group.parent!==stage.scene)stage.scene.add(group);
     const props=new Set(state.props||[]);
-    reveal(torch,props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
-    reveal(door,state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6),seedMotion);
-    reveal(key,Boolean(state.visual),seedMotion);
+    reveal(torch,!state.firstLight && props.has('torch'),seedMotion);reveal(radio,props.has('radio'),seedMotion);reveal(jar,props.has('jar'),seedMotion);
+    reveal(door,!state.firstLight && (state.kind==='create'||Boolean(state.visual)||(state.chapter===1&&state.scene>=6)),seedMotion);
+    reveal(key,!state.firstLight && Boolean(state.visual),seedMotion);
+    caption.hidden=!state.firstLight;
+    if(state.firstLight){
+      meter.textContent=`萌萌星 · ${state.energy || 0}%`;
+      words.textContent=state.firstWords ? `“${state.firstWords}”` : '第一束光，等着你的好奇';
+      detail.textContent=state.scene>=11 ? '绘本第 1 页 · 点亮者：小小追光员' : state.skyThing ? `${state.skyColor}的天空，飘着${state.skyThing}` : state.scene>=4 ? '你的问题，正在长成光' : '咯咯哒和你一起找光';
+
+    }
     const requested=Number(state.progress);
     targetProgress=Number.isFinite(requested)?THREE.MathUtils.clamp(requested,0,1):0;
     // A newly mounted world starts at its saved chapter progress immediately.
@@ -467,5 +482,5 @@ export function createWowPresentation(stage) {
     moveProps();
     if(!live){live=true;frame=requestAnimationFrame(animate);}
   }
-  return {set,dispose(){live=false;cancelAnimationFrame(frame);unregisterTaps.forEach(unregister=>unregister());s.dispose();}};
+  return {set,pulse(){pulseAge=0;caption.dataset.pulsing='true';},dispose(){caption.remove();live=false;cancelAnimationFrame(frame);unregisterTaps.forEach(unregister=>unregister());s.dispose();}};
 }

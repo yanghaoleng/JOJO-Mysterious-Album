@@ -7,7 +7,7 @@
 import * as THREE from '../../vendor/three.module.js';
 
 const IDS = new Set(['jiaojiao', 'lingdang', 'zhuxiaodi']);
-const ACTIONS = new Set(['idle', 'talk', 'wave', 'hop', 'listen', 'walk']);
+const ACTIONS = new Set(['idle', 'talk', 'wave', 'hop', 'listen', 'walk', 'run', 'sprint', 'jump', 'float', 'sleep', 'roll', 'dance', 'cheer', 'fall']);
 const EXPRESSIONS = new Set(['happy', 'curious', 'sad', 'surprised']);
 const TAU = Math.PI * 2;
 const clamp = THREE.MathUtils.clamp;
@@ -158,17 +158,25 @@ export function createNPCToolkit(characterId, skinColor, { scale = 1, species = 
       time = Number.isFinite(time) ? time : 0; dt = clamp(Number.isFinite(dt) ? dt : 1 / 60, 0, .1);
       const blend = 1 - Math.exp(-dt * 9);
       for (const key of ACTIONS) weights[key] = THREE.MathUtils.lerp(weights[key], key === action ? 1 : 0, blend);
-      const jump = Math.max(0, Math.sin(time * 4.3)), gait = Math.sin(time * 7.8), talk = weights.talk;
-      airborneHeight = weights.hop * jump * .16 * fit.scale.y;
-      rig.position.y = weights.hop * jump * .16 + weights.walk * Math.abs(gait) * .018;
-      rig.rotation.z = Math.sin(time * 1.7 + phase) * .010 + weights.walk * gait * .025;
-      rig.scale.set(1 - weights.hop * jump * .025, 1 + Math.sin(time * 1.9 + phase) * .006 + weights.hop * jump * .035, 1);
+      const jump = Math.max(0, Math.sin(time * 4.3)), jumpHi = Math.max(0, Math.sin(time * 6.1)), talk = weights.talk;
+      const gait = Math.sin(time * (weights.sprint ? 13.5 : weights.run ? 10 : 7.8));
+      const floatY = .82 + Math.sin(time * 2.1) * .06;
+      const sleepTilt = weights.sleep * (Math.PI / 2);
+      const rollSpin = weights.roll * (time % 6.283);
+      const cheerPhase = Math.max(0, Math.sin(time * 7));
+      airborneHeight = weights.hop * jump * .16 * fit.scale.y + weights.jump * jumpHi * .5 * fit.scale.y + weights.float * floatY * fit.scale.y;
+      rig.position.y = weights.hop * jump * .16 + weights.jump * jumpHi * .5 + weights.float * floatY + weights.walk * Math.abs(gait) * .018 + weights.sleep * -.4 + weights.fall * .15;
+      rig.rotation.z = sleepTilt + rollSpin + weights.fall * .85 + Math.sin(time * 1.7 + phase) * .010 + weights.walk * gait * .025 + weights.dance * Math.sin(time * 3) * .08;
+      rig.rotation.x = weights.fall * .45;
+      rig.scale.set(1 - weights.hop * jump * .025 + weights.cheer * cheerPhase * .04, 1 + Math.sin(time * 1.9 + phase) * .006 + weights.hop * jump * .035 + weights.jump * jumpHi * .07 + weights.cheer * cheerPhase * .1, 1);
       if (b.head) {
         b.head.rotation.z = THREE.MathUtils.lerp(b.head.rotation.z, (expression === 'curious' ? -.085 : 0) - weights.listen * .035 + talk * Math.sin(time * 4) * .014, blend);
         b.head.rotation.x = THREE.MathUtils.lerp(b.head.rotation.x, (expression === 'sad' ? .055 : 0) + talk * Math.sin(time * 3.7) * .02, blend);
       }
-      arms.forEach((arm, index) => { const side = index ? 1 : -1; arm.rotation.z = side * (.02 + weights.hop * .32) + (index ? weights.wave * (1.9 + Math.sin(time * 7) * .20) : 0); arm.rotation.x = weights.walk * gait * side * .35 + talk * Math.sin(time * 4 + index) * .045; });
-      legs.forEach((leg, index) => { leg.rotation.x = weights.walk * gait * (index ? 1 : -1) * .31; });
+      const armSwing = (weights.walk + weights.run + weights.sprint) * gait;
+      arms.forEach((arm, index) => { const side = index ? 1 : -1; arm.rotation.z = side * (.02 + weights.hop * .32) + (index ? weights.wave * (1.9 + Math.sin(time * 7) * .20) : 0) + weights.cheer * (index ? -1.9 : 1.9) + weights.dance * side * .3; arm.rotation.x = armSwing * side * .35 + talk * Math.sin(time * 4 + index) * .045 + weights.dance * Math.sin(time * 3 + index) * .2; });
+      const legGait = (weights.walk + weights.run + weights.sprint) * gait;
+      legs.forEach((leg, index) => { leg.rotation.x = legGait * (index ? 1 : -1) * .31; });
       if (b.tail) b.tail.rotation.y = Math.sin(time * 2.5 + phase) * .08 + weights.wave * Math.sin(time * 6) * .14;
       if (b.cape) b.cape.rotation.x = Math.sin(time * 2.1 + phase) * .018 + weights.hop * jump * .08;
       const blink = Math.max(0, 1 - Math.abs((time + phase) % 4.9 - 4.68) / .12);
