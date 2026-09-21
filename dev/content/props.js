@@ -30,6 +30,9 @@ export const CREATION_KITS = [
   ["pink-sky", "粉色天空", "粉色天空|pink-sky", "一片粉色云幕铺在头顶。", "jiaojiao"],
   ["blue-sky", "蓝色天空", "蓝色天空|blue-sky", "一片蓝色云幕铺在头顶。", "jiaojiao"],
 
+['poop','便便','大便|便便|粑粑','长着圆眼睛的螺旋便便轻轻扭扭身子。','jiaojiao'],
+['gas-cloud','一团气体','一团气体|气体|气团','淡紫色气团轻轻摇晃，鼓起蓬松的小团。','jiaojiao'],
+['fart','一个屁','一个屁|屁|臭屁','黄绿色小气尾摇晃，带着一道闪电。','jiaojiao'],
 ["ufo","飞碟","飞碟|UFO|不明飞行物","飞碟的轮廓和部件可独立查看。","jiaojiao"],
 ["fighter-jet","战斗机","战斗机|战机|喷气机","战斗机的轮廓和部件可独立查看。","jiaojiao"],
 ["spaceship","宇宙飞船","宇宙飞船|星际飞船|太空飞船","宇宙飞船的轮廓和部件可独立查看。","jiaojiao"],
@@ -224,5 +227,6 @@ export const PROP_CATEGORIES = {"car":"交通工具","bus":"交通工具","train
 export const PROP_IDS = [...CREATION_KITS.map((kit) => kit.id), "prototype"];
 Object.assign(PROP_CATEGORIES, {"ufo":"交通工具","fighter-jet":"交通工具","spaceship":"交通工具","battleship":"交通工具","tank":"交通工具","toy-bomb":"玩具","toy-pistol":"玩具","toy-launcher":"玩具","toy-sword":"玩具","toy-shield":"玩具","toy-bow":"玩具","toy-cannon":"玩具","water-gun":"玩具","gamepad":"玩具","yoyo":"玩具","chess":"玩具"});
 Object.assign(PROP_CATEGORIES, Object.fromEntries(PROP_COLLECTION.map(p => [p.id, p.category])));
+Object.assign(PROP_CATEGORIES,{poop:'玩具','gas-cloud':'玩具',fart:'玩具'});
 
 Object.assign(PROP_CATEGORIES,{"little-flame": "玩具", "gold-coin": "玩具", "cash": "玩具", "purple-diamond": "玩具", "battery": "玩具", "growth-bean": "玩具", "badge-star": "玩具", "badge-shield": "玩具", "badge-ribbon": "玩具", "badge-crown": "玩具", "badge-leaf": "玩具", "bee": "玩具", "fly": "玩具", "mosquito": "玩具"});

@@ -399,9 +399,15 @@ function syncCameraNav() {
 }
 function aiControlDemo() {
   startWorld(AI_CONTROL_LEVEL.world);
-  $("command-panel").dataset.mode = "natural";
+  enableNaturalControl();
   $("preview-ui").hidden = true;
+  $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
+}
+function enableNaturalControl() {
+  $("command-panel").dataset.mode = "natural";
   $("command-panel").hidden = false;
+  $("natural-command-input").value = "";
+  $("natural-command-status").textContent = "";
   controlRecords = [];
   activeControlRecord = -1;
   renderControlTabs();
@@ -423,7 +429,6 @@ function aiControlDemo() {
   $("camera-angle").onclick = () => { stage.cycleCameraShot(); syncCameraNav(); };
   stage.saveCameraState();
   syncCameraNav();
-  $("runtime-report").textContent = "等待输入……\n当前场景：meadow\n渲染状态：已就绪";
 }
 function renderControlTabs() {
   const host = $("control-tabs");
@@ -729,6 +734,7 @@ function select(item) {
   report("");
   if (item.kind === "actor") {
     startWorld("meadow");
+    enableNaturalControl();
     commands([{type:"entity.spawn", id:"preview", asset:item.id, position:[0,1.5], scale:.78}]);
     for (const action of item.asset.animations)
       button(
@@ -747,6 +753,7 @@ function select(item) {
       );
   } else if (item.kind === "prop") {
     startWorld();
+    enableNaturalControl();
     commands([
       {
         type: "entity.spawn",
@@ -772,6 +779,7 @@ function select(item) {
     );
   } else if (item.kind === "world") {
     startWorld(item.id.slice(6));
+    enableNaturalControl();
     button("环境回应", () =>
       commands([{ type: "world.react", action: "celebrate" }]),
     );
@@ -781,6 +789,7 @@ function select(item) {
     report("点击播放器试听；切换模块会停止当前声音。");
   } else if (item.kind === "encounter") {
     startWorld(item.encounter.world);
+    enableNaturalControl();
     commands([
       {
         type: "entity.spawn", position: [0,1.5], scale: .78,

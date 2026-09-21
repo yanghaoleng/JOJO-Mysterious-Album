@@ -1273,7 +1273,9 @@ def llm_scene_result(text, context):
         ctype = command.get("type")
         if ctype not in {"entity.spawn", "entity.move", "entity.animate", "entity.remove", "entity.scale", "entity.color", "feeding.start", "environment.set", "actor.animate", "actor.perform", "fx.play", "weather.set", "world.shake", "world.zoom", "world.float", "group.patrol", "group.gather", "group.surround", "group.chase", "group.hug", "group.handshake", "group.holdhands", "group.stack", "group.ride", "group.dance"}:
             continue
-        item = {"type": ctype, "id": str(command.get("id", ""))[:64]}
+        item = {"type": ctype}
+        if ctype.startswith("entity.") or ctype == "actor.perform":
+            item["id"] = str(command.get("id", ""))[:64]
         if ctype == "entity.spawn":
             item.update({"asset": command.get("asset"), "position": command.get("position"), "color": command.get("color"), "scale": command.get("scale")})
             if item["asset"] not in allowed_assets: continue
@@ -1317,8 +1319,6 @@ def llm_scene_result(text, context):
         elif ctype == "fx.play":
             if command.get("effect") not in {"smoke", "sparkle", "dust", "firework", "confetti", "stars", "vanishStar"}: continue
             item["effect"] = command.get("effect")
-            if command.get("id"): item["id"] = str(command["id"])[:64]
-            elif command.get("position"): item["position"] = command["position"]
         elif ctype == "weather.set":
             if command.get("preset") not in {"rain", "snow", "clear"}: continue
             item["preset"] = command.get("preset")

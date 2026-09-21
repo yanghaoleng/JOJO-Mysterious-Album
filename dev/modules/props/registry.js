@@ -289,6 +289,9 @@ import { build as special12 } from "./water-gun.js";
 import { build as special13 } from "./gamepad.js";
 import { build as special14 } from "./yoyo.js";
 import { build as special15 } from "./chess.js";
+import { build as special16 } from "./fart.js";
+import { build as special17 } from "./gas-cloud.js";
+import { build as special18 } from "./poop.js";
 export const PROP_BUILDERS = Object.freeze({
   'little-flame':extra0,
   'gold-coin':extra1,
@@ -336,6 +339,9 @@ export const PROP_BUILDERS = Object.freeze({
   "gamepad": special13,
   "yoyo": special14,
   "chess": special15,
+  "fart": special16,
+  "gas-cloud": special17,
+  "poop": special18,
   "collection-0-0": collection0,
   "collection-1-0": collection5,
   "collection-2-0": collection10,
