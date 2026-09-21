@@ -632,18 +632,26 @@ footer {
   text-decoration: underline;
 }
 
-/* 一句话控制输入行内的语音按钮（紧凑圆形） */
-.natural-command > div .voice-input-control__start {
+/* 语音按钮悬浮在 3D 场景左上角 */
+#preview-stage .voice-input-control {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+}
+#preview-stage .voice-input-control__start {
   min-height: 0;
   padding: 0;
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  box-shadow: none;
   justify-content: center;
   animation: none;
+  background: rgba(255, 255, 255, .92);
+  color: #3d5846;
+  border: 1px solid rgba(61, 88, 70, .28);
+  box-shadow: 0 4px 14px rgba(42, 74, 60, .18);
 }
-.natural-command > div .voice-input-control__start svg { width: 19px; height: 19px; }
-.natural-command > div .voice-input-control__start .voice-input-control__label { display: none; }
-.natural-command > div .mic-button { flex: none; width: 42px; height: 42px; }
-.natural-command > div .voice-input-control__wave i { width: 3px; }
+#preview-stage .voice-input-control__start svg { width: 19px; height: 19px; }
+#preview-stage .voice-input-control__start .voice-input-control__label { display: none; }
+#preview-stage .voice-input-control__wave i { width: 3px; }
