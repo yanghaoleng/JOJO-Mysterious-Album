@@ -3,6 +3,17 @@
 // 结构与 AI_CONTROL_LEVEL 相同：steps 每步是自然语言指令（say）+ 世界命令（commands）。
 // step.world 表示先切换到该星球（圆形缩放转场 + 带上原星球实体）；wait 是播放下一步前的停留秒数。
 
+const FRUIT_KINDS = ["苹果", "橙子", "香蕉", "葡萄", "草莓", "西瓜"];
+const FRUIT_IDS = ["fr-apple", "fr-orange", "fr-banana", "fr-grape", "fr-strawberry", "fr-watermelon"];
+function fruitSpread() {
+  const out = [];
+  for (let i = 0; i < 20; i++) {
+    const ring = (i % 2 === 0 ? 2.1 : 3.7);
+    const angle = i * 1.7;
+    out.push(spawn(`${FRUIT_IDS[i % 6]}-${i}`, "prop:procedural", [Math.cos(angle) * ring, Math.sin(angle) * ring], 0.82, { name: FRUIT_KINDS[i % 6] }));
+  }
+  return out;
+}
 const spawn = (id, asset, position, scale = 1, extra = {}) => ({
   type: "entity.spawn", id, asset, position, scale, ...extra,
 });
@@ -62,7 +73,7 @@ export const UFO_PARTY_STORY = {
       commands: [
         spawn("ufo-1", "prop:ufo", [0, 2.6], 1.5),
         { type: "fx.play", effect: "stars" },
-        { type: "world.float", on: true },
+        { type: "world.float", on: true, targets: ["ufo-1"] },
       ],
     },
     {
@@ -77,21 +88,14 @@ export const UFO_PARTY_STORY = {
     },
     {
       id: "fruit",
-      say: "飞碟变出了好多水果给大家！",
-      wait: 5.2,
-      commands: [
-        spawn("fr-apple", "prop:procedural", [-3.6, 2.4], 0.8, { name: "苹果" }),
-        spawn("fr-orange", "prop:procedural", [-1.2, 2.2], 0.8, { name: "橙子" }),
-        spawn("fr-banana", "prop:procedural", [1.2, 2.2], 0.8, { name: "香蕉" }),
-        spawn("fr-grape", "prop:procedural", [3.6, 2.4], 0.8, { name: "葡萄" }),
-        spawn("fr-strawberry", "prop:procedural", [0, -3.2], 0.8, { name: "草莓" }),
-        spawn("fr-watermelon", "prop:procedural", [-3.6, -2.4], 0.9, { name: "西瓜" }),
-      ],
+      say: "飞碟变出了好多好多水果，像下雨一样掉下来！",
+      wait: 8,
+      commands: [...fruitSpread()],
     },
     {
       id: "eat",
       say: "大家一起愉快地吃水果！",
-      wait: 7.5,
+      wait: 9,
       commands: [
         {
           type: "feeding.start",
@@ -105,6 +109,18 @@ export const UFO_PARTY_STORY = {
       say: "哇，水果真的被大家吃光啦！",
       wait: 3.6,
       commands: [],
+    },
+    {
+      id: "dance",
+      say: "吃得好开心，大家一起跳舞吧！",
+      wait: 6.5,
+      commands: [
+        {
+          type: "group.dance",
+          targets: ["sq-jiaojiao", "sq-lingdang", "sq-zhuxiaodi", "bn-lvdou", "bn-fendou", "bn-douya", "bn-landou", "bn-dahongdou", "driver-round", "driver-bull"],
+        },
+        { type: "fx.play", effect: "confetti" },
+      ],
     },
     {
       id: "depart",

@@ -42,7 +42,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   const feeding = createFeedingController({entries,stage,consume:onConsume});
   const movement = createMovementController({entries, stage});
   const pfx = createPfxController({ stage, world: stage.world });
-  let floatMode = false;
+  let floatMode = false, floatTargets = new Set();
   let currentWorld = null,
     lastCreations = "",
     lastEnvironment = null,
@@ -136,7 +136,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           actionUntil: 0,
           entrance: stage.reduced || suspended ? 2 : -(arrivalDelays.get(record.id) || 0),
           arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
-          rest: (() => { const flying = /ufo|spaceship|airplane|rocket/.test(record.asset || ""); return flying ? anchor.position.clone().addScaledVector(normal, 1.7) : anchor.position.clone(); })(),
+          rest: (() => { const flying = /ufo|spaceship|airplane|rocket/.test(record.asset || ""); const lift = /ufo/.test(record.asset || "") ? 2.6 : 1.7; return flying ? anchor.position.clone().addScaledVector(normal, lift) : anchor.position.clone(); })(),
           orientation: anchor.quaternion.clone(),
           position: [...record.position],
           contactRadius,
@@ -232,7 +232,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       }
       if (c.type === "world.shake") pfx.shake(c.strength || 0.05, c.duration || 0.6);
       if (c.type === "world.zoom") pfx.setZoom(c.scale || 1);
-      if (c.type === "world.float") floatMode = !!c.on;
+      if (c.type === "world.float") { floatMode = !!c.on; floatTargets = new Set(c.targets || []); }
       if (c.type === "group.chase") movement.chase(c.chaser, c.runner);
       if (c.type === "group.hug") movement.hug(c.targets[0], c.targets[1]);
       if (c.type === "group.handshake") movement.shakeHands(c.targets[0], c.targets[1]);
@@ -240,16 +240,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       if (c.type === "group.stack") movement.stack(c.targets);
       if (c.type === "group.ride") {
         movement.ride(c.driver, c.mount);
-        // Riding a flying vehicle: overhead follow cam so you see the route.
-        const mountItem = entries.get(c.mount);
-        if (mountItem && /ufo|spaceship|airplane|rocket/.test(mountItem.asset || "")) {
-          const mid = c.mount;
-          stage.setFollowTarget(() => {
-            const it = entries.get(mid);
-            return it ? it.position : null;
-          }, mountItem.model?.name || "飞行物");
-          stage.playCinematic({ kind: "overhead" });
-        }
+        // 骑乘不再自动切镜头：孩子用下拉/滚轮自己控制远近，避免频繁跳视角。
       }
       if (c.type === "group.dance") movement.danceParty(c.targets);
     }
@@ -264,7 +255,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       if (Math.abs(zs - 1) > 0.004) root.scale.setScalar(zs);
       else if (root.scale.x !== 1) root.scale.setScalar(1);
       for (const item of entries.values()) {
-        if (floatMode && item.entrance >= 2) {
+        if (floatMode && (!floatTargets.size || floatTargets.has(item.id)) && item.entrance >= 2) {
           const wave = Math.sin(time * 2.2 + (item.rest?.x || 0)) * 0.08;
           item.anchor.position.y = (item.rest?.y || 0) + 1.6 + wave;
           item.anchor.quaternion.copy(item.orientation).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.sin(time * 1.4) * 0.06));
@@ -347,6 +338,17 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
     },
     set onPickEntity(fn) { onPickEntity = fn || (() => {}); },
     getPosition(id) { return entries.get(id)?.position || null; },
+    getHeight(id) {
+      const item = entries.get(id);
+      if (!item) return 0;
+      if (item.modelHeight === undefined) {
+        try {
+          const box = new THREE.Box3().setFromObject(item.model);
+          item.modelHeight = box.isEmpty() ? 1.4 : box.size().y;
+        } catch { item.modelHeight = 1.4; }
+      }
+      return item.modelHeight;
+    },
     get stats() {
       return [...entries].map(([id, item]) => ({
         id,

@@ -420,22 +420,6 @@ function syncCameraNav() {
     const option = picker.querySelector(`option[value="${CSS.escape(mode)}"]`);
     if (option) picker.value = mode;
   }
-  const { index, count } = stage.cameraNavState();
-  $("camera-back").disabled = index <= 0;
-  $("camera-forward").disabled = index >= count - 1;
-  const angle = $("camera-angle");
-  if (angle) {
-    const mode = stage.cameraAngleMode?.() || "ground";
-    const meta = shotMeta(mode);
-    const svg = angle.querySelector("svg");
-    if (svg) svg.innerHTML = meta.icon;
-    const label = $("camera-shot-label");
-    if (label) label.textContent = meta.label;
-    angle.setAttribute("aria-label", `切换到${meta.next}视角`);
-    angle.title = `切换到${meta.next}视角`;
-    angle.classList.toggle("is-overhead", mode !== "ground");
-    for (const m of Object.keys(SHOT_META)) angle.classList.toggle(`shot-${m}`, mode === m);
-  }
 }
 
 const BEHAVIOR_EVENTS = [
@@ -584,18 +568,16 @@ function enableNaturalControl() {
   stage.setNearestSubjectProvider(() => {
     const world = game?.runtime?.context?.world;
     const ents = world ? game.runtime.snapshot?.worlds?.[world]?.entities || {} : {};
-    let best = null, bestD = Infinity;
-    for (const e of Object.values(ents)) {
+    let best = null, bestId = null, bestD = Infinity;
+    for (const [id, e] of Object.entries(ents)) {
       if (e.dead) continue;
       const p = e.position || [0, 0];
       const d = p[0] * p[0] + p[1] * p[1];
-      if (d < bestD) { bestD = d; best = p; }
+      if (d < bestD) { bestD = d; best = p; bestId = id; }
     }
-    return best;
+    const h = bestId ? stage.worldPresenter?.getHeight(bestId) || 0 : 0;
+    return best ? [best[0], best[1], h] : null;
   });
-  $("camera-back").onclick = () => stage.cameraBack();
-  $("camera-forward").onclick = () => stage.cameraForward();
-  $("camera-angle").onclick = () => { stage.cycleCameraShot(); syncCameraNav(); };
   renderCameraPicker();
   const picker = $("camera-shot-select");
   if (picker) {
@@ -808,7 +790,10 @@ async function naturalControl() {
         type: "entity.spawn", id, asset: e.asset, name: e.name || "", position: e.position, color: e.color, scale: e.scale, sizeLocked: e.sizeLocked === true, colorOverride: e.colorOverride === true,
       }));
       startWorld(result.sceneSwitch.world);
-      if (carry.length) game.gateway.apply({ version: 1, context: game.runtime.token, commands: carry }, "script");
+      if (carry.length) {
+        const carryResult = game.gateway.apply({ version: 1, context: game.runtime.token, commands: carry }, "script");
+        if (!carryResult.ok) trace.push("[随行搬运]", `    失败：${carryResult.error}`);
+      }
       trace.push("[5] 场景切换", `    ${result.sceneSwitch.world}`, `    随行带上原星球 ${carry.length} 个道具和角色（圆形缩放转场）`);
     }
     stage.saveCameraState();

@@ -39,7 +39,7 @@ export const COMMANDS = Object.freeze({
   "weather.set": ["preset"],
   "world.shake": ["strength", "duration"],
   "world.zoom": ["scale"],
-  "world.float": ["on"],
+  "world.float": ["on", "targets"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
 export const MAX_WORLD_ENTITIES = 300;

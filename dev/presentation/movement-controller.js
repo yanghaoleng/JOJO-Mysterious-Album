@@ -313,7 +313,9 @@ export function createMovementController({ entries, stage }) {
         }
         item.action = "idle"; item.actionUntil = t + 2;
       } else if (job.phase === "dancing") {
-        item.action = "dance"; item.actionUntil = t + 1;
+        item.action = "wave"; item.actionUntil = t + 1;
+        const hop = Math.abs(Math.sin(t * 6.5 + (item.rest?.x || 0) * 2)) * 0.55;
+        item.anchor.position.y = (item.rest?.y || 0) + hop;
         if (job.until && t >= job.until) { job.phase = "done"; face(item, job.center, t); }
       } else if (job.mode === "ride-cruise") {
         if (job.phase === "idle" && t < job.holdUntil) {

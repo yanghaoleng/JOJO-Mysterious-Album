@@ -8,7 +8,7 @@ export function build(k) {
 
   // 飞行器：战斗机 / 飞机 / 直升机 / 火箭 / 飞船
   if (/战斗机|战机|喷气机|歼击机|轰炸机/.test(name)) {
-    box(color, [0, .55, 0], [.32, .22, 2.1]);
+    const body = box(color, [0, .55, 0], [.32, .22, 2.1]);
     const nose = cone(color, [0, .68, 1.25], [.16, .5, .16]); nose.rotation.x = Math.PI / 2;
     ball(gold, [0, .72, .15], [.14, .12, .35]);
     const wl = box(ink, [-.85, .6, 0], [.5, .06, 1.3]); wl.rotation.y = .5;
@@ -17,37 +17,37 @@ export function build(k) {
     box(ink, [.32, .56, -1.02], [.26, .05, .45]);
     box(ink, [0, .84, -1], [.06, .46, .28]);
     const ex = cylinder(gold, [0, .53, -1.1], [.08, .12, .14]); ex.rotation.x = Math.PI / 2;
-    moving(pivot, 'slide', .18);
+    moving(body, 'slide', .18);
     return;
   }
   if (/飞机|飞行器|直升机|无人机/.test(name)) {
-    ball(color, [0, .58, 0], [1, .22, .22]);
+    const body = ball(color, [0, .58, 0], [1, .22, .22]);
     box(color, [0, .6, 0], [.42, .06, 1.8]);
     box(color, [-.78, .66, 0], [.3, .05, .8]);
     box(color, [.78, .66, 0], [.3, .05, .8]);
     const t = cone(color, [0, .95, .2], [.2, .5, .2]); t.rotation.x = -Math.PI / 2;
-    moving(pivot, 'slide', .2);
+    moving(body, 'slide', .2);
     return;
   }
   if (/火箭|导弹|飞船|飞碟|卫星|航天/.test(name)) {
-    box(color, [0, .5, 0], [.55, 1.4, .55]);
+    const body = box(color, [0, .5, 0], [.55, 1.4, .55]);
     const n = cone(color, [0, 1.45, 0], [.3, .8, .3]); n.rotation.x = 0;
     box(ink, [-.55, .5, 0], [.16, .9, .16]);
     box(ink, [.55, .5, 0], [.16, .9, .16]);
     const f1 = cone(gold, [0, -.35, 0], [.45, .5, .45]); f1.rotation.x = Math.PI;
-    moving(pivot, 'float', .12);
+    moving(body, 'float', .12);
     return;
   }
 
   // 车辆：汽车 / 卡车 / 巴士 / 摩托 / 自行车
   if (/车|汽车|卡车|轿车|巴士|公交|出租|救护车|消防车|警车/.test(name)) {
-    box(color, [0, .62, 0], [.72, .42, 1.5]);
+    const body = box(color, [0, .62, 0], [.72, .42, 1.5]);
     box(color, [0, .95, 0], [.62, .24, 1]);
     box(cream, [0, 1.05, 0], [.5, .16, .78]);
     for (const x of [-.42, .42]) for (const z of [-.55, .55]) {
       const w = cylinder(ink, [x, .28, z], [.2, .12, .2]); w.rotation.x = Math.PI / 2;
     }
-    moving(pivot, 'slide', .16);
+    moving(body, 'slide', .16);
     return;
   }
   if (/摩托|自行车|单车|电动车/.test(name)) {
@@ -59,11 +59,11 @@ export function build(k) {
 
   // 船 / 舰
   if (/船|舰|艇|帆船|轮船|潜艇|航母/.test(name)) {
-    box(color, [0, .35, 0], [.9, .5, 1.6]);
+    const body = box(color, [0, .35, 0], [.9, .5, 1.6]);
     const b = cone(color, [0, .1, -.9], [.55, .4, .55]); b.rotation.x = Math.PI / 2;
     const mast = cylinder(wood, [0, 1.2, 0], [.05, 1, .05]);
     box(cream, [0, 1.6, .05], [.06, .7, .9]);
-    moving(pivot, 'float', .1);
+    moving(body, 'float', .1);
     return;
   }
 
@@ -95,17 +95,17 @@ export function build(k) {
 
   // 球类
   if (/球|足球|篮球|排球|皮球|网球|乒乓球/.test(name)) {
-    ball(color, [0, .6, 0], [.7, .7, .7]);
-    moving(pivot, 'bounce', .18);
+    const body = ball(color, [0, .6, 0], [.7, .7, .7]);
+    moving(body, 'bounce', .18);
     return;
   }
 
   // 水果（果实 + 蒂）
   if (/苹果|橙子|橘子|香蕉|葡萄|草莓|西瓜|桃子|梨|芒果|水果/.test(name)) {
-    ball(color, [0, .35, 0], [.48, .46, .48]);
+    const body = ball(color, [0, .35, 0], [.48, .46, .48]);
     const stem = cone(cream, [0, .82, 0], [.12, .22, .12]);
     cone(ink, [0, .72, 0], [.1, .12, .1]);
-    moving(pivot, 'float', .1);
+    moving(body, 'float', .1);
     return;
   }
 
@@ -118,10 +118,10 @@ export function build(k) {
 
   // 恐龙 / 动物
   if (/恐龙|龙|熊|老虎|狮子|大象|长颈鹿|斑马|企鹅|乌龟/.test(name)) {
-    ball(color, [0, .9, 0], [.7, .55, 1]);
+    const body = ball(color, [0, .9, 0], [.7, .55, 1]);
     ball(color, [.8, 1.15, 0], [.45, .4, .45]);
     for (const x of [-.35, .35]) for (const z of [-.45, .45]) cylinder(ink, [x, .25, z], [.1, .5, .1]);
-    moving(pivot, 'walk', .12);
+    moving(body, 'walk', .12);
     return;
   }
 

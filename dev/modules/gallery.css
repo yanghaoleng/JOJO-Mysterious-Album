@@ -659,10 +659,10 @@ footer {
   text-decoration: underline;
 }
 
-/* 语音按钮悬浮在 3D 场景左上角 */
+/* 语音按钮悬浮在 3D 场景左下角 */
 #preview-stage .voice-input-control {
   position: absolute;
-  top: 12px;
+  bottom: 12px;
   left: 12px;
   z-index: 6;
 }

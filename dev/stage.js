@@ -207,14 +207,13 @@ export class DioramaStage {
     canvas.addEventListener('pointercancel', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('lostpointercapture', event => { this.pointers.delete(event.pointerId); this.drag = null; this.pinch = null; });
     canvas.addEventListener('wheel', event => {
-      // 普通滚轮交给页面滚动；按住 Ctrl / ⌘ 滚动才缩放相机。
-      if (!event.ctrlKey && !event.metaKey) return;
+      // 鼠标滚轮直接控制场景远近（缩放），不用再按修饰键。
       event.preventDefault();
       this.stopOrbit();
       this.cameraDrift?.pause();
       this.zoom = clamp(this.zoom - event.deltaY * .001, .12, 1.8);
       this.resize();
-    }, { passive: true });
+    }, { passive: false });
   }
 
   setStoryTapTarget(object, id, enabled, callback) {
@@ -294,12 +293,16 @@ export class DioramaStage {
       return;
     }
     if (this.shotMode?.type === 'fps') {
-      // 第一人称：相机放到目标头部高度，看向当前朝向的前方。
+      // 第一人称：相机架在目标 3D 模型高度 70% 的位置，略微朝前看。
       const yaw = this.yaw;
-      this.camera.position.set(this.target.x, this.target.y + 1.35, this.target.z);
+      let subjectHeight = 0;
+      const p = this.followTarget ? this.followTarget.provider() : (this.nearestSubjectProvider ? this.nearestSubjectProvider() : null);
+      if (p) subjectHeight = Number(p[2]) || 0;
+      const eyeY = this.target.y + (subjectHeight || 1.4) * .7;
+      this.camera.position.set(this.target.x, eyeY, this.target.z);
       this.camera.lookAt(
         this.target.x + Math.sin(yaw) * 9,
-        this.target.y + 1.25,
+        eyeY - .12,
         this.target.z + Math.cos(yaw) * 9,
       );
       this.camera.position.add(this.panOffset);
