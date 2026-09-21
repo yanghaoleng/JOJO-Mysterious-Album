@@ -248,9 +248,13 @@ function autoStage(item) {
   switch (item.kind) {
     case "auto-feed": {
       if (!npcs.length || !foods.length) return;
-      const [eater] = pick(npcs), [food] = pick(foods);
-      commands = [{ type: "feeding.start", eaters: [eater], foods: [food] }];
-      note = `${item.reason || "角色自己去吃东西"}`;
+      const active = new Set((stage?.worldPresenter?.feedingStats?.jobs || []).map(j => j.id));
+      const free = npcs.filter(([id]) => !active.has(id));
+      if (!free.length) return;
+      const [eater] = pick(free);
+      // 一次给全部剩余食物，避免打断正在进行的连续进食
+      commands = [{ type: "feeding.start", eaters: [eater], foods: foods.map(([id]) => id) }];
+      note = `${item.reason || "角色自己去找东西吃"}`;
       break;
     }
     case "auto-ride": {

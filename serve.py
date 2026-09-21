@@ -1234,7 +1234,8 @@ def llm_scene_result(text, context):
     if not key:
         raise RuntimeError("scene_control_not_configured")
     worlds = context.get("worlds", []) if isinstance(context, dict) else []
-    props = [entry for entry in json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"] if entry.get("kind") in {"prop", "actor"}]
+    catalog_modules = json.loads((ROOT / "dev/modules/catalog.json").read_text(encoding="utf-8"))["modules"]
+    props = [entry for entry in catalog_modules if entry.get("kind") in {"prop", "actor"}]
     manifest = [{"asset": p["id"], "name": p["name"], "keywords": p.get("keywords", []), "category": p.get("category"), "tags": p.get("tags", [])} for p in props]
     associations = json.loads((ROOT / "dev/content/scene-groups.json").read_text(encoding="utf-8"))
     body = json.dumps({
@@ -1355,7 +1356,63 @@ def llm_scene_result(text, context):
         for item in raw_suggestions[:3]:
             if isinstance(item, dict) and item.get("kind") in {"auto-feed", "auto-ride", "auto-play", "socialize", "weather", "fun"}:
                 suggestions.append({"kind": item["kind"], "reason": str(item.get("reason") or "")[:60]})
+    commands = _ensure_feeding(text, commands, context, catalog_modules)
     return {"reply": str(parsed.get("reply") or "我来试着安排一下。")[:120], "sceneSwitch": switch, "commands": commands[:32], "source": "model", "camera": camera, "suggestions": suggestions}
+
+
+
+
+def _ensure_feeding(text, commands, context, catalog_modules):
+    """“吃”类请求必须产出真正可执行的 feeding.start；食物不足时补齐份数，让“追着剩下的吃”有对象。"""
+    if not re.search(r'吃|吃掉|啃|品尝|喂', str(text or "")):
+        return commands
+    role_prefixes = ("npc:", "wow:", "yellow:", "clay:")
+    spawns = [c for c in commands if c.get("type") == "entity.spawn" and isinstance(c.get("id"), str)]
+    existing_feed = next((c for c in commands if c.get("type") == "feeding.start"), None)
+    if existing_feed:
+        eaters = [str(x) for x in (existing_feed.get("eaters") or []) if x]
+        foods = [str(x) for x in (existing_feed.get("foods") or []) if x]
+    else:
+        eaters = [c["id"] for c in spawns if str(c.get("asset", "")).startswith(role_prefixes)]
+        foods = [c["id"] for c in spawns if str(c.get("asset", "")).startswith("prop:")]
+    entities = context.get("entities", {}) if isinstance(context, dict) else {}
+    if not eaters:
+        eaters = [eid for eid, item in entities.items() if str(item.get("asset", "")).startswith(role_prefixes)][:4]
+    if not foods:
+        foods = [eid for eid, item in entities.items() if str(item.get("asset", "")).startswith("prop:")][:8]
+    count, has_quantity = scene_quantity(str(text or ""))
+    target = max(2, min(count if has_quantity else 4, 8))
+    if not foods:
+        resolved = resolve_objects(str(text or ""), {"modules": catalog_modules}, scene_quantity)
+        for entry in resolved[:1]:
+            if entry["asset"].startswith("prop:"):
+                base = f"feed-{uuid.uuid4().hex[:6]}"
+                for i in range(target):
+                    nid = f"{base}-{i}"
+                    foods.append(nid)
+                    spawns.append({"type": "entity.spawn", "id": nid, "asset": entry["asset"], "position": [0, 0], "scale": .5})
+    elif len(foods) < target:
+        template = next((c for c in spawns if c.get("id") == foods[0]), None)
+        if template is None:
+            template = next((c for c in spawns if str(c.get("asset", "")).startswith("prop:")), None)
+        if template:
+            for i in range(len(foods), target):
+                nid = f"{template['id']}-{i}"
+                foods.append(nid)
+                spawns.append({"type": "entity.spawn", "id": nid, "asset": template.get("asset"), "position": [0, 0], "scale": template.get("scale", .5)})
+    if not eaters:
+        resolved = resolve_objects(str(text or ""), {"modules": catalog_modules}, scene_quantity)
+        for entry in resolved[:1]:
+            if not entry["asset"].startswith("prop:"):
+                nid = f"feed-{uuid.uuid4().hex[:6]}-eater"
+                eaters.append(nid)
+                spawns.append({"type": "entity.spawn", "id": nid, "asset": entry["asset"], "position": [0, 0], "scale": .6})
+                break
+    if not eaters or not foods:
+        return [c for c in commands if c.get("type") != "feeding.start"]
+    commands = [c for c in commands if c.get("type") not in {"entity.spawn", "feeding.start"}] + spawns
+    commands.append({"type": "feeding.start", "eaters": eaters[:4], "foods": foods[:8]})
+    return commands
 
 
 def likely_private_info(value):
