@@ -213,8 +213,8 @@ button[aria-current="true"] {
 }
 .preview-stage {
   width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
+  /* 按浏览器高度控制场景高度：既不超出滚动范围，也保留可看尺寸。 */
+  height: clamp(240px, calc(100dvh - 340px), 62vh);
   border-radius: 14px;
   overflow: hidden;
   background: radial-gradient(ellipse at 40% 25%, #fffcf3, #dfe7de);
