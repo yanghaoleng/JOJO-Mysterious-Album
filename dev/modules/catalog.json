@@ -105,6 +105,35 @@
       "dependencies": []
     },
     {
+      "id": "ui:word-reward",
+      "kind": "ui",
+      "name": "英语匹配成功反馈",
+      "description": "在 /dev/words 完成表达后播放积极音效、字幕蓝色扫光和绿色对勾，每关首次成功从屏幕边缘撒花。验证 verify-word-ui.mjs。",
+      "source": "dev/word-reward.js",
+      "capabilities": [
+        "积极音效",
+        "字幕扫光与对勾",
+        "边缘撒花",
+        "减少动态效果",
+        "清理"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "ui:word-share-card",
+      "kind": "ui",
+      "name": "英语世界分享图",
+      "description": "完成六轮后生成深色全宽场景分享图，顶部使用 MohrRounded 白色大字排列单词与例句。验证 verify-word-ui.mjs。",
+      "source": "dev/word-share-card.js",
+      "capabilities": [
+        "真实场景截取",
+        "全宽构图",
+        "Mohr 字体",
+        "长按保存"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "ui:word-music",
       "kind": "ui",
       "name": "英语世界 · 随机配乐",

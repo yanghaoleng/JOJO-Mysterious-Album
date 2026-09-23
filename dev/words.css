@@ -63,3 +63,9 @@
 
 /* Pan and scroll remain available; page pinch/double-tap zoom does not. */
 html,body,.word-layout{touch-action:pan-x pan-y}
+
+#word-transcript.is-matched{display:flex;align-items:center;justify-content:center;gap:10px}
+.match-words{position:relative;min-width:0}.match-sweep{position:absolute;inset:0;color:#73caff;text-shadow:0 0 12px #4ab4ff;pointer-events:none}.match-sweep::after{content:attr(data-text)}
+.match-check{display:inline-flex;flex:0 0 auto;color:#80e7ab;text-shadow:none;filter:drop-shadow(0 0 6px #58d69655)}.match-check .lucide-check{width:30px;height:30px;stroke-width:3}
+.word-confetti{position:fixed;z-index:30;width:7px;height:12px;border-radius:2px;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.word-confetti,.match-sweep{display:none}}

@@ -15,6 +15,8 @@ import { planWordIntent, validateWordProposal, WORD_CHARACTER_NAMES } from './wo
 import { mountWordText } from './presentation/word-text.jsx';
 import { welcomeAnswer } from './word-welcome.js';
 import { createWordAmbience } from './word-ambience.js';
+import { createWordReward } from './word-reward.js';
+import { drawWordShareCard } from './word-share-card.js';
 import { createWordMusic } from './word-music.js';
 import { ASSETS } from './content/assets.js';
 
@@ -27,7 +29,7 @@ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let saved;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch{}
 let age=getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
 const journeys=saved?.journeys&&typeof saved.journeys==='object'?saved.journeys:{};
-let continuousListening=false,failedReadAttempts=0;
+let continuousListening=false,failedReadAttempts=0,rewardedThisLesson=false;
 let introStep='name',introName='',introVersion=0;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
 function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
@@ -37,7 +39,10 @@ function title(main,subtitle=''){ $('world-title').textContent=main;$('world-sub
 function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-function clearPanel(){menuAnimation?.cancel();menuAnimation=null;menuOpen=false;inputEpoch++;inputQueue=Promise.resolve();pendingWords=0;document.querySelectorAll('.flying-word').forEach(n=>n.remove());document.querySelector('.word-layout').classList.remove('word-menu-open');clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
+const primeRewardSound=()=>void playUISFX('select',{volume:0}).catch(()=>{});
+document.addEventListener('pointerdown',primeRewardSound,{once:true,passive:true});document.addEventListener('keydown',primeRewardSound,{once:true});
+const reward=createWordReward({getTranscript:()=>$('word-transcript'),checkIcon,reduced:()=>reducedMotion.matches,playSound:()=>playUISFX('reward',{volume:.55}).catch(()=>{})});
+function clearPanel(){reward.clear();menuAnimation?.cancel();menuAnimation=null;menuOpen=false;inputEpoch++;inputQueue=Promise.resolve();pendingWords=0;document.querySelectorAll('.flying-word').forEach(n=>n.remove());document.querySelector('.word-layout').classList.remove('word-menu-open');clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
 function textMotion(id,value,variant='text',options={}){const mount=mountWordText($(id),value,variant,options);textMounts.push(mount);return mount;}
 async function transitionScene(change){
   if(transitioning)return;
@@ -222,7 +227,7 @@ function updateSentence(result){
   if(lesson.mode==='build')$('heard-line').innerHTML=lesson.buildWords.map(w=>`<span class="${heard.has(w)?'heard':w===lesson.buildWords.find(x=>!heard.has(x))?'current':''}">${escape(w)}${heard.has(w)?checkIcon:''}</span>`).join('');
 }
 function renderLesson(){
-  clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;
+  clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
   const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，说完整的一句，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
   $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} ${arrowRight}</button><div id="word-transcript" hidden></div></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
@@ -311,7 +316,7 @@ function ensureVoice({gameMode=false}={}){
       asr_upstream_error:'The speech service is unavailable. Please try again.',
       empty:'I did not hear any words. Please try again.',
     })[details.code]||'Could not record or recognize your voice. Please try again.';},
-    onCapture:packet=>{if(packet.state==='reply'&&view==='intro'&&introStep!=='ready'&&acceptsEnglishUtterance(packet.text))$('intro-question').textContent=packet.text;if(packet.state==='partial'&&acceptsEnglishUtterance(packet.text)&&$('word-transcript')){$('word-transcript').hidden=false;$('word-transcript').textContent=`“${packet.text}”`;}if(packet.state==='fallback'&&$('answer-feedback')){$('answer-feedback').textContent=packet.message;if($('voice-mode'))$('voice-mode').textContent='已回退经典 · 保存此选择';}if(['quiet','short','empty','error'].includes(packet.state)&&$('answer-feedback'))$('answer-feedback').textContent='Come a little closer and try again.';}
+    onCapture:packet=>{if(packet.state==='reply'&&view==='intro'&&introStep!=='ready'&&acceptsEnglishUtterance(packet.text))$('intro-question').textContent=packet.text;if(packet.state==='partial'&&acceptsEnglishUtterance(packet.text)&&$('word-transcript')){reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${packet.text}”`;}if(packet.state==='fallback'&&$('answer-feedback')){$('answer-feedback').textContent=packet.message;if($('voice-mode'))$('voice-mode').textContent='已回退经典 · 保存此选择';}if(['quiet','short','empty','error'].includes(packet.state)&&$('answer-feedback'))$('answer-feedback').textContent='Come a little closer and try again.';}
   });
 }
 function initVoice(){
@@ -337,7 +342,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     $('answer-feedback').textContent=message;voice?.skip();void speak(message);return;
   }
   const session=game,version=++turn,lesson=currentLesson();busy=true;if(!fromRealtime)voice?.listen(false);
-  if(!fromRealtime)voice?.skip();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;$('answer-feedback').textContent='Making your idea…';
+  if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;$('answer-feedback').textContent='Making your idea…';
   try{
     const result=evaluateWordUtterance(lesson,text,progress);
     let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
@@ -381,6 +386,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
     $('answer-feedback').textContent=extraReply||(made&&creative?'Your idea is here! Keep exploring.':result.targetComplete?'You made it!':result.nextWord?'Try the whole sentence.':'Try another word.');
     feedback(made?'Your world is changing!':result.currentMatched.length?`I heard ${result.currentMatched.join(', ')}.`:'Try another word.');
+    if((result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative)){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
     saveJourney();
     if(result.targetComplete||canAdvance)failedReadAttempts=0;
@@ -408,18 +414,12 @@ function shareURL(){
   return `${location.origin}/dev/words.html#make=${payload}`;
 }
 function captureCard(){
-  const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1080;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#f5f2e9';ctx.fillRect(0,0,900,1080);
-  ctx.fillStyle='#356557';ctx.font='24px sans-serif';ctx.fillText('萌萌星 · 开口造世界',60,78);
-  ctx.fillStyle='#293e39';ctx.font='bold 48px sans-serif';ctx.fillText(chapter.title,60,151);
-  if(stage){stage.renderer.render(stage.scene,stage.camera);const source=stage.renderer.domElement;const scale=Math.min(900/source.width,640/source.height);ctx.drawImage(source,(900-source.width*scale)/2,190,source.width*scale,source.height*scale);}
-  ctx.fillStyle='#293e39';ctx.font='28px sans-serif';ctx.fillText('这些词，变成了我的小世界。',60,884);
-  ctx.fillStyle='#6d7871';ctx.font='22px sans-serif';
-  const words=[...heardWords].slice(0,16);for(let i=0;i<words.length;i+=5)ctx.fillText(words.slice(i,i+5).join('  ·  '),60,931+Math.floor(i/5)*34);
-  return canvas;
+  if(stage)stage.renderer.render(stage.scene,stage.camera);
+  return drawWordShareCard({source:stage?.renderer.domElement,words:[...heardWords],examples:getChapterLessons(chapter.id,age).map(lesson=>lesson.example)});
 }
-function renderComplete(){
+async function renderComplete(){
   setView('complete');title('你的话，成了一个世界。');feedback('');saveJourney();
+  const completedGame=game;await document.fonts.load('700 68px MohrRounded').catch(()=>{});if(view!=='complete'||game!==completedGame)return;
   const card=captureCard(),image=card.toDataURL('image/png');
   $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">把你的点子，交给朋友。</h2><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">重新选择年龄</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
   $('share-world').onclick=async()=>{const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError')return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中上面的链接复制，发给朋友即可。';}};
