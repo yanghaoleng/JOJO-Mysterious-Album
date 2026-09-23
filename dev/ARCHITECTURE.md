@@ -220,3 +220,5 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 
 
 英语小游戏点词菜单保持展开，通过可取消的飞词动画与顺序队列提交输入；离开关卡清理队列。继续按钮位于顶部进度右侧。`word-realtime-voice.js` 作为 `StoryVoice` 的可选适配器，经同源 `/api/word-realtime` 连接服务器端豆包端到端协议桥；识别结果仍经词语意图和运行时校验。经典语音默认保留，实时权限未通过前不切换默认。英文资源热词由构建从资源词典生成 `content/speech-vocabulary.json`，旧 ASR 与实时会话共享。
+
+英语小游戏使用独立 continuousListening 用户意愿状态：表达处理后和前后翻页领读结束自动恢复，主动暂停、离开游戏和隐藏页面停止。重新选择年龄开始会清空小游戏 journeys、生成世界、语音实例与临时表达队列，保留站点其他模块数据。页码支持悬停、触摸点按和键盘显示上一关。

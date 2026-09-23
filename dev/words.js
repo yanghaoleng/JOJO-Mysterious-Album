@@ -1,3 +1,4 @@
+import { ArrowRight, ArrowUpRight, ArrowLeft, createElement } from 'lucide';
 import * as THREE from '../vendor/three.module.js';
 import { playUISFX, stopUISFX } from '../src/ui-sfx.js';
 import { DioramaStage } from './stage.js';
@@ -14,12 +15,15 @@ import { planWordIntent, validateWordProposal, WORD_CHARACTER_NAMES } from './wo
 import { mountWordText } from './presentation/word-text.jsx';
 import { ASSETS } from './content/assets.js';
 
+const icon=(node,name)=>createElement(node,{width:18,height:18,'stroke-width':2,'aria-hidden':'true',class:`word-arrow-icon lucide lucide-${name}`}).outerHTML;
+const arrowRight=icon(ArrowRight,'arrow-right'),arrowUpRight=icon(ArrowUpRight,'arrow-up-right'),arrowLeft=icon(ArrowLeft,'arrow-left');
 const $=id=>document.getElementById(id), STORE='jma.word-play.v1';
 const chapters=Object.fromEntries(WORD_CHAPTERS.map(c=>[c.id,c]));
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let saved;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch{}
 let age=getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
 const journeys=saved?.journeys&&typeof saved.journeys==='object'?saved.journeys:{};
+let continuousListening=false;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
 function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
@@ -39,7 +43,8 @@ async function transitionScene(change){
   finally{root.classList.remove('iris-closed');root.removeAttribute('aria-busy');transitioning=false;}
   if(view==='play')void speak(currentLesson().example);
 }
-function cancelTurn(){turn++;request?.abort();request=null;busy=false;clearTimeout(speechTimer);voice?.pause();voice?.skip();}
+function cancelTurn(keepListening=false){turn++;request?.abort();request=null;busy=false;clearTimeout(speechTimer);if(keepListening)voice?.listen(false);else{continuousListening=false;voice?.pause();}voice?.skip();}
+function resumeListening(){if(continuousListening&&view==='play'&&!document.hidden&&!transitioning){voice?.listen(true);if(!voice?.enabled)void voice?.enable();}}
 function recommendation(){return getRecommendedWordChapter(age);}
 const speakerIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>';
 
@@ -93,9 +98,16 @@ function welcomeWorld(){
   const assets=['prop:rword-flower','prop:rword-cat','prop:rword-train'];
   apply(assets.filter(a=>ASSETS[a]).map((asset,i)=>({type:'entity.spawn',id:`welcome-${i}`,asset,position:[(i-1)*1.5,.2],scale:.85})));
 }
+function resetWordRun({keepShared=false}={}){
+  cancelTurn();voice?.stop();voice=null;progress=null;lessonIndex=0;lastAnswer='';focusId=null;canAdvance=false;creative=false;heardWords.clear();saved=null;
+  for(const key of Object.keys(journeys))delete journeys[key];
+  try{localStorage.removeItem(STORE);for(const key of Object.keys(sessionStorage))if(key.startsWith('jma.word-play'))sessionStorage.removeItem(key);}catch{}
+  if(!keepShared){sharedScene=null;if(location.hash.startsWith('#make='))history.replaceState(null,'',location.pathname+location.search);}
+  chapter=null;
+}
 function renderAge(){
-  leave();chapter=null;setView('age');welcomeWorld();feedback('');
-  $('word-panel').innerHTML=`<h1 class="welcome-title">开口，造个小世界。<small>A LITTLE WORLD, MADE BY YOU</small></h1><div class="onboarding"><h2 class="age-question">你今年几岁啦？</h2><div class="age-stepper" role="group" aria-label="选择年龄"><button class="step-button" id="age-minus" aria-label="年龄减一"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><div class="age-value"><span id="age-number" class="age-number" role="spinbutton" aria-label="年龄" aria-valuemin="3" aria-valuemax="10" tabindex="0"></span><span class="age-unit">岁</span></div><button class="step-button" id="age-plus" aria-label="年龄加一"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button></div><button id="choose-age" class="primary-button">继续 <span aria-hidden="true">→</span></button></div>`;
+  const initial=view==='age';leave();if(!initial)resetWordRun();chapter=null;setView('age');welcomeWorld();feedback('');
+  $('word-panel').innerHTML=`<h1 class="welcome-title">开口，造个小世界。<small>A LITTLE WORLD, MADE BY YOU</small></h1><div class="onboarding"><h2 class="age-question">你今年几岁啦？</h2><div class="age-stepper" role="group" aria-label="选择年龄"><button class="step-button" id="age-minus" aria-label="年龄减一"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><div class="age-value"><span id="age-number" class="age-number" role="spinbutton" aria-label="年龄" aria-valuemin="3" aria-valuemax="10" tabindex="0"></span><span class="age-unit">岁</span></div><button class="step-button" id="age-plus" aria-label="年龄加一"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button></div><button id="choose-age" class="primary-button">继续 ${arrowRight}</button></div>`;
   const number=textMotion('age-number',age,'slots');
   const update=delta=>{
     const before=age;age=Math.max(3,Math.min(10,age+delta));number.update(age);
@@ -112,7 +124,7 @@ function renderAge(){
   };update(0);
   $('age-minus').onclick=()=>update(-1);$('age-plus').onclick=()=>update(1);
   $('age-number').onkeydown=e=>{if(['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();update(e.key==='Home'?3-age:e.key==='End'?10-age:['ArrowUp','ArrowRight'].includes(e.key)?1:-1);}};
-  $('choose-age').onclick=()=>{persist();void transitionScene(renderChapters);};
+  $('choose-age').onclick=()=>{resetWordRun({keepShared:Boolean(sharedScene)});persist();void transitionScene(renderChapters);};
 }
 function renderChapters(){
   leave();chapter=null;setView('chapters');feedback('');
@@ -120,7 +132,7 @@ function renderChapters(){
   newWorld(c.world);
   const preview={monster:'robot-toy',color:'rword-train',sports:'rword-frog',toys:'rword-robot',garden:'rword-flower',rhyme:'rword-cat'}[c.id];
   apply([{type:'entity.spawn',id:'chapter-preview',asset:`prop:${preview}`,position:[0,0],scale:1.25}]);
-  $('word-panel').innerHTML=`<div class="onboarding"><article class="recommend-card" data-chapter="${c.id}"><div class="eyebrow">${sharedScene?'朋友的小世界':'为你准备的小冒险'}</div><h2>${escape(c.title)}</h2><p>${escape(c.subtitle)}</p><button class="primary-button" id="continue-chapter">继续 <span aria-hidden="true">→</span></button></article></div>`;
+  $('word-panel').innerHTML=`<div class="onboarding"><article class="recommend-card" data-chapter="${c.id}"><div class="eyebrow">${sharedScene?'朋友的小世界':'为你准备的小冒险'}</div><h2>${escape(c.title)}</h2><p>${escape(c.subtitle)}</p><button class="primary-button" id="continue-chapter">继续 ${arrowRight}</button></article></div>`;
   $('continue-chapter').onclick=()=>{ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(()=>openChapter(c.id,sharedScene?{fresh:true,shared:sharedScene}:{}));};
 }
 function openChapter(id,{fresh=false,shared=null}={}){
@@ -149,10 +161,12 @@ function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
   const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，一个词一个词，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
-  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-progress" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</div><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} →</button></div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div id="word-transcript" hidden></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
+  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} ${arrowRight}</button></div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div id="word-transcript" hidden></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
   sentenceMotion=textMotion('lesson-sentence',lesson.mode==='cloze'?lesson.displayText:lesson.example);
   updateSentence();initVoice();renderWordOptions();
   $('next-lesson').onclick=()=>void nextLesson();
+  $('previous-lesson').onclick=()=>void previousLesson();
+  $('reveal-previous').onclick=()=>$('lesson-pagination').classList.toggle('show-previous',lessonIndex>0);
   $('listen-example').onclick=()=>void speak(lesson.example);
   $('word-options-toggle').onclick=()=>toggleMenu();
   $('voice-mode').textContent=voice?.realtimeFailed?'已回退经典 · 保存此选择':voiceMode==='realtime'?'实时对话 · 切回经典语音':'经典语音 · 试试实时对话';
@@ -219,7 +233,7 @@ async function toggleMenu(open=!menuOpen){
 function ensureVoice(){
   if(voice)return;
   voice=new (voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getLesson:()=>view==='play'?currentLesson().example:'',language:'en-US',preferredVoice:'female',
-    onState:state=>{voiceState=state;voiceInput?.setState(state);if($('mic-heading'))$('mic-heading').textContent=({requesting:'正在打开麦克风',listening:'我在听，慢慢说',speaking:'先听一听，再跟着说',transcribing:'正在听懂你的话',off:'轮到你啦，试着说出来',paused:'轮到你啦，试着说出来'})[state]||'我在听';},
+    onState:state=>{voiceState=state;voiceInput?.setState(state);if($('mic-heading'))$('mic-heading').textContent=({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:'先听一听，再跟着说',transcribing:'正在听懂你的话',off:'轮到你啦，试着说出来',paused:'轮到你啦，试着说出来'})[state]||'我在听';},
     onAnswer:text=>submit(text,{fromRealtime:Boolean(voice?.realtimeActive)}),onLevel:level=>voiceInput?.setLevel(level),
     onError:(message,details={})=>{if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
       NotAllowedError:'Please allow microphone access in your browser and system settings.',
@@ -236,7 +250,7 @@ function ensureVoice(){
 }
 function initVoice(){
   ensureVoice();voiceInput=createVoiceInput({button:$('word-mic')});
-  $('word-mic').onclick=async()=>{if(voice.enabled){voice.pause();voiceInput.setState('paused');$('mic-heading').textContent='已暂停，点一下继续';}else{voice.skip();voice.listen(true);await voice.enable();}};
+  $('word-mic').onclick=async()=>{if(continuousListening){continuousListening=false;voice.pause();voiceInput.setState('paused');$('mic-heading').textContent='已暂停，点一下继续';}else{continuousListening=true;voice.skip();voice.listen(true);await voice.enable();if(!voice.enabled)continuousListening=false;}};
 }
 async function sayGuidance(text){
   const mount=sentenceMotion,example=currentLesson().example,session=game;
@@ -246,6 +260,7 @@ async function sayGuidance(text){
   await voice.say(text,'clear',()=>{},'',offset>=0?packet=>{
     if(view==='play'&&sentenceMotion===mount&&game===session){mount.read(example,{...packet,start:packet.start<0?-1:packet.start+offset,end:packet.end<0?-1:packet.end+offset});narrate(packet);}
   }:undefined);
+  resumeListening();
 }
 async function speak(text){if(!voice||busy||document.hidden||view!=='play')return;await voice.unlock().catch(()=>{});if(view==='play')await sayGuidance(text);}
 async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
@@ -301,14 +316,19 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     saveJourney();
     if(!fromRealtime&&!fromMenu&&voice?.enabled&&lesson.mode==='build'&&result.nextWord)await sayGuidance(result.nextWord);
   }catch(error){if(turn===version&&$('answer-feedback'))$('answer-feedback').textContent="That did not work. Please try again.";console.error(error);}
-  finally{if(turn===version){busy=false;request=null;if(!fromRealtime)voice?.listen(true);}}
+  finally{if(turn===version){busy=false;request=null;if(!fromRealtime)resumeListening();}}
 }
 async function nextLesson(){
   if(busy||pendingWords||transitioning||(!canAdvance&&(!creative||currentLesson().mode==='build')))return;
-  cancelTurn();
+  cancelTurn(continuousListening&&lessonIndex<5);
   if(lessonIndex===5){await transitionScene(renderComplete);return;}
   // Keep the child's assembled world visible between sentences; the iris marks a new chapter/scene.
   lessonIndex++;progress=null;lastAnswer='';renderLesson();saveJourney();feedback('');
+  void speak(currentLesson().example);
+}
+async function previousLesson(){
+  if(busy||pendingWords||transitioning||lessonIndex===0)return;
+  cancelTurn(continuousListening);lessonIndex--;progress=null;lastAnswer='';renderLesson();saveJourney();feedback('');
   void speak(currentLesson().example);
 }
 function shareURL(){
@@ -331,7 +351,7 @@ function captureCard(){
 function renderComplete(){
   setView('complete');title('你的话，成了一个世界。');feedback('');saveJourney();
   const card=captureCard(),image=card.toDataURL('image/png');
-  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-stamp">✓</div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">把你的点子，交给朋友。</h2><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ↗</button><button class="secondary-button" id="choose-age-again">重新选择年龄</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
+  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-stamp">✓</div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">把你的点子，交给朋友。</h2><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">重新选择年龄</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
   $('share-world').onclick=async()=>{const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError')return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中上面的链接复制，发给朋友即可。';}};
   $('choose-age-again').onclick=()=>void transitionScene(renderAge);
 }
@@ -339,7 +359,7 @@ $('change-age').onclick=()=>void transitionScene(renderAge);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('word-menu')&&!$('word-menu').hidden)toggleMenu(false);});
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
 $('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.id==='monster')apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){saveJourney();voice?.pause();voice?.skip();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
 try{
@@ -348,4 +368,4 @@ try{
     if([1,2].includes(data.v)&&chapters[data.chapter]&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;age=data.age;}}
 }catch{}
 renderAge();
-window.__WORD_GAME__={get status(){return {pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
+window.__WORD_GAME__={get status(){return {listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
