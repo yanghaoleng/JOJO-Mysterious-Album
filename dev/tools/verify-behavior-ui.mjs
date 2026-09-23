@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+const out='/tmp/jma-behaviors';await mkdir(out,{recursive:true});
+page.on('pageerror',e=>errors.push(e.message));
+await page.route('**/api/scene-control',route=>route.fulfill({status:503,body:'unexpected backend call'}));
+await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:8917')+'/dev/modules/',{waitUntil:'domcontentloaded'});
+await page.waitForFunction(()=>window.__MODULE_GALLERY__?.status.selected==='logic:intent');
+const status=()=>page.evaluate(()=>window.__MODULE_GALLERY__.status);
+async function say(text){await page.locator('#natural-command-input').fill(text);await page.locator('#natural-command-submit').click();await page.waitForFunction(()=>!document.querySelector('#natural-command-submit').disabled);assert.match(await page.locator('#natural-command-status').textContent(),/已执行/);}
+await page.locator('#behavior-events td').filter({hasText:/^让小猫哼唱$/}).click();assert.equal(await page.locator('#natural-command-input').inputValue(),'让小猫哼唱');
+await say('让小猫哼唱');assert.equal((await status()).runtime.worlds.meadow.entities['wg-cat-0'].effects.symbol,'hum');
+await page.locator('#preview-stage').scrollIntoViewIfNeeded();await page.waitForTimeout(2500);await page.screenshot({path:out+'/hum.png'});
+await say('让小猫睡觉');assert.equal((await status()).runtime.worlds.meadow.entities['wg-cat-0'].effects.motion,'sleep');await page.locator('#preview-stage').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/sleep.png'});
+await say('让小猫停下');await say('让小猫游泳');await page.waitForFunction(()=>window.__MODULE_GALLERY__.status.behaviors.jobs.some(j=>j.action==='swim'&&j.progress>.12));assert.equal((await status()).behaviors.temporaryModels,1);await page.locator('#preview-stage').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/swim.png'});
+await page.waitForFunction(()=>window.__MODULE_GALLERY__.status.behaviors.active===0,{},{timeout:15000});assert.ok((await status()).runtime.worlds.meadow.entities['wg-cat-0']);
+await say('让小猫航行');assert.equal((await status()).behaviors.temporaryModels,1);await page.waitForFunction(()=>window.__MODULE_GALLERY__.status.behaviors.jobs[0]?.progress>.25);await page.locator('#preview-stage').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/sail.png'});
+await say('让小猫停下');assert.equal((await status()).behaviors.active,0);
+await say('让水池变蓝');await say('让小猫游泳');assert.equal((await status()).behaviors.temporaryModels,0);assert.equal((await status()).behaviors.jobs[0].target,'wg-swimming-pool-0');
+await say('把小猫弄干');assert.equal((await status()).behaviors.active,0);
+await say('让小猫画画');await page.waitForFunction(()=>window.__MODULE_GALLERY__.status.behaviors.jobs[0]?.progress>.5);await page.locator('#preview-stage').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/draw.png'});
+await page.setViewportSize({width:390,height:844});await page.locator('#behavior-events').scrollIntoViewIfNeeded();await page.screenshot({path:out+'/mobile-table.png'});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+assert.deepEqual(errors,[]);await writeFile(out+'/report.json',JSON.stringify({passed:true,checks:['documented example click','head-note/sleep state','automatic pool and cleanup','default aircraft and stop','existing pool reuse','draw performance','mobile table'],errors},null,2));await browser.close();console.log('PASS: behavior table, local commands without backend, automatic props/reuse/completion/stop and 390px layout.');

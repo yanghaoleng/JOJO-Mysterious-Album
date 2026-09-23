@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Local word-game speech check</title>
+<style>body{font:18px system-ui;margin:40px;max-width:800px}button{padding:14px 24px}pre{white-space:pre-wrap} .pass{color:green}.fail{color:#b22}</style>
+<h1>Local speech round trip</h1><p>This test feeds a generated English example through the actual AudioWorklet and ASR service. It does not open the physical microphone or change game progress.</p><button id="run">Run speech check</button><pre id="result" role="status">Ready</pre>
+<script type="module">
+import {StoryVoice} from '../voice.js';
+const output=document.querySelector('#result'),button=document.querySelector('#run');
+let voice,timer,source,original;
+function finish(message,ok){clearTimeout(timer);voice?.stop();try{source?.stop();}catch{}if(original)navigator.mediaDevices.getUserMedia=original;output.textContent=message;output.className=ok?'pass':'fail';button.disabled=false;}
+button.onclick=async()=>{
+ button.disabled=true;output.className='';output.textContent='Loading the configured female voice…';
+ try{
+  voice=new StoryVoice({language:'en-US',onState:()=>{},onLevel:()=>{},onCapture:()=>{},onError:message=>finish(message,false),onAnswer:text=>finish(`ASR returned: ${text}\n${/big\s+head/i.test(text)?'PASS: local credentials, playback audio, AudioWorklet capture, PCM encoding and live ASR.':'FAIL: unexpected transcript.'}`,/big\s+head/i.test(text))});
+  const context=await voice.unlock();
+  const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'A big head.',voice:'clear',realtime:true,responseFormat:'json'})});
+  if(!response.ok)throw new Error(`TTS HTTP ${response.status}`);
+  const data=await response.json(),audio=await context.decodeAudioData(Uint8Array.from(atob(data.audio),c=>c.charCodeAt(0)).buffer);
+  const fixture=context.createBuffer(1,Math.ceil((audio.duration+2)*context.sampleRate),context.sampleRate);fixture.getChannelData(0).set(audio.getChannelData(0));
+  const destination=context.createMediaStreamDestination();source=context.createBufferSource();source.buffer=fixture;source.connect(destination);
+  original=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);navigator.mediaDevices.getUserMedia=async()=>destination.stream;
+  voice.listen(true);await voice.enable();navigator.mediaDevices.getUserMedia=original;original=null;
+  if(!voice.enabled)throw new Error('AudioWorklet capture could not start');
+  output.textContent=`Received ${data.alignment?.length||0} provider timestamps. Capturing the English example and waiting for ASR…`;
+  timer=setTimeout(()=>finish('FAIL: speech round trip timed out.',false),25000);source.start(context.currentTime+.1);
+ }catch(error){finish(`FAIL: ${error.message}`,false);}
+};
+window.addEventListener('pagehide',()=>{clearTimeout(timer);voice?.stop();if(original)navigator.mediaDevices.getUserMedia=original;});
+</script></html>

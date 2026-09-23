@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {WORD_CHAPTERS,getRecommendedWordChapter,getChapterLessons} from '../content/word-games.js';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
+const origin=process.env.QA_ORIGIN||'http://127.0.0.1:8917',out='/tmp/jma-word-immersive';await mkdir(out,{recursive:true});
+// Test sound goes through the real microphone/worklet/ASR path. Only server responses are fixtures.
+function wav(seconds,tone=false){const rate=16000,n=rate*seconds,b=Buffer.alloc(44+n*2);b.write('RIFF');b.writeUInt32LE(36+n*2,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(rate,24);b.writeUInt32LE(rate*2,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(n*2,40);if(tone)for(let i=0;i<n;i++)b.writeInt16LE(i/rate%4<1?Math.round(Math.sin(i/rate*440*Math.PI*2)*8000):0,44+i*2);return b;}
+await writeFile(`${out}/microphone.wav`,wav(8,true));
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-features=WebShare','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',`--use-file-for-fake-audio-capture=${out}/microphone.wav`]});
+const errors=[],tts=[],asr=[],ai=[];let transcript='A big head.';
+async function pageFor(viewport={width:1280,height:900},reducedMotion='reduce'){
+ const context=await browser.newContext({viewport,reducedMotion,permissions:['microphone'],acceptDownloads:true});const page=await context.newPage();page.setDefaultTimeout(20000);
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/api/tts',r=>{tts.push(r.request().postDataJSON());return r.fulfill({contentType:'audio/wav',body:wav(.25)});});
+ await page.route('**/api/asr',r=>{asr.push(transcript);return r.fulfill({contentType:'application/json',body:JSON.stringify({transcript})});});
+ await page.route('**/api/scene-control',r=>{ai.push(r.request().postDataJSON());return r.fulfill({status:503,body:'{}'});});
+ return page;
+}
+const status=p=>p.evaluate(()=>window.__WORD_GAME__.status);
+async function settle(p){await p.waitForFunction(()=>!document.querySelector('.word-layout').hasAttribute('aria-busy')&&window.__WORD_GAME__&&!window.__WORD_GAME__.status.busy);}
+async function start(p,age,url=`${origin}/dev/words`){await p.goto(url);await p.waitForFunction(()=>window.__WORD_GAME__?.status.view==='age');const now=(await status(p)).age;for(let i=0;i<Math.abs(age-now);i++)await p.locator(age>now?'#age-plus':'#age-minus').click();assert.equal((await status(p)).age,age);await p.locator('#choose-age').click();await settle(p);assert.equal(await p.locator('[data-chapter]').count(),1);assert.equal(await p.locator('form,input:not([readonly]),[data-age]').count(),0);}
+async function enter(p){await p.locator('#continue-chapter').click();await settle(p);await p.waitForFunction(()=>document.getElementById('word-mic')?.dataset.state!=='speaking');assert.equal((await status(p)).webglFailed,false);}
+async function word(p,w){await p.locator('#word-options-toggle').click();await p.locator(`[data-word="${w}"]`).click();await settle(p);}
+async function next(p){await p.locator('#next-lesson').click();await settle(p);await p.waitForFunction(()=>!document.getElementById('word-mic')||document.getElementById('word-mic').dataset.state!=='speaking');}
+async function overflow(p){assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);const stage=await p.locator('#word-stage').boundingBox();assert.equal(stage.height,p.viewportSize().height);}
+try{
+ const p=await pageFor();
+ for(const age of [3,4,5,6,7,8,9,10]){await start(p,age);assert.equal(await p.locator('[data-chapter]').getAttribute('data-chapter'),getRecommendedWordChapter(age).id);}
+ console.log('PASS exact-age stepper, eight ages, one card, all six theme recommendations');
+ await start(p,5);await enter(p);assert.equal((await status(p)).chapter,'monster');assert.equal(tts.at(-1).voice,'clear');assert.equal(tts.at(-1).text,'A big head.');
+ for(const w of ['a','big']){await word(p,w);assert.equal(await p.locator('#next-lesson').isVisible(),false);}
+ await word(p,'head');let st=await status(p);assert.equal(st.canAdvance,true);assert.equal(st.entities['wg-head-0'].asset,'prop:robot-head');assert.equal(st.entities['wg-head-0'].attachment.target,'wg-body-0');await p.screenshot({path:`${out}/robot-head.png`});
+ console.log('PASS female example on entry, word menu builds complete first sentence, robot head attached');
+ const before=structuredClone(st);await start(p,5);await enter(p);st=await status(p);assert.deepEqual(st.entities,before.entities);assert.deepEqual(st.progress,before.progress);
+ console.log('PASS saved world and word progress resume');
+ await next(p);assert.match(await p.locator('#lesson-sentence').innerText(),/____/);for(const w of ['two','hands'])await word(p,w);st=await status(p);assert.equal(Object.values(st.entities).filter(e=>e.asset==='prop:robot-hand').length,2);assert.equal(st.canAdvance,true);await next(p);
+ for(const w of ['a','happy','robot'])await word(p,w);assert.equal((await status(p)).canAdvance,true);await next(p);
+ // Open play is independent: a new noun then adjective then action all execute directly.
+ for(const [round,noun,adj,action] of [[3,'flower','blue','grow'],[4,'poop','big','jump'],[5,'robot','sleepy','jump']]){assert.equal((await status(p)).lessonIndex,round);await word(p,noun);await word(p,adj);await word(p,action);assert.equal(await p.locator('#next-lesson').isVisible(),true);if(round===3){const first=await p.locator('#lesson-sentence').innerText();await p.waitForFunction(v=>document.getElementById('lesson-sentence').textContent!==v,first,{timeout:6000});}await next(p);}
+ assert.equal((await status(p)).view,'complete');const snapshot=(await status(p)).entities;const download=p.waitForEvent('download');await p.locator('#save-card').click();await (await download).saveAs(`${out}/work.png`);
+ await p.context().grantPermissions(['clipboard-read','clipboard-write']);await p.locator('#share-world').click();const url=await p.evaluate(()=>navigator.clipboard.readText());assert.ok(url.includes('#make='));const recipient=await pageFor();await start(recipient,5,url);await enter(recipient);assert.deepEqual((await status(recipient)).entities,snapshot);await recipient.close();
+ assert.equal(ai.length,0,'Known menu words should not invoke AI');console.log('PASS six rounds, noun/adjective/action divergence, changing subtitles, PNG and shared world');
+ // Real capture path, deterministic ASR responses: no model effects or progress for Chinese/mixed input.
+ await start(p,5);await enter(p);const stable=await status(p);transcript='让机器人长大';const count=asr.length;await p.locator('#word-mic').click();await p.waitForFunction(()=>document.getElementById('answer-feedback').textContent.includes("Let's try it in English"),null,{timeout:18000});await p.locator('#word-mic').click();assert.ok(asr.length>count);assert.deepEqual((await status(p)).entities,stable.entities);assert.deepEqual((await status(p)).progress,stable.progress);assert.equal(ai.length,0);assert.equal(tts.at(-1).text,"Let's try it in English!");
+ transcript='a 大 head';await p.locator('#word-mic').click();await p.waitForTimeout(4500);await p.locator('#word-mic').click();assert.deepEqual((await status(p)).entities,stable.entities);assert.equal(ai.length,0);
+ transcript='A blue flower.';await p.locator('#word-mic').click();await p.waitForFunction(()=>Object.values(window.__WORD_GAME__.status.entities).some(e=>e.asset==='prop:rword-flower'&&e.color==='#6eabd0'),null,{timeout:18000});await p.locator('#word-mic').click();console.log('PASS real microphone/worklet path rejects Chinese and mixed speech; English changes scene');
+ const mobile=await pageFor({width:390,height:844},'no-preference');await mobile.goto(`${origin}/dev/words`);await mobile.waitForFunction(()=>window.__WORD_GAME__);await mobile.screenshot({path:`${out}/mobile-age.png`});await mobile.locator('#age-plus').click();await mobile.locator('#age-minus').click();assert.equal(await mobile.locator('#age-number').getAttribute('aria-valuenow'),'5');await mobile.locator('#choose-age').click();await mobile.waitForFunction(()=>document.querySelector('.word-layout').classList.contains('iris-closed'));await settle(mobile);await mobile.screenshot({path:`${out}/mobile-recommendation.png`});await enter(mobile);for(const w of ['a','big','head'])await word(mobile,w);await overflow(mobile);await mobile.screenshot({path:`${out}/mobile-play.png`});await mobile.locator('#word-options-toggle').click();const menu=await mobile.locator('#word-menu').boundingBox();assert.ok(menu.x>=0&&menu.x+menu.width<=390);await mobile.keyboard.press('Escape');assert.equal(await mobile.locator('#word-menu').isVisible(),false);await mobile.locator('#change-age').click();await settle(mobile);assert.equal(await mobile.locator('#word-mic').count(),0);await mobile.setViewportSize({width:320,height:568});await overflow(mobile);await mobile.screenshot({path:`${out}/small-age.png`});console.log('PASS mobile fullscreen, real circular transition, Slots age, menu bounds, Escape and audio leave');
+ assert.deepEqual(errors,[]);await writeFile(`${out}/report.json`,JSON.stringify({passed:true,asr,tts,ai,errors},null,2));console.log(`PASS immersive word game; evidence ${out}`);
+}catch(error){await writeFile(`${out}/report.json`,JSON.stringify({passed:false,error:error.stack,asr,tts,ai,errors},null,2));throw error;}finally{await browser.close();}

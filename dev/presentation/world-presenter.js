@@ -1,3 +1,4 @@
+import { createBehaviorController } from './behavior-controller.js';
 import * as THREE from "../../vendor/three.module.js";
 import { ASSETS } from "../content/assets.js";
 import { createCreationModel } from "../creation-models.js";
@@ -6,6 +7,7 @@ import { createActor } from "./actor-factory.js";
 import { createFeedingController } from "./feeding-controller.js";
 import { createMovementController } from "./movement-controller.js";
 import { createPfxController } from "./pfx-controller.js";
+import { createWordEffects } from './word-effects.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const PRESETS = {
@@ -33,11 +35,13 @@ const PRESETS = {
 };
 
 // Reconciles pure world records into Three.js instances; never advances a story.
-export function createWorldPresenter(stage, { onInteract = () => {}, onConsume = () => ({ok:false}) } = {}) {
+export function createWorldPresenter(stage, { onInteract = () => {}, onConsume = () => ({ok:false}), onLifeCommands = () => ({ok:false}) } = {}) {
   const root = new THREE.Group();
   root.name = "scripted-world-entities";
   stage.scene.add(root);
   const entries = new Map();
+  const wordEffects = createWordEffects();
+  const behaviors = createBehaviorController({entries,stage,dispatch:onLifeCommands});
   let onPickEntity = () => {};
   const feeding = createFeedingController({entries,stage,consume:onConsume});
   const movement = createMovementController({entries, stage});
@@ -50,12 +54,15 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
   function remove(id) {
     const item = entries.get(id);
     if (item) {
+      behaviors.stop(id);
+      wordEffects.remove(item);
       item.model.dispose();
       item.anchor.removeFromParent();
       entries.delete(id);
     }
   }
   function clear() {
+    behaviors.clear();
     feeding.clear();
     movement.clear();
     for (const id of [...entries.keys()]) remove(id);
@@ -124,6 +131,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         stage.style.apply(anchor);
         item = {
           model,
+          id: record.id,
           suspended,
           anchor,
           normal,
@@ -140,6 +148,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           orientation: anchor.quaternion.clone(),
           position: [...record.position],
           contactRadius,
+          modelTop: bounds.max.y,
           landed: false,
           impact: null,
         };
@@ -161,6 +170,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         item.model.setState?.(record.state);
         if (record.state === "active") item.model.trigger?.();
       }
+      if (record.effects || record.attachment) wordEffects.sync(item, record);
     }
     stage.exploration?.setEventObstacles(
       [...entries.values()].filter(item=>!item.suspended).map((item) => ({
@@ -194,6 +204,12 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       }
     }
     for (const c of commands) {
+      if(c.type==='entity.cue'){const item=entries.get(c.id);if(item){wordEffects.sync(item,data.entities[c.id]);if(c.cue==='put-in'){feeding.stop([c.id]);movement.stop([c.id]);behaviors.stop(c.id);}wordEffects.cue(item,c);}}
+      if(['entity.move','entity.motion','entity.event'].includes(c.type)||c.type==='entity.effect'&&c.effect==='stop'){const item=entries.get(c.id);if(item)wordEffects.cue(item,{cue:'cancel'});}
+      if(c.type==='entity.event') {const item=entries.get(c.id);if(item){const participants=[c.id,c.target].filter(Boolean);feeding.stop(participants);movement.stop(participants);wordEffects.sync(item,data.entities[c.id]);if(c.target&&entries.has(c.target))wordEffects.sync(entries.get(c.target),data.entities[c.target]);behaviors.start(c);}}
+      if(c.type==='entity.effect'&&['stop','dry','sleep'].includes(c.effect))behaviors.stop(c.id);
+      if(c.type==='entity.effect'&&c.effect==='wet'){movement.stop([c.id]);behaviors.start({id:c.id,action:'wet'});}
+
       if(c.type==='feeding.start') { feeding.start(c.eaters,c.foods); movement.stop([...c.eaters]); }
       if(c.type==='feeding.stop') feeding.stop(c.eaters);
       if(['entity.move','entity.motion'].includes(c.type)) {
@@ -311,7 +327,10 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
       }
       feeding.update(dt,time);
       movement.update(dt,time);
+      wordEffects.update(entries,dt,time,stage.reduced);
+      behaviors.update(dt,time,stage.reduced);
     },
+    get behaviorStats() { return behaviors.stats; },
     get feedingStats() { return feeding.stats; },
     get movementStats() { return movement.stats; },
     get pfx() { return pfx; },
@@ -358,11 +377,14 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         assetKind: item.actor ? "actor" : "prop",
         position: item.anchor.position.toArray(),
         settled: item.entrance >= 2,
+        wordCue: item.wordCue ? 'mention' : item.wordDrop ? 'put-in' : null,
+        cueHeight: item.cueRoot?.position.y || 0,
       }));
     },
     dispose() {
       clear();
       pfx.dispose();
+      wordEffects.dispose();
       root.removeFromParent();
     },
   };

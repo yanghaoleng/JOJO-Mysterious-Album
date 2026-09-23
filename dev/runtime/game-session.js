@@ -14,6 +14,7 @@ export function createGameSession({
 }) {
   let director;
   const presenter = createWorldPresenter(stage, {
+    onLifeCommands: commands => runtime.dispatch(commands, {source:"script"}),
     onConsume: (eater, food, position) => runtime.dispatch([
       {type:'entity.move',id:eater,position},
       {type:'entity.remove',id:food},

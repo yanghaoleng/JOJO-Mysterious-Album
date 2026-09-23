@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#182b30"><meta name="description" content="开口，造个小世界。说一句英语，让你的想法出现在眼前。">
+  <title>开口造世界 · 萌萌星</title><link rel="icon" href="/favicon.ico">
+  <link rel="preload" href="/assets/fonts/MohrRounded-Bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/src/voice-input-control.css"><link rel="stylesheet" href="./words.css?v=10ffa8a06daa">
+</head>
+<body>
+  <main class="word-layout" data-view="age">
+    <div id="word-stage" aria-label="我的立体小世界"></div>
+    <div class="scene-shade" aria-hidden="true"></div>
+    <header class="word-header"><button id="change-age" class="quiet-button" hidden></button></header>
+    <div class="world-title" aria-hidden="true"><h1 id="world-title"></h1><p id="world-subtitle"></p></div>
+    <section id="word-panel" aria-label="英语冒险"></section>
+    <p id="webgl-error" role="alert" hidden>立体场景暂时没有打开，请换一个支持 3D 的浏览器再试。</p>
+    <div id="world-feedback" class="sr-only" aria-live="polite"></div>
+    <button id="clear-world" class="quiet-button" hidden>重新布置</button>
+  </main>
+  <noscript>请启用 JavaScript 后开始英语冒险。</noscript>
+  <script type="module" src="./words.bundle.js?v=725cd1172f60"></script>
+</body></html>

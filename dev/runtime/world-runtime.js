@@ -63,6 +63,25 @@ function reduce(state, c, context) {
     delete world.entities[c.id];
   } else if (c.type.startsWith("entity.")) {
     requireValue(entity, "Entity is not in the current world");
+    if (c.type === 'entity.cue' && c.cue === 'put-in') {
+      requireValue(world.entities[c.target] && entity.attachment?.target === c.target && entity.attachment?.slot === 'in', 'Drop requires an inside attachment');
+    }
+    if (c.type === 'entity.event') {
+      requireValue(!c.target || world.entities[c.target], 'Interaction target is not in this world');
+      if(c.action==='swim'){entity.effects||={};entity.effects.surface='wet';}
+    }
+    if (c.type === 'entity.effect') {
+      const slot = ['grow','shrink','normal'].includes(c.effect) ? 'shape' : ['long','tall'].includes(c.effect) ? 'stretch' : ['happy','sad','angry','sleepy','funny','yummy'].includes(c.effect) ? 'emotion' : ['wet','dry'].includes(c.effect) ? 'surface' : ['fast','slow'].includes(c.effect) ? 'speed' : ['hum','hot','new'].includes(c.effect)?'symbol':c.effect==='high'?'altitude':c.effect==='rainbow'?'palette':['dance','spin'].includes(c.effect)?'gesture':'motion';
+      entity.effects ||= {};
+      entity.effects[slot] = c.effect;
+      if(c.effect==='stop') {delete entity.effects.gesture; delete entity.effects.altitude; delete entity.effects.symbol; if(entity.effects.emotion==='sleepy')delete entity.effects.emotion;}
+    }
+    if (c.type === 'entity.attach') {
+      requireValue(world.entities[c.target], 'Attachment target is not in this world');
+      let cursor = c.target; const visited = new Set([c.id]);
+      while (cursor) { requireValue(!visited.has(cursor), 'Attachment cycle'); visited.add(cursor); cursor = world.entities[cursor]?.attachment?.target; }
+      entity.attachment = {target:c.target, slot:c.slot};
+    }
     if (c.type === "entity.state") entity.state = c.state;
     if (c.type === "entity.color") { entity.color = c.color; entity.colorOverride = true; }
     if (c.type === "entity.scale") { entity.scale = c.scale; entity.sizeLocked = true; }
@@ -134,6 +153,7 @@ function restore(saved, legacyCreations) {
               type: "entity.spawn",
               id: item.id,
               asset: item.asset,
+              name: item.name || '',
               position: item.position,
               color: item.color,
               scale: item.scale,
@@ -152,6 +172,14 @@ function restore(saved, legacyCreations) {
             context,
           );
         } catch {}
+      for (const item of Object.values(world?.entities || {}).slice(-MAX_WORLD_ENTITIES)) {
+        for (const effect of Object.values(item.effects || {}).slice(0,10)) try {
+          reduce(state, validateCommand({type:'entity.effect',id:item.id,effect}), context);
+        } catch {}
+        if (item.attachment) try {
+          reduce(state, validateCommand({type:'entity.attach',id:item.id,...item.attachment}), context);
+        } catch {}
+      }
       try {
         reduce(
           state,

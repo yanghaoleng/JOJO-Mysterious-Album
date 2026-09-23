@@ -178,3 +178,40 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 ### 明确尺寸与颜色
 
 `scene_appearance.py` 将正常/大/超大/倍数映射为标准尺寸的 1/1.5/2.5/指定倍数；标准 scale 为 0.65。显式尺寸设置 sizeLocked，自动布局不得缩小；`entity.scale` 与 `entity.color` 作用于已有对象，颜色覆盖保留五官明暗与蓝底黄星旗帜。尺寸与颜色标记进入存档，正常尺寸恢复为 0.65。
+
+## 英语社群章节与 R 线模型
+
+`words.html` 是独立入口，复用 `DioramaStage`、`StoryVoice`、`createGameSession` 和统一麦克风 UI。`content/word-games.js` 声明 3～5、6～7、8～10 岁三档内容；孩子用步进器选择具体年龄，每次只推荐一章，继续后直接进入该章。3/5 岁机器人、4 岁颜色、6 岁运动、7 岁玩具、8/9 岁花园、10 岁押韵。每章每档六轮，共 108 轮：逐词搭句、两轮递进填空、三轮自由创作。`word-progress.js` 只记录表达与词语覆盖，不作发音评分；第一轮累计完整句子的词，填空轮要求当次表达，自由轮支持换对象和动作。
+
+`content/rline-nouns.js` 保留钉钉 R1/R2 原词、课次、词义和具象化说明：155 个名词、单独标记的 poop 创作扩展，以及不纳入名词库的词性清单。每词一个 `modules/props/rword-*.js` 工厂入口，共用 `modules/rline-models.js` 的造型工具，单独登记到陈列馆“R 线名词模型库”。同义拼写 mom/mum 合并；foot/feet 单词模型分开，游戏中的 two feet 映射为两只单脚，避免生成两对脚。`creation-catalog.js` 保留主章节原配方优先级，不因 R 线同名词改变已有存档与伙伴选择。
+
+`word-intent.js` 将中英文对象、颜色、数量、属性、动作和空间关系翻译为受限命令。所有命令经 `intent-gateway` 校验后进入运行器；词库外意图调用现有 `/api/scene-control`，仍需资源白名单和场景令牌校验，不执行返回代码，近似造型明确告知。`entity.effect` 与 `entity.attach` 分别管理可组合效果和对象关系，拒绝不存在对象、自身附着及关系环。`presentation/word-effects.js` 负责长大、缩小、伸长、表情、湿润、速度、跳跃、飞行、旋转和组装跟随；模型自身动画与词语效果使用分层变换，离场释放装饰资源，遵守减少动态效果设置。
+
+进度独立保存在 `jma.word-play.v1`，按年龄档及章节分槽，旧主线存档不迁移。完成页从实际 3D 画面生成图片，分享链接的 `#make=` 携带 v2 世界快照；接收端经运行器清理恢复颜色、数量、位置、效果和附着关系，不重新随机摆放。分享不包含录音，也没有云端作品存储或社群排行榜。部署后才可用公网链接邀请他人，本地地址不对其他设备开放。微信里的录音权限、分享卡片和真实儿童口音仍需真机验收。
+
+验证：`verify-word-curriculum.mjs`（108 轮与进度），`verify-word-game.mjs`（句意、原章节同名回归、组合命令、恢复、真实变换），`verify-rline-models.mjs`（原表覆盖、几何、独立资源与释放），`verify-rline-models-ui.mjs`（156 个实际 WebGL 模型），`verify-word-ui.mjs`（年龄推荐、六轮、权限拒绝、恢复、图片、分享与手机）。源表核验用 `RLINE_SOURCE_FILE` 指定原钉钉导出 JSON；浏览器验证用 `PLAYWRIGHT_MODULE` 和 `QA_ORIGIN` 指定环境。
+
+
+### 词语行为事件与临时道具
+
+`content/behavior-events.js` 是互动定义和陈列馆表格的同一份内容：29 种短表演、9 组符号/状态，再加已有的动作和颜色尺寸。`word-intent.js` 同时服务英语章节和世界工坊；文档内的词语事件在本地确定性解析，其余世界、镜头与群体指令仍调用原场景接口。语音转写与文字进入相同入口，命令仍经 `intent-gateway` 校验。
+
+`entity.event` 接受已登记 action、当前场景中的主体/可选对象、2～20 秒时长和可选两种混合色。它是短暂表演，不把进行中的道具或动画计时写入存档。`behavior-controller.js` 为缺少道具的事件创建私有预制模型，游泳优先复用水池，航行优先复用指定/已有飞机或船，否则默认飞机；结束、停止、更换事件、移除对象、切换世界时释放临时模型、材质和几何。已有对象保留。游泳留下 wet 状态；清洁完成提交 dry；混色结果通过 entity.color 写回，均经过运行器。
+
+哼唱使用头顶音符；睡觉与 sleepy 使用 Z 字符，sleepy 另带闭眼表情。`event-symbols.js` 用立体线段构建符号，无字体依赖；减少动态效果保留符号并取消漂动。读书、绘画、猜物、编织、烘烤等是固定的可见短表演，不宣称自由绘画、任意故事朗读或开放任务推理。自动道具不会作为用户的永久模型保存。
+
+验证入口：`node dev/tools/verify-behavior-events.mjs` 覆盖已登记例句、命令原子性、几何、道具复用/释放、移除/停止和符号；`dev/tools/verify-behavior-ui.mjs` 通过真实界面检查表格点击、无后端词语输入、泳池/飞机、结束/中断及手机布局。
+
+### 沉浸式英语冒险
+
+`words.html` 全屏承载共享 3D 舞台。欢迎、推荐、游戏及结束场景通过圆形遮罩切换，句子之间保留孩子的作品。`presentation/word-text.jsx` 封装 Calligraph 1.4.1 Slots 年龄数字和 Text 发散字幕，字体为本地 MohrRounded Bold；卸载时释放 React root 与偏好监听，减少动态效果时静态呈现。
+
+推荐卡的“继续”手势解锁音频，进场自动使用 `clear` 英文女声示范；示范结束再鼓励开口，麦克风权限只在主动点击时申请。仅开放共享语音组件与点词菜单，菜单点击直接提交，保留整句与逐词识别。`acceptsEnglishUtterance` 在本小游戏入口拒绝中文和中英混说，且不调用造物或 AI 接口；反馈与播报均为英文，中文仅作界面引导。共享解析器仍支持工坊的中英文输入。
+
+机器人零件铺保留旧 `monster` 章节及存档 ID，独立 `robot-body/head/hand/foot` 模型进入资源注册与通用装配命令；载入该章旧存档时只迁移章节自身 `wg-*` 机械部位，不改词库原模型。验证浏览器脚本覆盖新流程、英文过滤、点词、声音生命周期、单卡推荐、存档和手机排版。
+
+领读字幕通过 `StoryVoice.say(..., onProgress)` 请求真实服务端时间戳，按 AudioContext 播放时间逐词发光并轻微放大；无时间戳不猜测进度。重复听、单词领读、取消和离场都清理高亮。录音失败以错误代码区分权限、设备、空转写和识别服务异常。`tools/word-voice-check.html` 在开发浏览器内用英文音频经真实采样与服务验证本地配置，不读取物理麦克风。
+
+### 英语领读与短反馈
+
+`word-narration.js` 使用真实朗读单词范围，经 `planWordIntent` 和统一 gateway 驱动场景；不提交孩子答案、不改变学习进度。`entity.cue` 是不落盘的有限短反馈，支持 mention（跳两下）、put-in（上方落入已经绑定的容器）与 cancel。`word-effects.js` 用独立变换层组合短反馈与持续状态；放入关系仍由 `entity.attach` 保存。重复名词复用已有实体，句子完整表达目标容器才执行下落。减少动态效果时直接完成放置。

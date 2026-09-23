@@ -2,6 +2,165 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:behavior-events",
+      "kind": "logic",
+      "name": "词语互动事件与自动道具",
+      "description": "世界工坊“一句话控制场景”下方列出可点击的中英文事件表。游泳自动补水池，航行缺载具补飞机；短表演结束收起临时道具。验证 dev/tools/verify-behavior-events.mjs。",
+      "source": "dev/presentation/behavior-controller.js",
+      "capabilities": [
+        "29种短表演",
+        "自动补道具",
+        "既有对象保留",
+        "中断与清理"
+      ],
+      "dependencies": [
+        "logic:word-intent",
+        "logic:presenter"
+      ]
+    },
+    {
+      "id": "logic:event-symbols",
+      "kind": "logic",
+      "name": "头顶音符与状态符号",
+      "description": "哼唱用音符，睡觉与困倦用Z字符，热气、爱心、问号与确认符号使用真实几何，独立释放资源。",
+      "source": "dev/presentation/event-symbols.js",
+      "capabilities": [
+        "音符",
+        "Z字符",
+        "情绪符号",
+        "无需字体图片"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "story:words",
+      "kind": "story",
+      "name": "独立章节 · 开口造世界",
+      "description": "选具体年龄后只推荐一章，六章各六轮，机器人拼装、逐词搭句、挖空与自由创造。实际入口 /dev/words.html。",
+      "source": "dev/content/word-games.js",
+      "capabilities": [
+        "三个年龄档",
+        "六章108轮",
+        "目标词与知识点",
+        "开放例句"
+      ],
+      "dependencies": [
+        "logic:word-progress",
+        "logic:word-intent"
+      ]
+    },
+    {
+      "id": "ui:word-play",
+      "kind": "ui",
+      "name": "开口造世界 · 年龄与冒险界面",
+      "description": "在 /dev/words.html 体验全屏 3D、圆形转场、年龄步进器、单卡推荐、英文女声示范和点词创作。仅本小游戏拒绝中文表达。",
+      "source": "dev/words.js",
+      "capabilities": [
+        "年龄推荐与加减音效回弹",
+        "Calligraph 数字与字幕",
+        "英文语音与点词",
+        "作品图片与链接"
+      ],
+      "dependencies": [
+        "ui:voice",
+        "ui:word-text",
+        "logic:session"
+      ]
+    },
+    {
+      "id": "ui:word-text",
+      "kind": "ui",
+      "name": "英语冒险 · 动态数字与字幕",
+      "description": "在 /dev/words.html 操作年龄加减体验 Calligraph Slots；进入第二轮起观看 Text 发散提示。MohrRounded Bold，遵守减少动态效果设置。",
+      "source": "dev/presentation/word-text.jsx",
+      "capabilities": [
+        "Slots 年龄数字",
+        "Text 词语切换",
+        "真实时间戳逐词高亮",
+        "减少动态效果",
+        "卸载清理"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:word-progress",
+      "kind": "logic",
+      "name": "英语逐词与开放表达进度",
+      "description": "累计完整句子的单词覆盖，填空逐步减少提示，自由表达保留孩子点子；只识别词，不评价发音。",
+      "source": "dev/word-progress.js",
+      "capabilities": [
+        "逐词累计",
+        "整句输入",
+        "创作替换"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "logic:word-intent",
+      "kind": "logic",
+      "name": "英语与中文创作指令",
+      "description": "名词、数量、颜色、大小、动作和对象组合，经统一世界入口呈现；在开口造世界章节试用。",
+      "source": "dev/word-intent.js",
+      "capabilities": [
+        "名词召唤",
+        "中英混说",
+        "多对象组合",
+        "可扩展动作"
+      ],
+      "dependencies": [
+        "logic:intent"
+      ]
+    },
+    {
+      "id": "logic:word-narration",
+      "kind": "logic",
+      "name": "领读与物件回应",
+      "description": "英语例句按语音时间戳驱动场景，重复名词跳两下，放入盒子从上方落下；演示不计作答进度。验证 dev/tools/verify-word-cues.mjs。",
+      "source": "dev/word-narration.js",
+      "capabilities": [
+        "领读同步场景",
+        "重复名词回应",
+        "落入敞口盒",
+        "中断清理"
+      ],
+      "dependencies": [
+        "logic:word-intent",
+        "logic:word-effects"
+      ]
+    },
+    {
+      "id": "logic:word-effects",
+      "kind": "logic",
+      "name": "所有物件的生长与动作",
+      "description": "花和便便都能生长、跳、飞、游、变长或表达心情，身体部件可装配。验证入口 dev/tools/verify-word-game.mjs。",
+      "source": "dev/presentation/word-effects.js",
+      "capabilities": [
+        "点名跳两下与落入盒子",
+        "生长与缩小",
+        "跳跃飞行游泳",
+        "情绪",
+        "部件装配",
+        "存档恢复"
+      ],
+      "dependencies": [
+        "logic:presenter"
+      ]
+    },
+    {
+      "id": "logic:rline-models",
+      "kind": "logic",
+      "name": "R线名词造型库",
+      "description": "按原词表名词逐项建模；抽象词以明确的场景符号呈现，每个名词有独立模型入口。",
+      "source": "dev/modules/rline-models.js",
+      "capabilities": [
+        "词表溯源",
+        "独立名词模型",
+        "可复用造型",
+        "资源释放"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "logic:group-motion",
       "kind": "logic",
       "name": "巡逻、聚拢与包围",
@@ -394,6 +553,6589 @@
       ],
       "dependencies": [
         "logic:intent"
+      ]
+    },
+    {
+      "id": "prop:robot-body",
+      "kind": "prop",
+      "name": "机器人身体",
+      "description": "可拼装的机械身体，支持颜色、大小和动作变化。",
+      "source": "dev/modules/props/robot-body.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot-body",
+        "kind": "prop",
+        "edible": false,
+        "name": "机器人身体",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "场景道具",
+      "variety": "prop:robot-body",
+      "tags": [],
+      "keywords": [
+        "机器人身体",
+        "robot body"
+      ]
+    },
+    {
+      "id": "prop:robot-head",
+      "kind": "prop",
+      "name": "机器人头",
+      "description": "可拼装的机械头，支持颜色、大小和动作变化。",
+      "source": "dev/modules/props/robot-head.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot-head",
+        "kind": "prop",
+        "edible": false,
+        "name": "机器人头",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "场景道具",
+      "variety": "prop:robot-head",
+      "tags": [],
+      "keywords": [
+        "机器人头",
+        "robot head"
+      ]
+    },
+    {
+      "id": "prop:robot-hand",
+      "kind": "prop",
+      "name": "机器人手",
+      "description": "可拼装的机械手，支持颜色、大小和动作变化。",
+      "source": "dev/modules/props/robot-hand.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot-hand",
+        "kind": "prop",
+        "edible": false,
+        "name": "机器人手",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "场景道具",
+      "variety": "prop:robot-hand",
+      "tags": [],
+      "keywords": [
+        "机器人手",
+        "robot hand"
+      ]
+    },
+    {
+      "id": "prop:robot-foot",
+      "kind": "prop",
+      "name": "机器人脚",
+      "description": "可拼装的机械脚，支持颜色、大小和动作变化。",
+      "source": "dev/modules/props/robot-foot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:robot-foot",
+        "kind": "prop",
+        "edible": false,
+        "name": "机器人脚",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "场景道具",
+      "variety": "prop:robot-foot",
+      "tags": [],
+      "keywords": [
+        "机器人脚",
+        "robot foot"
+      ]
+    },
+    {
+      "id": "prop:swimming-pool",
+      "kind": "prop",
+      "name": "互动小水池",
+      "description": "蓝色水面带有三圈波纹，可作为游泳事件道具。",
+      "source": "dev/modules/props/swimming-pool.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:swimming-pool",
+        "kind": "prop",
+        "edible": false,
+        "name": "互动小水池",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "场景道具",
+      "variety": "prop:swimming-pool",
+      "tags": [],
+      "keywords": [
+        "水池",
+        "游泳池",
+        "swimming pool"
+      ]
+    },
+    {
+      "id": "prop:rword-body",
+      "kind": "prop",
+      "name": "body · 身体",
+      "description": "身体轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-body.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-body",
+        "kind": "prop",
+        "edible": false,
+        "name": "body · 身体",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-body",
+      "tags": [],
+      "keywords": [
+        "body",
+        "身体",
+        "bodies"
+      ]
+    },
+    {
+      "id": "prop:rword-head",
+      "kind": "prop",
+      "name": "head · 头",
+      "description": "头轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-head.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-head",
+        "kind": "prop",
+        "edible": false,
+        "name": "head · 头",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-head",
+      "tags": [],
+      "keywords": [
+        "head",
+        "头",
+        "heads"
+      ]
+    },
+    {
+      "id": "prop:rword-hand",
+      "kind": "prop",
+      "name": "hand · 手",
+      "description": "手轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-hand.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hand",
+        "kind": "prop",
+        "edible": false,
+        "name": "hand · 手",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hand",
+      "tags": [],
+      "keywords": [
+        "hand",
+        "手",
+        "hands"
+      ]
+    },
+    {
+      "id": "prop:rword-foot",
+      "kind": "prop",
+      "name": "foot · 脚",
+      "description": "脚轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-foot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-foot",
+        "kind": "prop",
+        "edible": false,
+        "name": "foot · 脚",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-foot",
+      "tags": [],
+      "keywords": [
+        "foot",
+        "脚"
+      ]
+    },
+    {
+      "id": "prop:rword-car",
+      "kind": "prop",
+      "name": "car · 小汽车",
+      "description": "小汽车轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-car.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-car",
+        "kind": "prop",
+        "edible": false,
+        "name": "car · 小汽车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-car",
+      "tags": [],
+      "keywords": [
+        "car",
+        "小汽车",
+        "cars"
+      ]
+    },
+    {
+      "id": "prop:rword-bear",
+      "kind": "prop",
+      "name": "bear · 熊",
+      "description": "熊轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bear.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bear",
+        "kind": "prop",
+        "edible": false,
+        "name": "bear · 熊",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bear",
+      "tags": [],
+      "keywords": [
+        "bear",
+        "熊",
+        "bears"
+      ]
+    },
+    {
+      "id": "prop:rword-toy",
+      "kind": "prop",
+      "name": "toy · 玩具",
+      "description": "玩具轻轻摇动，回应你的声音。积木和小球组成的玩具组。",
+      "source": "dev/modules/props/rword-toy.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-toy",
+        "kind": "prop",
+        "edible": false,
+        "name": "toy · 玩具",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-toy",
+      "tags": [],
+      "keywords": [
+        "toy",
+        "玩具",
+        "toys"
+      ]
+    },
+    {
+      "id": "prop:rword-ball",
+      "kind": "prop",
+      "name": "ball · 球",
+      "description": "球轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ball.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ball",
+        "kind": "prop",
+        "edible": false,
+        "name": "ball · 球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ball",
+      "tags": [],
+      "keywords": [
+        "ball",
+        "球",
+        "balls"
+      ]
+    },
+    {
+      "id": "prop:rword-robot",
+      "kind": "prop",
+      "name": "robot · 机器人",
+      "description": "机器人轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-robot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-robot",
+        "kind": "prop",
+        "edible": false,
+        "name": "robot · 机器人",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-robot",
+      "tags": [],
+      "keywords": [
+        "robot",
+        "机器人",
+        "robots"
+      ]
+    },
+    {
+      "id": "prop:rword-dad",
+      "kind": "prop",
+      "name": "dad · 爸爸",
+      "description": "爸爸轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-dad.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-dad",
+        "kind": "prop",
+        "edible": false,
+        "name": "dad · 爸爸",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-dad",
+      "tags": [],
+      "keywords": [
+        "dad",
+        "爸爸",
+        "dads"
+      ]
+    },
+    {
+      "id": "prop:rword-mum",
+      "kind": "prop",
+      "name": "mum · 妈妈",
+      "description": "妈妈轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mum.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mum",
+        "kind": "prop",
+        "edible": false,
+        "name": "mum · 妈妈",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mum",
+      "tags": [],
+      "keywords": [
+        "mum",
+        "妈妈",
+        "mom",
+        "mums"
+      ]
+    },
+    {
+      "id": "prop:rword-baby",
+      "kind": "prop",
+      "name": "baby · 宝宝",
+      "description": "宝宝轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-baby.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-baby",
+        "kind": "prop",
+        "edible": false,
+        "name": "baby · 宝宝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-baby",
+      "tags": [],
+      "keywords": [
+        "baby",
+        "宝宝",
+        "babies"
+      ]
+    },
+    {
+      "id": "prop:rword-family",
+      "kind": "prop",
+      "name": "family · 家庭；家人",
+      "description": "家庭；家人轻轻摇动，回应你的声音。两个大人与一个孩子的家庭合影。",
+      "source": "dev/modules/props/rword-family.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-family",
+        "kind": "prop",
+        "edible": false,
+        "name": "family · 家庭；家人",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-family",
+      "tags": [],
+      "keywords": [
+        "family",
+        "家庭；家人",
+        "families"
+      ]
+    },
+    {
+      "id": "prop:rword-hair",
+      "kind": "prop",
+      "name": "hair · 头发",
+      "description": "头发轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-hair.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hair",
+        "kind": "prop",
+        "edible": false,
+        "name": "hair · 头发",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hair",
+      "tags": [],
+      "keywords": [
+        "hair",
+        "头发"
+      ]
+    },
+    {
+      "id": "prop:rword-face",
+      "kind": "prop",
+      "name": "face · 脸",
+      "description": "脸轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-face.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-face",
+        "kind": "prop",
+        "edible": false,
+        "name": "face · 脸",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-face",
+      "tags": [],
+      "keywords": [
+        "face",
+        "脸",
+        "faces"
+      ]
+    },
+    {
+      "id": "prop:rword-belly",
+      "kind": "prop",
+      "name": "belly · 肚子",
+      "description": "肚子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-belly.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-belly",
+        "kind": "prop",
+        "edible": false,
+        "name": "belly · 肚子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-belly",
+      "tags": [],
+      "keywords": [
+        "belly",
+        "肚子",
+        "bellies"
+      ]
+    },
+    {
+      "id": "prop:rword-leg",
+      "kind": "prop",
+      "name": "leg · 腿",
+      "description": "腿轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-leg.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-leg",
+        "kind": "prop",
+        "edible": false,
+        "name": "leg · 腿",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-leg",
+      "tags": [],
+      "keywords": [
+        "leg",
+        "腿",
+        "legs"
+      ]
+    },
+    {
+      "id": "prop:rword-eye",
+      "kind": "prop",
+      "name": "eye · 眼睛",
+      "description": "眼睛轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-eye.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-eye",
+        "kind": "prop",
+        "edible": false,
+        "name": "eye · 眼睛",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-eye",
+      "tags": [],
+      "keywords": [
+        "eye",
+        "眼睛",
+        "eyes"
+      ]
+    },
+    {
+      "id": "prop:rword-ear",
+      "kind": "prop",
+      "name": "ear · 耳朵",
+      "description": "耳朵轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ear.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ear",
+        "kind": "prop",
+        "edible": false,
+        "name": "ear · 耳朵",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ear",
+      "tags": [],
+      "keywords": [
+        "ear",
+        "耳朵",
+        "ears"
+      ]
+    },
+    {
+      "id": "prop:rword-nose",
+      "kind": "prop",
+      "name": "nose · 鼻子",
+      "description": "鼻子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-nose.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-nose",
+        "kind": "prop",
+        "edible": false,
+        "name": "nose · 鼻子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-nose",
+      "tags": [],
+      "keywords": [
+        "nose",
+        "鼻子",
+        "noses"
+      ]
+    },
+    {
+      "id": "prop:rword-mouth",
+      "kind": "prop",
+      "name": "mouth · 嘴巴",
+      "description": "嘴巴轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mouth.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mouth",
+        "kind": "prop",
+        "edible": false,
+        "name": "mouth · 嘴巴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mouth",
+      "tags": [],
+      "keywords": [
+        "mouth",
+        "嘴巴",
+        "mouths"
+      ]
+    },
+    {
+      "id": "prop:rword-food",
+      "kind": "prop",
+      "name": "food · 食物",
+      "description": "食物轻轻摇动，回应你的声音。装着面包和蔬菜的餐盘。",
+      "source": "dev/modules/props/rword-food.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-food",
+        "kind": "prop",
+        "edible": false,
+        "name": "food · 食物",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-food",
+      "tags": [],
+      "keywords": [
+        "food",
+        "食物"
+      ]
+    },
+    {
+      "id": "prop:rword-drink",
+      "kind": "prop",
+      "name": "drink · 饮料",
+      "description": "饮料轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-drink.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-drink",
+        "kind": "prop",
+        "edible": false,
+        "name": "drink · 饮料",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-drink",
+      "tags": [],
+      "keywords": [
+        "drink",
+        "饮料",
+        "drinks"
+      ]
+    },
+    {
+      "id": "prop:rword-tree",
+      "kind": "prop",
+      "name": "tree · 树",
+      "description": "树轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-tree.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tree",
+        "kind": "prop",
+        "edible": false,
+        "name": "tree · 树",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tree",
+      "tags": [],
+      "keywords": [
+        "tree",
+        "树",
+        "trees"
+      ]
+    },
+    {
+      "id": "prop:rword-cat",
+      "kind": "prop",
+      "name": "cat · 猫",
+      "description": "猫轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cat",
+        "kind": "prop",
+        "edible": false,
+        "name": "cat · 猫",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cat",
+      "tags": [],
+      "keywords": [
+        "cat",
+        "猫",
+        "cats"
+      ]
+    },
+    {
+      "id": "prop:rword-tail",
+      "kind": "prop",
+      "name": "tail · 尾巴",
+      "description": "尾巴轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-tail.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tail",
+        "kind": "prop",
+        "edible": false,
+        "name": "tail · 尾巴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tail",
+      "tags": [],
+      "keywords": [
+        "tail",
+        "尾巴",
+        "tails"
+      ]
+    },
+    {
+      "id": "prop:rword-monster",
+      "kind": "prop",
+      "name": "monster · 怪兽",
+      "description": "怪兽轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-monster.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-monster",
+        "kind": "prop",
+        "edible": false,
+        "name": "monster · 怪兽",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-monster",
+      "tags": [],
+      "keywords": [
+        "monster",
+        "怪兽",
+        "monsters"
+      ]
+    },
+    {
+      "id": "prop:rword-hat",
+      "kind": "prop",
+      "name": "hat · 帽子",
+      "description": "帽子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-hat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hat",
+        "kind": "prop",
+        "edible": false,
+        "name": "hat · 帽子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hat",
+      "tags": [],
+      "keywords": [
+        "hat",
+        "帽子",
+        "hats"
+      ]
+    },
+    {
+      "id": "prop:rword-kite",
+      "kind": "prop",
+      "name": "kite · 风筝",
+      "description": "风筝轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-kite.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-kite",
+        "kind": "prop",
+        "edible": false,
+        "name": "kite · 风筝",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-kite",
+      "tags": [],
+      "keywords": [
+        "kite",
+        "风筝",
+        "kites"
+      ]
+    },
+    {
+      "id": "prop:rword-story",
+      "kind": "prop",
+      "name": "story · 故事",
+      "description": "故事轻轻摇动，回应你的声音。打开的故事书与故事角色。",
+      "source": "dev/modules/props/rword-story.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-story",
+        "kind": "prop",
+        "edible": false,
+        "name": "story · 故事",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-story",
+      "tags": [],
+      "keywords": [
+        "story",
+        "故事",
+        "stories"
+      ]
+    },
+    {
+      "id": "prop:rword-shell",
+      "kind": "prop",
+      "name": "shell · 贝壳",
+      "description": "贝壳轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-shell.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-shell",
+        "kind": "prop",
+        "edible": false,
+        "name": "shell · 贝壳",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-shell",
+      "tags": [],
+      "keywords": [
+        "shell",
+        "贝壳",
+        "shells"
+      ]
+    },
+    {
+      "id": "prop:rword-tool",
+      "kind": "prop",
+      "name": "tool · 工具",
+      "description": "工具轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-tool.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tool",
+        "kind": "prop",
+        "edible": false,
+        "name": "tool · 工具",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tool",
+      "tags": [],
+      "keywords": [
+        "tool",
+        "工具",
+        "tools"
+      ]
+    },
+    {
+      "id": "prop:rword-grandpa",
+      "kind": "prop",
+      "name": "grandpa · 爷爷",
+      "description": "爷爷轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-grandpa.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-grandpa",
+        "kind": "prop",
+        "edible": false,
+        "name": "grandpa · 爷爷",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-grandpa",
+      "tags": [],
+      "keywords": [
+        "grandpa",
+        "爷爷",
+        "grandpas"
+      ]
+    },
+    {
+      "id": "prop:rword-run",
+      "kind": "prop",
+      "name": "run · 跑步活动",
+      "description": "跑步活动轻轻摇动，回应你的声音。跑道与奔跑人物。",
+      "source": "dev/modules/props/rword-run.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-run",
+        "kind": "prop",
+        "edible": false,
+        "name": "run · 跑步活动",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-run",
+      "tags": [],
+      "keywords": [
+        "run",
+        "跑步活动"
+      ]
+    },
+    {
+      "id": "prop:rword-grandma",
+      "kind": "prop",
+      "name": "grandma · 奶奶",
+      "description": "奶奶轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-grandma.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-grandma",
+        "kind": "prop",
+        "edible": false,
+        "name": "grandma · 奶奶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-grandma",
+      "tags": [],
+      "keywords": [
+        "grandma",
+        "奶奶",
+        "grandmas"
+      ]
+    },
+    {
+      "id": "prop:rword-bread",
+      "kind": "prop",
+      "name": "bread · 面包",
+      "description": "面包轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bread.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bread",
+        "kind": "prop",
+        "edible": false,
+        "name": "bread · 面包",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bread",
+      "tags": [],
+      "keywords": [
+        "bread",
+        "面包",
+        "breads"
+      ]
+    },
+    {
+      "id": "prop:rword-sister",
+      "kind": "prop",
+      "name": "sister · 妹妹/姐姐",
+      "description": "妹妹/姐姐轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-sister.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-sister",
+        "kind": "prop",
+        "edible": false,
+        "name": "sister · 妹妹/姐姐",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-sister",
+      "tags": [],
+      "keywords": [
+        "sister",
+        "妹妹/姐姐",
+        "sisters"
+      ]
+    },
+    {
+      "id": "prop:rword-box",
+      "kind": "prop",
+      "name": "box · 盒子",
+      "description": "盒子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-box.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-box",
+        "kind": "prop",
+        "edible": false,
+        "name": "box · 盒子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-box",
+      "tags": [],
+      "keywords": [
+        "box",
+        "盒子",
+        "boxes"
+      ]
+    },
+    {
+      "id": "prop:rword-cousin",
+      "kind": "prop",
+      "name": "cousin · 堂（或表）兄弟；堂（或表）姐妹",
+      "description": "堂（或表）兄弟；堂（或表）姐妹轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cousin.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cousin",
+        "kind": "prop",
+        "edible": false,
+        "name": "cousin · 堂（或表）兄弟；堂（或表）姐妹",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cousin",
+      "tags": [],
+      "keywords": [
+        "cousin",
+        "堂（或表）兄弟；堂（或表）姐妹",
+        "cousins"
+      ]
+    },
+    {
+      "id": "prop:rword-bird",
+      "kind": "prop",
+      "name": "bird · 鸟",
+      "description": "鸟轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bird.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bird",
+        "kind": "prop",
+        "edible": false,
+        "name": "bird · 鸟",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bird",
+      "tags": [],
+      "keywords": [
+        "bird",
+        "鸟",
+        "birds"
+      ]
+    },
+    {
+      "id": "prop:rword-duck",
+      "kind": "prop",
+      "name": "duck · 鸭子",
+      "description": "鸭子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-duck.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-duck",
+        "kind": "prop",
+        "edible": false,
+        "name": "duck · 鸭子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-duck",
+      "tags": [],
+      "keywords": [
+        "duck",
+        "鸭子",
+        "ducks"
+      ]
+    },
+    {
+      "id": "prop:rword-dog",
+      "kind": "prop",
+      "name": "dog · 狗",
+      "description": "狗轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-dog.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-dog",
+        "kind": "prop",
+        "edible": false,
+        "name": "dog · 狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-dog",
+      "tags": [],
+      "keywords": [
+        "dog",
+        "狗",
+        "dogs"
+      ]
+    },
+    {
+      "id": "prop:rword-fort",
+      "kind": "prop",
+      "name": "fort · 城堡；堡垒",
+      "description": "城堡；堡垒轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-fort.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-fort",
+        "kind": "prop",
+        "edible": false,
+        "name": "fort · 城堡；堡垒",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-fort",
+      "tags": [],
+      "keywords": [
+        "fort",
+        "城堡；堡垒",
+        "forts"
+      ]
+    },
+    {
+      "id": "prop:rword-book",
+      "kind": "prop",
+      "name": "book · 书",
+      "description": "书轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-book.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-book",
+        "kind": "prop",
+        "edible": false,
+        "name": "book · 书",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-book",
+      "tags": [],
+      "keywords": [
+        "book",
+        "书",
+        "books"
+      ]
+    },
+    {
+      "id": "prop:rword-blanket",
+      "kind": "prop",
+      "name": "blanket · 毯子；毛毯",
+      "description": "毯子；毛毯轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-blanket.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-blanket",
+        "kind": "prop",
+        "edible": false,
+        "name": "blanket · 毯子；毛毯",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-blanket",
+      "tags": [],
+      "keywords": [
+        "blanket",
+        "毯子；毛毯",
+        "blankets"
+      ]
+    },
+    {
+      "id": "prop:rword-bell",
+      "kind": "prop",
+      "name": "bell · 铃铛",
+      "description": "铃铛轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bell.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bell",
+        "kind": "prop",
+        "edible": false,
+        "name": "bell · 铃铛",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bell",
+      "tags": [],
+      "keywords": [
+        "bell",
+        "铃铛",
+        "bells"
+      ]
+    },
+    {
+      "id": "prop:rword-bottle",
+      "kind": "prop",
+      "name": "bottle · 瓶子",
+      "description": "瓶子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bottle.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bottle",
+        "kind": "prop",
+        "edible": false,
+        "name": "bottle · 瓶子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bottle",
+      "tags": [],
+      "keywords": [
+        "bottle",
+        "瓶子",
+        "bottles"
+      ]
+    },
+    {
+      "id": "prop:rword-pot",
+      "kind": "prop",
+      "name": "pot · 锅",
+      "description": "锅轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pot",
+        "kind": "prop",
+        "edible": false,
+        "name": "pot · 锅",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pot",
+      "tags": [],
+      "keywords": [
+        "pot",
+        "锅",
+        "pots"
+      ]
+    },
+    {
+      "id": "prop:rword-band",
+      "kind": "prop",
+      "name": "band · 乐队",
+      "description": "乐队轻轻摇动，回应你的声音。鼓、吉他和话筒组成的乐队。",
+      "source": "dev/modules/props/rword-band.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-band",
+        "kind": "prop",
+        "edible": false,
+        "name": "band · 乐队",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-band",
+      "tags": [],
+      "keywords": [
+        "band",
+        "乐队",
+        "bands"
+      ]
+    },
+    {
+      "id": "prop:rword-glasses",
+      "kind": "prop",
+      "name": "glasses · 眼镜",
+      "description": "眼镜轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-glasses.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-glasses",
+        "kind": "prop",
+        "edible": false,
+        "name": "glasses · 眼镜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-glasses",
+      "tags": [],
+      "keywords": [
+        "glasses",
+        "眼镜",
+        "spectacles"
+      ]
+    },
+    {
+      "id": "prop:rword-bow",
+      "kind": "prop",
+      "name": "bow · 蝴蝶结",
+      "description": "蝴蝶结轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bow.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bow",
+        "kind": "prop",
+        "edible": false,
+        "name": "bow · 蝴蝶结",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bow",
+      "tags": [],
+      "keywords": [
+        "bow",
+        "蝴蝶结",
+        "bows"
+      ]
+    },
+    {
+      "id": "prop:rword-wig",
+      "kind": "prop",
+      "name": "wig · 假发",
+      "description": "假发轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-wig.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-wig",
+        "kind": "prop",
+        "edible": false,
+        "name": "wig · 假发",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-wig",
+      "tags": [],
+      "keywords": [
+        "wig",
+        "假发",
+        "wigs"
+      ]
+    },
+    {
+      "id": "prop:rword-music",
+      "kind": "prop",
+      "name": "music · 音乐",
+      "description": "音乐轻轻摇动，回应你的声音。立体音符与琴键。",
+      "source": "dev/modules/props/rword-music.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-music",
+        "kind": "prop",
+        "edible": false,
+        "name": "music · 音乐",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-music",
+      "tags": [],
+      "keywords": [
+        "music",
+        "音乐"
+      ]
+    },
+    {
+      "id": "prop:rword-card",
+      "kind": "prop",
+      "name": "card · 卡片",
+      "description": "卡片轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-card.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-card",
+        "kind": "prop",
+        "edible": false,
+        "name": "card · 卡片",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-card",
+      "tags": [],
+      "keywords": [
+        "card",
+        "卡片",
+        "cards"
+      ]
+    },
+    {
+      "id": "prop:rword-bunny",
+      "kind": "prop",
+      "name": "bunny · 小兔子",
+      "description": "小兔子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bunny.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bunny",
+        "kind": "prop",
+        "edible": false,
+        "name": "bunny · 小兔子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bunny",
+      "tags": [],
+      "keywords": [
+        "bunny",
+        "小兔子",
+        "bunnies"
+      ]
+    },
+    {
+      "id": "prop:rword-train",
+      "kind": "prop",
+      "name": "train · 火车",
+      "description": "火车轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-train.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-train",
+        "kind": "prop",
+        "edible": false,
+        "name": "train · 火车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-train",
+      "tags": [],
+      "keywords": [
+        "train",
+        "火车",
+        "trains"
+      ]
+    },
+    {
+      "id": "prop:rword-candy",
+      "kind": "prop",
+      "name": "candy · 糖果",
+      "description": "糖果轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-candy.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-candy",
+        "kind": "prop",
+        "edible": false,
+        "name": "candy · 糖果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-candy",
+      "tags": [],
+      "keywords": [
+        "candy",
+        "糖果",
+        "candies"
+      ]
+    },
+    {
+      "id": "prop:rword-snack",
+      "kind": "prop",
+      "name": "snack · 零食",
+      "description": "零食轻轻摇动，回应你的声音。饼干零食盘。",
+      "source": "dev/modules/props/rword-snack.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-snack",
+        "kind": "prop",
+        "edible": false,
+        "name": "snack · 零食",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-snack",
+      "tags": [],
+      "keywords": [
+        "snack",
+        "零食",
+        "snacks"
+      ]
+    },
+    {
+      "id": "prop:rword-doll",
+      "kind": "prop",
+      "name": "doll · 玩具娃娃；玩偶",
+      "description": "玩具娃娃；玩偶轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-doll.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-doll",
+        "kind": "prop",
+        "edible": false,
+        "name": "doll · 玩具娃娃；玩偶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-doll",
+      "tags": [],
+      "keywords": [
+        "doll",
+        "玩具娃娃；玩偶",
+        "dolls"
+      ]
+    },
+    {
+      "id": "prop:rword-water",
+      "kind": "prop",
+      "name": "water · 水",
+      "description": "水轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-water.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-water",
+        "kind": "prop",
+        "edible": false,
+        "name": "water · 水",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-water",
+      "tags": [],
+      "keywords": [
+        "water",
+        "水"
+      ]
+    },
+    {
+      "id": "prop:rword-bee",
+      "kind": "prop",
+      "name": "bee · 蜜蜂",
+      "description": "蜜蜂轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bee.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bee",
+        "kind": "prop",
+        "edible": false,
+        "name": "bee · 蜜蜂",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bee",
+      "tags": [],
+      "keywords": [
+        "bee",
+        "蜜蜂",
+        "bees"
+      ]
+    },
+    {
+      "id": "prop:rword-garden",
+      "kind": "prop",
+      "name": "garden · 花园",
+      "description": "花园轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-garden.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-garden",
+        "kind": "prop",
+        "edible": false,
+        "name": "garden · 花园",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-garden",
+      "tags": [],
+      "keywords": [
+        "garden",
+        "花园",
+        "gardens"
+      ]
+    },
+    {
+      "id": "prop:rword-flower",
+      "kind": "prop",
+      "name": "flower · 花朵",
+      "description": "花朵轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-flower.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-flower",
+        "kind": "prop",
+        "edible": false,
+        "name": "flower · 花朵",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-flower",
+      "tags": [],
+      "keywords": [
+        "flower",
+        "花朵",
+        "flowers"
+      ]
+    },
+    {
+      "id": "prop:rword-skirt",
+      "kind": "prop",
+      "name": "skirt · 短裙",
+      "description": "短裙轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-skirt.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-skirt",
+        "kind": "prop",
+        "edible": false,
+        "name": "skirt · 短裙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-skirt",
+      "tags": [],
+      "keywords": [
+        "skirt",
+        "短裙",
+        "skirts"
+      ]
+    },
+    {
+      "id": "prop:rword-dress",
+      "kind": "prop",
+      "name": "dress · 连衣裙",
+      "description": "连衣裙轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-dress.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-dress",
+        "kind": "prop",
+        "edible": false,
+        "name": "dress · 连衣裙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-dress",
+      "tags": [],
+      "keywords": [
+        "dress",
+        "连衣裙",
+        "dresses"
+      ]
+    },
+    {
+      "id": "prop:rword-coat",
+      "kind": "prop",
+      "name": "coat · 外套",
+      "description": "外套轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-coat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-coat",
+        "kind": "prop",
+        "edible": false,
+        "name": "coat · 外套",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-coat",
+      "tags": [],
+      "keywords": [
+        "coat",
+        "外套",
+        "coats"
+      ]
+    },
+    {
+      "id": "prop:rword-bike",
+      "kind": "prop",
+      "name": "bike · 自行车",
+      "description": "自行车轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bike.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bike",
+        "kind": "prop",
+        "edible": false,
+        "name": "bike · 自行车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bike",
+      "tags": [],
+      "keywords": [
+        "bike",
+        "自行车",
+        "bikes"
+      ]
+    },
+    {
+      "id": "prop:rword-yarn",
+      "kind": "prop",
+      "name": "yarn · 毛线",
+      "description": "毛线轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-yarn.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-yarn",
+        "kind": "prop",
+        "edible": false,
+        "name": "yarn · 毛线",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-yarn",
+      "tags": [],
+      "keywords": [
+        "yarn",
+        "毛线",
+        "yarns"
+      ]
+    },
+    {
+      "id": "prop:rword-ant",
+      "kind": "prop",
+      "name": "ant · 蚂蚁",
+      "description": "蚂蚁轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ant.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ant",
+        "kind": "prop",
+        "edible": false,
+        "name": "ant · 蚂蚁",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ant",
+      "tags": [],
+      "keywords": [
+        "ant",
+        "蚂蚁",
+        "ants"
+      ]
+    },
+    {
+      "id": "prop:rword-mat",
+      "kind": "prop",
+      "name": "mat · 垫子",
+      "description": "垫子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mat",
+        "kind": "prop",
+        "edible": false,
+        "name": "mat · 垫子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mat",
+      "tags": [],
+      "keywords": [
+        "mat",
+        "垫子",
+        "mats"
+      ]
+    },
+    {
+      "id": "prop:rword-rabbit",
+      "kind": "prop",
+      "name": "rabbit · 兔子",
+      "description": "兔子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rabbit.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rabbit",
+        "kind": "prop",
+        "edible": false,
+        "name": "rabbit · 兔子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rabbit",
+      "tags": [],
+      "keywords": [
+        "rabbit",
+        "兔子",
+        "rabbits"
+      ]
+    },
+    {
+      "id": "prop:rword-alligator",
+      "kind": "prop",
+      "name": "alligator · 鳄鱼",
+      "description": "鳄鱼轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-alligator.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-alligator",
+        "kind": "prop",
+        "edible": false,
+        "name": "alligator · 鳄鱼",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-alligator",
+      "tags": [],
+      "keywords": [
+        "alligator",
+        "鳄鱼",
+        "alligators"
+      ]
+    },
+    {
+      "id": "prop:rword-pan",
+      "kind": "prop",
+      "name": "pan · 平底锅",
+      "description": "平底锅轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pan.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pan",
+        "kind": "prop",
+        "edible": false,
+        "name": "pan · 平底锅",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pan",
+      "tags": [],
+      "keywords": [
+        "pan",
+        "平底锅",
+        "pans"
+      ]
+    },
+    {
+      "id": "prop:rword-ham",
+      "kind": "prop",
+      "name": "ham · 火腿",
+      "description": "火腿轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ham.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ham",
+        "kind": "prop",
+        "edible": false,
+        "name": "ham · 火腿",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ham",
+      "tags": [],
+      "keywords": [
+        "ham",
+        "火腿",
+        "hams"
+      ]
+    },
+    {
+      "id": "prop:rword-jam",
+      "kind": "prop",
+      "name": "jam · 果酱",
+      "description": "果酱轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-jam.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-jam",
+        "kind": "prop",
+        "edible": false,
+        "name": "jam · 果酱",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-jam",
+      "tags": [],
+      "keywords": [
+        "jam",
+        "果酱",
+        "jams"
+      ]
+    },
+    {
+      "id": "prop:rword-van",
+      "kind": "prop",
+      "name": "van · 厢式货车",
+      "description": "厢式货车轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-van.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-van",
+        "kind": "prop",
+        "edible": false,
+        "name": "van · 厢式货车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-van",
+      "tags": [],
+      "keywords": [
+        "van",
+        "厢式货车",
+        "vans"
+      ]
+    },
+    {
+      "id": "prop:rword-can",
+      "kind": "prop",
+      "name": "can · （盛食品或饮料的）金属罐",
+      "description": "（盛食品或饮料的）金属罐轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-can.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-can",
+        "kind": "prop",
+        "edible": false,
+        "name": "can · （盛食品或饮料的）金属罐",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-can",
+      "tags": [],
+      "keywords": [
+        "can",
+        "（盛食品或饮料的）金属罐",
+        "cans"
+      ]
+    },
+    {
+      "id": "prop:rword-bag",
+      "kind": "prop",
+      "name": "bag · 包",
+      "description": "包轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bag.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bag",
+        "kind": "prop",
+        "edible": false,
+        "name": "bag · 包",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bag",
+      "tags": [],
+      "keywords": [
+        "bag",
+        "包",
+        "bags"
+      ]
+    },
+    {
+      "id": "prop:rword-rag",
+      "kind": "prop",
+      "name": "rag · 抹布",
+      "description": "抹布轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rag.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rag",
+        "kind": "prop",
+        "edible": false,
+        "name": "rag · 抹布",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rag",
+      "tags": [],
+      "keywords": [
+        "rag",
+        "抹布",
+        "rags"
+      ]
+    },
+    {
+      "id": "prop:rword-pad",
+      "kind": "prop",
+      "name": "pad · 便签本",
+      "description": "便签本轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pad.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pad",
+        "kind": "prop",
+        "edible": false,
+        "name": "pad · 便签本",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pad",
+      "tags": [],
+      "keywords": [
+        "pad",
+        "便签本",
+        "pads"
+      ]
+    },
+    {
+      "id": "prop:rword-cap",
+      "kind": "prop",
+      "name": "cap · （有帽舌的）帽子",
+      "description": "（有帽舌的）帽子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cap.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cap",
+        "kind": "prop",
+        "edible": false,
+        "name": "cap · （有帽舌的）帽子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cap",
+      "tags": [],
+      "keywords": [
+        "cap",
+        "（有帽舌的）帽子",
+        "caps"
+      ]
+    },
+    {
+      "id": "prop:rword-map",
+      "kind": "prop",
+      "name": "map · 地图",
+      "description": "地图轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-map.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-map",
+        "kind": "prop",
+        "edible": false,
+        "name": "map · 地图",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-map",
+      "tags": [],
+      "keywords": [
+        "map",
+        "地图",
+        "maps"
+      ]
+    },
+    {
+      "id": "prop:rword-lap",
+      "kind": "prop",
+      "name": "lap · （坐着时的）大腿部",
+      "description": "（坐着时的）大腿部轻轻摇动，回应你的声音。坐姿人物与高亮大腿区域。",
+      "source": "dev/modules/props/rword-lap.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-lap",
+        "kind": "prop",
+        "edible": false,
+        "name": "lap · （坐着时的）大腿部",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-lap",
+      "tags": [],
+      "keywords": [
+        "lap",
+        "（坐着时的）大腿部",
+        "laps"
+      ]
+    },
+    {
+      "id": "prop:rword-nap",
+      "kind": "prop",
+      "name": "nap · 打盹；小睡",
+      "description": "打盹；小睡轻轻摇动，回应你的声音。枕头上的睡眠角色。",
+      "source": "dev/modules/props/rword-nap.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-nap",
+        "kind": "prop",
+        "edible": false,
+        "name": "nap · 打盹；小睡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-nap",
+      "tags": [],
+      "keywords": [
+        "nap",
+        "打盹；小睡"
+      ]
+    },
+    {
+      "id": "prop:rword-bat",
+      "kind": "prop",
+      "name": "bat · 球棒",
+      "description": "球棒轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bat",
+        "kind": "prop",
+        "edible": false,
+        "name": "bat · 球棒",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bat",
+      "tags": [],
+      "keywords": [
+        "bat",
+        "球棒",
+        "bats"
+      ]
+    },
+    {
+      "id": "prop:rword-rat",
+      "kind": "prop",
+      "name": "rat · 老鼠",
+      "description": "老鼠轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rat",
+        "kind": "prop",
+        "edible": false,
+        "name": "rat · 老鼠",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rat",
+      "tags": [],
+      "keywords": [
+        "rat",
+        "老鼠",
+        "rats"
+      ]
+    },
+    {
+      "id": "prop:rword-bed",
+      "kind": "prop",
+      "name": "bed · 床",
+      "description": "床轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bed.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bed",
+        "kind": "prop",
+        "edible": false,
+        "name": "bed · 床",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bed",
+      "tags": [],
+      "keywords": [
+        "bed",
+        "床",
+        "beds"
+      ]
+    },
+    {
+      "id": "prop:rword-ted",
+      "kind": "prop",
+      "name": "ted · 泰德（玩具名）",
+      "description": "泰德（玩具名）轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ted.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ted",
+        "kind": "prop",
+        "edible": false,
+        "name": "ted · 泰德（玩具名）",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ted",
+      "tags": [],
+      "keywords": [
+        "ted",
+        "泰德（玩具名）"
+      ]
+    },
+    {
+      "id": "prop:rword-sled",
+      "kind": "prop",
+      "name": "sled · 雪橇",
+      "description": "雪橇轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-sled.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-sled",
+        "kind": "prop",
+        "edible": false,
+        "name": "sled · 雪橇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-sled",
+      "tags": [],
+      "keywords": [
+        "sled",
+        "雪橇",
+        "sleds"
+      ]
+    },
+    {
+      "id": "prop:rword-teddy",
+      "kind": "prop",
+      "name": "teddy · 玩具熊",
+      "description": "玩具熊轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-teddy.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-teddy",
+        "kind": "prop",
+        "edible": false,
+        "name": "teddy · 玩具熊",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-teddy",
+      "tags": [],
+      "keywords": [
+        "teddy",
+        "玩具熊",
+        "teddies"
+      ]
+    },
+    {
+      "id": "prop:rword-jet",
+      "kind": "prop",
+      "name": "jet · 喷气式飞机",
+      "description": "喷气式飞机轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-jet.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-jet",
+        "kind": "prop",
+        "edible": false,
+        "name": "jet · 喷气式飞机",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-jet",
+      "tags": [],
+      "keywords": [
+        "jet",
+        "喷气式飞机",
+        "jets"
+      ]
+    },
+    {
+      "id": "prop:rword-net",
+      "kind": "prop",
+      "name": "net · 网",
+      "description": "网轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-net.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-net",
+        "kind": "prop",
+        "edible": false,
+        "name": "net · 网",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-net",
+      "tags": [],
+      "keywords": [
+        "net",
+        "网",
+        "nets"
+      ]
+    },
+    {
+      "id": "prop:rword-pet",
+      "kind": "prop",
+      "name": "pet · 宠物",
+      "description": "宠物轻轻摇动，回应你的声音。带项圈的小狗，示意宠物。",
+      "source": "dev/modules/props/rword-pet.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pet",
+        "kind": "prop",
+        "edible": false,
+        "name": "pet · 宠物",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pet",
+      "tags": [],
+      "keywords": [
+        "pet",
+        "宠物",
+        "pets"
+      ]
+    },
+    {
+      "id": "prop:rword-pen",
+      "kind": "prop",
+      "name": "pen · 笔",
+      "description": "笔轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pen.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pen",
+        "kind": "prop",
+        "edible": false,
+        "name": "pen · 笔",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pen",
+      "tags": [],
+      "keywords": [
+        "pen",
+        "笔",
+        "pens"
+      ]
+    },
+    {
+      "id": "prop:rword-hen",
+      "kind": "prop",
+      "name": "hen · 母鸡",
+      "description": "母鸡轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-hen.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hen",
+        "kind": "prop",
+        "edible": false,
+        "name": "hen · 母鸡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hen",
+      "tags": [],
+      "keywords": [
+        "hen",
+        "母鸡",
+        "hens"
+      ]
+    },
+    {
+      "id": "prop:rword-ben",
+      "kind": "prop",
+      "name": "ben · 本（人名）",
+      "description": "本（人名）轻轻摇动，回应你的声音。课程人名的原创示意角色，非官方角色形象。",
+      "source": "dev/modules/props/rword-ben.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ben",
+        "kind": "prop",
+        "edible": false,
+        "name": "ben · 本（人名）",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ben",
+      "tags": [],
+      "keywords": [
+        "ben",
+        "本（人名）"
+      ]
+    },
+    {
+      "id": "prop:rword-vet",
+      "kind": "prop",
+      "name": "vet · 兽医",
+      "description": "兽医轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-vet.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-vet",
+        "kind": "prop",
+        "edible": false,
+        "name": "vet · 兽医",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-vet",
+      "tags": [],
+      "keywords": [
+        "vet",
+        "兽医",
+        "vets"
+      ]
+    },
+    {
+      "id": "prop:rword-desk",
+      "kind": "prop",
+      "name": "desk · 书桌",
+      "description": "书桌轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-desk.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-desk",
+        "kind": "prop",
+        "edible": false,
+        "name": "desk · 书桌",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-desk",
+      "tags": [],
+      "keywords": [
+        "desk",
+        "书桌",
+        "desks"
+      ]
+    },
+    {
+      "id": "prop:rword-pig",
+      "kind": "prop",
+      "name": "pig · 猪",
+      "description": "猪轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pig.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pig",
+        "kind": "prop",
+        "edible": false,
+        "name": "pig · 猪",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pig",
+      "tags": [],
+      "keywords": [
+        "pig",
+        "猪",
+        "pigs"
+      ]
+    },
+    {
+      "id": "prop:rword-ship",
+      "kind": "prop",
+      "name": "ship · 船",
+      "description": "船轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-ship.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-ship",
+        "kind": "prop",
+        "edible": false,
+        "name": "ship · 船",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-ship",
+      "tags": [],
+      "keywords": [
+        "ship",
+        "船",
+        "ships"
+      ]
+    },
+    {
+      "id": "prop:rword-lip",
+      "kind": "prop",
+      "name": "lip · 嘴唇",
+      "description": "嘴唇轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-lip.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-lip",
+        "kind": "prop",
+        "edible": false,
+        "name": "lip · 嘴唇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-lip",
+      "tags": [],
+      "keywords": [
+        "lip",
+        "嘴唇",
+        "lips"
+      ]
+    },
+    {
+      "id": "prop:rword-tip",
+      "kind": "prop",
+      "name": "tip · 尖端",
+      "description": "尖端轻轻摇动，回应你的声音。高亮铅笔尖端。",
+      "source": "dev/modules/props/rword-tip.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tip",
+        "kind": "prop",
+        "edible": false,
+        "name": "tip · 尖端",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tip",
+      "tags": [],
+      "keywords": [
+        "tip",
+        "尖端",
+        "tips"
+      ]
+    },
+    {
+      "id": "prop:rword-kid",
+      "kind": "prop",
+      "name": "kid · 小孩",
+      "description": "小孩轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-kid.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-kid",
+        "kind": "prop",
+        "edible": false,
+        "name": "kid · 小孩",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-kid",
+      "tags": [],
+      "keywords": [
+        "kid",
+        "小孩",
+        "kids"
+      ]
+    },
+    {
+      "id": "prop:rword-lid",
+      "kind": "prop",
+      "name": "lid · 盖子",
+      "description": "盖子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-lid.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-lid",
+        "kind": "prop",
+        "edible": false,
+        "name": "lid · 盖子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-lid",
+      "tags": [],
+      "keywords": [
+        "lid",
+        "盖子",
+        "lids"
+      ]
+    },
+    {
+      "id": "prop:rword-bib",
+      "kind": "prop",
+      "name": "bib · 围兜",
+      "description": "围兜轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bib.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bib",
+        "kind": "prop",
+        "edible": false,
+        "name": "bib · 围兜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bib",
+      "tags": [],
+      "keywords": [
+        "bib",
+        "围兜",
+        "bibs"
+      ]
+    },
+    {
+      "id": "prop:rword-rib",
+      "kind": "prop",
+      "name": "rib · 排骨",
+      "description": "排骨轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rib.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rib",
+        "kind": "prop",
+        "edible": false,
+        "name": "rib · 排骨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rib",
+      "tags": [],
+      "keywords": [
+        "rib",
+        "排骨",
+        "ribs"
+      ]
+    },
+    {
+      "id": "prop:rword-sid",
+      "kind": "prop",
+      "name": "sid · 希德",
+      "description": "希德轻轻摇动，回应你的声音。课程人名的原创示意角色，非官方角色形象。",
+      "source": "dev/modules/props/rword-sid.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-sid",
+        "kind": "prop",
+        "edible": false,
+        "name": "sid · 希德",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-sid",
+      "tags": [],
+      "keywords": [
+        "sid",
+        "希德"
+      ]
+    },
+    {
+      "id": "prop:rword-bin",
+      "kind": "prop",
+      "name": "bin · 箱子；收纳箱",
+      "description": "箱子；收纳箱轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bin.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bin",
+        "kind": "prop",
+        "edible": false,
+        "name": "bin · 箱子；收纳箱",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bin",
+      "tags": [],
+      "keywords": [
+        "bin",
+        "箱子；收纳箱",
+        "bins"
+      ]
+    },
+    {
+      "id": "prop:rword-fig",
+      "kind": "prop",
+      "name": "fig · 无花果",
+      "description": "无花果轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-fig.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-fig",
+        "kind": "prop",
+        "edible": false,
+        "name": "fig · 无花果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-fig",
+      "tags": [],
+      "keywords": [
+        "fig",
+        "无花果",
+        "figs"
+      ]
+    },
+    {
+      "id": "prop:rword-fin",
+      "kind": "prop",
+      "name": "fin · 鱼鳍",
+      "description": "鱼鳍轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-fin.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-fin",
+        "kind": "prop",
+        "edible": false,
+        "name": "fin · 鱼鳍",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-fin",
+      "tags": [],
+      "keywords": [
+        "fin",
+        "鱼鳍",
+        "fins"
+      ]
+    },
+    {
+      "id": "prop:rword-pit",
+      "kind": "prop",
+      "name": "pit · 坑",
+      "description": "坑轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pit.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pit",
+        "kind": "prop",
+        "edible": false,
+        "name": "pit · 坑",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pit",
+      "tags": [],
+      "keywords": [
+        "pit",
+        "坑",
+        "pits"
+      ]
+    },
+    {
+      "id": "prop:rword-log",
+      "kind": "prop",
+      "name": "log · 木头",
+      "description": "木头轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-log.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-log",
+        "kind": "prop",
+        "edible": false,
+        "name": "log · 木头",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-log",
+      "tags": [],
+      "keywords": [
+        "log",
+        "木头",
+        "logs"
+      ]
+    },
+    {
+      "id": "prop:rword-frog",
+      "kind": "prop",
+      "name": "frog · 青蛙",
+      "description": "青蛙轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-frog.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-frog",
+        "kind": "prop",
+        "edible": false,
+        "name": "frog · 青蛙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-frog",
+      "tags": [],
+      "keywords": [
+        "frog",
+        "青蛙",
+        "frogs"
+      ]
+    },
+    {
+      "id": "prop:rword-fox",
+      "kind": "prop",
+      "name": "fox · 狐狸",
+      "description": "狐狸轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-fox.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-fox",
+        "kind": "prop",
+        "edible": false,
+        "name": "fox · 狐狸",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-fox",
+      "tags": [],
+      "keywords": [
+        "fox",
+        "狐狸",
+        "foxes"
+      ]
+    },
+    {
+      "id": "prop:rword-dot",
+      "kind": "prop",
+      "name": "dot · 圆点",
+      "description": "圆点轻轻摇动，回应你的声音。圆点立体牌。",
+      "source": "dev/modules/props/rword-dot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-dot",
+        "kind": "prop",
+        "edible": false,
+        "name": "dot · 圆点",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-dot",
+      "tags": [],
+      "keywords": [
+        "dot",
+        "圆点",
+        "dots"
+      ]
+    },
+    {
+      "id": "prop:rword-cot",
+      "kind": "prop",
+      "name": "cot · 婴儿床；小床",
+      "description": "婴儿床；小床轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cot",
+        "kind": "prop",
+        "edible": false,
+        "name": "cot · 婴儿床；小床",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cot",
+      "tags": [],
+      "keywords": [
+        "cot",
+        "婴儿床；小床",
+        "cots"
+      ]
+    },
+    {
+      "id": "prop:rword-top",
+      "kind": "prop",
+      "name": "top · 陀螺",
+      "description": "陀螺轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-top.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-top",
+        "kind": "prop",
+        "edible": false,
+        "name": "top · 陀螺",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-top",
+      "tags": [],
+      "keywords": [
+        "top",
+        "陀螺",
+        "tops"
+      ]
+    },
+    {
+      "id": "prop:rword-mop",
+      "kind": "prop",
+      "name": "mop · 拖把",
+      "description": "拖把轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mop",
+        "kind": "prop",
+        "edible": false,
+        "name": "mop · 拖把",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mop",
+      "tags": [],
+      "keywords": [
+        "mop",
+        "拖把",
+        "mops"
+      ]
+    },
+    {
+      "id": "prop:rword-pop",
+      "kind": "prop",
+      "name": "pop · 流行音乐",
+      "description": "流行音乐轻轻摇动，回应你的声音。唱片和立体音符。",
+      "source": "dev/modules/props/rword-pop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pop",
+        "kind": "prop",
+        "edible": false,
+        "name": "pop · 流行音乐",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pop",
+      "tags": [],
+      "keywords": [
+        "pop",
+        "流行音乐"
+      ]
+    },
+    {
+      "id": "prop:rword-cop",
+      "kind": "prop",
+      "name": "cop · 警察",
+      "description": "警察轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cop",
+        "kind": "prop",
+        "edible": false,
+        "name": "cop · 警察",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cop",
+      "tags": [],
+      "keywords": [
+        "cop",
+        "警察",
+        "cops"
+      ]
+    },
+    {
+      "id": "prop:rword-shop",
+      "kind": "prop",
+      "name": "shop · 商店",
+      "description": "商店轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-shop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-shop",
+        "kind": "prop",
+        "edible": false,
+        "name": "shop · 商店",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-shop",
+      "tags": [],
+      "keywords": [
+        "shop",
+        "商店",
+        "shops"
+      ]
+    },
+    {
+      "id": "prop:rword-bug",
+      "kind": "prop",
+      "name": "bug · 小虫",
+      "description": "小虫轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bug.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bug",
+        "kind": "prop",
+        "edible": false,
+        "name": "bug · 小虫",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bug",
+      "tags": [],
+      "keywords": [
+        "bug",
+        "小虫",
+        "bugs"
+      ]
+    },
+    {
+      "id": "prop:rword-rug",
+      "kind": "prop",
+      "name": "rug · 小地毯",
+      "description": "小地毯轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rug.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rug",
+        "kind": "prop",
+        "edible": false,
+        "name": "rug · 小地毯",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rug",
+      "tags": [],
+      "keywords": [
+        "rug",
+        "小地毯",
+        "rugs"
+      ]
+    },
+    {
+      "id": "prop:rword-mud",
+      "kind": "prop",
+      "name": "mud · 泥；泥巴",
+      "description": "泥；泥巴轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mud.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mud",
+        "kind": "prop",
+        "edible": false,
+        "name": "mud · 泥；泥巴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mud",
+      "tags": [],
+      "keywords": [
+        "mud",
+        "泥；泥巴"
+      ]
+    },
+    {
+      "id": "prop:rword-pup",
+      "kind": "prop",
+      "name": "pup · 小狗",
+      "description": "小狗轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-pup.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pup",
+        "kind": "prop",
+        "edible": false,
+        "name": "pup · 小狗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pup",
+      "tags": [],
+      "keywords": [
+        "pup",
+        "小狗",
+        "pups"
+      ]
+    },
+    {
+      "id": "prop:rword-nut",
+      "kind": "prop",
+      "name": "nut · 坚果",
+      "description": "坚果轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-nut.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-nut",
+        "kind": "prop",
+        "edible": false,
+        "name": "nut · 坚果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-nut",
+      "tags": [],
+      "keywords": [
+        "nut",
+        "坚果",
+        "nuts"
+      ]
+    },
+    {
+      "id": "prop:rword-cut",
+      "kind": "prop",
+      "name": "cut · 切口",
+      "description": "切口轻轻摇动，回应你的声音。带切缝的苹果切面。",
+      "source": "dev/modules/props/rword-cut.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cut",
+        "kind": "prop",
+        "edible": false,
+        "name": "cut · 切口",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cut",
+      "tags": [],
+      "keywords": [
+        "cut",
+        "切口",
+        "cuts"
+      ]
+    },
+    {
+      "id": "prop:rword-cub",
+      "kind": "prop",
+      "name": "cub · 幼崽",
+      "description": "幼崽轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cub.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cub",
+        "kind": "prop",
+        "edible": false,
+        "name": "cub · 幼崽",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cub",
+      "tags": [],
+      "keywords": [
+        "cub",
+        "幼崽",
+        "cubs"
+      ]
+    },
+    {
+      "id": "prop:rword-tub",
+      "kind": "prop",
+      "name": "tub · 浴缸",
+      "description": "浴缸轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-tub.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tub",
+        "kind": "prop",
+        "edible": false,
+        "name": "tub · 浴缸",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tub",
+      "tags": [],
+      "keywords": [
+        "tub",
+        "浴缸",
+        "tubs"
+      ]
+    },
+    {
+      "id": "prop:rword-sun",
+      "kind": "prop",
+      "name": "sun · 太阳",
+      "description": "太阳轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-sun.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-sun",
+        "kind": "prop",
+        "edible": false,
+        "name": "sun · 太阳",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-sun",
+      "tags": [],
+      "keywords": [
+        "sun",
+        "太阳",
+        "suns"
+      ]
+    },
+    {
+      "id": "prop:rword-tape",
+      "kind": "prop",
+      "name": "tape · 胶带",
+      "description": "胶带轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-tape.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tape",
+        "kind": "prop",
+        "edible": false,
+        "name": "tape · 胶带",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tape",
+      "tags": [],
+      "keywords": [
+        "tape",
+        "胶带",
+        "tapes"
+      ]
+    },
+    {
+      "id": "prop:rword-cape",
+      "kind": "prop",
+      "name": "cape · 斗篷",
+      "description": "斗篷轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cape.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cape",
+        "kind": "prop",
+        "edible": false,
+        "name": "cape · 斗篷",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cape",
+      "tags": [],
+      "keywords": [
+        "cape",
+        "斗篷",
+        "capes"
+      ]
+    },
+    {
+      "id": "prop:rword-cane",
+      "kind": "prop",
+      "name": "cane · 手杖",
+      "description": "手杖轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cane.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cane",
+        "kind": "prop",
+        "edible": false,
+        "name": "cane · 手杖",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cane",
+      "tags": [],
+      "keywords": [
+        "cane",
+        "手杖",
+        "canes"
+      ]
+    },
+    {
+      "id": "prop:rword-mane",
+      "kind": "prop",
+      "name": "mane · 鬃毛",
+      "description": "鬃毛轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mane.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mane",
+        "kind": "prop",
+        "edible": false,
+        "name": "mane · 鬃毛",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mane",
+      "tags": [],
+      "keywords": [
+        "mane",
+        "鬃毛",
+        "manes"
+      ]
+    },
+    {
+      "id": "prop:rword-cake",
+      "kind": "prop",
+      "name": "cake · 蛋糕",
+      "description": "蛋糕轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cake.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cake",
+        "kind": "prop",
+        "edible": false,
+        "name": "cake · 蛋糕",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cake",
+      "tags": [],
+      "keywords": [
+        "cake",
+        "蛋糕",
+        "cakes"
+      ]
+    },
+    {
+      "id": "prop:rword-name",
+      "kind": "prop",
+      "name": "name · 名字",
+      "description": "名字轻轻摇动，回应你的声音。带姓名格的名牌。",
+      "source": "dev/modules/props/rword-name.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-name",
+        "kind": "prop",
+        "edible": false,
+        "name": "name · 名字",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-name",
+      "tags": [],
+      "keywords": [
+        "name",
+        "名字",
+        "names"
+      ]
+    },
+    {
+      "id": "prop:rword-plate",
+      "kind": "prop",
+      "name": "plate · 盘子",
+      "description": "盘子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-plate.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-plate",
+        "kind": "prop",
+        "edible": false,
+        "name": "plate · 盘子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-plate",
+      "tags": [],
+      "keywords": [
+        "plate",
+        "盘子",
+        "plates"
+      ]
+    },
+    {
+      "id": "prop:rword-cave",
+      "kind": "prop",
+      "name": "cave · 洞穴",
+      "description": "洞穴轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-cave.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-cave",
+        "kind": "prop",
+        "edible": false,
+        "name": "cave · 洞穴",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-cave",
+      "tags": [],
+      "keywords": [
+        "cave",
+        "洞穴",
+        "caves"
+      ]
+    },
+    {
+      "id": "prop:rword-gate",
+      "kind": "prop",
+      "name": "gate · 大门",
+      "description": "大门轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-gate.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-gate",
+        "kind": "prop",
+        "edible": false,
+        "name": "gate · 大门",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-gate",
+      "tags": [],
+      "keywords": [
+        "gate",
+        "大门",
+        "gates"
+      ]
+    },
+    {
+      "id": "prop:rword-wave",
+      "kind": "prop",
+      "name": "wave · 海浪",
+      "description": "海浪轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-wave.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-wave",
+        "kind": "prop",
+        "edible": false,
+        "name": "wave · 海浪",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-wave",
+      "tags": [],
+      "keywords": [
+        "wave",
+        "海浪",
+        "waves"
+      ]
+    },
+    {
+      "id": "prop:rword-rain",
+      "kind": "prop",
+      "name": "rain · 雨",
+      "description": "雨轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-rain.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-rain",
+        "kind": "prop",
+        "edible": false,
+        "name": "rain · 雨",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-rain",
+      "tags": [],
+      "keywords": [
+        "rain",
+        "雨",
+        "rains"
+      ]
+    },
+    {
+      "id": "prop:rword-mail",
+      "kind": "prop",
+      "name": "mail · 信件",
+      "description": "信件轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-mail.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-mail",
+        "kind": "prop",
+        "edible": false,
+        "name": "mail · 信件",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-mail",
+      "tags": [],
+      "keywords": [
+        "mail",
+        "信件",
+        "mails"
+      ]
+    },
+    {
+      "id": "prop:rword-snail",
+      "kind": "prop",
+      "name": "snail · 蜗牛",
+      "description": "蜗牛轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-snail.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-snail",
+        "kind": "prop",
+        "edible": false,
+        "name": "snail · 蜗牛",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-snail",
+      "tags": [],
+      "keywords": [
+        "snail",
+        "蜗牛",
+        "snails"
+      ]
+    },
+    {
+      "id": "prop:rword-day",
+      "kind": "prop",
+      "name": "day · 日子",
+      "description": "日子轻轻摇动，回应你的声音。太阳和单日历牌。",
+      "source": "dev/modules/props/rword-day.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-day",
+        "kind": "prop",
+        "edible": false,
+        "name": "day · 日子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-day",
+      "tags": [],
+      "keywords": [
+        "day",
+        "日子",
+        "days"
+      ]
+    },
+    {
+      "id": "prop:rword-bay",
+      "kind": "prop",
+      "name": "bay · 海湾",
+      "description": "海湾轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-bay.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-bay",
+        "kind": "prop",
+        "edible": false,
+        "name": "bay · 海湾",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-bay",
+      "tags": [],
+      "keywords": [
+        "bay",
+        "海湾",
+        "bays"
+      ]
+    },
+    {
+      "id": "prop:rword-hay",
+      "kind": "prop",
+      "name": "hay · 干草",
+      "description": "干草轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-hay.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hay",
+        "kind": "prop",
+        "edible": false,
+        "name": "hay · 干草",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hay",
+      "tags": [],
+      "keywords": [
+        "hay",
+        "干草"
+      ]
+    },
+    {
+      "id": "prop:rword-feet",
+      "kind": "prop",
+      "name": "feet · 脚",
+      "description": "脚轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-feet.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-feet",
+        "kind": "prop",
+        "edible": false,
+        "name": "feet · 脚",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-feet",
+      "tags": [],
+      "keywords": [
+        "feet",
+        "脚"
+      ]
+    },
+    {
+      "id": "prop:rword-seed",
+      "kind": "prop",
+      "name": "seed · 种子",
+      "description": "种子轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-seed.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-seed",
+        "kind": "prop",
+        "edible": false,
+        "name": "seed · 种子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-seed",
+      "tags": [],
+      "keywords": [
+        "seed",
+        "种子",
+        "seeds"
+      ]
+    },
+    {
+      "id": "prop:rword-jeep",
+      "kind": "prop",
+      "name": "jeep · 吉普车",
+      "description": "吉普车轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-jeep.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-jeep",
+        "kind": "prop",
+        "edible": false,
+        "name": "jeep · 吉普车",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-jeep",
+      "tags": [],
+      "keywords": [
+        "jeep",
+        "吉普车",
+        "jeeps"
+      ]
+    },
+    {
+      "id": "prop:rword-meat",
+      "kind": "prop",
+      "name": "meat · 肉",
+      "description": "肉轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-meat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-meat",
+        "kind": "prop",
+        "edible": false,
+        "name": "meat · 肉",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-meat",
+      "tags": [],
+      "keywords": [
+        "meat",
+        "肉"
+      ]
+    },
+    {
+      "id": "prop:rword-seat",
+      "kind": "prop",
+      "name": "seat · 座位",
+      "description": "座位轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-seat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-seat",
+        "kind": "prop",
+        "edible": false,
+        "name": "seat · 座位",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-seat",
+      "tags": [],
+      "keywords": [
+        "seat",
+        "座位",
+        "seats"
+      ]
+    },
+    {
+      "id": "prop:rword-key",
+      "kind": "prop",
+      "name": "key · 钥匙",
+      "description": "钥匙轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-key.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-key",
+        "kind": "prop",
+        "edible": false,
+        "name": "key · 钥匙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-key",
+      "tags": [],
+      "keywords": [
+        "key",
+        "钥匙",
+        "keys"
+      ]
+    },
+    {
+      "id": "prop:rword-honey",
+      "kind": "prop",
+      "name": "honey · 蜂蜜",
+      "description": "蜂蜜轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-honey.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-honey",
+        "kind": "prop",
+        "edible": false,
+        "name": "honey · 蜂蜜",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-honey",
+      "tags": [],
+      "keywords": [
+        "honey",
+        "蜂蜜"
+      ]
+    },
+    {
+      "id": "prop:rword-dream",
+      "kind": "prop",
+      "name": "dream · 梦",
+      "description": "梦轻轻摇动，回应你的声音。睡枕上的云与星星。",
+      "source": "dev/modules/props/rword-dream.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-dream",
+        "kind": "prop",
+        "edible": false,
+        "name": "dream · 梦",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-dream",
+      "tags": [],
+      "keywords": [
+        "dream",
+        "梦",
+        "dreams"
+      ]
+    },
+    {
+      "id": "prop:rword-grass",
+      "kind": "prop",
+      "name": "grass · 草",
+      "description": "草轻轻摇动，回应你的声音。具象物件。",
+      "source": "dev/modules/props/rword-grass.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-grass",
+        "kind": "prop",
+        "edible": false,
+        "name": "grass · 草",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-grass",
+      "tags": [],
+      "keywords": [
+        "grass",
+        "草"
+      ]
+    },
+    {
+      "id": "prop:rword-poop",
+      "kind": "prop",
+      "name": "poop · 便便",
+      "description": "便便轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-poop.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-poop",
+        "kind": "prop",
+        "edible": false,
+        "name": "poop · 便便",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-poop",
+      "tags": [],
+      "keywords": [
+        "poop",
+        "便便",
+        "poo",
+        "大便",
+        "粑粑"
       ]
     },
     {
@@ -20545,6 +27287,27 @@
     }
   ],
   "commands": {
+    "entity.effect": [
+      "id",
+      "effect"
+    ],
+    "entity.cue": [
+      "id",
+      "cue",
+      "target"
+    ],
+    "entity.event": [
+      "id",
+      "action",
+      "target",
+      "duration",
+      "colors"
+    ],
+    "entity.attach": [
+      "id",
+      "target",
+      "slot"
+    ],
     "feeding.start": [
       "eaters",
       "foods"

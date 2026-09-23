@@ -31,8 +31,8 @@ export async function requestJSON(path, body, timeout = 12000, signal) {
 }
 
 export class StoryVoice {
-  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '' }) {
-    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile });
+  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '', language = 'zh-CN', preferredVoice = '' }) {
+    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile, language, preferredVoice });
     this.enabled = false;
     this.wanted = false;
     this.sequence = 0;
@@ -101,7 +101,7 @@ export class StoryVoice {
           : error?.name === 'NotFoundError' ? '没有找到可用的麦克风，可以点选或写下来。'
             : '麦克风没有成功打开。可以再试一次，也可以点选或写下来。';
         this.captureFeedback('error', message);
-        this.onError(message);
+        this.onError(message, {code:error?.message==='capture_unavailable'?'capture_unavailable':error?.name||'capture_error'});
       }
     } finally {
       acquired?.getTracks().forEach(track => track.stop());
@@ -235,7 +235,7 @@ export class StoryVoice {
       if (transcript) this.captureFeedback('transcript', '', transcript);
       else {
         const message = '声音已收到，但这次没有识别出文字。可以再说一次。';
-        this.captureFeedback('empty', message); this.onError(message);
+        this.captureFeedback('empty', message); this.onError(message,{code:'empty'});
       }
     } catch (error) {
       if (sequence === this.sequence) {
@@ -244,7 +244,7 @@ export class StoryVoice {
             : error.code === 'request_timeout' || controller.signal.aborted || error.name === 'AbortError' ? '声音已收到，但转写等待超时了。请再试一次。'
               : '声音已收到，但未能连接转写服务。请检查网络后再试。';
         this.captureFeedback('error', message);
-        this.onError(message);
+        this.onError(message,{code:error.code||'asr_upstream_error'});
       }
     } finally {
       if (this.asrController === controller) this.asrController = null;
@@ -323,7 +323,14 @@ export class StoryVoice {
         try {
           if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) throw new Error('speech_unavailable');
           const speech = new window.SpeechSynthesisUtterance(text);
-          speech.lang = 'zh-CN'; speech.rate = getNpc(npcId)?.speechRate || .92;
+          speech.lang = this.language;
+          if(this.preferredVoice==='female'){
+            const choices=window.speechSynthesis.getVoices().filter(v=>v.lang.startsWith(this.language.split('-')[0]));
+            const female=choices.find(v=>/Samantha|Victoria|Karen|Moira|Tessa|Fiona|Siri.*Female|Aria|Jenny|Zira|Susan|Hazel/i.test(v.name));
+            if(!female)throw new Error('female_voice_unavailable');
+            speech.voice=female;
+          }
+          speech.rate = getNpc(npcId)?.speechRate || .92;
           speech.onend = () => this.finish(session, true);
           speech.onerror = () => this.finish(session);
           speech.onboundary = event => {
@@ -338,6 +345,7 @@ export class StoryVoice {
           session.speech = speech;
           window.speechSynthesis.speak(speech);
         } catch {
+          if(this.preferredVoice==='female')this.onError('The voice is unavailable. Tap the speaker to try again.');
           session.fallback = setTimeout(() => this.finish(session), Math.max(1600, text.length * 170));
         }
       }

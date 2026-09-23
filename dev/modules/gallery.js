@@ -1,3 +1,5 @@
+import { BEHAVIOR_REFERENCE } from '../content/behavior-events.js';
+import { planBehaviorIntent } from '../word-intent.js';
 import { mountStoryEditor } from "./story-editor.js";
 import { MODULE_CATALOG, MODULE_KINDS } from "./catalog.js";
 import { DioramaStage } from "../stage.js";
@@ -29,7 +31,7 @@ const categories = document.createElement("nav");
 categories.id = "prop-categories";
 categories.setAttribute("aria-label", "道具二级分类");
 $("filters").after(categories);
-for (const name of ["全部", "交通工具", "食物", "玩具", "场景道具"]) {
+for (const name of ["全部", "R线名词模型库", "交通工具", "食物", "玩具", "场景道具"]) {
   const b = document.createElement("button"); b.type = "button"; b.textContent = name;
   b.onclick = () => { propCategory = name; renderList(); };
   categories.append(b);
@@ -84,6 +86,7 @@ renderChoices(
   $("filters"),
   [
     { id: "all", label: "全部", icon: icon(Library) },
+    { id: 'rline', label: 'R 线名词模型库', icon: icon(BookOpen) },
     { id: "story", label: `故事脚本 ${counts.story}`, icon: icon(BookOpen) },
     ...Object.entries(MODULE_KINDS).filter(([id]) => id !== 'story').map(([id, label]) => ({
       id,
@@ -102,7 +105,7 @@ function renderList() {
   const q = $("module-search").value.toLowerCase().trim();
   const found = [...MODULE_CATALOG].sort((a, b) => Number(b.kind === 'story') - Number(a.kind === 'story')).filter(
     (m) =>
-      (filter === "all" || m.kind === filter) &&
+      (filter === "all" || m.kind === filter || (filter === 'rline' && m.category === 'R线名词模型库')) &&
       (filter !== "prop" || propCategory === "全部" || (PROP_CATEGORIES[m.id.slice(5)] || "场景道具") === propCategory) &&
       `${m.name} ${m.id} ${m.description} ${(m.keywords || []).join(" ")}`.toLowerCase().includes(q),
   );
@@ -483,7 +486,7 @@ function renderBehaviorEvents() {
   const host = $("behavior-groups");
   if (!host) return;
   host.replaceChildren(
-    ...BEHAVIOR_EVENTS.map((group) => {
+    ...[...BEHAVIOR_REFERENCE, ...BEHAVIOR_EVENTS].map((group) => {
       const wrap = document.createElement("section");
       wrap.className = "behavior-group";
       const title = document.createElement("h4");
@@ -491,10 +494,12 @@ function renderBehaviorEvents() {
       wrap.append(title);
       const table = document.createElement("table");
       const thead = document.createElement("thead");
-      thead.innerHTML = "<tr><th>事件</th><th>试试这样说</th></tr>";
+      thead.innerHTML = "<tr><th>事件 / 单词</th><th>已经实现的效果</th><th>试试这样说</th></tr>";
       table.append(thead);
       const tbody = document.createElement("tbody");
-      for (const [name, example] of group.rows) {
+      for (const row of group.rows) {
+        const name=Array.isArray(row)?row[0]:`${row.meaning} · ${row.word}`, example=Array.isArray(row)?row[1]:row.example;
+        const effect=Array.isArray(row)?"已有场景互动":row.result;
         const tr = document.createElement("tr");
         const nameCell = document.createElement("td");
         nameCell.textContent = name;
@@ -515,7 +520,8 @@ function renderBehaviorEvents() {
             fill();
           }
         };
-        tr.append(nameCell, exampleCell);
+        const effectCell=document.createElement("td");effectCell.textContent=effect;
+        tr.append(nameCell, effectCell, exampleCell);
         tbody.append(tr);
       }
       table.append(tbody);
@@ -770,25 +776,21 @@ async function naturalControl() {
   if (!text || !game || $("natural-command-submit").disabled) return;
   const session = game, token = game.runtime.token;
   $("natural-command-submit").disabled = true;
-  status.textContent = "大模型正在理解这句话……";
+  status.textContent = "正在理解这句话……";
   const context = {
     world: game.runtime.context.world,
     entities: Object.fromEntries(Object.entries(game.runtime.snapshot.worlds[game.runtime.context.world]?.entities || {}).map(([id, entity]) => [id, {asset:entity.asset, position:entity.position, scale:entity.scale}])),
     worlds: ["meadow", "pocket", "orchard", "bakery", "bridge", "home", "observatory", "reef", "cloud", "moon", "cove"],
   };
   try {
-    const response = await fetch("/api/scene-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, context }) });
-    const raw = await response.text();
-    let result;
-    try {
-      result = JSON.parse(raw);
-    } catch {
-      const snippet = raw.replace(/\s+/g, " ").slice(0, 160);
-      throw new Error(
-        `场景接口返回了非 JSON（HTTP ${response.status}）：${snippet || "空响应"}`,
-      );
+    const currentEntities=game.runtime.snapshot.worlds[game.runtime.context.world]?.entities||{};
+    let result=planBehaviorIntent(text,{entities:currentEntities,focusId:Object.keys(currentEntities).at(-1)});
+    if(!result){
+      const response = await fetch("/api/scene-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, context }) });
+      const raw = await response.text();
+      try { result = JSON.parse(raw); } catch { throw new Error(`场景接口返回了非 JSON（HTTP ${response.status}）`); }
+      if (!response.ok) throw new Error(result.error || "大模型暂时不可用");
     }
-    if (!response.ok) throw new Error(result.error || "大模型暂时不可用");
     if (game !== session || game.runtime.token !== token) throw new Error('场景已经变化，请在当前场景重新提交。');
     const trace = ["[1] 收到用户原始文本", `    ${text}`, "[2] 当前场景", `    ${context.world}`, "[3] 关键词匹配", `    ${result.matches?.join("、") || "无（交给大模型理解）"}`, "[4] 意图解析", `    来源：${result.source || "model"}`, `    ${result.reply}`];
     autoTrace = trace; autoStatus = status;
@@ -831,7 +833,7 @@ async function naturalControl() {
     }
     trace.push("[6] 世界命令执行", `    ${applied.ok ? "成功" : applied.error}`);
     const newActors = arranged.filter(c => c.type === 'entity.spawn' && String(c.asset || "").startsWith("npc:"));
-    if (applied.ok && newActors.length && !arranged.some(c => c.type === 'feeding.start')) {
+    if (applied.ok && newActors.length && !arranged.some(c => ['feeding.start','entity.event','entity.effect'].includes(c.type))) {
       stage.worldPresenter?.movement?.defaultRoam(newActors.map(c => c.id));
       trace.push('[游走]', `    ${newActors.length} 个角色站一会儿后自动走动（来回/绕圈/乱走）。`);
     }
@@ -942,6 +944,7 @@ function supportDemo() {
   cleanup = () => support.stop();
 }
 function showLogic(item) {
+  if(["logic:behavior-events","logic:event-symbols"].includes(item.id)) { aiControlDemo(); return; }
   if (
     [
       "logic:world-runtime",
@@ -954,6 +957,11 @@ function showLogic(item) {
     return;
   }
   $("preview-ui").hidden = false;
+  if (['story:words','ui:word-play','logic:word-narration','ui:word-text','logic:word-progress','logic:word-intent','logic:word-effects','logic:rline-models'].includes(item.id)) {
+    const p=document.createElement('p');p.textContent=item.description;
+    const a=document.createElement('a');a.href='/dev/words.html';a.textContent='打开「开口造世界」 ↗';a.target='_blank';a.rel='noopener';
+    $("preview-ui").append(p,a);return;
+  }
   if (item.id === "story:ufo-party") { playStoryDemo(UFO_PARTY_STORY); return; }
   if (item.kind === "story" || item.id === "ui:story-editor") { cleanup = mountStoryEditor($("preview-ui"), item.kind === "story" ? item.id.slice(6) : "wow"); return; }
   if (item.id === "ui:choices") {
@@ -1172,6 +1180,7 @@ window.__MODULE_GALLERY__ = {
         : null,
       stage: stage?.stats(),
       feeding: stage?.worldPresenter?.feedingStats,
+      behaviors: stage?.worldPresenter?.behaviorStats,
     };
   },
 };

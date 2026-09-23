@@ -1,3 +1,4 @@
+import { BEHAVIOR_ACTIONS } from '../content/behavior-events.js';
 import {
   ASSETS,
   ACTOR_ACTIONS,
@@ -8,6 +9,10 @@ import {
 import { PROP_IDS } from "../content/props.js";
 
 export const COMMANDS = Object.freeze({
+  "entity.effect": ["id", "effect"],
+  "entity.cue": ["id", "cue", "target"],
+  "entity.event": ["id", "action", "target", "duration", "colors"],
+  "entity.attach": ["id", "target", "slot"],
   "feeding.start": ["eaters", "foods"],
   "feeding.stop": ["eaters"],
   "entity.spawn": ["id", "asset", "name", "position", "color", "scale", "sizeLocked", "colorOverride"],
@@ -42,6 +47,8 @@ export const COMMANDS = Object.freeze({
   "world.float": ["on", "targets"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
+export const WORD_EFFECTS = ['grow', 'shrink', 'long', 'tall', 'normal', 'jump', 'fly', 'swim', 'run', 'run-stop', 'walk', 'roll', 'dance', 'spin', 'sail', 'sleep', 'stop', 'happy', 'sad', 'angry', 'sleepy', 'funny', 'wet', 'dry', 'fast', 'slow', 'high', 'rainbow', 'hum', 'hot', 'yummy', 'new'];
+export const ATTACH_SLOTS = ['on', 'in', 'over', 'beside', 'near', 'head', 'hair', 'face', 'left-eye', 'right-eye', 'middle-eye', 'nose', 'mouth', 'left-ear', 'right-ear', 'left-hand', 'right-hand', 'left-foot', 'right-foot', 'tail'];
 export const MAX_WORLD_ENTITIES = 300;
 export function oldestEntities(entities) {
   return Object.values(entities).sort((a, b) => (a.createdOrder ?? 0) - (b.createdOrder ?? 0));
@@ -137,6 +144,18 @@ export function validateCommand(command) {
     "Unknown command field",
   );
   const c = copy(command);
+  if (c.type === 'entity.cue') {
+    requireValue(['mention','put-in','cancel'].includes(c.cue), 'Unknown word cue');
+    requireValue(c.cue === 'put-in' ? safeId(c.target) && c.target !== c.id : c.target === undefined, 'Invalid cue target');
+  }
+  if (c.type === 'entity.event') {
+    requireValue(c.colors === undefined || (Array.isArray(c.colors) && c.colors.length === 2 && c.colors.every(isColor)), 'Invalid mixture colors');
+    requireValue(BEHAVIOR_ACTIONS.some(a=>a.id===c.action), 'Unknown interaction event');
+    requireValue(c.target === undefined || (safeId(c.target) && c.target !== c.id), 'Invalid interaction target');
+    requireValue(c.duration === undefined || (Number.isFinite(c.duration) && c.duration >= 2 && c.duration <= 20), 'Invalid event duration');
+  }
+  if (c.type === 'entity.effect') requireValue(WORD_EFFECTS.includes(c.effect), 'Unknown word effect');
+  if (c.type === 'entity.attach') requireValue(safeId(c.target) && c.target !== c.id && ATTACH_SLOTS.includes(c.slot), 'Invalid attachment');
   if (c.type.startsWith("entity.") || c.type === "creation.activate")
     requireValue(safeId(c.id), "Invalid entity id");
   if (c.type.startsWith('feeding.')) {

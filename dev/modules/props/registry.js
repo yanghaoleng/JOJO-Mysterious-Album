@@ -1,3 +1,164 @@
+import { build as robot_body } from './robot-body.js';
+import { build as robot_head } from './robot-head.js';
+import { build as robot_hand } from './robot-hand.js';
+import { build as robot_foot } from './robot-foot.js';
+import { build as swimming_pool } from './swimming-pool.js';
+import { build as rword_body } from './rword-body.js';
+import { build as rword_head } from './rword-head.js';
+import { build as rword_hand } from './rword-hand.js';
+import { build as rword_foot } from './rword-foot.js';
+import { build as rword_car } from './rword-car.js';
+import { build as rword_bear } from './rword-bear.js';
+import { build as rword_toy } from './rword-toy.js';
+import { build as rword_ball } from './rword-ball.js';
+import { build as rword_robot } from './rword-robot.js';
+import { build as rword_dad } from './rword-dad.js';
+import { build as rword_mum } from './rword-mum.js';
+import { build as rword_baby } from './rword-baby.js';
+import { build as rword_family } from './rword-family.js';
+import { build as rword_hair } from './rword-hair.js';
+import { build as rword_face } from './rword-face.js';
+import { build as rword_belly } from './rword-belly.js';
+import { build as rword_leg } from './rword-leg.js';
+import { build as rword_eye } from './rword-eye.js';
+import { build as rword_ear } from './rword-ear.js';
+import { build as rword_nose } from './rword-nose.js';
+import { build as rword_mouth } from './rword-mouth.js';
+import { build as rword_food } from './rword-food.js';
+import { build as rword_drink } from './rword-drink.js';
+import { build as rword_tree } from './rword-tree.js';
+import { build as rword_cat } from './rword-cat.js';
+import { build as rword_tail } from './rword-tail.js';
+import { build as rword_monster } from './rword-monster.js';
+import { build as rword_hat } from './rword-hat.js';
+import { build as rword_kite } from './rword-kite.js';
+import { build as rword_story } from './rword-story.js';
+import { build as rword_shell } from './rword-shell.js';
+import { build as rword_tool } from './rword-tool.js';
+import { build as rword_grandpa } from './rword-grandpa.js';
+import { build as rword_run } from './rword-run.js';
+import { build as rword_grandma } from './rword-grandma.js';
+import { build as rword_bread } from './rword-bread.js';
+import { build as rword_sister } from './rword-sister.js';
+import { build as rword_box } from './rword-box.js';
+import { build as rword_cousin } from './rword-cousin.js';
+import { build as rword_bird } from './rword-bird.js';
+import { build as rword_duck } from './rword-duck.js';
+import { build as rword_dog } from './rword-dog.js';
+import { build as rword_fort } from './rword-fort.js';
+import { build as rword_book } from './rword-book.js';
+import { build as rword_blanket } from './rword-blanket.js';
+import { build as rword_bell } from './rword-bell.js';
+import { build as rword_bottle } from './rword-bottle.js';
+import { build as rword_pot } from './rword-pot.js';
+import { build as rword_band } from './rword-band.js';
+import { build as rword_glasses } from './rword-glasses.js';
+import { build as rword_bow } from './rword-bow.js';
+import { build as rword_wig } from './rword-wig.js';
+import { build as rword_music } from './rword-music.js';
+import { build as rword_card } from './rword-card.js';
+import { build as rword_bunny } from './rword-bunny.js';
+import { build as rword_train } from './rword-train.js';
+import { build as rword_candy } from './rword-candy.js';
+import { build as rword_snack } from './rword-snack.js';
+import { build as rword_doll } from './rword-doll.js';
+import { build as rword_water } from './rword-water.js';
+import { build as rword_bee } from './rword-bee.js';
+import { build as rword_garden } from './rword-garden.js';
+import { build as rword_flower } from './rword-flower.js';
+import { build as rword_skirt } from './rword-skirt.js';
+import { build as rword_dress } from './rword-dress.js';
+import { build as rword_coat } from './rword-coat.js';
+import { build as rword_bike } from './rword-bike.js';
+import { build as rword_yarn } from './rword-yarn.js';
+import { build as rword_ant } from './rword-ant.js';
+import { build as rword_mat } from './rword-mat.js';
+import { build as rword_rabbit } from './rword-rabbit.js';
+import { build as rword_alligator } from './rword-alligator.js';
+import { build as rword_pan } from './rword-pan.js';
+import { build as rword_ham } from './rword-ham.js';
+import { build as rword_jam } from './rword-jam.js';
+import { build as rword_van } from './rword-van.js';
+import { build as rword_can } from './rword-can.js';
+import { build as rword_bag } from './rword-bag.js';
+import { build as rword_rag } from './rword-rag.js';
+import { build as rword_pad } from './rword-pad.js';
+import { build as rword_cap } from './rword-cap.js';
+import { build as rword_map } from './rword-map.js';
+import { build as rword_lap } from './rword-lap.js';
+import { build as rword_nap } from './rword-nap.js';
+import { build as rword_bat } from './rword-bat.js';
+import { build as rword_rat } from './rword-rat.js';
+import { build as rword_bed } from './rword-bed.js';
+import { build as rword_ted } from './rword-ted.js';
+import { build as rword_sled } from './rword-sled.js';
+import { build as rword_teddy } from './rword-teddy.js';
+import { build as rword_jet } from './rword-jet.js';
+import { build as rword_net } from './rword-net.js';
+import { build as rword_pet } from './rword-pet.js';
+import { build as rword_pen } from './rword-pen.js';
+import { build as rword_hen } from './rword-hen.js';
+import { build as rword_ben } from './rword-ben.js';
+import { build as rword_vet } from './rword-vet.js';
+import { build as rword_desk } from './rword-desk.js';
+import { build as rword_pig } from './rword-pig.js';
+import { build as rword_ship } from './rword-ship.js';
+import { build as rword_lip } from './rword-lip.js';
+import { build as rword_tip } from './rword-tip.js';
+import { build as rword_kid } from './rword-kid.js';
+import { build as rword_lid } from './rword-lid.js';
+import { build as rword_bib } from './rword-bib.js';
+import { build as rword_rib } from './rword-rib.js';
+import { build as rword_sid } from './rword-sid.js';
+import { build as rword_bin } from './rword-bin.js';
+import { build as rword_fig } from './rword-fig.js';
+import { build as rword_fin } from './rword-fin.js';
+import { build as rword_pit } from './rword-pit.js';
+import { build as rword_log } from './rword-log.js';
+import { build as rword_frog } from './rword-frog.js';
+import { build as rword_fox } from './rword-fox.js';
+import { build as rword_dot } from './rword-dot.js';
+import { build as rword_cot } from './rword-cot.js';
+import { build as rword_top } from './rword-top.js';
+import { build as rword_mop } from './rword-mop.js';
+import { build as rword_pop } from './rword-pop.js';
+import { build as rword_cop } from './rword-cop.js';
+import { build as rword_shop } from './rword-shop.js';
+import { build as rword_bug } from './rword-bug.js';
+import { build as rword_rug } from './rword-rug.js';
+import { build as rword_mud } from './rword-mud.js';
+import { build as rword_pup } from './rword-pup.js';
+import { build as rword_nut } from './rword-nut.js';
+import { build as rword_cut } from './rword-cut.js';
+import { build as rword_cub } from './rword-cub.js';
+import { build as rword_tub } from './rword-tub.js';
+import { build as rword_sun } from './rword-sun.js';
+import { build as rword_tape } from './rword-tape.js';
+import { build as rword_cape } from './rword-cape.js';
+import { build as rword_cane } from './rword-cane.js';
+import { build as rword_mane } from './rword-mane.js';
+import { build as rword_cake } from './rword-cake.js';
+import { build as rword_name } from './rword-name.js';
+import { build as rword_plate } from './rword-plate.js';
+import { build as rword_cave } from './rword-cave.js';
+import { build as rword_gate } from './rword-gate.js';
+import { build as rword_wave } from './rword-wave.js';
+import { build as rword_rain } from './rword-rain.js';
+import { build as rword_mail } from './rword-mail.js';
+import { build as rword_snail } from './rword-snail.js';
+import { build as rword_day } from './rword-day.js';
+import { build as rword_bay } from './rword-bay.js';
+import { build as rword_hay } from './rword-hay.js';
+import { build as rword_feet } from './rword-feet.js';
+import { build as rword_seed } from './rword-seed.js';
+import { build as rword_jeep } from './rword-jeep.js';
+import { build as rword_meat } from './rword-meat.js';
+import { build as rword_seat } from './rword-seat.js';
+import { build as rword_key } from './rword-key.js';
+import { build as rword_honey } from './rword-honey.js';
+import { build as rword_dream } from './rword-dream.js';
+import { build as rword_grass } from './rword-grass.js';
+import { build as rword_poop } from './rword-poop.js';
 import { build as extra0 } from './little-flame.js';
 import { build as extra1 } from './gold-coin.js';
 import { build as extra2 } from './cash.js';
@@ -294,6 +455,169 @@ import { build as special16 } from "./fart.js";
 import { build as special17 } from "./gas-cloud.js";
 import { build as special18 } from "./poop.js";
 export const PROP_BUILDERS = Object.freeze({
+  'robot-body': robot_body,
+  'robot-head': robot_head,
+  'robot-hand': robot_hand,
+  'robot-foot': robot_foot,
+
+  'swimming-pool': swimming_pool,
+  'rword-body': rword_body,
+  'rword-head': rword_head,
+  'rword-hand': rword_hand,
+  'rword-foot': rword_foot,
+  'rword-car': rword_car,
+  'rword-bear': rword_bear,
+  'rword-toy': rword_toy,
+  'rword-ball': rword_ball,
+  'rword-robot': rword_robot,
+  'rword-dad': rword_dad,
+  'rword-mum': rword_mum,
+  'rword-baby': rword_baby,
+  'rword-family': rword_family,
+  'rword-hair': rword_hair,
+  'rword-face': rword_face,
+  'rword-belly': rword_belly,
+  'rword-leg': rword_leg,
+  'rword-eye': rword_eye,
+  'rword-ear': rword_ear,
+  'rword-nose': rword_nose,
+  'rword-mouth': rword_mouth,
+  'rword-food': rword_food,
+  'rword-drink': rword_drink,
+  'rword-tree': rword_tree,
+  'rword-cat': rword_cat,
+  'rword-tail': rword_tail,
+  'rword-monster': rword_monster,
+  'rword-hat': rword_hat,
+  'rword-kite': rword_kite,
+  'rword-story': rword_story,
+  'rword-shell': rword_shell,
+  'rword-tool': rword_tool,
+  'rword-grandpa': rword_grandpa,
+  'rword-run': rword_run,
+  'rword-grandma': rword_grandma,
+  'rword-bread': rword_bread,
+  'rword-sister': rword_sister,
+  'rword-box': rword_box,
+  'rword-cousin': rword_cousin,
+  'rword-bird': rword_bird,
+  'rword-duck': rword_duck,
+  'rword-dog': rword_dog,
+  'rword-fort': rword_fort,
+  'rword-book': rword_book,
+  'rword-blanket': rword_blanket,
+  'rword-bell': rword_bell,
+  'rword-bottle': rword_bottle,
+  'rword-pot': rword_pot,
+  'rword-band': rword_band,
+  'rword-glasses': rword_glasses,
+  'rword-bow': rword_bow,
+  'rword-wig': rword_wig,
+  'rword-music': rword_music,
+  'rword-card': rword_card,
+  'rword-bunny': rword_bunny,
+  'rword-train': rword_train,
+  'rword-candy': rword_candy,
+  'rword-snack': rword_snack,
+  'rword-doll': rword_doll,
+  'rword-water': rword_water,
+  'rword-bee': rword_bee,
+  'rword-garden': rword_garden,
+  'rword-flower': rword_flower,
+  'rword-skirt': rword_skirt,
+  'rword-dress': rword_dress,
+  'rword-coat': rword_coat,
+  'rword-bike': rword_bike,
+  'rword-yarn': rword_yarn,
+  'rword-ant': rword_ant,
+  'rword-mat': rword_mat,
+  'rword-rabbit': rword_rabbit,
+  'rword-alligator': rword_alligator,
+  'rword-pan': rword_pan,
+  'rword-ham': rword_ham,
+  'rword-jam': rword_jam,
+  'rword-van': rword_van,
+  'rword-can': rword_can,
+  'rword-bag': rword_bag,
+  'rword-rag': rword_rag,
+  'rword-pad': rword_pad,
+  'rword-cap': rword_cap,
+  'rword-map': rword_map,
+  'rword-lap': rword_lap,
+  'rword-nap': rword_nap,
+  'rword-bat': rword_bat,
+  'rword-rat': rword_rat,
+  'rword-bed': rword_bed,
+  'rword-ted': rword_ted,
+  'rword-sled': rword_sled,
+  'rword-teddy': rword_teddy,
+  'rword-jet': rword_jet,
+  'rword-net': rword_net,
+  'rword-pet': rword_pet,
+  'rword-pen': rword_pen,
+  'rword-hen': rword_hen,
+  'rword-ben': rword_ben,
+  'rword-vet': rword_vet,
+  'rword-desk': rword_desk,
+  'rword-pig': rword_pig,
+  'rword-ship': rword_ship,
+  'rword-lip': rword_lip,
+  'rword-tip': rword_tip,
+  'rword-kid': rword_kid,
+  'rword-lid': rword_lid,
+  'rword-bib': rword_bib,
+  'rword-rib': rword_rib,
+  'rword-sid': rword_sid,
+  'rword-bin': rword_bin,
+  'rword-fig': rword_fig,
+  'rword-fin': rword_fin,
+  'rword-pit': rword_pit,
+  'rword-log': rword_log,
+  'rword-frog': rword_frog,
+  'rword-fox': rword_fox,
+  'rword-dot': rword_dot,
+  'rword-cot': rword_cot,
+  'rword-top': rword_top,
+  'rword-mop': rword_mop,
+  'rword-pop': rword_pop,
+  'rword-cop': rword_cop,
+  'rword-shop': rword_shop,
+  'rword-bug': rword_bug,
+  'rword-rug': rword_rug,
+  'rword-mud': rword_mud,
+  'rword-pup': rword_pup,
+  'rword-nut': rword_nut,
+  'rword-cut': rword_cut,
+  'rword-cub': rword_cub,
+  'rword-tub': rword_tub,
+  'rword-sun': rword_sun,
+  'rword-tape': rword_tape,
+  'rword-cape': rword_cape,
+  'rword-cane': rword_cane,
+  'rword-mane': rword_mane,
+  'rword-cake': rword_cake,
+  'rword-name': rword_name,
+  'rword-plate': rword_plate,
+  'rword-cave': rword_cave,
+  'rword-gate': rword_gate,
+  'rword-wave': rword_wave,
+  'rword-rain': rword_rain,
+  'rword-mail': rword_mail,
+  'rword-snail': rword_snail,
+  'rword-day': rword_day,
+  'rword-bay': rword_bay,
+  'rword-hay': rword_hay,
+  'rword-feet': rword_feet,
+  'rword-seed': rword_seed,
+  'rword-jeep': rword_jeep,
+  'rword-meat': rword_meat,
+  'rword-seat': rword_seat,
+  'rword-key': rword_key,
+  'rword-honey': rword_honey,
+  'rword-dream': rword_dream,
+  'rword-grass': rword_grass,
+  'rword-poop': rword_poop,
+
   'little-flame':extra0,
   'gold-coin':extra1,
   'cash':extra2,

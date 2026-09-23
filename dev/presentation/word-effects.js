@@ -1,0 +1,118 @@
+import { createEventSymbol } from './event-symbols.js';
+import * as THREE from '../../vendor/three.module.js';
+
+// A separate transform group lets word effects compose with each prefab's own animation.
+export function createWordEffects() {
+  const owned = new Set();
+  function badge(emotion) {
+    const group = new THREE.Group();
+    const sphere = new THREE.SphereGeometry(1, 12, 8);
+    const yellow = new THREE.MeshBasicMaterial({color:emotion === 'angry' ? '#ed947d' : '#f7d977'});
+    const ink = new THREE.MeshBasicMaterial({color:'#4d453f'});
+    const face = new THREE.Mesh(sphere, yellow); face.scale.set(.19,.19,.05); group.add(face);
+    for (const x of [-.064,.064]) { const eye = new THREE.Mesh(sphere,ink); eye.scale.set(.018,emotion==='sleepy'?.006:.025,.018); eye.position.set(x,.04,.05); group.add(eye); }
+    const points = Array.from({length:13},(_,i) => {const x=(i/12-.5)*.15;return new THREE.Vector3(x,(['happy','yummy','funny'].includes(emotion) ? 1 : -1)*x*x*8-.07,.058);});
+    const mouthGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    const mouthMaterial = new THREE.LineBasicMaterial({color:'#4d453f'});
+    group.add(new THREE.Line(mouthGeometry,mouthMaterial));
+    group.userData.dispose = () => {sphere.dispose();yellow.dispose();ink.dispose();mouthGeometry.dispose();mouthMaterial.dispose();};
+    return group;
+  }
+  function sync(item, record) {
+    if(item.wordEffects?.motion!==record.effects?.motion)item.wordMotionAge=0;
+    item.wordEffects = record.effects || {};
+    item.wordAttachment = record.attachment;
+    item.wordIndex = Number(String(record.id||'').match(/-(\d+)$/)?.[1])||0;
+    if (!item.effectRoot) {
+      item.effectRoot = new THREE.Group(); item.effectRoot.name='word-effects';
+      item.cueRoot=new THREE.Group();item.cueRoot.name='word-cues';
+      item.anchor.add(item.cueRoot);item.cueRoot.add(item.effectRoot);item.effectRoot.add(item.model.group);owned.add(item);
+    }
+    if (item.wordEmotion !== item.wordEffects.emotion) {
+      item.emotionBadge?.userData.dispose(); item.emotionBadge?.removeFromParent();
+      item.wordEmotion = item.wordEffects.emotion;
+      if (item.wordEmotion) {item.emotionBadge=badge(item.wordEmotion);item.anchor.add(item.emotionBadge);}
+    }
+    const kind=item.wordEffects.motion==='sleep'||item.wordEffects.emotion==='sleepy'?'z':item.wordEffects.symbol==='hum'?'note':item.wordEffects.symbol==='hot'?'steam':item.wordEffects.symbol==='new'?'star':item.wordEffects.emotion==='yummy'?'heart':null;
+    if(kind!==item.wordSymbolKind){
+      for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}
+      item.wordSymbolKind=kind;item.wordSymbols=kind?Array.from({length:3},()=>createEventSymbol(kind)):[];
+      for(const s of item.wordSymbols)item.anchor.add(s);
+    }
+    if(item.wordEffects.surface==='wet'&&!item.waterDrops){
+      const root=new THREE.Group(),geometry=new THREE.SphereGeometry(.055,8,6),material=new THREE.MeshBasicMaterial({color:'#74bde3'});
+      for(let i=0;i<5;i++){const drop=new THREE.Mesh(geometry,material);drop.scale.y=1.6;root.add(drop);}
+      root.userData.dispose=()=>{geometry.dispose();material.dispose();};item.effectRoot.add(root);item.waterDrops=root;
+    }
+    if(item.waterDrops)item.waterDrops.visible=item.wordEffects.surface==='wet';
+  }
+  function cue(item, command) {
+    if(command.cue==='cancel'){item.wordCue=null;item.wordDrop=null;item.cueRoot?.position.set(0,0,0);item.cueRoot?.scale.setScalar(1);return;}
+    if(command.cue==='mention')item.wordCue={age:0};
+    if(command.cue==='put-in'){item.wordCue=null;item.wordDrop={age:0,target:command.target,start:item.anchor.position.clone()};}
+  }
+  function update(entries, dt, time, reduced) {
+    for (const item of entries.values()) {
+      const root = item.effectRoot; if (!root) continue;
+      item.cueRoot.position.set(0,0,0);item.cueRoot.scale.setScalar(1);
+      if(item.wordCue&&(item.entrance===undefined||item.entrance>=2)){
+        const c=item.wordCue;c.age+=dt;
+        const p=Math.min(1,c.age/.9),wave=Math.abs(Math.sin(p*Math.PI*2));
+        item.cueRoot.position.y=reduced?0:wave*Math.min(.55,Math.max(.22,(item.modelTop||.7)*.42));
+        item.cueRoot.scale.setScalar(1+(reduced?.06:.1)*wave);
+        if(p>=1)item.wordCue=null;
+      }
+      const e=item.wordEffects || {}, t=reduced?0:time*(e.speed==='fast'?1.9:e.speed==='slow'?.42:1);
+      item.wordMotionAge=(item.wordMotionAge||0)+dt;
+      const scalar=e.shape==='grow'?1.8:e.shape==='shrink'?.5:1;
+      const target=new THREE.Vector3(e.stretch==='long'?1.9*scalar:scalar,e.stretch==='tall'?1.9*scalar:scalar,scalar);
+      root.scale.lerp(target,reduced?1:1-Math.exp(-dt*2.8));
+      root.position.set(0,0,0); root.rotation.set(0,0,0);
+      if (e.motion==='jump') root.position.y=reduced?.3:Math.abs(Math.sin(t*3.8))*(e.altitude==='high'?1.8:.9);
+      if (e.motion==='fly') {root.position.y=(e.altitude==='high'?2.3:1.4)+Math.sin(t*2)*.13;root.rotation.z=Math.sin(t*3)*.08;}
+      if (e.motion==='swim') {root.position.x=Math.sin(t*1.4)*.55;root.rotation.z=Math.sin(t*3)*.15;root.rotation.x=.25;}
+      if (e.motion==='walk' || e.motion==='run' || (e.motion==='run-stop'&&item.wordMotionAge<3)) {const running=e.motion!=='walk';root.position.x=Math.sin(t*(running?1.8:.7))*.8;root.position.y=Math.abs(Math.sin(t*8))*(running?.18:.07);root.rotation.z=Math.sin(t*6)*.07;}
+      if (e.motion==='roll') {root.position.x=Math.sin(t)*.5;root.rotation.z=reduced?.3:-t*2;}
+      if (e.gesture==='dance') {root.rotation.z+=Math.sin(t*5)*.25;root.position.y+=Math.abs(Math.sin(t*5))*.14;}
+      if (e.gesture==='spin') root.rotation.y=reduced?.3:t*2.4;
+      if (e.motion==='sail') {root.position.x=Math.sin(t*.7)*.8;root.rotation.z=Math.sin(t*1.5)*.08;}
+      if (e.motion==='sleep') root.scale.y*=1+Math.sin(t*1.3)*.025;
+      if (e.surface==='wet') {root.rotation.z+=Math.sin(t*16)*.015;}
+      if(e.emotion==='funny')root.rotation.z+=Math.sin(t*4)*.13;
+      if(item.waterDrops?.visible)item.waterDrops.children.forEach((drop,i)=>{drop.position.set(Math.sin(i*2)*.5,1.4-((t*.8+i*.23)%1.4),Math.cos(i*2)*.4);});
+      if(e.palette==='rainbow') {let i=0;item.model.group.traverse(node=>{if(!node.isMesh)return;for(const mat of Array.isArray(node.material)?node.material:[node.material])if(mat.color){const hsl={};mat.color.getHSL(hsl);if(hsl.l>.18)mat.color.setHSL((i++*.13+t*.04)%1,.55,.65);}});}
+      for(const [i,s] of (item.wordSymbols||[]).entries()){const age=reduced?i*.3:(time*.55+i*.32)%1;s.position.set(.25+age*.35,(item.modelTop||item.scale*1.3)*root.scale.y+.3+age*.8,0);s.scale.setScalar(.65+age*.35);s.quaternion.copy(item.anchor.quaternion).invert();}
+      if(item.emotionBadge) {item.emotionBadge.position.set(.4*item.scale,1.5*item.scale*root.scale.y+.35,0);item.emotionBadge.quaternion.copy(item.anchor.quaternion).invert();}
+    }
+    const done=new Set();
+    function attach(item,depth=0) {
+      if(done.has(item)||depth>20)return;
+      done.add(item);
+      const link=item.wordAttachment, target=link&&entries.get(link.target);if(!target){item.wordDrop=null;return;}
+      attach(target,depth+1);
+      const s=target.scale*(target.effectRoot?.scale.y||1);
+      const offsets={on:[0,1.15,0],in:[item.wordIndex===0?0:(item.wordIndex%2?-.2:.2),.12,Math.floor(item.wordIndex/3)*.16],over:[0,2.2,0],beside:[1.1,0,0],near:[1.4,0,.3],head:[0,1.0,0],hair:[0,1.45,0],face:[0,.75,.4],'left-eye':[-.23,.85,.4],'right-eye':[.23,.85,.4],'middle-eye':[0,1.1,.4],nose:[0,.63,.43],mouth:[0,.4,.44],'left-ear':[-.45,.8,0],'right-ear':[.45,.8,0],'left-hand':[-.7,.5,0],'right-hand':[.7,.5,0],'left-foot':[-.3,-.05,.15],'right-foot':[.3,-.05,.15],tail:[0,.3,-.7]};
+      const offset=new THREE.Vector3(...(offsets[link.slot]||offsets.on)).multiplyScalar(s).applyQuaternion(target.anchor.quaternion);
+      if(link.slot==='on')offset.set(0,(target.modelTop||s)*(target.effectRoot?.scale.y||1),0).applyQuaternion(target.anchor.quaternion);
+      item.anchor.position.copy(target.anchor.position).add(offset);
+      if(target.effectRoot){const motion=target.effectRoot.position.clone().applyQuaternion(target.anchor.quaternion);item.anchor.position.add(motion);}
+      if(target.cueRoot)item.anchor.position.add(target.cueRoot.position.clone().applyQuaternion(target.anchor.quaternion));
+      if(item.wordDrop){
+        const drop=item.wordDrop;
+        if(reduced||drop.target!==link.target){item.wordDrop=null;}
+        else if((item.entrance??2)<2||(target.entrance??2)<2){drop.start.copy(item.anchor.position).add(new THREE.Vector3(0,1.8,0));item.anchor.position.copy(drop.start);}
+        else {
+          drop.age+=dt;const destination=item.anchor.position.clone();
+          const above=destination.clone().add(new THREE.Vector3(0,Math.max(1.5,(target.modelTop||.5)+.8),0));
+          if(drop.age<.35){const p=drop.age/.35;item.anchor.position.lerpVectors(drop.start,above,1-(1-p)**3);}
+          else {const p=Math.min(1,(drop.age-.35)/.65);item.anchor.position.lerpVectors(above,destination,p*p);if(p===1)item.wordDrop=null;}
+        }
+      }
+      item.anchor.quaternion.copy(target.anchor.quaternion);
+      item.anchor.visible=target.anchor.visible;
+    }
+    for(const item of entries.values())attach(item);
+  }
+  function remove(item){if(!item)return;for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}item.emotionBadge?.userData.dispose();item.emotionBadge?.removeFromParent();item.waterDrops?.userData.dispose();item.waterDrops?.removeFromParent();owned.delete(item);}
+  return {sync,cue,update,remove,dispose(){for(const item of owned)remove(item);}};
+}

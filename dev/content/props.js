@@ -1,6 +1,14 @@
+import { RLINE_MODEL_WORDS } from './rline-nouns.js';
 import { PROP_COLLECTION } from './prop-collection.js';
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
+  ["robot-body", "机器人身体", "机器人身体|robot body", "可拼装的机械身体，支持颜色、大小和动作变化。", "jiaojiao"],
+  ["robot-head", "机器人头", "机器人头|robot head", "可拼装的机械头，支持颜色、大小和动作变化。", "jiaojiao"],
+  ["robot-hand", "机器人手", "机器人手|robot hand", "可拼装的机械手，支持颜色、大小和动作变化。", "jiaojiao"],
+  ["robot-foot", "机器人脚", "机器人脚|robot foot", "可拼装的机械脚，支持颜色、大小和动作变化。", "jiaojiao"],
+
+  ["swimming-pool", "互动小水池", "水池|游泳池|swimming pool", "蓝色水面带有三圈波纹，可作为游泳事件道具。", "jiaojiao"],
+  ...RLINE_MODEL_WORDS.map(n => [n.assetId.slice(5), n.word+' · '+n.zh, [n.word, n.zh, ...n.aliases].join('|'), n.zh+'轻轻摇动，回应你的声音。'+(n.extension?'这是自由创作扩展词。':n.representation+'。'), 'jiaojiao']),
 ["little-flame", "小火苗", "小火苗|火苗|火焰", "橙黄色火苗轻轻跳动。", "jiaojiao"],
 ["gold-coin", "金币", "金币|金钱|硬币", "厚厚的金币轻轻转动，露出星形浮雕。", "jiaojiao"],
 ["cash", "现金", "现金|钞票|纸币|钱币", "绿色纸钞叠成一小摞，轻轻摇摆。", "jiaojiao"],
@@ -231,3 +239,7 @@ Object.assign(PROP_CATEGORIES, Object.fromEntries(PROP_COLLECTION.map(p => [p.id
 Object.assign(PROP_CATEGORIES,{poop:'玩具','gas-cloud':'玩具',fart:'玩具'});
 
 Object.assign(PROP_CATEGORIES,{"little-flame": "玩具", "gold-coin": "玩具", "cash": "玩具", "purple-diamond": "玩具", "battery": "玩具", "growth-bean": "玩具", "badge-star": "玩具", "badge-shield": "玩具", "badge-ribbon": "玩具", "badge-crown": "玩具", "badge-leaf": "玩具", "bee": "玩具", "fly": "玩具", "mosquito": "玩具"});
+
+Object.assign(PROP_CATEGORIES, Object.fromEntries(RLINE_MODEL_WORDS.map(n => [n.assetId.slice(5), 'R线名词模型库'])));
+
+PROP_CATEGORIES['swimming-pool']='场景道具';

@@ -682,3 +682,10 @@ footer {
 #preview-stage .voice-input-control__start svg { width: 19px; height: 19px; }
 #preview-stage .voice-input-control__start .voice-input-control__label { display: none; }
 #preview-stage .voice-input-control__wave i { width: 3px; }
+
+/* Word-event documentation remains readable within the existing workshop panel. */
+.behavior-group table{table-layout:fixed;width:100%}
+.behavior-group th:first-child,.behavior-group td:first-child{width:24%;white-space:normal;overflow-wrap:anywhere}
+.behavior-group th:nth-child(2){width:43%}
+.behavior-group td{overflow-wrap:anywhere;vertical-align:top;line-height:1.7}
+@media(max-width:600px){.behavior-group th,.behavior-group td{padding:9px 5px;font-size:11px}.behavior-group th:first-child,.behavior-group td:first-child{width:25%}.behavior-group th:nth-child(2){width:42%}}

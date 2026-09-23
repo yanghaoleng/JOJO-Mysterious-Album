@@ -9,6 +9,7 @@ await import('./verify-story-content.mjs');
 for (const [entry,outfile,vendor] of [
   ['dev/app.js','dev/app.bundle.js','../vendor/'],
   ['dev/debate.js','dev/debate.bundle.js','../vendor/'],
+  ['dev/words.js','dev/words.bundle.js','../vendor/'],
   ['dev/modules/gallery.js','dev/modules/gallery.bundle.js','../../vendor/'],
 ]) await build({entryPoints:[entry],bundle:true,format:'esm',minify:true,
   plugins:[{name:'shared-rendering',setup(builder){
@@ -20,6 +21,7 @@ console.log('Built story, debate and module gallery from shared modules.');
 for(const [html,assets] of [
   ['dev/index.html',['dev/app.bundle.js','dev/app.css','dev/exploration.css']],
   ['dev/debate.html',['dev/debate.bundle.js','dev/debate.css','dev/exploration.css']],
+  ['dev/words.html',['dev/words.bundle.js','dev/words.css']],
   ['dev/modules/index.html',['dev/modules/gallery.bundle.js','dev/modules/gallery.css','dev/exploration.css']],
 ]){
   let content=await readFile(html,'utf8');
