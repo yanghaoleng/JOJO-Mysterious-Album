@@ -1,3 +1,4 @@
+import * as THREE from '../vendor/three.module.js';
 import { playUISFX, stopUISFX } from '../src/ui-sfx.js';
 import { DioramaStage } from './stage.js';
 import { createGameSession } from './runtime/game-session.js';
@@ -5,6 +6,7 @@ import { StoryVoice, requestJSON } from './voice.js';
 import { createVoiceInput } from '../src/voice-input-control.js';
 import { WORD_CHAPTERS, getAgeBand, getChapterLessons, getRecommendedWordChapter, getWordInspiration } from './content/word-games.js';
 import { acceptsEnglishUtterance, createWordProgress, evaluateWordUtterance } from './word-progress.js';
+import { wordSceneEntities, scatterWordSpawns, unknownWordCommands, playerWordProposal } from './word-scene.js';
 import { createWordNarration } from './word-narration.js';
 import { planWordIntent, validateWordProposal } from './word-intent.js';
 import { mountWordText } from './presentation/word-text.jsx';
@@ -24,7 +26,7 @@ function title(main,subtitle=''){ $('world-title').textContent=main;$('world-sub
 function setView(next){clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-function clearPanel(){clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
+function clearPanel(){menuAnimation?.cancel();menuAnimation=null;menuOpen=false;optionPending=false;clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
 function textMotion(id,value,variant='text'){const mount=mountWordText($(id),value,variant);textMounts.push(mount);return mount;}
 async function transitionScene(change){
   if(transitioning)return;
@@ -45,7 +47,7 @@ function newWorld(world='meadow',snapshot){
   game?.dispose();game=null;
   try{
     stage ||=new DioramaStage($('word-stage'));
-    stage.setScene(world,[],{studio:true,decorations:{seed:17,steps:6}});stage.setCameraDriftEnabled(false);
+    stage.setScene(world,[],{studio:true,decorations:{seed:17,steps:6}});stage.setCameraDriftEnabled(false);stage.cameraAnim=null;
     stage.characterFocus={width:4.6,height:4.5,meanHeight:2.6};stage.target.set(0,.8,0);
     stage.yaw=.12;stage.pitch=.42;stage.zoom=1;stage.resize();
     game=createGameSession({story:{id:'word-play',version:1},stage,saved:snapshot,onChange:()=>{if(view==='play')saveJourney();}});
@@ -54,10 +56,35 @@ function newWorld(world='meadow',snapshot){
     $('webgl-error').hidden=true;webglFailed=false;
   }catch(error){webglFailed=true;$('webgl-error').hidden=false;console.error('Word world:',error);}
 }
+function playerEntities(){return wordSceneEntities(entities());}
+function surprisePoop(){const result=apply(unknownWordCommands());if(result.ok){$('answer-feedback').textContent="I didn't catch that. A silly poop appeared! Try another word.";saveJourney();}return result;}
 function entities(){return game?.runtime.snapshot.worlds[game.runtime.context.world]?.entities||{};}
 function apply(commands){
   if(!game||!commands.length)return {ok:false};
-  return game.gateway.apply({version:1,context:game.runtime.token,commands},'player');
+  const result=game.gateway.apply({version:1,context:game.runtime.token,commands:scatterWordSpawns(commands,entities(),Math.random,availableLanding)},'player');
+  if(result.ok&&view==='play'&&commands.some(c=>c.type==='entity.spawn'))frameWordScene();
+  return result;
+}
+const landingRay=new THREE.Raycaster(),landingUp=new THREE.Vector3(),landingPoint=new THREE.Vector3(),landingDirection=new THREE.Vector3();
+function availableLanding(position,scale){
+  if(!stage?.world)return true;
+  stage.world.group.updateWorldMatrix(true,true);
+  const center=stage.world.planet.center,radius=stage.world.planet.radius;
+  for(const [dx,dz] of [[0,0],[-.35,0],[.35,0],[0,-.35],[0,.35]]){
+    landingUp.copy(stage.world.surfaceNormal(position[0]+dx*scale,position[1]+dz*scale));
+    landingPoint.copy(center).addScaledVector(landingUp,radius+.08);
+    landingRay.set(landingPoint.clone().addScaledVector(landingUp,5),landingUp.clone().negate());landingRay.far=4.86;
+    if(landingRay.intersectObject(stage.world.group,true).some(h=>h.object.visible&&h.object.material?.opacity!==0))return false;
+  }
+  landingUp.copy(stage.world.surfaceNormal(...position));landingPoint.copy(center).addScaledVector(landingUp,radius+scale*.7);
+  stage.camera.getWorldDirection(landingDirection);
+  landingRay.set(landingPoint.clone().addScaledVector(landingDirection,-20),landingDirection);landingRay.far=19.8;
+  return !landingRay.intersectObject(stage.world.group,true).some(h=>h.object.visible&&h.object.material?.opacity!==0);
+}
+function frameWordScene(){
+  const spread=Math.max(2.3,...Object.values(entities()).filter(e=>!e.attachment).map(e=>Math.abs(e.position[0])+(e.scale||.7)*1.25));
+  const zoom=Math.min(stage.zoom,4.6/(spread*2+.6));
+  if(zoom<stage.zoom-.02)stage.animateCameraTo({yaw:stage.yaw,pitch:stage.pitch,zoom,target:stage.target.clone(),pan:stage.panOffset.clone()},reducedMotion.matches?.01:.55);
 }
 function welcomeWorld(){
   newWorld();
@@ -107,7 +134,7 @@ function openChapter(id,{fresh=false,shared=null}={}){
   newWorld(chapter.world,migrated);
   if(chapter.id==='monster'&&!Object.values(entities()).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
-  renderLesson();saveJourney();sharedScene=null;
+  frameWordScene();renderLesson();saveJourney();sharedScene=null;
 
 }
 function currentLesson(){return getChapterLessons(chapter.id,age)[lessonIndex];}
@@ -120,33 +147,46 @@ function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
   const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，一个词一个词，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
-  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div id="word-transcript" hidden></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="3" cy="6" r=".7"/><circle cx="3" cy="12" r=".7"/><circle cx="3" cy="18" r=".7"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div></div><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} →</button></div></div>`;
+  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div id="word-transcript" hidden></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div></div><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} →</button></div></div>`;
   sentenceMotion=textMotion('lesson-sentence',lesson.mode==='cloze'?lesson.displayText:lesson.example);
   updateSentence();initVoice();renderWordOptions();
   $('next-lesson').onclick=()=>void nextLesson();
   $('listen-example').onclick=()=>void speak(lesson.example);
   $('word-options-toggle').onclick=()=>toggleMenu();
   let menuWords=[];
-  $('word-options').onclick=event=>{const b=event.target.closest('[data-word]');if(b){toggleMenu(false);voice?.skip();const word=b.dataset.word;if(lesson.mode==='build')void submit(word);else{const exampleWords=lesson.example.toLowerCase().match(/[a-z]+/g)||[];menuWords=exampleWords.includes(word)?[...menuWords,word]:[word];void submit(menuWords.join(' '));}}};
-  if(progress.heard.length){const r=evaluateWordUtterance(lesson,progress.lastText||'',progress);canAdvance=r.targetComplete||(lesson.mode==='open'&&Object.keys(entities()).length>0);$('next-lesson').hidden=!canAdvance;}
-  if(lesson.mode!=='build'){
+  $('word-options').onclick=event=>{const b=event.target.closest('[data-word]');if(b&&!optionPending){optionPending=true;void playUISFX('select',{volume:.55}).catch(()=>{});const animation=reducedMotion.matches?null:b.animate([{transform:'scale(1)'},{transform:'scale(1.18)',backgroundColor:'rgba(255,255,255,.42)',offset:.4},{transform:'scale(1)'}],{duration:220,easing:'cubic-bezier(.22,1,.36,1)'});Promise.resolve(animation?.finished).catch(()=>{}).then(()=>{if(b.isConnected)void toggleMenu(false);optionPending=false;});voice?.skip();const word=b.dataset.word;if(lesson.mode==='build')void submit(word);else{const exampleWords=lesson.example.toLowerCase().match(/[a-z]+/g)||[];menuWords=exampleWords.includes(word)?[...menuWords,word]:[word];void submit(menuWords.join(' '));}}};
+  if(progress.heard.length){const r=evaluateWordUtterance(lesson,progress.lastText||'',progress);canAdvance=r.targetComplete||(lesson.mode==='open'&&Object.keys(playerEntities()).length>0);$('next-lesson').hidden=!canAdvance;}
+  {
     const hints=getWordInspiration(lesson);let index=0;
-    tipTimer=setInterval(()=>{if(view==='play'&&!document.hidden&&!busy&&!transitioning&&voiceState!=='speaking'&&voiceState!=='listening'&&$('word-menu')?.hidden){index=(index+1)%hints.length;sentenceMotion.update(hints[index]);}},3800);
+    tipTimer=setInterval(()=>{if(view==='play'&&!document.hidden&&!busy&&!transitioning&&voiceState!=='speaking'&&voiceState!=='thinking'&&$('word-menu')?.hidden){index=(index+1)%hints.length;sentenceMotion.update(hints[index]);}},6500);
   }
 }
 function renderWordOptions(){
   const lesson=currentLesson();
   const base=lesson.mode==='build'?lesson.buildWords:lesson.example.toLowerCase().match(/[a-z]+/g)||[];
-  const ideas=lesson.mode==='build'?[]:['big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump'];
+  const ideas=['big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump'];
   $('word-options').innerHTML=[...new Set([...base,...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
 }
-function toggleMenu(open=$('word-menu').hidden){$('word-menu').hidden=!open;$('word-options-toggle').setAttribute('aria-expanded',String(open));if(open)$('word-options').querySelector('button')?.focus();else $('word-options-toggle').focus();}
+let menuOpen=false,menuAnimation=null,optionPending=false;
+async function toggleMenu(open=!menuOpen){
+  const menu=$('word-menu'),toggle=$('word-options-toggle');if(!menu||!toggle)return;
+  menuOpen=open;menuAnimation?.cancel();toggle.setAttribute('aria-expanded',String(open));
+  if(open){menu.hidden=false;menu.inert=false;}else{menu.inert=true;toggle.focus();}
+  void playUISFX(open?'open':'close',{volume:.35}).catch(()=>{});
+  if(!reducedMotion.matches){
+    const frames=[{opacity:0,transform:'translateY(16px) scale(.88)'},{opacity:1,transform:'translateY(0) scale(1)'}];
+    const animation=menu.animate(open?frames:[...frames].reverse(),{duration:open?240:180,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});menuAnimation=animation;
+    try{await animation.finished;}catch{return;}
+    if(menuAnimation!==animation)return;menuAnimation=null;animation.cancel();
+  }
+  if(!open)menu.hidden=true;else menu.querySelector('button')?.focus();
+}
 function ensureVoice(){
   if(voice)return;
   voice=new StoryVoice({language:'en-US',preferredVoice:'female',
     onState:state=>{voiceState=state;voiceInput?.setState(state);if($('mic-heading'))$('mic-heading').textContent=({requesting:'正在打开麦克风',listening:'我在听，慢慢说',speaking:'先听一听，再跟着说',transcribing:'正在听懂你的话',off:'轮到你啦，试着说出来',paused:'轮到你啦，试着说出来'})[state]||'我在听';},
     onAnswer:text=>submit(text),onLevel:level=>voiceInput?.setLevel(level),
-    onError:(message,details={})=>{if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
+    onError:(message,details={})=>{if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
       NotAllowedError:'Please allow microphone access in your browser and system settings.',
       NotFoundError:'No microphone was found. Connect one and try again.',
       NotReadableError:'Your microphone is busy. Close other recording apps and try again.',
@@ -165,6 +205,7 @@ function initVoice(){
 }
 async function sayGuidance(text){
   const mount=sentenceMotion,example=currentLesson().example,session=game;
+  if(example.toLowerCase().includes(text.toLowerCase())&&chapter.id==='monster'&&!Object.values(wordSceneEntities(entities(),'demo')).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'demo-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);
   const narrate=createWordNarration(text,{getContext:()=>({entities:entities(),chapter:chapter.id,focusId}),apply});
   const offset=example.toLowerCase().indexOf(text.toLowerCase());
   await voice.say(text,'clear',()=>{},'',offset>=0?packet=>{
@@ -182,10 +223,10 @@ async function submit(raw){
   voice?.skip();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${text}”`;$('answer-feedback').textContent='Making your idea…';
   try{
     const result=evaluateWordUtterance(lesson,text,progress);
-    let plan=planWordIntent(text,{entities:entities(),chapter:chapter.id,focusId,feedback:true});
+    let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
     // The first sentence is a construction: an earlier colour/number remains meaningful when its noun arrives.
     if(lesson.mode==='build'&&result.currentMatched.length&&result.matched.length>result.currentMatched.length){
-      const cumulative=planWordIntent(result.matched.join(' '),{entities:entities(),chapter:chapter.id,focusId,feedback:true});
+      const cumulative=planWordIntent(result.progress.heard.join(' '),{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
       if(cumulative.commands.length)plan=cumulative;
     }
     let applied=plan.commands.length?apply(plan.commands):{ok:false};
@@ -195,16 +236,18 @@ async function submit(raw){
     if((!plan.commands.length&&!result.currentMatched.length&&(text.toLowerCase().match(/[a-z]+/g)||[]).some(w=>!filler.has(w)))||unresolved.length){
       request=new AbortController();
       try{
-        const response=await requestJSON('/api/scene-control',{text,context:{world:chapter.world,entities:entities(),worlds:[chapter.world]}},18000,request.signal);
+        const response=await requestJSON('/api/scene-control',{text,context:{world:chapter.world,entities:playerEntities(),worlds:[chapter.world]}},18000,request.signal);
         if(turn!==version||game!==session||view!=='play')return;
-        const proposed=validateWordProposal(response,entities());
+        const isFallback=response.source==='random-poop'||response.commands?.some(c=>c.asset==='prop:procedural');
+        const proposed=isFallback?unknownWordCommands():playerWordProposal(validateWordProposal(response,playerEntities()));
         const extra=proposed.length?apply(proposed):{ok:false};
-        applied={ok:applied.ok||extra.ok};
-        if(extra.ok&&response.source==='random-poop')extraReply="I did not catch that idea. Some silly poop appeared! Try another word.";
+        if(!extra.ok){surprisePoop();extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";}
+        applied={ok:applied.ok||(!isFallback&&extra.ok)};
+        if(extra.ok&&isFallback)extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";
         else if(extra.ok&&(response.substitution||proposed.some(c=>c.asset==='prop:procedural')))extraReply="Here is a first version. Try a color or an action!";
         else if(extra.ok)extraReply="Your new idea is here!";
-        else extraReply=applied.ok?"Part of your idea is here. Try the other part again!":"Try saying the name of an object.";
-      }catch(error){if(error.name==='AbortError'||turn!==version)return;extraReply=applied.ok?"Part of your idea is here. Try the other part again!":"Try an object name, or pick a word.";}
+
+      }catch(error){if(error.name==='AbortError'||turn!==version)return;surprisePoop();extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";}
     }
     if(turn!==version||game!==session||view!=='play')return;
     if(plan.commands.length&&!applied.ok)throw new Error(applied.error||'场景还没准备好');
@@ -213,7 +256,7 @@ async function submit(raw){
     for(const word of plan.matched)heardWords.add(word);
     focusId=plan.focusId||focusId;
     const made=applied.ok;
-    canAdvance=result.targetComplete||(lesson.mode==='open'&&made);
+    canAdvance=result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&result.progress.heard.length>=2&&plan.matched.length>0);
     creative=made&&!result.targetComplete;
     updateSentence(result);
     $('next-lesson').hidden=!(canAdvance||(creative&&lesson.mode!=='build'))||webglFailed;

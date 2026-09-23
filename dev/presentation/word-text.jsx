@@ -1,19 +1,26 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Calligraph } from 'calligraph';
+import { replaceableWordRanges } from '../word-intent.js';
 
-// A single root owns both text transitions and real audio-timestamp highlighting.
+// Word wrappers preserve readable spacing and replacement hints during Text transitions.
 export function mountWordText(node, value, variant = 'text') {
   const root = createRoot(node);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let current = value, reading = null, disposed = false;
+  const sentence=node.id==='lesson-sentence';
   function render() {
     if(disposed)return;
-    if(reading){
-      const {text,start,end}=reading;
-      root.render(<span className="read-along-text">{[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?|[^A-Za-z]+/g)].map(({0:word,index})=>/[A-Za-z]/.test(word)
-        ? <span key={index} className={`read-along-word${start>=0&&index<end&&index+word.length>start?' is-reading':''}`}>{word}</span>
-        : word)}</span>);
+    if(sentence){
+      const text=reading?.text??String(current),ranges=replaceableWordRanges(text);
+      root.render(<span className="read-along-text">{[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)].map(({0:word,index},i)=>{
+        if(!/[A-Za-z_]/.test(word))return <React.Fragment key={i}>{word}</React.Fragment>;
+        const replaceable=word.includes('_')||ranges.some(r=>index<r.end&&index+word.length>r.start);
+        const active=reading&&reading.start>=0&&index<reading.end&&index+word.length>reading.start;
+        return <span key={i} data-replaceable={replaceable||undefined} className={`read-along-word${replaceable?' replaceable-word':''}${active?' is-reading':''}`}>
+          {reduced.matches||reading ? word : <Calligraph variant="text" animation="smooth" initial={false}>{word}</Calligraph>}
+        </span>;
+      })}</span>);
     }else root.render(reduced.matches ? <span>{current}</span>
       : <Calligraph variant={variant} animation="smooth" initial={false}>{current}</Calligraph>);
   }

@@ -27,6 +27,7 @@ for(const action of BEHAVIOR_ACTIONS){
  assert.equal(controller.stats.active,0,action.id);assert.ok(entries.has('cat'));assert.equal(stage.scene.children.length,1,`${action.id}: leaked temporary root`);
 }
 const pool=add('pool','prop:swimming-pool');controller.start({id:'cat',action:'swim'});assert.equal(controller.stats.jobs[0].target,'pool');assert.equal(controller.stats.temporaryModels,0);controller.stop('cat');assert.ok(entries.has('pool'));
+const demoCat=add('demo-cat');controller.start({id:'demo-cat',action:'swim'});assert.equal(controller.stats.jobs[0].target,null);assert.equal(controller.stats.temporaryModels,1);controller.stop();entries.delete('demo-cat');effects.remove(demoCat);demoCat.model.dispose();demoCat.anchor.removeFromParent();
 controller.start({id:'cat',action:'sail'});assert.equal(controller.stats.temporaryModels,1);controller.stop();assert.equal(controller.stats.active,0);
 controller.start({id:'cat',action:'swim'});entries.delete('pool');controller.update(.1,1,false);assert.equal(controller.stats.active,0);pool.model.dispose();pool.anchor.removeFromParent();
 for(const [state,kind]of [[{symbol:'hum'},'note'],[{motion:'sleep'},'z'],[{emotion:'sleepy'},'z']]){

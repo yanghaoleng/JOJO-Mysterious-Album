@@ -22,3 +22,18 @@
 
 /* Clip the slot roller itself: its fade mask extends beyond the number line. */
 .age-number{overflow:hidden;clip-path:inset(0);}
+
+/* Replacement hints remain visible independently of the currently spoken word. */
+.replaceable-word{position:relative;padding-bottom:.12em}
+.replaceable-word::after{content:"";position:absolute;left:0;right:0;bottom:.015em;height:3px;border-radius:2px;background:linear-gradient(90deg,#ff91b9,#ffcc78,#edf28b,#8ae8cf,#80caff,#bd9cff,#ff91b9);background-size:200% 100%;mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 9px);animation:word-rainbow 4s linear infinite;opacity:.9}
+@keyframes word-rainbow{to{background-position:-200% 0}}
+#clear-world.retry-button{left:max(22px,env(safe-area-inset-left));top:max(22px,env(safe-area-inset-top));right:auto;bottom:auto;z-index:5;width:42px;height:42px;padding:10px;border-radius:50%;display:grid;place-items:center;background:#ffffff15;opacity:.88;transition:transform .2s ease,background .2s ease}
+.retry-button svg{width:22px;height:22px}.retry-button:active{transform:rotate(-35deg) scale(.85)}
+#word-options-toggle{position:fixed;right:max(24px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));z-index:6;width:50px;height:50px;transition:transform .22s ease,background .22s ease}
+#word-options-toggle svg{fill:currentColor;stroke:none;width:23px;height:23px;transition:transform .25s ease}
+#word-options-toggle[aria-expanded=true]{background:#ffffff42;transform:scale(1.1)}
+#word-options-toggle[aria-expanded=true] svg{transform:rotate(90deg)}
+#word-menu{position:fixed;left:auto;right:max(20px,env(safe-area-inset-right));bottom:calc(max(24px,env(safe-area-inset-bottom)) + 66px);transform:none;transform-origin:bottom right;z-index:7;max-height:min(330px,48dvh)}
+.word-option{transition:background .15s ease,transform .15s ease;transform-origin:center}.word-option:hover{background:#ffffff30}.word-option:active{transform:scale(1.13);background:#ffffff48}
+@media(max-width:600px){#clear-world.retry-button{left:max(14px,env(safe-area-inset-left));top:max(14px,env(safe-area-inset-top))}#word-options-toggle{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:46px;height:46px}#word-menu{right:16px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 62px)}}
+@media(prefers-reduced-motion:reduce){#word-options-toggle[aria-expanded=true],#word-options-toggle[aria-expanded=true] svg,.word-option:active,.retry-button:active{transform:none}}

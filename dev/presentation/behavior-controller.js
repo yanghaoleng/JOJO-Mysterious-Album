@@ -18,9 +18,10 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
   function start(command){
     const item=entries.get(command.id),def=definitions[command.action];if(!item||(!def&&command.action!=='wet'))return;
     stop(item.id);
-    let target=entries.get(command.target);
+    const sameOwner=e=>String(e.id).startsWith('demo-')===String(item.id).startsWith('demo-');
+    let target=entries.get(command.target);if(target&&!sameOwner(target))target=null;
     const preferred={swim:['prop:swimming-pool'],wet:['prop:swimming-pool'],sail:['prop:airplane','prop:rword-jet','prop:rword-ship','prop:sailboat','prop:ship'],ride:['prop:rword-bike','prop:bicycle','prop:airplane','prop:rocket']};
-    if(preferred[command.action])target=(target&&preferred[command.action].includes(target.asset)?target:null)||[...entries.values()].find(e=>e!==item&&preferred[command.action].includes(e.asset));
+    if(preferred[command.action])target=(target&&preferred[command.action].includes(target.asset)?target:null)||[...entries.values()].find(e=>e!==item&&sameOwner(e)&&preferred[command.action].includes(e.asset));
     if(target)stop(target.id);
     const root=new THREE.Group();root.name=`behavior-${command.action}`;stage.scene.add(root);
     const j={item,target,root,action:command.action,colors:command.colors,age:0,duration:command.duration||7,models:[],symbols:[],geometries:[],materials:[],parts:{},visibility:new Map([item,target].filter(Boolean).map(e=>[e,e.model.group.visible]))};

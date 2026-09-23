@@ -21,7 +21,7 @@ export function findWordObjects(text) {
   for(const hit of hits)if(!result.some(h=>hit.index<h.end&&hit.end>h.index))result.push(hit);
   return result;
 }
-export function planWordIntent(text,{entities={},chapter='color',focusId=null,feedback=false}={}) {
+export function planWordIntent(text,{entities={},chapter='color',focusId=null,feedback=false,idPrefix='wg'}={}) {
   text=String(text||'').trim().slice(0,240);
   if(!text)return {commands:[],matched:[],reply:'说一个你想变出来的东西吧。'};
   const robotParts={robot:'body',monster:'body',body:'body',head:'head',hand:'hand',foot:'foot',feet:'foot'};
@@ -56,7 +56,7 @@ export function planWordIntent(text,{entities={},chapter='color',focusId=null,fe
     const ids=[];
     const total=explicit?count:Math.max(1,existing.length);
     for(let j=0;j<total;j++) {
-      const id=existing[j]?.id||`wg-${chapter==='monster'&&['monster','robot','body'].includes(h.item.word)?'body':h.item.word}-${j}`;
+      const id=existing[j]?.id||`${idPrefix}-${chapter==='monster'&&['monster','robot','body'].includes(h.item.word)?'body':h.item.word}-${j}`;
       ids.push(id);
       if(!entities[id]){
         const index=known.length+commands.filter(c=>c.type==='entity.spawn').length;
@@ -107,7 +107,7 @@ export function planWordIntent(text,{entities={},chapter='color',focusId=null,fe
     if(!ids.length){
       const focused=entities[focusId]||known.at(-1);
       if(focused)ids=[focused.id];
-      else {const id='wg-event-subject';commands.push({type:'entity.spawn',id,asset:'prop:rword-cat',position:[0,0],scale:.7});ids=[id];}
+      else {const id=`${idPrefix}-event-subject`;commands.push({type:'entity.spawn',id,asset:'prop:rword-cat',position:[0,0],scale:.7});ids=[id];}
     }
     if(/大家|所有|\ball\b/.test(text)&&!targets.length&&known.length)ids=known.map(e=>e.id);
     const other=targets.find(t=>t!==subject)?.ids[0];
@@ -149,4 +149,11 @@ export function planBehaviorIntent(text,context={}) {
   const plan=planWordIntent(text,context);
   if(!plan.commands.length)return null;
   return {commands:plan.commands,reply:'按词语事件演出，自动道具结束后收起。',source:'behavior-events',matches:plan.matched};
+}
+
+export function replaceableWordRanges(text) {
+  const ranges=findWordObjects(text).map(({index,end})=>({start:index,end}));
+  const adjectives=new Set('big huge giant small tiny little long tall happy sad angry funny sleepy wet dry fast slow high hot yummy new red blue yellow green pink purple orange white black brown rainbow'.split(' '));
+  for(const hit of String(text).matchAll(/[a-z]+/gi))if(adjectives.has(hit[0].toLowerCase()))ranges.push({start:hit.index,end:hit.index+hit[0].length});
+  return ranges;
 }

@@ -1,8 +1,10 @@
+import { wordSceneEntities } from './word-scene.js';
 import { findWordObjects, planWordIntent } from './word-intent.js';
 
 // Narration shares world commands with speech input, but never touches answer progress.
 export function createWordNarration(text, { getContext, apply }) {
   let lastEnd=0, closed=false;
+  const context=()=>{const c=getContext();return {...c,entities:wordSceneEntities(c.entities,'demo'),focusId:null,idPrefix:'demo'};};
   const sent=new Set(), participants=new Set();
   const mentions=findWordObjects(text).filter((h,i,hits)=>!(h.item.word==='toy'&&['box','car'].includes(hits[i+1]?.item.word)));
   const finalEnd=[...text.matchAll(/[a-z0-9]+/gi)].at(-1)?.index;
@@ -14,8 +16,8 @@ export function createWordNarration(text, { getContext, apply }) {
     const hasNewNoun=newNouns.length>0;
     lastEnd=end;
     if(!hasNewNoun&&!complete)return;
-    const plan=planWordIntent(prefix,{...getContext(),feedback:true});
-    const namedIds=new Set(newNouns.flatMap(hit=>planWordIntent(hit.alias,{...getContext(),feedback:true}).commands.filter(c=>c.cue==='mention').map(c=>c.id)));
+    const plan=planWordIntent(prefix,{...context(),feedback:true});
+    const namedIds=new Set(newNouns.flatMap(hit=>planWordIntent(hit.alias,{...context(),feedback:true}).commands.filter(c=>c.cue==='mention').map(c=>c.id)));
     const commands=plan.commands.filter(c=>{
       if(c.cue==='mention'&&!namedIds.has(c.id))return false;
       if(c.type==='entity.event'&&!complete)return false;

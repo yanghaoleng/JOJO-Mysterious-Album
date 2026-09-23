@@ -18,6 +18,34 @@ export function createWordEffects() {
     group.userData.dispose = () => {sphere.dispose();yellow.dispose();ink.dispose();mouthGeometry.dispose();mouthMaterial.dispose();};
     return group;
   }
+  function surfaceSmile(model,asset='') {
+    const face=new THREE.Group();face.name='surface-smile';
+    model.updateWorldMatrix(true,true);
+    const inverse=model.matrixWorld.clone().invert(),bounds=new THREE.Box3(),meshes=[];
+    model.traverse(node=>{if(node.isMesh){meshes.push(node);node.geometry.computeBoundingBox();bounds.union(node.geometry.boundingBox.clone().applyMatrix4(inverse.clone().multiply(node.matrixWorld)));}});
+    if(bounds.isEmpty())return face;
+    const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+    const ray=new THREE.Raycaster(),direction=new THREE.Vector3(0,0,-1).transformDirection(model.matrixWorld);
+    function surface(x,y){
+      const origin=new THREE.Vector3(x,y,bounds.max.z+Math.max(1,size.z)).applyMatrix4(model.matrixWorld);
+      ray.set(origin,direction);const hit=ray.intersectObjects(meshes,false)[0];
+      return hit?model.worldToLocal(hit.point.clone()):null;
+    }
+    let middle=null;
+    for(const y of /npc:|robot|cat|dog|bear|rabbit|bunny|pig|frog|duck|boy|girl|mom|dad/.test(asset)?[.82,.7,.5,.35]:[.62,.5,.75,.35]){middle=surface(center.x,bounds.min.y+size.y*y);if(middle)break;}
+    if(!middle)return face;
+    let span=Math.min(size.x*.32,size.y*.26);
+    // Thin or curved models get a smaller fitted face, rather than a floating badge.
+    for(let i=0;i<5;i++){if(surface(middle.x-span*.55,middle.y+span*.24)&&surface(middle.x+span*.55,middle.y+span*.24))break;span*=.7;}
+    const ink=new THREE.MeshBasicMaterial({color:'#382d31',polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    const sphere=new THREE.SphereGeometry(1,16,10),lift=Math.max(.008,span*.04);
+    for(const x of [-.48,.48]){const point=surface(middle.x+x*span,middle.y+span*.25)||middle.clone();point.z+=lift;const eye=new THREE.Mesh(sphere,ink);eye.position.copy(point);eye.scale.set(span*.13,span*.19,lift);face.add(eye);}
+    const points=Array.from({length:17},(_,i)=>{const x=(i/16-.5)*span*1.12,y=middle.y-span*.3+(x/span)**2*span*.75;const p=surface(middle.x+x,y)||new THREE.Vector3(middle.x+x,y,middle.z);p.z+=lift;return p;});
+    const mouthGeometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),24,span*.07,8,false);
+    face.add(new THREE.Mesh(mouthGeometry,ink));
+    face.userData.dispose=()=>{sphere.dispose();mouthGeometry.dispose();ink.dispose();};
+    return face;
+  }
   function sync(item, record) {
     if(item.wordEffects?.motion!==record.effects?.motion)item.wordMotionAge=0;
     item.wordEffects = record.effects || {};
@@ -29,9 +57,9 @@ export function createWordEffects() {
       item.anchor.add(item.cueRoot);item.cueRoot.add(item.effectRoot);item.effectRoot.add(item.model.group);owned.add(item);
     }
     if (item.wordEmotion !== item.wordEffects.emotion) {
-      item.emotionBadge?.userData.dispose(); item.emotionBadge?.removeFromParent();
+      item.emotionBadge?.userData.dispose?.(); item.emotionBadge?.removeFromParent();
       item.wordEmotion = item.wordEffects.emotion;
-      if (item.wordEmotion) {item.emotionBadge=badge(item.wordEmotion);item.anchor.add(item.emotionBadge);}
+      if (item.wordEmotion) {item.emotionBadge=item.wordEmotion==='happy'?surfaceSmile(item.model.group,record.asset):badge(item.wordEmotion);(item.wordEmotion==='happy'?item.model.group:item.anchor).add(item.emotionBadge);}
     }
     const kind=item.wordEffects.motion==='sleep'||item.wordEffects.emotion==='sleepy'?'z':item.wordEffects.symbol==='hum'?'note':item.wordEffects.symbol==='hot'?'steam':item.wordEffects.symbol==='new'?'star':item.wordEffects.emotion==='yummy'?'heart':null;
     if(kind!==item.wordSymbolKind){
@@ -82,7 +110,7 @@ export function createWordEffects() {
       if(item.waterDrops?.visible)item.waterDrops.children.forEach((drop,i)=>{drop.position.set(Math.sin(i*2)*.5,1.4-((t*.8+i*.23)%1.4),Math.cos(i*2)*.4);});
       if(e.palette==='rainbow') {let i=0;item.model.group.traverse(node=>{if(!node.isMesh)return;for(const mat of Array.isArray(node.material)?node.material:[node.material])if(mat.color){const hsl={};mat.color.getHSL(hsl);if(hsl.l>.18)mat.color.setHSL((i++*.13+t*.04)%1,.55,.65);}});}
       for(const [i,s] of (item.wordSymbols||[]).entries()){const age=reduced?i*.3:(time*.55+i*.32)%1;s.position.set(.25+age*.35,(item.modelTop||item.scale*1.3)*root.scale.y+.3+age*.8,0);s.scale.setScalar(.65+age*.35);s.quaternion.copy(item.anchor.quaternion).invert();}
-      if(item.emotionBadge) {item.emotionBadge.position.set(.4*item.scale,1.5*item.scale*root.scale.y+.35,0);item.emotionBadge.quaternion.copy(item.anchor.quaternion).invert();}
+      if(item.emotionBadge&&item.wordEmotion!=='happy') {item.emotionBadge.position.set(.4*item.scale,1.5*item.scale*root.scale.y+.35,0);item.emotionBadge.quaternion.copy(item.anchor.quaternion).invert();}
     }
     const done=new Set();
     function attach(item,depth=0) {
@@ -113,6 +141,6 @@ export function createWordEffects() {
     }
     for(const item of entries.values())attach(item);
   }
-  function remove(item){if(!item)return;for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}item.emotionBadge?.userData.dispose();item.emotionBadge?.removeFromParent();item.waterDrops?.userData.dispose();item.waterDrops?.removeFromParent();owned.delete(item);}
+  function remove(item){if(!item)return;for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}item.emotionBadge?.userData.dispose?.();item.emotionBadge?.removeFromParent();item.waterDrops?.userData.dispose();item.waterDrops?.removeFromParent();owned.delete(item);}
   return {sync,cue,update,remove,dispose(){for(const item of owned)remove(item);}};
 }

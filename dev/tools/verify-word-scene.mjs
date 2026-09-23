@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import * as THREE from '../../vendor/three.module.js';
+import {wordSceneEntities,scatterWordSpawns,unknownWordCommands,playerWordProposal} from '../word-scene.js';
+import {planWordIntent,replaceableWordRanges} from '../word-intent.js';
+import {createWordEffects} from '../presentation/word-effects.js';
+const demo={'demo-ball-0':{id:'demo-ball-0',asset:'prop:rword-ball',position:[-1,0],scale:.7}};
+const plan=planWordIntent('a blue ball',{entities:wordSceneEntities(demo),feedback:true});
+assert.ok(plan.commands.some(c=>c.type==='entity.spawn'&&c.id==='wg-ball-0'));
+assert.ok(plan.commands.every(c=>!String(c.id).startsWith('demo-')));
+assert.equal(playerWordProposal([{type:'entity.remove',id:'demo-ball-0'},{type:'entity.attach',id:'wg-ball-0',target:'demo-ball-0'},{type:'entity.color',id:'wg-ball-0',color:'#fff'}]).length,1);
+let seed=153;const random=()=>((seed=(1664525*seed+1013904223)>>>0)/2**32);
+const commands=Array.from({length:4},(_,i)=>({type:'entity.spawn',id:`wg-test-${i}`,asset:'prop:rword-ball',scale:.7,position:[0,0]}));
+const placed=scatterWordSpawns(commands,demo,random);assert.equal(new Set(placed.map(c=>c.position.join(','))).size,4);
+for(let i=0;i<placed.length;i++)for(let j=i+1;j<placed.length;j++)assert.ok(Math.hypot(...placed[i].position.map((x,k)=>x-placed[j].position[k]))>1);
+assert.notDeepEqual(scatterWordSpawns(commands,{},random)[0].position,placed[0].position);
+const clearSpot=scatterWordSpawns(commands.slice(0,1),{},random,p=>p[0]>2);assert.ok(clearSpot[0].position[0]>2);
+assert.notEqual(unknownWordCommands()[0].id,unknownWordCommands()[0].id);
+assert.equal(unknownWordCommands().length,1);
+const sentence='A big blue ball.';assert.deepEqual(replaceableWordRanges(sentence).map(r=>sentence.slice(r.start,r.end)).sort(),['ball','big','blue']);
+const model=new THREE.Group();model.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial()));
+const item={anchor:new THREE.Group(),model:{group:model},scale:.7,modelTop:.7};item.anchor.add(model);
+const fx=createWordEffects();fx.sync(item,{id:'test',effects:{emotion:'happy'}});
+assert.equal(item.emotionBadge.parent,model);assert.equal(item.emotionBadge.children.length,3);
+for(const eye of item.emotionBadge.children.slice(0,2)){assert.ok(eye.position.z>.5&&eye.position.z<.53);assert.ok(eye.scale.x>.025);}
+fx.update(new Map([['test',item]]),.1,1,false);assert.deepEqual(item.emotionBadge.position.toArray(),[0,0,0]);fx.dispose();
+console.log('PASS ownership isolation, protected demo targets, non-overlapping randomized landing positions, single unique fallback, replacement ranges and surface-fitted large smile.');
