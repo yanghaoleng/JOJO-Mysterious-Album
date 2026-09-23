@@ -217,3 +217,6 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 `word-narration.js` 使用真实朗读单词范围，经 `planWordIntent` 和统一 gateway 驱动场景；不提交孩子答案、不改变学习进度。`entity.cue` 是不落盘的有限短反馈，支持 mention（跳两下）、put-in（上方落入已经绑定的容器）与 cancel。`word-effects.js` 用独立变换层组合短反馈与持续状态；放入关系仍由 `entity.attach` 保存。重复名词复用已有实体，句子完整表达目标容器才执行下落。减少动态效果时直接完成放置。
 
 `word-scene.js` 以 `demo-` 身份隔离领读实体，孩子的 parser/AI 上下文只包含自己的实体；数量、颜色和附着关系互不作用。随机落点分别位于示范与创作区域，候选点避让已有模型和背景道具，排除被背景遮挡的落点，画幅不足时平滑拉远镜头；保存和恢复不重排位置。空 ASR 或未知英语的兜底生成一个独立便便，不将其记为作答完成；静音、中文和录音权限故障保持原处理。字幕逐词包裹 Calligraph Text，名词和形容词下以渐变虚线标明可替换；每 6.5 秒在空闲时变换示例。宫格菜单以有限动画管理展开/收起，关闭期间 inert，重试位于左上角。happy 的双眼和笑嘴沿模型正面射线贴合，随模型变换并释放几何。
+
+
+英语小游戏点词菜单保持展开，通过可取消的飞词动画与顺序队列提交输入；离开关卡清理队列。继续按钮位于顶部进度右侧。`word-realtime-voice.js` 作为 `StoryVoice` 的可选适配器，经同源 `/api/word-realtime` 连接服务器端豆包端到端协议桥；识别结果仍经词语意图和运行时校验。经典语音默认保留，实时权限未通过前不切换默认。英文资源热词由构建从资源词典生成 `content/speech-vocabulary.json`，旧 ASR 与实时会话共享。

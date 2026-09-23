@@ -12,6 +12,7 @@ import socket
 import ssl
 import struct
 import uuid
+from pathlib import Path
 from urllib.parse import urlsplit
 
 
@@ -208,6 +209,14 @@ class _WebSocket:
             pass
 
 
+def speech_hotwords():
+    try:
+        words = json.loads((Path(__file__).parent / "dev/content/speech-vocabulary.json").read_text())
+        return [{"word": word} for word in words if isinstance(word, str)][:5000]
+    except (OSError, ValueError):
+        return [{"word": name} for name in ("DOMI", "JOJO", "BOBO")]
+
+
 def transcribe_pcm(pcm, sample_rate=16000):
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     access_token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
@@ -231,7 +240,7 @@ def transcribe_pcm(pcm, sample_rate=16000):
         request = {
             "user": {"uid": "kindergrimm-story"},
             "audio": {"format": "pcm", "codec": "raw", "rate": sample_rate, "bits": 16, "channel": 1},
-            "request": {"model_name": "bigmodel", "enable_itn": True, "enable_punc": True, "result_type": "full"},
+            "request": {"model_name": "bigmodel", "enable_itn": True, "enable_punc": True, "result_type": "full", "corpus": {"context": json.dumps({"hotwords": speech_hotwords()})}},
         }
         connection.send_binary(_full_request(request, 1))
         sequence = 1

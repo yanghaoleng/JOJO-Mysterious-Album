@@ -58,7 +58,8 @@
       "capabilities": [
         "年龄推荐与加减音效回弹",
         "Calligraph 数字与字幕",
-        "宫格菜单展开收起与点击回弹",
+        "常驻点词菜单与飞入字幕",
+        "顶部继续入场与柔光输入",
         "英文语音与点词",
         "作品图片与链接"
       ],
@@ -66,6 +67,22 @@
         "ui:voice",
         "ui:word-text",
         "logic:session"
+      ]
+    },
+    {
+      "id": "logic:word-realtime-voice",
+      "kind": "logic",
+      "name": "英语冒险 · 可切换实时语音",
+      "description": "在单词菜单切换豆包端到端实时对话与经典语音。新服务需开通 volc.speech.dialog 权限；连接失败回退经典方案。验证 test_word_realtime.py。",
+      "source": "dev/word-realtime-voice.js",
+      "capabilities": [
+        "实时音频与字幕",
+        "英文角色道具热词",
+        "经典语音回滚",
+        "断线回退"
+      ],
+      "dependencies": [
+        "ui:voice"
       ]
     },
     {

@@ -38,6 +38,7 @@ from scene_appearance import appearance_edit, decorate_spawns
 from scene_interactions import compound_scene_result, resolve_objects
 from scene_groups import select_scene_group, spawn_scene_group
 from volc_asr import transcribe_pcm
+from volc_realtime import serve_realtime
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
 from identity_mysql import (
     ADMIN_SESSION_SECONDS,
@@ -2531,6 +2532,9 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlsplit(self.path).path
+        if path == "/api/word-realtime":
+            serve_realtime(self)
+            return
         if path == "/api/wow-turn":
             self.respond_json(405, {"error": "method_not_allowed"})
             return

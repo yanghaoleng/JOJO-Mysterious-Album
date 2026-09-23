@@ -17,6 +17,8 @@ for (const [entry,outfile,vendor] of [
     builder.onResolve({filter:/vendor\/three\.module\.js$/},()=>({path:`${vendor}three.module.js`,external:true}));
   }}],outfile});
 console.log('Built story, debate and module gallery from shared modules.');
+const {WORD_SPEECH_VOCABULARY}=await import('../word-intent.js');
+await writeFile('dev/content/speech-vocabulary.json',JSON.stringify(WORD_SPEECH_VOCABULARY,null,2)+'\n');
 // Content hashes keep all three entry pages current after future catalog/script edits.
 for(const [html,assets] of [
   ['dev/index.html',['dev/app.bundle.js','dev/app.css','dev/exploration.css']],

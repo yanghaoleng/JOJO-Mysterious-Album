@@ -9,7 +9,9 @@ const effectWords={grow:['grow','grows','growing','生长','长大','长高'],sh
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 export const hasWord=(text,word)=>/[a-z]/i.test(word)?new RegExp(`\\b${esc(word)}\\b`,'i').test(text):text.includes(word);
 function aliases(item){const words=[item.word,...(item.aliases||[]),item.zh];if(!/s$/.test(item.word))words.push(item.word+'s');if(item.word.endsWith('y'))words.push(item.word.slice(0,-1)+'ies');return [...new Set(words)].filter(Boolean);}
-const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:a.name,zh:a.name,assetId:a.id,match:[a.name,a.id.split(':').at(-1)]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
+export const WORD_CHARACTER_NAMES=Object.freeze({'yellow:jiaojiao':'JOJO','npc:zhuxiaodi':'BOBO','npc:domi':'DOMI'});
+const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:WORD_CHARACTER_NAMES[a.id]?.toLowerCase()||a.name,zh:a.name,assetId:a.id,match:[...(WORD_CHARACTER_NAMES[a.id]?[WORD_CHARACTER_NAMES[a.id]]:[]),a.name,a.id.split(':').at(-1)]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
+export const WORD_SPEECH_VOCABULARY=[...new Set([...Object.values(WORD_CHARACTER_NAMES),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
 export function findWordObjects(text) {
   const hits=[];
   for(const item of lexicon)for(const alias of item.match){
