@@ -1,0 +1,41 @@
+[
+  {
+    "id": "forget-me-not",
+    "title": "Forget Me Not",
+    "author": "Kistol",
+    "source": "https://opengameart.org/content/forget-me-not",
+    "download": "https://opengameart.org/sites/default/files/forget_me_not_in_f_major_looped.ogg",
+    "license": "CC0-1.0",
+    "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "verified": "2026-09-23",
+    "sourceSHA256": "2b9b9fc512c34d52b999ed1fd7e01f960f830f3defc5d2241f6e02f8be81ef77",
+    "file": "forget-me-not.mp3",
+    "modification": "Converted to MP3, loudness normalized to -22 LUFS; no composition edits."
+  },
+  {
+    "id": "happy-lullaby",
+    "title": "Happy Lullaby",
+    "author": "The Cynic Project / cynicmusic.com / pixelsphere.org",
+    "source": "https://opengameart.org/content/happy-lullaby-song17",
+    "download": "https://opengameart.org/sites/default/files/song17.mp3",
+    "license": "CC0-1.0",
+    "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "verified": "2026-09-23",
+    "sourceSHA256": "9fa0b0e96860eace536fa36f4e9c2c1284db894a8df3cdaa19ddae429b1bfd42",
+    "file": "happy-lullaby.mp3",
+    "modification": "Converted to MP3, loudness normalized to -22 LUFS; no composition edits."
+  },
+  {
+    "id": "happy-adventure",
+    "title": "Happy Adventure",
+    "author": "TinyWorlds",
+    "source": "https://opengameart.org/content/happy-adventure-loop",
+    "download": "https://opengameart.org/sites/default/files/happy_adveture.mp3",
+    "license": "CC0-1.0",
+    "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "verified": "2026-09-23",
+    "sourceSHA256": "50aa6a32625fe8565403a0c8ceb772d7fb500b9267d0019eacfe0fc742b6c73d",
+    "file": "happy-adventure.mp3",
+    "modification": "Converted to MP3, loudness normalized to -22 LUFS; no composition edits."
+  }
+]

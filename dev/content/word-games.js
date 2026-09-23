@@ -1460,3 +1460,38 @@ export function getWordInspiration(lesson) {
   }
   return [...new Set([lesson.mode==='cloze'?lesson.displayText:lesson.example,...lesson.alternatives,...variants])].slice(0,4);
 }
+
+// Stable token positions let every suggestion change exactly one word.
+export function createWordSuggestions(lesson) {
+  const tokenize=text=>text.match(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)||[];
+  const tokens=tokenize(lesson.mode==='cloze'?lesson.displayText:lesson.example);
+  const original=tokenize(lesson.example);
+  const groups=[
+    ['big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow'],
+    ['head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
+    ['hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds'],
+    ['grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
+    ['slowly','quickly','fast'],
+    ['water','plant'],
+    ['grows','jumps','dances','swims','flies','spins','runs','walks','sleeps'],
+  ];
+  const choices=new Map();
+  tokens.forEach((word,i)=>{
+    const base=(word.includes('_')?original[i]:word)?.toLowerCase();
+    const group=groups.find(g=>g.includes(base));
+    if(group)choices.set(i,[...new Set([base,...group])]);
+  });
+  let cursor=0;
+  return {
+    get text(){return tokens.join('');},
+    canChange:index=>choices.has(index),
+    change(index){
+      const indices=[...choices.keys()];if(!indices.length)return tokens.join('');
+      if(index===undefined)index=indices[cursor++%indices.length];
+      const pool=choices.get(index);if(!pool)return tokens.join('');
+      const before=tokens[index],next=pool[(pool.indexOf(before.toLowerCase())+1)%pool.length];
+      tokens[index]=/^[A-Z]/.test(before)?next[0].toUpperCase()+next.slice(1):next;
+      return tokens.join('');
+    }
+  };
+}

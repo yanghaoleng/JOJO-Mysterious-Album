@@ -25,3 +25,5 @@ Nginx `/api/word-realtime` 必须代理 WebSocket Upgrade 到现有 8137 服务�
 资源英文名、别名和 R 线单词由 `dev/tools/build.mjs` 自动生成到 `dev/content/speech-vocabulary.json`。角色 JOJO / BOBO / DOMI 排在热词前列。实时模式开启二遍识别以启用热词，不盲目替换相似发音。
 
 官方协议：https://www.volcengine.com/docs/6561/1594356?lang=zh
+
+欢迎引导默认尝试实时对话，403 等连接错误仍自动回退经典语音。显式 `?voice=legacy` 或已保存的经典选择也适用于欢迎页。欢迎会话仅询问昵称与年龄；昵称不进入本地存档，进入游戏会释放欢迎会话并重新创建语音实例。

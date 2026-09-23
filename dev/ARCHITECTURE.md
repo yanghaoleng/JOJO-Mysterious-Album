@@ -222,3 +222,9 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 英语小游戏点词菜单保持展开，通过可取消的飞词动画与顺序队列提交输入；离开关卡清理队列。继续按钮位于顶部进度右侧。`word-realtime-voice.js` 作为 `StoryVoice` 的可选适配器，经同源 `/api/word-realtime` 连接服务器端豆包端到端协议桥；识别结果仍经词语意图和运行时校验。经典语音默认保留，实时权限未通过前不切换默认。英文资源热词由构建从资源词典生成 `content/speech-vocabulary.json`，旧 ASR 与实时会话共享。
 
 英语小游戏使用独立 continuousListening 用户意愿状态：表达处理后和前后翻页领读结束自动恢复，主动暂停、离开游戏和隐藏页面停止。重新选择年龄开始会清空小游戏 journeys、生成世界、语音实例与临时表达队列，保留站点其他模块数据。页码支持悬停、触摸点按和键盘显示上一关。
+
+## 英语小游戏欢迎与音频
+
+`word-welcome.js` 只从英文提取昵称与 3–10 岁年龄，昵称在当前页面内存使用，不写存档。入口用已有 `npc:domi` 通过实体命令显示小号 DOMI，欢迎会话优先走实时对话，连接失败保留经典识别/朗读。跳过和重新选年龄走原年龄页，开始时释放欢迎语音并清理旧世界。服务端 onboarding 模式只允许询问昵称和年龄，其余模式仍禁止索取个人资料。
+
+`word-music.js` 使用三首作者标记 CC0 的本地纯音乐，首个手势后播放，静音偏好独立保存；录音、领读、后台时暂停，新一轮随机且避开上一首。来源、许可链接与原始文件哈希在 `assets/music/word-world/licenses.json`。字幕候选由 `createWordSuggestions` 保持固定词槽，每 12 秒仅变化一个，点击词槽重置计时；朗读中冻结，遵守减少动态效果设置。

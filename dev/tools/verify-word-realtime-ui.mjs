@@ -12,7 +12,7 @@ try{
    if(data.type==='start')ws.send(JSON.stringify({type:'ready'}));
    if(data.type==='say'){sayCount++;send(350,{text:data.text});ws.send(Buffer.alloc(4800));send(359);}
  });});
- await page.goto(`${origin}/dev/words?voice=realtime`);await page.locator('#choose-age').click();await page.locator('#continue-chapter').click();
+ await page.goto(`${origin}/dev/words?voice=realtime`);await page.locator('#skip-intro').click();await page.locator('#choose-age').click();await page.locator('#continue-chapter').click();
  await page.waitForFunction(()=>window.__WORD_GAME__?.status.view==='play');await page.waitForTimeout(500);assert.ok(sayCount>0);
  await page.locator('#word-mic').click();await page.waitForTimeout(600);assert.ok(audioChunks>0,'Microphone frames stream before the end of a sentence');
  send(450);send(451,{results:[{text:'DOMI',is_interim:true}]});await page.waitForFunction(()=>document.getElementById('word-transcript').textContent.includes('DOMI'));
@@ -27,7 +27,7 @@ try{
  const fresh=await browser.newContext({reducedMotion:'reduce'}),fallback=await fresh.newPage();
  await fallback.routeWebSocket('**/api/word-realtime',ws=>ws.close());
  await fallback.route('**/api/tts',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
- await fallback.goto(`${origin}/dev/words?voice=realtime`);await fallback.locator('#choose-age').click();await fallback.locator('#continue-chapter').click();
- await fallback.waitForFunction(()=>document.getElementById('answer-feedback')?.textContent.includes('classic voice'));
- console.log('PASS unavailable realtime service displays classic fallback');
+ await fallback.goto(`${origin}/dev/words?voice=realtime`);await fallback.locator('#skip-intro').click();await fallback.locator('#choose-age').click();await fallback.locator('#continue-chapter').click();
+ await fallback.waitForFunction(()=>document.getElementById('voice-mode')?.textContent.includes('已回退经典'));
+ assert.match(await fallback.locator('#answer-feedback').innerText(),/classic voice|voice is unavailable/);console.log('PASS unavailable realtime keeps classic fallback status while preserving any TTS failure message');
 }finally{await browser.close();}

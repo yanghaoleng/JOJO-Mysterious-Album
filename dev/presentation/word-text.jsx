@@ -4,7 +4,7 @@ import { Calligraph } from 'calligraph';
 import { replaceableWordRanges } from '../word-intent.js';
 
 // Word wrappers preserve readable spacing and replacement hints during Text transitions.
-export function mountWordText(node, value, variant = 'text') {
+export function mountWordText(node, value, variant = 'text', options = {}) {
   const root = createRoot(node);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let current = value, reading = null, disposed = false;
@@ -16,8 +16,9 @@ export function mountWordText(node, value, variant = 'text') {
       root.render(<span className="read-along-text">{[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)].map(({0:word,index},i)=>{
         if(!/[A-Za-z_]/.test(word))return <React.Fragment key={i}>{word}</React.Fragment>;
         const replaceable=word.includes('_')||ranges.some(r=>index<r.end&&index+word.length>r.start);
+        const clickable=replaceable&&options.canReplace?.(i)&&!reading;
         const active=reading&&reading.start>=0&&index<reading.end&&index+word.length>reading.start;
-        return <span key={i} data-replaceable={replaceable||undefined} className={`read-along-word${replaceable?' replaceable-word':''}${active?' is-reading':''}`}>
+        return <span key={i} role={clickable?'button':undefined} tabIndex={clickable?0:undefined} aria-label={clickable?`换一个 ${word}`:undefined} onClick={clickable?()=>options.onReplace(i):undefined} onKeyDown={clickable?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();options.onReplace(i);}}:undefined} data-replaceable={replaceable||undefined} className={`read-along-word${replaceable?' replaceable-word':''}${active?' is-reading':''}`}>
           {reduced.matches||reading ? word : <Calligraph variant="text" animation="smooth" initial={false}>{word}</Calligraph>}
         </span>;
       })}</span>);

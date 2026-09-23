@@ -62,12 +62,15 @@
         "顶部继续入场与柔光输入",
         "上一关与全新开始",
         "持续收音",
+        "DOMI语音欢迎与跳过",
         "英文语音与点词",
         "作品图片与链接"
       ],
       "dependencies": [
         "ui:voice",
         "ui:word-text",
+        "ui:word-music",
+        "logic:word-welcome",
         "logic:session"
       ]
     },
@@ -88,6 +91,34 @@
       ]
     },
     {
+      "id": "logic:word-welcome",
+      "kind": "logic",
+      "name": "DOMI 欢迎介绍",
+      "description": "在 /dev/words 初次进入，DOMI 询问昵称和年龄后提供开始入口，跳过回到年龄选择；昵称只留在内存。",
+      "source": "dev/word-welcome.js",
+      "capabilities": [
+        "英文昵称与年龄提取",
+        "3至10岁",
+        "跳过与清理"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "ui:word-music",
+      "kind": "ui",
+      "name": "英语世界 · 随机配乐",
+      "description": "在 /dev/words 点击开始播放随机 CC0 纯音乐，右上角可静音；说话和录音时暂停。许可来源在 assets/music/word-world/licenses.json。",
+      "source": "dev/word-music.js",
+      "capabilities": [
+        "三首随机配乐",
+        "静音记忆",
+        "语音避让",
+        "后台暂停",
+        "资源清理"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "ui:word-text",
       "kind": "ui",
       "name": "英语冒险 · 动态数字与字幕",
@@ -97,7 +128,7 @@
         "Slots 年龄数字",
         "Text 词语切换",
         "真实时间戳逐词高亮",
-        "彩虹虚线替换提示",
+        "彩虹虚线单词每12秒轮换与点按替换",
         "减少动态效果",
         "卸载清理"
       ],
@@ -25119,6 +25150,45 @@
       "description": "背景音乐",
       "source": "assets/music/unease.mp3",
       "url": "/assets/music/unease.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/word-world/forget-me-not.mp3",
+      "kind": "audio",
+      "name": "forget-me-not",
+      "description": "背景音乐",
+      "source": "assets/music/word-world/forget-me-not.mp3",
+      "url": "/assets/music/word-world/forget-me-not.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/word-world/happy-adventure.mp3",
+      "kind": "audio",
+      "name": "happy-adventure",
+      "description": "背景音乐",
+      "source": "assets/music/word-world/happy-adventure.mp3",
+      "url": "/assets/music/word-world/happy-adventure.mp3",
+      "capabilities": [
+        "按需试听",
+        "单通道播放"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "audio:music/word-world/happy-lullaby.mp3",
+      "kind": "audio",
+      "name": "happy-lullaby",
+      "description": "背景音乐",
+      "source": "assets/music/word-world/happy-lullaby.mp3",
+      "url": "/assets/music/word-world/happy-lullaby.mp3",
       "capabilities": [
         "按需试听",
         "单通道播放"

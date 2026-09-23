@@ -248,6 +248,45 @@ export const AUDIO_CATALOG = [
     "dependencies": []
   },
   {
+    "id": "audio:music/word-world/forget-me-not.mp3",
+    "kind": "audio",
+    "name": "forget-me-not",
+    "description": "背景音乐",
+    "source": "assets/music/word-world/forget-me-not.mp3",
+    "url": "/assets/music/word-world/forget-me-not.mp3",
+    "capabilities": [
+      "按需试听",
+      "单通道播放"
+    ],
+    "dependencies": []
+  },
+  {
+    "id": "audio:music/word-world/happy-adventure.mp3",
+    "kind": "audio",
+    "name": "happy-adventure",
+    "description": "背景音乐",
+    "source": "assets/music/word-world/happy-adventure.mp3",
+    "url": "/assets/music/word-world/happy-adventure.mp3",
+    "capabilities": [
+      "按需试听",
+      "单通道播放"
+    ],
+    "dependencies": []
+  },
+  {
+    "id": "audio:music/word-world/happy-lullaby.mp3",
+    "kind": "audio",
+    "name": "happy-lullaby",
+    "description": "背景音乐",
+    "source": "assets/music/word-world/happy-lullaby.mp3",
+    "url": "/assets/music/word-world/happy-lullaby.mp3",
+    "capabilities": [
+      "按需试听",
+      "单通道播放"
+    ],
+    "dependencies": []
+  },
+  {
     "id": "audio:voice/01-welcome.mp3",
     "kind": "audio",
     "name": "01-welcome",

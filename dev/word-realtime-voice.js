@@ -3,7 +3,7 @@ import { StoryVoice } from './voice.js';
 // The classic implementation stays intact. A failed realtime connection falls
 // back for this visit; choosing classic also persists across reloads.
 export class RealtimeWordVoice extends StoryVoice {
-  constructor(options){super(options);this.getLesson=options.getLesson;this.realtimeFailed=false;this.sources=new Set();this.playAt=0;this.rtGeneration=0;}
+  constructor(options){super(options);this.getLesson=options.getLesson;this.getMode=options.getMode;this.realtimeFailed=false;this.sources=new Set();this.playAt=0;this.rtGeneration=0;}
   get realtimeActive(){return !this.realtimeFailed&&this.socket?.readyState===WebSocket.OPEN;}
   async connectRealtime(){
     if(this.realtimeFailed)throw new Error('realtime_unavailable');
@@ -14,7 +14,7 @@ export class RealtimeWordVoice extends StoryVoice {
       const socket=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/api/word-realtime`);socket.binaryType='arraybuffer';this.socket=socket;
       let ready=false;
       const timer=setTimeout(()=>{socket.close();reject(new Error('realtime_timeout'));},15000);
-      socket.onopen=()=>socket.send(JSON.stringify({type:'start',lesson:this.getLesson?.()||''}));
+      socket.onopen=()=>socket.send(JSON.stringify({type:'start',mode:this.getMode?.()||'game',lesson:this.getLesson?.()||''}));
       socket.onmessage=event=>{
         if(generation!==this.rtGeneration)return;
         if(event.data instanceof ArrayBuffer){this.playPCM(event.data);return;}
@@ -33,6 +33,7 @@ export class RealtimeWordVoice extends StoryVoice {
     return this.rtConnecting;
   }
   async enable(){
+    this.onState('requesting');
     const generation=this.rtGeneration;
     try{await this.connectRealtime();}catch{}
     if(generation!==this.rtGeneration)return;

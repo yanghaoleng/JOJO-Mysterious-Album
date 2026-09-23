@@ -61,7 +61,7 @@ def connect():
         'X-Api-Connect-Id': str(uuid.uuid4())}, timeout=12)
 
 
-def session_config(lesson=''):
+def session_config(lesson='', mode='game'):
     return {
         'asr': {'extra': {'enable_custom_vad': True, 'end_smooth_window_ms': 700,
             'enable_asr_twopass': True, 'context': {'hotwords': speech_hotwords()}}},
@@ -72,7 +72,7 @@ def session_config(lesson=''):
                 'Speak ONLY English, even if the child speaks Chinese. For non-English input say only: Let us try it in English. '
                 'Use one short encouraging sentence, at most 12 words. Accept playful nouns and adjectives. '
                 'JOJO, BOBO and DOMI are character names. Never claim a scene action succeeded or advance a lesson; the game handles those. '
-                'Never request personal information. Do not discuss adult topics. Current example: ' + lesson[:180],
+                + ('You are DOMI welcoming a new player. Ask for a nickname, then their age (three to ten), one question at a time. After both, invite them to tap Start. Never request any other personal information or contact details. ' if mode == 'onboarding' else 'Never request personal information. ') + 'Do not discuss adult topics. Current example: ' + lesson[:180],
             'speaking_style': 'A warm female voice, clear slow English suitable for young children.',
             'extra': {'model': '1.2.1.1', 'strict_audit': True, 'enable_volc_websearch': False}}}
 
@@ -139,7 +139,7 @@ def serve_realtime(handler):
         init = browser.receive()
         if not isinstance(init, dict) or init.get('type') != 'start': raise ValueError('start_required')
         sid = str(uuid.uuid4())
-        upstream.send_binary(packet(100, session_config(str(init.get('lesson', ''))), sid))
+        upstream.send_binary(packet(100, session_config(str(init.get('lesson', '')), 'onboarding' if init.get('mode') == 'onboarding' else 'game'), sid))
         event, _ = unpack(upstream.receive_binary())
         if event != 150: raise RuntimeError('realtime_session_rejected')
         upstream.socket.settimeout(35)
