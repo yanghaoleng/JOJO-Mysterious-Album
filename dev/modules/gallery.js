@@ -389,8 +389,18 @@ function shotMeta(mode) {
   return SHOT_META[mode] || SHOT_META.ground;
 }
 function renderCameraPicker() {
-  const picker = $("camera-shot-select");
-  if (!picker) return;
+  let picker = $("camera-shot-select");
+  if (!picker) {
+    const nav = $("camera-nav");
+    if (!nav) return;
+    const wrap = document.createElement("div");
+    wrap.className = "camera-shot-picker";
+    picker = document.createElement("select");
+    picker.id = "camera-shot-select";
+    picker.setAttribute("aria-label", "切换镜头");
+    wrap.append(picker);
+    nav.append(wrap);
+  }
   const groups = new Map();
   for (const shot of CAMERA_SHOTS) {
     if (!groups.has(shot.group)) groups.set(shot.group, []);
