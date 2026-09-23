@@ -116,9 +116,9 @@ export function mountStoryEditor(root, sourceId) {
     field(root,'故事标题',draft.title || '辩论与表达',v=>draft.title=v);
     el('p',`草稿身份：${draft.id} · 原场景 ID 保留，改台词不改变存档身份。`,root,'muted');
     if(draft.interaction==='debate') {
-      const box=section(root,'辩论流程'); el('p','选择话题 → 两位角色交替表达 → 反思选项 → 带着想法去造物。六轮台词由 AI 生成，下面展示的是现有备用台词。',box);
+      const box=section(root,'辩论流程'); el('p','选择话题 → 两位角色用四句承接式对话商量 → 反思选项 → 带着想法去造物。下面展示的是现有备用台词。',box);
       for(const name of ['opening','handoff','ending'])field(box,({opening:'开场对白',handoff:'承接对白',ending:'结尾对白'})[name],draft[name],v=>draft[name]=v);
-      draft.topics.forEach((topic,i)=>{field(box,`话题 ${i+1}`,topic,v=>draft.topics[i]=v);field(box,`话题 ${i+1} 的短选项`,draft.topicLabels[i],v=>draft.topicLabels[i]=v);const details=el('details',undefined,box);el('summary','查看备用六轮对白（只读）',details);for(const turn of debateFallback(sources.debate.topics[i] || '',draft.speakers).turns)el('p',`${turn.speakerId}：${turn.text}`,details);});
+      draft.topics.forEach((topic,i)=>{field(box,`话题 ${i+1}`,topic,v=>draft.topics[i]=v);field(box,`话题 ${i+1} 的短选项`,draft.topicLabels[i],v=>draft.topicLabels[i]=v);const details=el('details',undefined,box);el('summary','查看备用四句对白（只读）',details);for(const turn of debateFallback(sources.debate.topics[i] || '',draft.speakers).turns)el('p',`${turn.speakerId}：${turn.text}`,details);});
       draft.reflections.forEach((v,i)=>field(box,`反思选项 ${i+1}`,v,x=>draft.reflections[i]=x));events(root,draft,'全故事事件');return;
     }
     const layout=el('div',undefined,root,'se-layout'), nav=el('nav',undefined,layout,'se-scenes'), main=el('div',undefined,layout,'se-content'); nav.setAttribute('aria-label','场景流程');

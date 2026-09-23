@@ -26,7 +26,7 @@ try {
  for(const width of [390,768,1440]) {await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow ${width}`);}
  await page.setViewportSize({width:390,height:900});await page.screenshot({path:'/tmp/story-editor-mobile.png',fullPage:true});
  await page.goto(`${process.env.QA_ORIGIN || 'http://127.0.0.1:8156'}/dev/modules/?editor-test=debate#story%3Adebate`);await page.getByLabel('开场对白').waitFor();
- assert.equal(await page.getByText('查看备用六轮对白（只读）',{exact:true}).count(),3);
+ assert.equal(await page.getByText('查看备用四句对白（只读）',{exact:true}).count(),3);
  await page.goto(`${process.env.QA_ORIGIN || 'http://127.0.0.1:8156'}/dev/modules/#story%3Awow`);await page.getByLabel('故事标题',{exact:true}).waitFor();
  assert.equal(await page.getByLabel('故事标题',{exact:true}).inputValue(),'第一束好奇的光');
  assert.equal(await page.locator('.story-editor button[aria-current]').count(),12);

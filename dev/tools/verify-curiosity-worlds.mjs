@@ -10,7 +10,7 @@ import { explorationConfig } from '../exploration-config.js';
 import { CREATION_KITS, planCreation } from '../creation-catalog.js';
 import { createCreationModel } from '../creation-models.js';
 import { MOON_CURIOSITY_STORY } from '../moon-story.js';
-import { DEBATE_TOPICS, debateFallback } from '../curiosity-journey.js';
+import { DEBATE_TOPICS, debateFallback, journeyDebate } from '../curiosity-journey.js';
 
 assert.equal(ENCOUNTERS.length,46);
 assert.equal(new Set(ENCOUNTERS.map(n=>n.id)).size,46);
@@ -33,7 +33,18 @@ assert.deepEqual(planCreation('一棵蓝色的树').parts,['tree']);
 assert.deepEqual(planCreation('一艘飞船').parts,['rocket']);
 assert.deepEqual(planCreation('会收集梦的棉花糖').parts,['prototype']);
 for(const scene of MOON_CURIOSITY_STORY.scenes){assert.ok(scene.creation&&scene.freeInput);assert.equal(scene.choices.length,3);for(const c of scene.choices)assert.notEqual(planCreation(c.label).parts[0],'prototype',c.label);}
-for(const topic of DEBATE_TOPICS)assert.equal(debateFallback(topic,[{id:'a'},{id:'b'}]).turns.length,6);
+const debatePhases=['offer','connect','challenge','experiment'];
+for(const topic of DEBATE_TOPICS){
+  const result=debateFallback(topic,[{id:'a'},{id:'b'}]);
+  assert.equal(result.turns.length,4);
+  assert.deepEqual(result.turns.map(turn=>turn.speakerId),['a','b','a','b']);
+  assert.deepEqual(result.turns.map(turn=>turn.phase),debatePhases);
+  assert.ok(result.turns.every(turn=>turn.text.length>=18&&turn.text.length<=34));
+  assert.ok(result.turns.every(turn=>!/我认为|另一方面|我的重点是|综合来看|做出合适的选择/.test(turn.text)));
+}
+const skyDebate=journeyDebate('为什么天是蓝的？',[{id:'a'},{id:'b'}]);
+assert.match(skyDebate.turns.map(turn=>turn.text).join(''),/太阳光.*空气.*蓝光.*红橙光/);
+assert.ok(!/先观察|试一小步|小表格/.test(skyDebate.turns.map(turn=>turn.text).join('')));
 for(const key of new Set(ENCOUNTERS.map(n=>`${n.storyId}:${n.world}`))){
   const [storyId,worldId]=key.split(':'),world=createWorld(worldId,{radius:10});
   const spots=encountersFor(storyId,worldId).map((row,i)=>({row,normal:world.surfaceNormal(...ENCOUNTER_PLACES[i]),radius:1.15}));

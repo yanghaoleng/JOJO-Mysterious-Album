@@ -9,7 +9,7 @@ try {
  const page=await browser.newPage({viewport:{width:1280,height:800}});
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/api/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"local test fallback"}'}));
- await page.route('**/api/debate',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({allowed:true,topic:'轮流当船长',commonGround:'让每个人都有机会，也一起照顾船。',closingQuestion:'你想怎么安排轮流？',turns:Array.from({length:6},(_,i)=>({speakerId:i%2?'snow-rabbit':'book-owl',text:i%2?'可以轮流试试，伙伴在旁边帮忙。':'我想先把船开稳，再邀请大家。'}))})}));
+ await page.route('**/api/debate',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({allowed:true,topic:'轮流当船长',commonGround:'让每个人都有机会，也一起照顾船。',closingQuestion:'你想怎么安排轮流？',turns:['我想先把船开稳，再邀请大家。','你先看海浪，我来把船长徽章分给大家。','轮流很好。那谁来记下每个人想去的地方？','要不画张航海图，每人贴一颗目的地星星。'].map((text,i)=>({speakerId:i%2?'snow-rabbit':'book-owl',phase:['offer','connect','challenge','experiment'][i],text}))})}));
  const state=()=>page.evaluate(()=>window.__DEV_STORY__?.status || window.__DEBATE_3D__?.status);
  const exp=async()=>(await state()).stage.exploration;
  async function idle(){await page.waitForFunction(()=>!(window.__DEV_STORY__?.status || window.__DEBATE_3D__?.status).stage.exploration.moving,{}, {timeout:25000});}
@@ -41,13 +41,13 @@ try {
    checks.push('moon: all six scenes and inventions progress normally; child remains controllable on final moon');
   }else{
    await page.locator('#answer-choices button').first().click();await page.waitForFunction(()=>window.__DEBATE_3D__.status.phase==='discussing');
-   for(let i=0;i<6;i++)await page.locator('#next-turn').click();
+   for(let i=0;i<4;i++)await page.locator('#next-turn').click();
    await page.waitForFunction(()=>window.__DEBATE_3D__.status.phase==='reflection');
    await page.locator('#write-answer').click();const current=(await exp()).normal;
    await page.locator('#answer-input').fill('我想让大家轮流当船长。');await page.keyboard.down('ArrowLeft');await page.waitForTimeout(250);await page.keyboard.up('ArrowLeft');assert.ok(distance(current,(await exp()).normal)<.001);
    await page.locator('#send-answer').click();await page.waitForFunction(()=>window.__DEBATE_3D__.status.phase==='ending');
    assert.ok(await exp());await page.locator('#restart').click();assert.equal((await exp()).area,'想法树下');
-   checks.push('debate: topic, six turns, typed reflection, ending and reset work; modal typing never moves child');
+   checks.push('debate: topic, four connected turns, typed reflection, ending and reset work; modal typing never moves child');
   }
   await page.setViewportSize({width:1280,height:800});
  }

@@ -9,34 +9,32 @@ export function debateFallback(topic, speakers) {
   const n = Math.max(0, DEBATE_TOPICS.indexOf(topic));
   const lines = [
     [
-      "先想清楚一个问题，出发就知道要看什么。",
-      "先走出去也会发现，原来还有没想到的问题。",
-      "如果一直想却不出发，我们会错过什么？",
-      "如果边走边记问题，就能带着发现回来想。",
-      "我愿意带一个问题出发，再慢慢补充计划。",
-      "我也愿意停下来听。好奇心可以一边走一边长。",
+      "我想先画张观察表，看看星球上少了哪些问题。",
+      "你先找线索，我先去问三位朋友，也许会冒出新问题。",
+      "听起来，出发也能找线索。可我们先往哪里走呢？",
+      "带上观察表去最近的山坡吧，边走边记，再回来商量。",
     ],
     [
-      "轮流选目的地，安静的朋友也能带一次路。",
-      "先听大家想去的理由，也许能找到共同的路。",
-      "如果总是最响亮的人说话，轮流能帮上忙。",
-      "那就让每个人都说一句，再一起排顺序。",
-      "我想保留轮流的机会，让每个问题都被听见。",
-      "我想保留商量的时间，让路线可以改变。",
+      "我想把船长徽章轮流戴，让安静的朋友也带一次路。",
+      "轮流很公平，不过先听理由，也许两颗星球能顺路去。",
+      "你说的顺路很有用。那谁来保证每个人都能开口？",
+      "先每人说一句，再排路线；船长仍然轮流当。",
     ],
     [
-      "先试一个点子，比较容易看见它怎么工作。",
-      "把不同点子拼起来，可能会长出意外的办法。",
-      "一次拼太多，坏了可能不知道该改哪里。",
-      "那我们先试一个，再接上朋友的一小块。",
-      "试做不是考试。看见结果以后，还能修改。",
-      "听见不同的理由，宇宙就多了一条新路。",
+      "我想先装一盏小灯，亮不亮一眼就能看出来。",
+      "小灯不错！再接上小兔的转轮，也许它会边跑边照路。",
+      "一起装很有趣，可要是停了，我们怎么知道哪里坏了？",
+      "先试小灯，再接转轮，每加一块就按一下开关。",
     ],
   ][n];
   return {
     allowed: true,
     topic,
-    turns: lines.slice(0, 4).map((text, i) => ({ speakerId: speakers[i % 2].id, text })),
+    turns: lines.map((text, i) => ({
+      speakerId: speakers[i % 2].id,
+      phase: ["offer", "connect", "challenge", "experiment"][i],
+      text,
+    })),
     commonGround: "让每个人的问题都有地方落下，再一起试一试。",
     closingQuestion: "你想先试哪种办法？说一个理由，也可以把两种办法合起来。",
   };
@@ -44,18 +42,26 @@ export function debateFallback(topic, speakers) {
 
 export function journeyDebate(question, speakers) {
   const focus = String(question || '').trim().slice(0, 48);
+  const shortFocus = focus.slice(0, 12);
   const [owl, rabbit] = speakers;
+  const skyQuestion = /(?:天空|天)(?:为什么|为何|怎么会|怎么是).{0,4}蓝|为什么.{0,4}(?:天空|天).{0,3}蓝/.test(focus);
+  const lines = skyQuestion ? [
+    '太阳光里藏着许多颜色，来到天空时会碰上空气。',
+    '空气更容易把蓝光撒向四面，所以到处都能看到蓝色。',
+    '那傍晚为什么变红？因为阳光穿过的空气更长了。',
+    '蓝光一路被撒开，剩下的红橙光更容易来到我们眼前。',
+  ] : [
+    `这是在问“${shortFocus}”的原因，我们先找可靠线索。`,
+    '我来看看哪些是已经知道的，哪些还只是有趣的猜想。',
+    '如果证据还不够，就把不知道的地方清楚地留下来。',
+    '等资料连上再回答；现在先观察它在什么时候会变化。',
+  ];
   return {
     allowed: true,
     topic: focus,
-    turns: [
-      { speakerId: owl.id, text: `关于“${focus}”，我想先观察，找找能看见的线索。` },
-      { speakerId: rabbit.id, text: `我想先做一个小尝试，看看“${focus}”会发生什么。` },
-      { speakerId: owl.id, text: '我们把看到的记下来，再想想还缺哪条线索。' },
-      { speakerId: rabbit.id, text: '我来试一小步，遇到新发现就停下来一起商量。' },
-    ],
-    commonGround: `围绕“${focus}”，先观察，再试一小步。`,
-    closingQuestion: `对于“${focus}”，你想先怎么试？也可以把两种办法合起来。`,
+    turns: lines.map((text, index) => ({ speakerId: index % 2 ? rabbit.id : owl.id, phase: ['offer','connect','challenge','experiment'][index], text })),
+    commonGround: skyQuestion ? '白天的蓝和傍晚的红，都和阳光穿过空气有关。' : '不知道时不硬猜，先分清事实、猜想和还缺少的线索。',
+    closingQuestion: skyQuestion ? '下次看天空时，你想比较中午和傍晚的哪种颜色？' : '你还观察到什么变化，能成为寻找答案的新线索？',
   };
 }
 
@@ -87,7 +93,7 @@ export const DEBATE_STORY = {
     "我想先试一点，再看看有什么新发现。",
     "我想先听大家的点子，再合起来试试。",
   ],
-  rounds: ["听听两种办法", "商量下一步"],
+  rounds: ["摆出两个办法", "接住对方的想法"],
   opening:
     "我是书桌小鸮。我想知道，问出来以后怎样试出答案？雪团小兔有另一个办法。选个问题，我们一起商量。",
   handoff:
