@@ -25,10 +25,11 @@ const markup = `<span class="voice-input-control__start"><svg viewBox="0 0 24 24
 const mounts = new WeakMap();
 const inputs = new WeakMap();
 
-export function mountVoiceInputControl(button) {
+export function mountVoiceInputControl(button, waveDots = 8) {
   if (!button || mounts.has(button)) return button;
   button.classList.add('voice-input-control');
   button.innerHTML = markup;
+  if(waveDots===6){button.dataset.waveDots='6';button.querySelector('.voice-input-control__wave').innerHTML='<i></i>'.repeat(6);}
   button.dataset.voiceControlMounted = 'true';
   button.dataset.voiceControlVersion = VOICE_INPUT_VERSION;
   const wave = [...button.querySelectorAll('.voice-input-control__wave i')];
@@ -63,14 +64,15 @@ export function setVoiceInputControlLevel(button, level) {
   button.style.setProperty('--voice-level', value.toFixed(3));
   // A quiet microphone is still. Only the measured level changes these bars.
   mounts.get(button).wave.forEach((bar, index) => {
-    bar.style.setProperty('--voice-bar-scale', (.16 + value * .84 * profiles[index]).toFixed(3));
+    if(button.dataset.waveDots==='6')bar.style.setProperty('--voice-dot-scale',(1+value*3*profiles[index]).toFixed(3));
+    bar.style.setProperty('--voice-bar-scale', ((button.dataset.waveDots==='6'?.25:.16) + value * (button.dataset.waveDots==='6'?.75:.84) * profiles[index]).toFixed(3));
   });
 }
 
-export function createVoiceInput({ button, transcript, status, sanitize = text => text } = {}) {
+export function createVoiceInput({ button, transcript, status, sanitize = text => text, waveDots = 8 } = {}) {
   if (!button) throw new TypeError('Voice input needs a button');
   if (inputs.has(button)) return inputs.get(button);
-  mountVoiceInputControl(button);
+  mountVoiceInputControl(button,waveDots);
   const clean = value => String(sanitize(String(value ?? '')) ?? '').trim();
   let current = { state: 'setup', transcript: '', interim: false, message: '', level: 0, levelSource: 'measured', activity: false };
   let textNode, textMotion;

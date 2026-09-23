@@ -52,11 +52,12 @@ def unpack(data):
 
 
 def connect():
+    api_key = os.environ.get('VOLC_REALTIME_API_KEY', '').strip()
     app = os.environ.get('VOLC_REALTIME_APP_ID') or os.environ.get('VOLC_SPEECH_APP_ID')
     token = os.environ.get('VOLC_REALTIME_ACCESS_TOKEN') or os.environ.get('VOLC_SPEECH_ACCESS_TOKEN')
-    if not app or not token:
+    if not api_key and (not app or not token):
         raise RuntimeError('realtime_not_configured')
-    return _WebSocket(ENDPOINT, {'X-Api-App-ID': app, 'X-Api-Access-Key': token,
+    return _WebSocket(ENDPOINT, {**({'X-Api-Key': api_key} if api_key else {'X-Api-App-ID': app, 'X-Api-Access-Key': token}),
         'X-Api-Resource-Id': 'volc.speech.dialog', 'X-Api-App-Key': 'PlgvMymc7f3tQnJ6',
         'X-Api-Connect-Id': str(uuid.uuid4())}, timeout=12)
 
@@ -74,7 +75,7 @@ def session_config(lesson='', mode='game'):
                 'JOJO, BOBO and DOMI are character names. Never claim a scene action succeeded or advance a lesson; the game handles those. '
                 + ('You are DOMI welcoming a new player. Ask for a nickname, then their age (three to ten), one question at a time. After both, acknowledge their age and say you will take them somewhere fun. The game transitions automatically; never ask them to tap or confirm. Never request any other personal information or contact details. ' if mode == 'onboarding' else 'Never request personal information. Never prompt the child to repeat an isolated word. Any reading example must be the complete current sentence. ') + 'Do not discuss adult topics. Current example: ' + lesson[:180],
             'speaking_style': ('Speak as DOMI with a playful young child voice, light and bright, in clear gentle English.' if mode == 'onboarding' else 'A warm, gentle female voice, unhurried and softly encouraging, with clear slow English for children.'),
-            'extra': {'model': '1.2.1.1', 'strict_audit': True, 'enable_volc_websearch': False}}}
+            'extra': {'model': '1.2.1.1', 'input_mod': 'keep_alive', 'strict_audit': True, 'enable_volc_websearch': False}}}
 
 
 class BrowserSocket:
@@ -121,6 +122,7 @@ def serve_realtime(handler):
     if not SLOTS.acquire(blocking=False):
         handler.respond_json(429, {'error': 'realtime_busy'}); return
     upstream = None
+    sid = ''
     closed = threading.Event()
     try:
         try:
@@ -134,7 +136,7 @@ def serve_realtime(handler):
         handler.protocol_version = 'HTTP/1.1'
         handler.send_response(101); handler.send_header('Upgrade', 'websocket'); handler.send_header('Connection', 'Upgrade'); handler.send_header('Sec-WebSocket-Accept', accept); handler.end_headers(); handler.wfile.flush()
         handler.close_connection = True
-        handler.connection.settimeout(35)
+        handler.connection.settimeout(310)
         browser = BrowserSocket(handler)
         init = browser.receive()
         if not isinstance(init, dict) or init.get('type') != 'start': raise ValueError('start_required')
@@ -142,7 +144,7 @@ def serve_realtime(handler):
         upstream.send_binary(packet(100, session_config(str(init.get('lesson', '')), 'onboarding' if init.get('mode') == 'onboarding' else 'game'), sid))
         event, _ = unpack(upstream.receive_binary())
         if event != 150: raise RuntimeError('realtime_session_rejected')
-        upstream.socket.settimeout(35)
+        upstream.socket.settimeout(310)
         browser.send({'type': 'ready', 'model': '1.2.1.1'})
         def receive():
             try:
@@ -170,11 +172,18 @@ def serve_realtime(handler):
                 if controls > 600: raise ValueError('control_limit')
                 kind, text = value.get('type'), str(value.get('text', ''))[:240]
                 if kind == 'say' and re.search('[a-zA-Z]', text) and not re.search('[\u3400-\u9fff]', text):
-                    upstream.send_binary(packet(500, {'start': True, 'content': text, 'end': True}, sid))
+                    # SayHello supports explicit reading without a preceding ASR turn.
+                    # ChatTTSText (500) waits for a user query and cannot start a lesson.
+                    upstream.send_binary(packet(300, {'content': text}, sid))
                 elif kind == 'close': break
     except (EOFError, OSError, ValueError, RuntimeError, struct.error):
         pass
     finally:
         closed.set()
-        if upstream: upstream.close()
+        if upstream:
+            try:
+                if sid: upstream.send_binary(packet(102, {}, sid))
+                upstream.send_binary(packet(2, {}))
+            except (OSError, RuntimeError): pass
+            upstream.close()
         SLOTS.release()

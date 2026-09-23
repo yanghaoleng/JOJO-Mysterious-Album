@@ -31,8 +31,8 @@ export async function requestJSON(path, body, timeout = 12000, signal) {
 }
 
 export class StoryVoice {
-  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '', language = 'zh-CN', preferredVoice = '' }) {
-    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile, language, preferredVoice });
+  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '', language = 'zh-CN', preferredVoice = '', continuousMeter = false }) {
+    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile, language, preferredVoice, continuousMeter });
     this.enabled = false;
     this.wanted = false;
     this.sequence = 0;
@@ -86,7 +86,14 @@ export class StoryVoice {
         this.processor = new window.AudioWorkletNode(context, 'dev-pcm-capture');
         this.silent = context.createGain(); this.silent.gain.value = 0;
         this.input.connect(this.processor); this.processor.connect(this.silent); this.silent.connect(context.destination);
-        this.processor.port.onmessage = event => this.capture(event.data);
+        this.processor.port.onmessage = event => {
+          const packet=event.data;
+          if(this.continuousMeter&&this.enabled&&packet.token===this.captureToken&&packet.samples?.length){
+            const rms=Math.sqrt(packet.samples.reduce((sum,v)=>sum+v*v,0)/packet.samples.length);
+            this.onLevel(Math.min(1,rms*15));
+          }
+          this.capture(packet);
+        };
       }
       this.enabled = true;
       this.listen(this.wanted);
@@ -124,9 +131,9 @@ export class StoryVoice {
     const allowed = this.enabled && this.wanted && !this.utterance && !this.asrController;
     const tail = this.quietUntil - performance.now();
     this.recording = Boolean(allowed && tail <= 0);
-    this.stream?.getAudioTracks().forEach(track => { track.enabled = this.recording; });
+    this.stream?.getAudioTracks().forEach(track => { track.enabled = this.recording || (this.continuousMeter && this.enabled); });
     this.captureToken++;
-    this.processor?.port.postMessage({ type: 'capture', enabled: this.recording, token: this.captureToken });
+    this.processor?.port.postMessage({ type: 'capture', enabled: this.recording || (this.continuousMeter && this.enabled), token: this.captureToken });
     this.chunks = []; this.samples = 0; this.voiced = 0; this.lastSound = performance.now();
     this.speechStarted = false; this.silentSeconds = 0; this.noiseFloor = .001;
     this.onLevel(0);
@@ -345,7 +352,7 @@ export class StoryVoice {
           session.speech = speech;
           window.speechSynthesis.speak(speech);
         } catch {
-          if(this.preferredVoice==='female')this.onError('The voice is unavailable. Tap the speaker to try again.');
+          if(this.preferredVoice==='female')this.onError('朗读暂时没连上，点喇叭可以重试。',{code:'tts_unavailable'});
           session.fallback = setTimeout(() => this.finish(session), Math.max(1600, text.length * 170));
         }
       }

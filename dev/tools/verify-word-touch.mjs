@@ -5,7 +5,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/api/tts',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
- await page.goto(`${origin}/dev/words`);await page.locator('#skip-intro').tap();await page.waitForFunction(()=>window.__WORD_GAME__.status.view==='age');
+ await page.goto(`${origin}/dev/words?voice=legacy`);await page.locator('#skip-intro').tap();await page.waitForFunction(()=>window.__WORD_GAME__.status.view==='age');
  const cdp=await context.newCDPSession(page),scale=()=>page.evaluate(()=>visualViewport.scale);
  await cdp.send('Input.synthesizePinchGesture',{x:195,y:180,scaleFactor:2,gestureSourceType:'touch'});assert.equal(await scale(),1);
  await page.touchscreen.tap(195,170);await page.touchscreen.tap(195,170);assert.equal(await scale(),1);

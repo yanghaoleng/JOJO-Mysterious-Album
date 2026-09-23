@@ -1,13 +1,13 @@
-import { ArrowRight, ArrowUpRight, ArrowLeft, Check, Music2, VolumeX, createElement } from 'lucide';
+import { ArrowRight, ArrowUpRight, ArrowLeft, Check, LoaderCircle, Music2, VolumeX, createElement } from 'lucide';
 import * as THREE from '../vendor/three.module.js';
 import { playUISFX, stopUISFX } from '../src/ui-sfx.js';
 import { DioramaStage } from './stage.js';
 import { createGameSession } from './runtime/game-session.js';
 import { StoryVoice, requestJSON } from './voice.js';
 import { RealtimeWordVoice } from './word-realtime-voice.js';
-let voiceMode='legacy',voicePreference=null;try{voicePreference=new URLSearchParams(location.search).get('voice')||localStorage.getItem('jma.word-voice-mode');voiceMode=voicePreference||'legacy';}catch{}
+let voiceMode='realtime',voicePreference=null;try{voicePreference=new URLSearchParams(location.search).get('voice')||localStorage.getItem('jma.word-voice-mode');voiceMode=voicePreference||'realtime';}catch{}
 import { createVoiceInput } from '../src/voice-input-control.js';
-import { WORD_CHAPTERS, WORD_VOCABULARY, getAgeBand, getChapterLessons, getRecommendedWordChapter, createWordSuggestions } from './content/word-games.js';
+import { WORD_CHAPTERS, WORD_PRAISES, WORD_VOCABULARY, getAgeBand, getChapterLessons, getRecommendedWordChapter, createWordSuggestions } from './content/word-games.js';
 import { acceptsEnglishUtterance, createWordProgress, evaluateWordUtterance } from './word-progress.js';
 import { wordSceneEntities, scatterWordSpawns, unknownWordCommands, playerWordProposal } from './word-scene.js';
 import { createWordNarration } from './word-narration.js';
@@ -29,7 +29,7 @@ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let saved;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch{}
 let age=getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
 const journeys=saved?.journeys&&typeof saved.journeys==='object'?saved.journeys:{};
-let continuousListening=false,failedReadAttempts=0,rewardedThisLesson=false;
+let continuousListening=false,failedReadAttempts=0,rewardedThisLesson=false,praising=false,lastPraise='';
 let introStep='name',introName='',introVersion=0;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
 function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
@@ -60,6 +60,13 @@ const speakerIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 function leave(){introVersion++;saveJourney();cancelTurn();stopUISFX();}
 function feedback(text){$('world-feedback').textContent=text;}
+function voiceHint(text){if($('mic-heading'))$('mic-heading').textContent=text;}
+function transcriptPending(pending){const node=$('transcript-loading');if(node)node.hidden=!pending;}
+function syncVoiceInput(state=voiceState){
+  const active=continuousListening&&voice?.enabled;
+  voiceInput?.setState(active?'listening':state,{disabled:state==='requesting',...(active?{label:'正在收音，点一下暂停'}:{})});
+}
+const transcriptLoader=`<span id="transcript-loading" class="transcript-loading" role="status" aria-label="正在识别你的话" hidden>${icon(LoaderCircle,'loader-circle')}</span>`;
 let ambience=null;
 function newWorld(world='meadow',snapshot){
   ambience?.dispose();ambience=null;game?.dispose();game=null;
@@ -79,7 +86,7 @@ function newWorld(world='meadow',snapshot){
   }catch(error){webglFailed=true;$('webgl-error').hidden=false;console.error('Word world:',error);}
 }
 function playerEntities(){return wordSceneEntities(entities());}
-function surprisePoop(){const result=apply(unknownWordCommands());if(result.ok){$('answer-feedback').textContent="I didn't catch that. A silly poop appeared! Try another word.";saveJourney();}return result;}
+function surprisePoop(){const result=apply(unknownWordCommands());if(result.ok){voiceHint('没听清这个想法，变出了一只便便，再试一个词吧');saveJourney();}return result;}
 function entities(){return game?.runtime.snapshot.worlds[game.runtime.context.world]?.entities||{};}
 function apply(commands,{scatter=true,ambient=false}={}){
   if(!game||!commands.length)return {ok:false};
@@ -126,8 +133,8 @@ function renderIntro(){
   leave();setView('intro');newWorld();
   apply([{type:'entity.spawn',id:'welcome-domi',asset:'npc:domi',position:[0,1],scale:.58}],{scatter:false});
   introStep='name';introName='';
-  $('word-panel').innerHTML=`<div class="intro-heading"><p class="intro-kicker">和 DOMI 认识一下</p><h1 id="intro-question" lang="en">Hi! I'm Domi.</h1><p id="intro-help">告诉我你的名字和年龄，一起去造个小世界。</p></div><div class="onboarding intro-controls"><p id="word-transcript" hidden></p><p id="answer-feedback" class="response-line" role="status"></p><p id="mic-heading" class="voice-hint">点一下，和 Domi 聊聊</p><div class="voice-controls"><button id="word-mic" aria-label="和 Domi 聊聊"></button></div><button id="skip-intro" class="quiet-button">跳过</button></div>`;
-  voice?.stop();voice=null;ensureVoice();voiceInput=createVoiceInput({button:$('word-mic')});
+  $('word-panel').innerHTML=`<div class="intro-heading"><p class="intro-kicker">和 DOMI 认识一下</p><h1 id="intro-question" lang="en">Hi! I'm Domi.</h1><p id="intro-help">告诉我你的名字和年龄，一起去造个小世界。</p></div><div class="onboarding intro-controls">${transcriptLoader}<p id="word-transcript" hidden></p><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">点一下，和 Domi 聊聊</p><div class="voice-controls"><button id="word-mic" aria-label="和 Domi 聊聊"></button></div><button id="skip-intro" class="quiet-button">跳过</button></div>`;
+  voice?.stop();voice=null;ensureVoice();voiceInput=createVoiceInput({button:$('word-mic'),waveDots:6});
   $('skip-intro').onclick=()=>void transitionScene(renderAge);
   $('word-mic').onclick=async()=>{
     if(introStep==='ready')return;
@@ -230,7 +237,7 @@ function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
   const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，说完整的一句，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
-  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} ${arrowRight}</button><div id="word-transcript" hidden></div></div><p id="answer-feedback" class="response-line" role="status" aria-live="polite"></p><p id="mic-heading" class="voice-hint">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
+  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><p class="lesson-prompt">${firstPrompt}</p><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div><div class="heard-line" id="heard-line" aria-label="已说出的单词"></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden>${lessonIndex===5?'完成':'继续'} ${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
   const suggestions=createWordSuggestions(lesson);
   const changeWord=index=>{if(voiceState==='speaking'||voiceState==='thinking'||busy||transitioning)return;sentenceMotion.update(suggestions.change(index));};
   sentenceMotion=textMotion('lesson-sentence',suggestions.text,'text',{canReplace:suggestions.canChange,onReplace:index=>{changeWord(index);scheduleSuggestion();}});
@@ -303,24 +310,26 @@ async function toggleMenu(open=!menuOpen){
 function ensureVoice({gameMode=false}={}){
   if(voice)return;
   const onboarding=view==='intro'&&!gameMode;
-  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentLesson().example:'',language:'en-US',speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',
-    onState:state=>{music.setVoiceState(continuousListening&&state==='off'?'listening':state);voiceState=state;voiceInput?.setState(state);if($('mic-heading'))$('mic-heading').textContent=({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:'先听一听，再跟着说',transcribing:'正在听懂你的话',off:'轮到你啦，试着说出来',paused:'轮到你啦，试着说出来'})[state]||'我在听';},
-    onAnswer:text=>view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive)}),onLevel:level=>voiceInput?.setLevel(level),
-    onError:(message,details={})=>{if(onboarding&&String(message).includes('童声'))message="Domi's voice is unavailable. Please try again or skip.";if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
-      NotAllowedError:'Please allow microphone access in your browser and system settings.',
-      NotFoundError:'No microphone was found. Connect one and try again.',
-      NotReadableError:'Your microphone is busy. Close other recording apps and try again.',
-      capture_unavailable:'This browser cannot record audio. Try Chrome or Safari.',
-      asr_not_configured:'Speech recognition is not configured on this server.',
-      request_timeout:'Speech recognition took too long. Please try again.',
-      asr_upstream_error:'The speech service is unavailable. Please try again.',
-      empty:'I did not hear any words. Please try again.',
-    })[details.code]||'Could not record or recognize your voice. Please try again.';},
-    onCapture:packet=>{if(packet.state==='reply'&&view==='intro'&&introStep!=='ready'&&acceptsEnglishUtterance(packet.text))$('intro-question').textContent=packet.text;if(packet.state==='partial'&&acceptsEnglishUtterance(packet.text)&&$('word-transcript')){reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${packet.text}”`;}if(packet.state==='fallback'&&$('answer-feedback')){$('answer-feedback').textContent=packet.message;if($('voice-mode'))$('voice-mode').textContent='已回退经典 · 保存此选择';}if(['quiet','short','empty','error'].includes(packet.state)&&$('answer-feedback'))$('answer-feedback').textContent='Come a little closer and try again.';}
+  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentLesson().example:'',language:'en-US',speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',continuousMeter:true,
+    onState:state=>{music.setVoiceState(continuousListening&&state==='off'?'listening':state);voiceState=state;syncVoiceInput(state);transcriptPending(state==='transcribing'||state==='thinking');voiceHint(({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:praising?'说得真棒！听听给你的鼓励':'先听一听，再跟着说',transcribing:'正在听懂你的话',thinking:'正在听懂你的话',off:continuousListening?'我会一直听，你可以接着说':'轮到你啦，试着说出来',paused:'已暂停，点一下继续'})[state]||'我在听');},
+    onAnswer:text=>{transcriptPending(false);return view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive)});},onLevel:level=>voiceInput?.setLevel(level),
+    onError:(message,details={})=>{transcriptPending(false);if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}voiceHint(({
+      NotAllowedError:'请在浏览器和系统设置中允许使用麦克风',
+      NotFoundError:'没有找到麦克风，请连接后再试',
+      NotReadableError:'麦克风正被占用，关闭其他录音后再试',
+      capture_unavailable:'这个浏览器暂不支持收音，可以换 Chrome 或 Safari',
+      asr_not_configured:'语音识别暂未就绪，请稍后再试',
+      request_timeout:'这次识别有点慢，请再说一次',
+      asr_upstream_error:'语音服务暂时没连上，请再试一次',
+      empty:'刚才没有听清，靠近一点再说一次',
+      tts_unavailable:'朗读暂时没连上，点喇叭可以重试',
+    })[details.code]||(/[\u3400-\u9fff]/.test(message)?message:'语音暂时没连上，请再试一次'));},
+    onCapture:packet=>{if(packet.state==='reply'&&view==='intro'&&introStep!=='ready'&&acceptsEnglishUtterance(packet.text))$('intro-question').textContent=packet.text;if(packet.state==='partial'&&acceptsEnglishUtterance(packet.text)&&$('word-transcript')){transcriptPending(false);reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${packet.text}”`;}if(packet.state==='reconnecting')voiceHint('正在重新连接语音，你可以继续说');if(packet.state==='fallback'){voiceHint('实时语音暂时没连上，已切换备用语音');if($('voice-mode'))$('voice-mode').textContent='已回退经典 · 保存此选择';}if(['quiet','short','empty','error'].includes(packet.state)){transcriptPending(false);voiceHint('刚才没有听清，靠近一点再说一次');}if(packet.state==='paused')transcriptPending(false);}
+
   });
 }
 function initVoice(){
-  ensureVoice();voiceInput=createVoiceInput({button:$('word-mic')});
+  ensureVoice();voiceInput=createVoiceInput({button:$('word-mic'),waveDots:6});
   $('word-mic').onclick=async()=>{if(continuousListening){continuousListening=false;voice.pause();voiceInput.setState('paused');$('mic-heading').textContent='已暂停，点一下继续';}else{continuousListening=true;const activeVoice=voice;activeVoice.skip();activeVoice.listen(true);await activeVoice.enable();if(voice===activeVoice&&!activeVoice.enabled)continuousListening=false;}};
 }
 async function sayGuidance(text){
@@ -334,15 +343,23 @@ async function sayGuidance(text){
   }:undefined);
   if(view==='play'&&game===session&&sentenceMotion===mount&&voice===active)resumeListening();
 }
+async function sayPraise(){
+  if(!voice||document.hidden||view!=='play')return;
+  const choices=WORD_PRAISES.filter(text=>text!==lastPraise),text=choices[Math.floor(Math.random()*choices.length)];
+  const active=voice,session=game,mount=sentenceMotion;
+  lastPraise=text;praising=true;active.listen(false);
+  try{await active.say(text,'gentle');}
+  finally{praising=false;if(view==='play'&&game===session&&sentenceMotion===mount&&voice===active)resumeListening();}
+}
 async function speak(text){if(!voice||busy||document.hidden||view!=='play')return;await voice.unlock().catch(()=>{});if(view==='play')await sayGuidance(text);}
 async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
   const text=String(raw||'').trim();if(!text||busy||view!=='play')return;
   if(!acceptsEnglishUtterance(text)){
     const message="Let's try it in English!";
-    $('answer-feedback').textContent=message;voice?.skip();void speak(message);return;
+    voiceHint('试着用英语说出来吧');voice?.skip();void speak(message);return;
   }
   const session=game,version=++turn,lesson=currentLesson();busy=true;if(!fromRealtime)voice?.listen(false);
-  if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;$('answer-feedback').textContent='Making your idea…';
+  if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;voiceHint('正在把你的想法变出来');
   try{
     const result=evaluateWordUtterance(lesson,text,progress);
     let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
@@ -364,13 +381,13 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
         const isFallback=response.source==='random-poop'||response.commands?.some(c=>c.asset==='prop:procedural');
         const proposed=isFallback?unknownWordCommands():playerWordProposal(validateWordProposal(response,playerEntities()));
         const extra=proposed.length?apply(proposed):{ok:false};
-        if(!extra.ok){surprisePoop();extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";}
+        if(!extra.ok){surprisePoop();extraReply='没听清这个想法，变出了一只便便，再试一个词吧';}
         applied={ok:applied.ok||(!isFallback&&extra.ok)};
-        if(extra.ok&&isFallback)extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";
-        else if(extra.ok&&(response.substitution||proposed.some(c=>c.asset==='prop:procedural')))extraReply="Here is a first version. Try a color or an action!";
-        else if(extra.ok)extraReply="Your new idea is here!";
+        if(extra.ok&&isFallback)extraReply='没听清这个想法，变出了一只便便，再试一个词吧';
+        else if(extra.ok&&(response.substitution||proposed.some(c=>c.asset==='prop:procedural')))extraReply='变出来啦，再试试颜色或动作吧';
+        else if(extra.ok)extraReply='你的新想法变出来啦';
 
-      }catch(error){if(error.name==='AbortError'||turn!==version)return;surprisePoop();extraReply="I didn't catch that idea. A silly poop appeared! Try another word.";}
+      }catch(error){if(error.name==='AbortError'||turn!==version)return;surprisePoop();extraReply='没听清这个想法，变出了一只便便，再试一个词吧';}
     }
     if(turn!==version||game!==session||view!=='play')return;
     if(plan.commands.length&&!applied.ok)throw new Error(applied.error||'场景还没准备好');
@@ -384,14 +401,17 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     creative=made&&!result.targetComplete;
     updateSentence(result);
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
-    $('answer-feedback').textContent=extraReply||(made&&creative?'Your idea is here! Keep exploring.':result.targetComplete?'You made it!':result.nextWord?'Try the whole sentence.':'Try another word.');
+    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':result.targetComplete?'说得真棒，你做到了！':result.nextWord?'再试着说出完整的一句吧':'再试一个词吧'));
     feedback(made?'Your world is changing!':result.currentMatched.length?`I heard ${result.currentMatched.join(', ')}.`:'Try another word.');
-    if((result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative)){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
+    const matched=(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
+    if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
     saveJourney();
+    if(matched&&!fromMenu)await sayPraise();
+    if(turn!==version||game!==session||view!=='play')return;
     if(result.targetComplete||canAdvance)failedReadAttempts=0;
     else if(!fromMenu&&continuousListening&&++failedReadAttempts>=2){failedReadAttempts=0;await sayGuidance(lesson.example);}
-  }catch(error){if(turn===version&&$('answer-feedback'))$('answer-feedback').textContent="That did not work. Please try again.";console.error(error);}
+  }catch(error){if(turn===version)voiceHint('这次没有成功，再试一次吧');console.error(error);}
   finally{if(turn===version){busy=false;request=null;if(!fromRealtime)resumeListening();}}
 }
 async function nextLesson(){
@@ -455,4 +475,4 @@ try{
 const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
 $('word-stage').addEventListener('pointerdown',()=>ambience?.manual());
 renderIntro();
-window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
+window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};

@@ -10,7 +10,7 @@ export const COMPONENTS = [
   {id:'logic:behavior-events',kind:'logic',name:'词语互动事件与自动道具',description:'世界工坊“一句话控制场景”下方列出可点击的中英文事件表。游泳自动补水池，航行缺载具补飞机；短表演结束收起临时道具。验证 dev/tools/verify-behavior-events.mjs。',source:'dev/presentation/behavior-controller.js',capabilities:['29种短表演','自动补道具','既有对象保留','中断与清理'],dependencies:['logic:word-intent','logic:presenter']},
   {id:'logic:event-symbols',kind:'logic',name:'头顶音符与状态符号',description:'哼唱用音符，睡觉与困倦用Z字符，热气、爱心、问号与确认符号使用真实几何，独立释放资源。',source:'dev/presentation/event-symbols.js',capabilities:['音符','Z字符','情绪符号','无需字体图片'],dependencies:[]},
   {id:'story:words',kind:'story',name:'独立章节 · 开口造世界',description:'选具体年龄后只推荐一章，六章各六轮，机器人拼装、逐词搭句、挖空与自由创造。实际入口 /dev/words.html。',source:'dev/content/word-games.js',capabilities:['三个年龄档','六章108轮','目标词与知识点','开放例句'],dependencies:['logic:word-progress','logic:word-intent']},
-  {id:'ui:word-play',kind:'ui',name:'开口造世界 · 年龄与冒险界面',description:'在 /dev/words.html 体验全屏 3D、圆形转场、年龄步进器、单卡推荐、英文女声示范和点词创作。仅本小游戏拒绝中文表达。',source:'dev/words.js',capabilities:['年龄推荐与加减音效回弹','Calligraph 数字与字幕','常驻点词菜单与飞入字幕','语音文字上方居中继续与柔光输入','上一关与全新开始','持续收音与整句重读','触屏页面缩放锁定','DOMI语音欢迎与跳过','英文语音与点词','图标库对勾与作品分享'],dependencies:['ui:voice','ui:word-text','ui:word-music','logic:word-welcome','logic:session']},
+  {id:'ui:word-play',kind:'ui',name:'开口造世界 · 年龄与冒险界面',description:'在 /dev/words.html 体验全屏 3D、圆形转场、年龄步进器、单卡推荐、英文女声示范和点词创作。仅本小游戏拒绝中文表达。',source:'dev/words.js',capabilities:['年龄推荐与加减音效回弹','Calligraph 数字与字幕','常驻点词菜单与飞入字幕','语音文字上方居中继续与柔光输入','上一关与全新开始','持续收音与整句重读','单行中文状态与六句随机女声鼓励','六点音量与独立字幕等待状态','触屏页面缩放锁定','DOMI语音欢迎与跳过','英文语音与点词','图标库对勾与作品分享'],dependencies:['ui:voice','ui:word-text','ui:word-music','logic:word-welcome','logic:session']},
   {id:'logic:word-realtime-voice',kind:'logic',name:'英语冒险 · 可切换实时语音',description:'在单词菜单切换豆包端到端实时对话与经典语音。新服务需开通 volc.speech.dialog 权限；连接失败回退经典方案。验证 test_word_realtime.py。',source:'dev/word-realtime-voice.js',capabilities:['实时音频与字幕','英文角色道具热词','经典语音回滚','断线回退'],dependencies:['ui:voice']},
   {id:'logic:word-welcome',kind:'logic',name:'DOMI 欢迎介绍',description:'在 /dev/words 初次进入，DOMI 使用童声询问昵称和年龄，例句切换温柔女声，确认年龄后用童声回应并自动进入推荐关卡，跳过回到年龄选择；昵称只留在内存。',source:'dev/word-welcome.js',capabilities:['英文昵称与年龄提取','3至10岁','跳过与清理'],dependencies:[]},
   {id:'ui:word-reward',kind:'ui',name:'英语匹配成功反馈',description:'在 /dev/words 完成表达后播放积极音效、字幕蓝色扫光和绿色对勾，每关首次成功从屏幕边缘撒花。验证 verify-word-ui.mjs。',source:'dev/word-reward.js',capabilities:['积极音效','字幕扫光与对勾','边缘撒花','减少动态效果','清理'],dependencies:[]},
@@ -98,7 +98,7 @@ export const COMPONENTS = [
     description:
       "等待、收音、转写、识别文字和暂停状态的统一展示。演示不申请麦克风。",
     source: "src/voice-input-control.js",
-    capabilities: ["录音状态", "音量反馈", "原话展示"],
+    capabilities: ["录音状态", "音量反馈", "六点收音可选模式", "原话展示"],
     dependencies: [],
   },
   {
@@ -176,7 +176,7 @@ export const COMPONENTS = [
     description:
       "管理采集、识别、朗读和取消；只在孩子主动打开麦克风后申请权限。",
     source: "dev/voice.js",
-    capabilities: ["ASR", "TTS", "取消与暂停"],
+    capabilities: ["ASR", "TTS", "持续音量监测可选模式", "取消与暂停"],
     dependencies: ["ui:voice"],
   },
   {

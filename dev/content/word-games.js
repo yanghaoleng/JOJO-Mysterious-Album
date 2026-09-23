@@ -1,3 +1,4 @@
+export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
   sunny:{word:'sunny',meaning:'晴朗的',inSource:false},

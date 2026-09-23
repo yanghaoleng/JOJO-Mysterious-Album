@@ -27,7 +27,10 @@ export class RealtimeWordVoice extends StoryVoice {
       socket.onclose=()=>{
         clearTimeout(timer);
         if(!ready)reject(new Error('realtime_unavailable'));
-        if(generation===this.rtGeneration&&ready){this.realtimeFailed=true;this.stopPlayback();this.finishRead();this.captureFeedback('fallback','Real-time voice disconnected. Classic voice is ready.');this.refreshListening();}
+        if(generation===this.rtGeneration&&ready){
+          this.socket=null;this.stopPlayback();this.finishRead();
+          if(this.enabled||this.wanted){this.captureFeedback('reconnecting');void this.connectRealtime().then(()=>this.refreshListening()).catch(()=>this.refreshListening());}
+        }
       };
     }).catch(error=>{if(generation===this.rtGeneration){this.realtimeFailed=true;this.captureFeedback('fallback','Real-time voice is unavailable. Using classic voice.');}throw error;}).finally(()=>{if(generation===this.rtGeneration)this.rtConnecting=null;});
     return this.rtConnecting;
@@ -55,7 +58,7 @@ export class RealtimeWordVoice extends StoryVoice {
     this.socket.send(pcm.buffer);
   }
   handleRealtime(event,data){
-    if(event===450){this.stopPlayback();this.finishRead();this.partial='';this.ignoreAudio=false;this.answerDelivered=false;this.onState('listening');}
+    if(event===450){this.stopPlayback();this.finishRead();this.partial='';this.ignoreAudio=false;this.answerDelivered=false;this.onState('transcribing');}
     if(event===451){
       const results=data.results||[];this.partial=results.map(r=>r.text||'').join('');
       this.captureFeedback('partial','',this.partial);
@@ -63,9 +66,12 @@ export class RealtimeWordVoice extends StoryVoice {
     if(event===459&&!this.answerDelivered){this.answerDelivered=true;const text=this.partial?.trim();if(text)Promise.resolve(this.onAnswer(text)).catch(()=>this.onError('Please try again.'));}
     if(event===350){
       // Only audio belonging to an English subtitle is accepted.
-      this.ignoreAudio=(this.getMode?.()==='game'&&!this.rtRead)||!/[a-z]/i.test(data.text||'')||/[\u3400-\u9fff]/.test(data.text||'');
+      // Explicit readings can start with an empty subtitle; real text arrives in event 351.
+      const text=data.text||this.rtRead?.text||'';
+      this.ignoreAudio=!this.rtRead||!/[a-z]/i.test(text)||/[\u3400-\u9fff]/.test(text);
       if(!this.ignoreAudio){this.onState('speaking');this.captureFeedback('reply','',data.text||'');}
     }
+    if(event===351&&!this.ignoreAudio&&data.text){this.captureFeedback('reply','',data.text);}
     if(event===359){clearTimeout(this.endTimer);this.endTimer=setTimeout(()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},Math.max(0,(this.playAt-(this.context?.currentTime||0))*1000)+30);}
   }
   playPCM(data){
@@ -85,7 +91,8 @@ export class RealtimeWordVoice extends StoryVoice {
     if(generation!==this.rtGeneration)return;
     this.skip();this.ignoreAudio=false;onStart();
     return new Promise(resolve=>{
-      this.rtRead={resolve,progress:onProgress,timer:setTimeout(()=>{this.stopPlayback();this.finishRead();},20000)};
+      this.onState('speaking');
+      this.rtRead={resolve,text,progress:onProgress,timer:setTimeout(()=>{this.stopPlayback();this.finishRead();},20000)};
       // Real-time does not provide word timestamps: never fabricate timing.
       this.socket.send(JSON.stringify({type:'say',text}));
     });

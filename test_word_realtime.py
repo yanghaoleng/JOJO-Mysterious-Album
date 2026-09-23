@@ -2,7 +2,7 @@ import json
 import struct
 import unittest
 from unittest.mock import patch
-from volc_realtime import packet, unpack, session_config
+from volc_realtime import packet, unpack, session_config, connect
 from volc_asr import speech_hotwords, transcribe_pcm, transcribe_pcm
 
 class RealtimeProtocolTest(unittest.TestCase):
@@ -28,6 +28,15 @@ class RealtimeProtocolTest(unittest.TestCase):
         hotwords=json.loads(payload['request']['corpus']['context'])['hotwords']
         self.assertIn({'word':'DOMI'},hotwords)
         connection.close.assert_called_once()
+
+    def test_unified_api_key_takes_precedence(self):
+        with patch.dict('os.environ', {'VOLC_REALTIME_API_KEY':'unit-test-key', 'VOLC_SPEECH_APP_ID':'old-app', 'VOLC_SPEECH_ACCESS_TOKEN':'old-token'}), patch('volc_realtime._WebSocket') as socket:
+            connect()
+        headers=socket.call_args.args[1]
+        self.assertEqual(headers['X-Api-Key'],'unit-test-key')
+        self.assertNotIn('X-Api-Access-Key',headers)
+        self.assertNotIn('X-Api-App-ID',headers)
+        self.assertEqual(session_config()['dialog']['extra']['input_mod'],'keep_alive')
 
     def test_bad_frames(self):
         for data in [b'', b'\x11\xf0\x10\x00'+struct.pack('>I',45000003)]:
