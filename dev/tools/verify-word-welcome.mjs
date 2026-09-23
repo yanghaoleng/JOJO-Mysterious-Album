@@ -40,12 +40,14 @@ try{
  await p.locator('#change-age').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age');assert.equal(await p.locator('#age-number').count(),1);assert.equal(await p.evaluate(()=>localStorage.getItem('jma.word-play.v1')),null);
  await p.reload();await p.locator('#skip-intro').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age');
  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);
- const fallback=await context.newPage();let answers=0;const questions=[];
+ const fallback=await context.newPage();let answers=0;const questions=[],voiceRequests=[];
  await fallback.routeWebSocket('**/api/word-realtime',ws=>ws.close());
- await fallback.route('**/api/tts',r=>{questions.push(r.request().postDataJSON().text);return r.fulfill({contentType:'audio/wav',body:wav(.25)});});
+ await fallback.route('**/api/tts',r=>{voiceRequests.push(r.request().postDataJSON());questions.push(r.request().postDataJSON().text);return r.fulfill({contentType:'audio/wav',body:wav(.25)});});
  await fallback.route('**/api/asr',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({transcript:answers++===0?'My name is Sam.':'I am six.'})}));
  await fallback.goto(`${origin}/dev/words`);await fallback.locator('#word-mic').click();
  await fallback.locator('#start-world').waitFor({timeout:30000});assert.equal(await fallback.evaluate(()=>window.__WORD_GAME__.status.age),6);assert.ok(questions.some(q=>q.includes('What is your name')));assert.ok(questions.some(q=>q.includes('How old are you')));assert.equal(await fallback.evaluate(()=>window.__WORD_GAME__.status.recording),false);
+ assert.ok(voiceRequests.length>=2&&voiceRequests.every(r=>r.speechProfile==='wow-child'));await fallback.locator('#start-world').click();await fallback.waitForFunction(()=>window.__WORD_GAME__.status.view==='play');await fallback.waitForTimeout(500);assert.equal(voiceRequests.at(-1).voice,'gentle');assert.equal(voiceRequests.at(-1).speechProfile,undefined);
+ console.log('PASS child welcome and gentle female lesson profiles remain isolated');
  console.log('PASS actual capture/worklet with classic fallback fixtures asks name then age without a second mic click');
  console.log('PASS welcome nickname/age via realtime fixture, small DOMI, start and skip, ephemeral nickname, music mute/voice pause, 12s one-token suggestions and click replacement');
 }finally{await browser.close();}

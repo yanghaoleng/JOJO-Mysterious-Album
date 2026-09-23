@@ -73,7 +73,7 @@ def session_config(lesson='', mode='game'):
                 'Use one short encouraging sentence, at most 12 words. Accept playful nouns and adjectives. '
                 'JOJO, BOBO and DOMI are character names. Never claim a scene action succeeded or advance a lesson; the game handles those. '
                 + ('You are DOMI welcoming a new player. Ask for a nickname, then their age (three to ten), one question at a time. After both, invite them to tap Start. Never request any other personal information or contact details. ' if mode == 'onboarding' else 'Never request personal information. ') + 'Do not discuss adult topics. Current example: ' + lesson[:180],
-            'speaking_style': 'A warm female voice, clear slow English suitable for young children.',
+            'speaking_style': ('Speak as DOMI with a playful young child voice, light and bright, in clear gentle English.' if mode == 'onboarding' else 'A warm, gentle female voice, unhurried and softly encouraging, with clear slow English for children.'),
             'extra': {'model': '1.2.1.1', 'strict_audit': True, 'enable_volc_websearch': False}}}
 
 

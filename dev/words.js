@@ -129,7 +129,7 @@ async function askIntro(question){
   if(view!=='intro'||introStep==='ready')return;
   const version=introVersion,active=voice;
   $('intro-question').textContent=question;
-  active.listen(false);await active.say(question,'clear');
+  active.listen(false);await active.say(question,'sprout');
   if(view==='intro'&&version===introVersion&&voice===active)resumeListening();
 }
 async function introAnswer(raw){
@@ -282,10 +282,10 @@ async function toggleMenu(open=!menuOpen){
 function ensureVoice({gameMode=false}={}){
   if(voice)return;
   const onboarding=view==='intro'&&!gameMode;
-  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentLesson().example:'',language:'en-US',preferredVoice:'female',
+  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentLesson().example:'',language:'en-US',speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',
     onState:state=>{music.setVoiceState(continuousListening&&state==='off'?'listening':state);voiceState=state;voiceInput?.setState(state);if($('mic-heading'))$('mic-heading').textContent=({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:'先听一听，再跟着说',transcribing:'正在听懂你的话',off:'轮到你啦，试着说出来',paused:'轮到你啦，试着说出来'})[state]||'我在听';},
     onAnswer:text=>view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive)}),onLevel:level=>voiceInput?.setLevel(level),
-    onError:(message,details={})=>{if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
+    onError:(message,details={})=>{if(onboarding&&String(message).includes('童声'))message="Domi's voice is unavailable. Please try again or skip.";if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}if($('answer-feedback'))$('answer-feedback').textContent=acceptsEnglishUtterance(message)?message:({
       NotAllowedError:'Please allow microphone access in your browser and system settings.',
       NotFoundError:'No microphone was found. Connect one and try again.',
       NotReadableError:'Your microphone is busy. Close other recording apps and try again.',
@@ -307,7 +307,7 @@ async function sayGuidance(text){
   if(example.toLowerCase().includes(text.toLowerCase())&&chapter.id==='monster'&&!Object.values(wordSceneEntities(entities(),'demo')).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'demo-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);
   const narrate=createWordNarration(text,{getContext:()=>({entities:entities(),chapter:chapter.id,focusId}),apply});
   const offset=example.toLowerCase().indexOf(text.toLowerCase());
-  await voice.say(text,'clear',()=>{},'',offset>=0?packet=>{
+  await voice.say(text,'gentle',()=>{},'',offset>=0?packet=>{
     if(view==='play'&&sentenceMotion===mount&&game===session){mount.read(example,{...packet,start:packet.start<0?-1:packet.start+offset,end:packet.end<0?-1:packet.end+offset});narrate(packet);}
   }:undefined);
   resumeListening();

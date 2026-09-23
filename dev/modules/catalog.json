@@ -94,7 +94,7 @@
       "id": "logic:word-welcome",
       "kind": "logic",
       "name": "DOMI 欢迎介绍",
-      "description": "在 /dev/words 初次进入，DOMI 询问昵称和年龄后提供开始入口，跳过回到年龄选择；昵称只留在内存。",
+      "description": "在 /dev/words 初次进入，DOMI 使用童声询问昵称和年龄，例句切换温柔女声，完成介绍后提供开始入口，跳过回到年龄选择；昵称只留在内存。",
       "source": "dev/word-welcome.js",
       "capabilities": [
         "英文昵称与年龄提取",

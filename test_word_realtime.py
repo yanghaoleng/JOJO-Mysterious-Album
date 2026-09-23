@@ -40,5 +40,7 @@ class RealtimeProtocolTest(unittest.TestCase):
         self.assertEqual(config['asr']['extra']['context']['hotwords'],speech_hotwords())
         self.assertIn('ONLY English',config['dialog']['system_role'])
         self.assertEqual(config['tts']['audio_config']['format'],'pcm_s16le')
+        self.assertIn('gentle female', config['dialog']['speaking_style'])
+        self.assertIn('young child voice', session_config('', 'onboarding')['dialog']['speaking_style'])
 
 if __name__ == '__main__':unittest.main()
