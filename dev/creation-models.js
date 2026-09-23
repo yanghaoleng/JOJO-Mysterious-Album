@@ -16,6 +16,8 @@ export function createCreationModel(kind, color = '#9ab8ba', name = '') {
     age += dt; time += dt; const strength = !enabled ? 0 : age < 4 ? Math.sin(Math.min(1,age/.3)*Math.PI/2) * Math.min(1,(4-age)/.5) : working ? .25 : .06;
     for(const material of materials.values()){material.emissive.set('#e8c56e');material.emissiveIntensity=age<4?strength*.18:0;}
     for(const m of movers){ const wave=Math.sin(time*m.rate)*strength*(reduced?.15:1);m.object.position.copy(m.rest);m.object.rotation.copy(m.rotation);
+      if(m.mode==='flap')m.object.rotation.z+=reduced?0:Math.sin(time*m.rate)*m.amount;
+      if(m.mode==='flap-x')m.object.rotation.x+=reduced?0:Math.sin(time*m.rate)*m.amount;
       if(m.mode==='bounce')m.object.position.y+=Math.abs(wave)*m.amount;
       if(m.mode==='sway')m.object.rotation.z+=wave*m.amount;
       if(m.mode==='swing')m.object.rotation.x+=wave*m.amount;

@@ -35,7 +35,11 @@ try{
  await next(p);await p.waitForFunction(()=>window.__WORD_GAME__.status.recording,{timeout:18000});
  await p.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance,null,{timeout:18000});
  assert.equal(Object.values((await status(p)).entities).filter(e=>e.asset==='prop:robot-hand'&&!e.id.startsWith('demo-')).length,2);
- await p.locator('#reveal-previous').click();await p.locator('#previous-lesson').click();await settle(p);await p.waitForFunction(()=>window.__WORD_GAME__.status.recording,{timeout:18000});assert.equal((await status(p)).lessonIndex,0);
+ transcript='flibberwock';const beforeWrong=asr.length;await p.waitForFunction(n=>window.__WORD_GAME__.status.progress.attempts>n,(await status(p)).progress.attempts,{timeout:18000});await settle(p);assert.equal((await status(p)).canAdvance,true,'wrong follow-up must not relock continuation');assert.equal(await p.locator('#next-lesson').isVisible(),true);
+ await p.keyboard.press('Enter');await settle(p);assert.equal((await status(p)).lessonIndex,2);
+ await p.keyboard.press('Space');assert.equal((await status(p)).listening,false);assert.equal((await status(p)).recording,false);
+ await p.keyboard.press('Enter');await p.waitForFunction(()=>window.__WORD_GAME__.status.recording,{timeout:18000});assert.equal((await status(p)).lessonIndex,2,'Enter without Continue resumes voice');
+ await p.locator('#reveal-previous').click();await p.locator('#previous-lesson').click();await settle(p);await p.waitForFunction(()=>window.__WORD_GAME__.status.recording,{timeout:18000});assert.equal((await status(p)).lessonIndex,1);
  await p.locator('#word-mic').click();await settle(p);const paused=asr.length;await p.waitForTimeout(4800);assert.equal(asr.length,paused);assert.equal((await status(p)).listening,false);assert.equal((await status(p)).recording,false);
  await p.locator('#change-age').click();await settle(p);assert.equal(await p.evaluate(()=>localStorage.getItem('jma.word-play.v1')),null);assert.equal((await status(p)).recording,false);
  assert.deepEqual(errors,[]);console.log('PASS one microphone click: three consecutive utterances, forward/backward lesson resume, explicit pause stops capture, age reset clears records');

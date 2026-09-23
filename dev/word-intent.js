@@ -11,7 +11,7 @@ export const hasWord=(text,word)=>/[a-z]/i.test(word)?new RegExp(`\\b${esc(word)
 function aliases(item){const words=[item.word,...(item.aliases||[]),item.zh];if(!/s$/.test(item.word))words.push(item.word+'s');if(item.word.endsWith('y'))words.push(item.word.slice(0,-1)+'ies');return [...new Set(words)].filter(Boolean);}
 export const WORD_CHARACTER_NAMES=Object.freeze({'yellow:jiaojiao':'JOJO','npc:zhuxiaodi':'BOBO','npc:domi':'DOMI'});
 const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:WORD_CHARACTER_NAMES[a.id]?.toLowerCase()||a.name,zh:a.name,assetId:a.id,match:[...(WORD_CHARACTER_NAMES[a.id]?[WORD_CHARACTER_NAMES[a.id]]:[]),a.name,a.id.split(':').at(-1)]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
-export const WORD_SPEECH_VOCABULARY=[...new Set([...Object.values(WORD_CHARACTER_NAMES),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
+export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...Object.values(WORD_CHARACTER_NAMES),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
 export function findWordObjects(text) {
   const hits=[];
   for(const item of lexicon)for(const alias of item.match){
@@ -95,7 +95,10 @@ export function planWordIntent(text,{entities={},chapter='color',focusId=null,fe
       if(['eye','ear','nose','mouth'].includes(hit.item.word))commands.push({type:'entity.scale',id,scale:.23});
     });
   }
-  if(/\brain\b|下雨/i.test(text)&&!objects.some(h=>h.item.word==='rain'))commands.push({type:'weather.set',preset:'rain'});
+  for(const [preset,words] of [['clear',['sunny','sunshine','clear']],['rain',['rain','rainy','raining']],['snow',['snow','snowy','snowing']]]){
+    const hits=words.filter(w=>hasWord(text,w));if(hits.length){commands.push({type:'weather.set',preset});matched.push(...hits);}
+  }
+  if(hasWord(text,'weather'))matched.push('weather');
   if(/\b(eat|eats)\b|吃/.test(text)&&targets.length>=2)commands.push({type:'feeding.start',eaters:targets[0].ids,foods:targets.slice(1).flatMap(t=>t.ids)});
   if(/^water\b|浇水|浇花/i.test(text))for(const {hit,ids}of targets)if(hit.item.word!=='water')for(const id of ids)commands.push({type:'entity.effect',id,effect:'grow'},{type:'entity.effect',id,effect:'wet'});
   if(/\brun\b.*\bthen\s+stop\b|先跑.*再停/i.test(text))for(const {ids}of targets)for(const id of ids)commands.push({type:'entity.effect',id,effect:'run-stop'});

@@ -228,3 +228,6 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 `word-welcome.js` 只从英文提取昵称与 3–10 岁年龄，昵称在当前页面内存使用，不写存档。入口用已有 `npc:domi` 通过实体命令显示小号 DOMI，欢迎会话优先走实时对话，连接失败保留经典识别/朗读。跳过和重新选年龄走原年龄页，开始时释放欢迎语音并清理旧世界。服务端 onboarding 模式只允许询问昵称和年龄，其余模式仍禁止索取个人资料。
 
 `word-music.js` 使用三首作者标记 CC0 的本地纯音乐，首个手势后播放，静音偏好独立保存；录音、领读、后台时暂停，新一轮随机且避开上一首。来源、许可链接与原始文件哈希在 `assets/music/word-world/licenses.json`。字幕候选由 `createWordSuggestions` 保持固定词槽，每 12 秒仅变化一个，点击词槽重置计时；朗读中冻结，遵守减少动态效果设置。
+
+### 英语世界环境与自主活动
+`word-ambience.js` 通过现有 gateway 派发晴雨雪和有限角色表演，每轮 7 秒后释放；显式指令抢占自主表演，保护近期指令、示范模型、附着物和正在运动的角色。手动镜头操作暂停自动运镜 15 秒，减少动态偏好下关闭自动运镜和自主走动。`group.patrol` 可选 speed/distance 经契约限幅，默认行为不变。

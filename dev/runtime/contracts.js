@@ -29,7 +29,7 @@ export const COMMANDS = Object.freeze({
   "flag.set": ["key", "value"],
   "creation.put": ["record"],
   "creation.activate": ["id"],
-  "group.patrol": ["targets"],
+  "group.patrol": ["targets", "speed", "distance"],
   "group.gather": ["targets"],
   "group.surround": ["targets", "surrounders"],
   "group.chase": ["chaser", "runner"],
@@ -238,6 +238,10 @@ export function validateCommand(command) {
       Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,
       "Invalid group targets",
     );
+  if(c.type==="group.patrol") {
+    if(c.speed!==undefined)requireValue(Number.isFinite(c.speed)&&c.speed>=.1&&c.speed<=3,"Invalid patrol speed");
+    if(c.distance!==undefined)requireValue(Number.isFinite(c.distance)&&c.distance>=.1&&c.distance<=4,"Invalid patrol distance");
+  }
   if (c.type === "group.surround") {
     requireValue(
       Array.isArray(c.targets) && c.targets.length > 0 && c.targets.length <= 100 && c.targets.every(safeId) && new Set(c.targets).size === c.targets.length,

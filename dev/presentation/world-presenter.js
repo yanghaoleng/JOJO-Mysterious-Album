@@ -218,7 +218,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         movement.stop([c.id]);
       }
       if(c.type==='entity.remove') movement.stop([c.id]);
-      if(c.type==='group.patrol') movement.patrol(c.targets);
+      if(c.type==='group.patrol') movement.patrol(c.targets,{speed:c.speed,distance:c.distance});
       if(c.type==='group.gather') movement.gather(c.targets);
       if(c.type==='group.surround') movement.surround(c.targets, c.surrounders);
       if (c.type === "entity.animate") {
@@ -304,6 +304,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           item.anchor.quaternion.copy(item.orientation).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), tilt));
           const squash = t >= contact && t < 2 ? .12 * Math.exp(-9 * age) : 0;
           item.anchor.scale.set(1 + squash, 1 - squash, 1 + squash);
+          if(item.asset==='prop:swimming-pool'){item.anchor.position.copy(item.rest);item.anchor.quaternion.copy(item.orientation);const grow=Math.min(1,Math.max(.001,t/.9));item.anchor.scale.setScalar(grow*grow*(3-2*grow));}
         }
         if (item.entrance >= 2) item.anchor.quaternion.copy(item.orientation);
         if (item.impact) {
@@ -377,6 +378,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
         assetKind: item.actor ? "actor" : "prop",
         position: item.anchor.position.toArray(),
         settled: item.entrance >= 2,
+        occupied: !!(item.eventControlled||item.wordCue||item.wordDrop||item.actionUntil>time),
         wordCue: item.wordCue ? 'mention' : item.wordDrop ? 'put-in' : null,
         cueHeight: item.cueRoot?.position.y || 0,
       }));

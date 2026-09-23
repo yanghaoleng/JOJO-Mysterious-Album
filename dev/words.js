@@ -7,13 +7,14 @@ import { StoryVoice, requestJSON } from './voice.js';
 import { RealtimeWordVoice } from './word-realtime-voice.js';
 let voiceMode='legacy',voicePreference=null;try{voicePreference=new URLSearchParams(location.search).get('voice')||localStorage.getItem('jma.word-voice-mode');voiceMode=voicePreference||'legacy';}catch{}
 import { createVoiceInput } from '../src/voice-input-control.js';
-import { WORD_CHAPTERS, getAgeBand, getChapterLessons, getRecommendedWordChapter, createWordSuggestions } from './content/word-games.js';
+import { WORD_CHAPTERS, WORD_VOCABULARY, getAgeBand, getChapterLessons, getRecommendedWordChapter, createWordSuggestions } from './content/word-games.js';
 import { acceptsEnglishUtterance, createWordProgress, evaluateWordUtterance } from './word-progress.js';
 import { wordSceneEntities, scatterWordSpawns, unknownWordCommands, playerWordProposal } from './word-scene.js';
 import { createWordNarration } from './word-narration.js';
 import { planWordIntent, validateWordProposal, WORD_CHARACTER_NAMES } from './word-intent.js';
 import { mountWordText } from './presentation/word-text.jsx';
 import { welcomeAnswer } from './word-welcome.js';
+import { createWordAmbience } from './word-ambience.js';
 import { createWordMusic } from './word-music.js';
 import { ASSETS } from './content/assets.js';
 
@@ -33,7 +34,7 @@ function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
 function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
 function title(main,subtitle=''){ $('world-title').textContent=main;$('world-subtitle').textContent=subtitle; }
-function setView(next){clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
+function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function clearPanel(){menuAnimation?.cancel();menuAnimation=null;menuOpen=false;inputEpoch++;inputQueue=Promise.resolve();pendingWords=0;document.querySelectorAll('.flying-word').forEach(n=>n.remove());document.querySelector('.word-layout').classList.remove('word-menu-open');clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
@@ -54,8 +55,9 @@ const speakerIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 function leave(){introVersion++;saveJourney();cancelTurn();stopUISFX();}
 function feedback(text){$('world-feedback').textContent=text;}
+let ambience=null;
 function newWorld(world='meadow',snapshot){
-  game?.dispose();game=null;
+  ambience?.dispose();ambience=null;game?.dispose();game=null;
   try{
     stage ||=new DioramaStage($('word-stage'));
     stage.setScene(world,[],{studio:true,decorations:{seed:17,steps:6}});stage.setCameraDriftEnabled(false);stage.cameraAnim=null;
@@ -63,6 +65,10 @@ function newWorld(world='meadow',snapshot){
     stage.yaw=.12;stage.pitch=.42;stage.zoom=1;stage.resize();
     game=createGameSession({story:{id:'word-play',version:1},stage,saved:snapshot,onChange:()=>{if(view==='play')saveJourney();}});
     game.bind({id:`words-${chapter?.id||'welcome'}`,world},[]);
+    ambience=createWordAmbience({entities,send:commands=>apply(commands,{ambient:true,scatter:false}),reduced:()=>reducedMotion.matches,
+      canAct:()=>view==='play'&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!['speaking','thinking','transcribing'].includes(voiceState),
+      occupied:()=>{const p=stage.worldPresenter;return [...p.stats.filter(e=>!e.settled||e.occupied).map(e=>e.id),...p.behaviorStats.jobs.flatMap(e=>[e.id,e.target]),...p.feedingStats.jobs.flatMap(e=>[e.id,e.target]),...p.movementStats.jobs.map(e=>e.id)];},
+      camera:mode=>{if(stage.pointers?.size)return;const spread=Math.max(2.3,...Object.values(entities()).map(e=>Math.hypot(...e.position)+(e.scale||.7)*1.25));const fit=Math.min(1,4.6/(spread*2+.6));stage.animateCameraTo({yaw:[-.05,.28,.12][mode],pitch:[.42,.47,.38][mode],zoom:fit*[.97,.92,1][mode],target:stage.target.clone(),pan:stage.panOffset.clone()},1.8);}});
     stage.worldPresenter.onPickEntity=id=>{focusId=id;const e=entities()[id];if(e)feedback('Try big, blue, or jump!');};
     $('webgl-error').hidden=true;webglFailed=false;
   }catch(error){webglFailed=true;$('webgl-error').hidden=false;console.error('Word world:',error);}
@@ -70,10 +76,12 @@ function newWorld(world='meadow',snapshot){
 function playerEntities(){return wordSceneEntities(entities());}
 function surprisePoop(){const result=apply(unknownWordCommands());if(result.ok){$('answer-feedback').textContent="I didn't catch that. A silly poop appeared! Try another word.";saveJourney();}return result;}
 function entities(){return game?.runtime.snapshot.worlds[game.runtime.context.world]?.entities||{};}
-function apply(commands,{scatter=true}={}){
+function apply(commands,{scatter=true,ambient=false}={}){
   if(!game||!commands.length)return {ok:false};
+  if(!ambient)ambience?.before(commands);
   const result=game.gateway.apply({version:1,context:game.runtime.token,commands:scatter?scatterWordSpawns(commands,entities(),Math.random,availableLanding):commands},'player');
   if(result.ok&&view==='play'&&commands.some(c=>c.type==='entity.spawn'))frameWordScene();
+  if(result.ok&&view==='play'&&!ambient)ambience?.observe(commands);
   return result;
 }
 const landingRay=new THREE.Raycaster(),landingUp=new THREE.Vector3(),landingPoint=new THREE.Vector3(),landingDirection=new THREE.Vector3();
@@ -241,14 +249,14 @@ function renderLesson(){
       try{await submit(text,{displayText,fromMenu:true});}finally{if(epoch===inputEpoch)pendingWords--;}
     }).catch(error=>console.error(error));
   };
-  if(progress.heard.length){const r=evaluateWordUtterance(lesson,progress.lastText||'',progress);canAdvance=r.targetComplete||(lesson.mode==='open'&&Object.keys(playerEntities()).length>0);showContinue(canAdvance);}
+  if(progress.heard.length){const r=evaluateWordUtterance(lesson,progress.lastText||'',progress);canAdvance=progress.unlocked||r.targetComplete||(lesson.mode==='open'&&Object.keys(playerEntities()).length>0);showContinue(canAdvance);}
   scheduleSuggestion();
 }
 function renderWordOptions(){
   const lesson=currentLesson();
   const base=lesson.mode==='build'?lesson.buildWords:lesson.example.toLowerCase().match(/[a-z]+/g)||[];
-  const ideas=['big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...Object.values(WORD_CHARACTER_NAMES)];
-  $('word-options').innerHTML=[...new Set([...base,...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
+  const ideas=['sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...Object.values(WORD_CHARACTER_NAMES)];
+  $('word-options').innerHTML=[...new Set([...base,...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
 }
 let menuOpen=false,menuAnimation=null,inputEpoch=0,inputQueue=Promise.resolve(),pendingWords=0;
 function showContinue(show){
@@ -332,6 +340,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     let applied=plan.commands.length?apply(plan.commands):{ok:false};
     let extraReply='';
     const filler=new Set('uh um er erm hmm a an the my your his her its this that these those is are am be has have make makes give put let please it them with and then on in at near beside over together to of i you we they do want can big little tiny small giant blue green red purple pink white black brown orange yellow rainbow high fast slowly slow grow grows growing dance dances dancing spin spins spinning fly flies flying run runs stop stops swim swims jump jumps walk walks sleep sleepy funny happy sad angry two three four five six seven eight nine ten one'.split(' '));
+    for(const word of ["it's","that's","there's"])filler.add(word);
     const unresolved=result.unknownWords.filter(word=>!filler.has(word)&&!plan.matched.includes(word)&&!plan.matched.includes(word.replace(/s$/,'')));
     if((!plan.commands.length&&!result.currentMatched.length&&(text.toLowerCase().match(/[a-z]+/g)||[]).some(w=>!filler.has(w)))||unresolved.length){
       request=new AbortController();
@@ -356,7 +365,8 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     for(const word of plan.matched)heardWords.add(word);
     focusId=plan.focusId||focusId;
     const made=applied.ok;
-    canAdvance=result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&result.progress.heard.length>=2&&plan.matched.length>0);
+    canAdvance=canAdvance||progress?.unlocked||result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&result.progress.heard.length>=2&&plan.matched.length>0);
+    progress.unlocked=canAdvance;
     creative=made&&!result.targetComplete;
     updateSentence(result);
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
@@ -369,7 +379,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
   finally{if(turn===version){busy=false;request=null;if(!fromRealtime)resumeListening();}}
 }
 async function nextLesson(){
-  if(busy||pendingWords||transitioning||(!canAdvance&&(!creative||currentLesson().mode==='build')))return;
+  if(transitioning||(!canAdvance&&(!creative||currentLesson().mode==='build')))return;
   cancelTurn(continuousListening&&lessonIndex<5);
   if(lessonIndex===5){await transitionScene(renderComplete);return;}
   // Keep the child's assembled world visible between sentences; the iris marks a new chapter/scene.
@@ -406,16 +416,23 @@ function renderComplete(){
   $('choose-age-again').onclick=()=>void transitionScene(renderAge);
 }
 $('change-age').onclick=()=>void transitionScene(renderAge);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('word-menu')&&!$('word-menu').hidden)toggleMenu(false);});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('word-menu')&&!$('word-menu').hidden)toggleMenu(false);
+  if(view!=='play'||e.repeat||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,textarea,select,[contenteditable=true],[role=button]'))return;
+  if(e.key==='Enter'){e.preventDefault();if(!$('next-lesson').hidden)void nextLesson();else if(!continuousListening)void $('word-mic').onclick();}
+  if(e.code==='Space'){e.preventDefault();continuousListening=false;voice?.pause();voice?.skip();voiceInput?.setState('paused');$('mic-heading').textContent='已暂停，按回车继续';}
+});
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
 $('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.id==='monster')apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
-window.addEventListener('pagehide',()=>{music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
+window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
 try{
   const payload=location.hash.match(/^#make=([A-Za-z0-9_-]{1,100000})$/)?.[1];
   if(payload){const bytes=Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));const data=JSON.parse(new TextDecoder().decode(bytes));
     if([1,2].includes(data.v)&&chapters[data.chapter]&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;age=data.age;}}
 }catch{}
+const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
+$('word-stage').addEventListener('pointerdown',()=>ambience?.manual());
 renderIntro();
-window.__WORD_GAME__={get status(){return {music:music.status,introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
+window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};

@@ -164,6 +164,22 @@
       ]
     },
     {
+      "id": "logic:word-ambience",
+      "kind": "logic",
+      "name": "英语世界的天气与自主活动",
+      "description": "晴雨雪低频随机变化，空闲角色招手、慢走、吃食物或叠罗汉；用户指令优先，温和运镜。验证 dev/tools/verify-word-ambience.mjs。",
+      "source": "dev/word-ambience.js",
+      "capabilities": [
+        "天气词汇",
+        "有限自主动作",
+        "操作优先",
+        "温和运镜"
+      ],
+      "dependencies": [
+        "logic:session"
+      ]
+    },
+    {
       "id": "logic:word-scene",
       "kind": "logic",
       "name": "示范与孩子的独立物品",
@@ -27481,7 +27497,9 @@
       "id"
     ],
     "group.patrol": [
-      "targets"
+      "targets",
+      "speed",
+      "distance"
     ],
     "group.gather": [
       "targets"

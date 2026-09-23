@@ -23,7 +23,7 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
     const preferred={swim:['prop:swimming-pool'],wet:['prop:swimming-pool'],sail:['prop:airplane','prop:rword-jet','prop:rword-ship','prop:sailboat','prop:ship'],ride:['prop:rword-bike','prop:bicycle','prop:airplane','prop:rocket']};
     if(preferred[command.action])target=(target&&preferred[command.action].includes(target.asset)?target:null)||[...entries.values()].find(e=>e!==item&&sameOwner(e)&&preferred[command.action].includes(e.asset));
     if(target)stop(target.id);
-    const root=new THREE.Group();root.name=`behavior-${command.action}`;stage.scene.add(root);
+    const root=new THREE.Group();root.name=`behavior-${command.action}`;root.visible=false;stage.scene.add(root);
     const j={item,target,root,action:command.action,colors:command.colors,age:0,duration:command.duration||7,models:[],symbols:[],geometries:[],materials:[],parts:{},visibility:new Map([item,target].filter(Boolean).map(e=>[e,e.model.group.visible]))};
     item.eventControlled=true;if(target)target.eventControlled=true;
     root.position.copy(item.anchor.position);root.quaternion.copy(item.anchor.quaternion);
@@ -34,6 +34,17 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
     const prop=(id,pos=[1.1,0,0],scale=.8)=>{const m=createCreationModel(id);m.group.position.set(...pos);m.group.scale.multiplyScalar(scale);root.add(m.group);j.models.push(m);return m.group;};
     const defaultProp=command.action==='wet'?'swimming-pool':def?.prop;
     if(defaultProp&&(!target||['clean','dip','sip','dig','knit','draw','read'].includes(j.action)))j.prop=prop(defaultProp,['swim','wet','sail','ride','skate','sit','pop'].includes(j.action)?[0,0,0]:[1.1,0,0],['swim','wet','skate'].includes(j.action)?1.05:.85);
+    if(['swim','wet'].includes(j.action)&&j.prop){
+      j.poolOffset=new THREE.Vector3(2*size,0,0);
+      if(stage.world&&item.position){
+        const [x,z]=item.position,distance=Math.hypot(x,z),step=Math.min(1.8,distance);
+        const point=distance>.1?[x*(1-step/distance),z*(1-step/distance)]:[x+1.6,z];
+        const normal=stage.world.surfaceNormal(...point),inverse=item.anchor.quaternion.clone().invert();
+        j.poolOffset.copy(stage.world.planet.center).addScaledVector(normal,stage.world.planet.radius+.02).sub(item.rest||item.anchor.position).applyQuaternion(inverse);
+        j.prop.quaternion.copy(inverse).multiply(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal));
+      }
+      j.prop.position.copy(j.poolOffset).divideScalar(size);
+    }
     j.parts.mark=symbol(({get:'check',take:'check',tap:'note',sip:'heart',pay:'check',help:'heart',look:'eyes',guess:'question','look-out':'alert',play:'note',read:'note',clean:'star',bake:'steam'})[j.action]||'star');
     if(['open','rip','guess','pop'].includes(j.action)){
       const cover=new THREE.Group();root.add(cover);j.parts.cover=cover;
@@ -73,23 +84,29 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
     for(const j of [...jobs.values()]){
       if(!entries.has(j.item.id)||(j.target&&!entries.has(j.target.id))){stop(j.item.id);continue;}
       // Let the regular entrance land before starting a self-contained performance.
-      if(j.item.entrance<2)continue;
+      if(j.item.entrance<2||j.target?.entrance<2)continue;
+      j.root.visible=true;
       j.age+=dt;const p=clamp(j.age/j.duration),wave=reduced?0:Math.sin(j.age*3),travel=reduced?0:Math.sin(p*Math.PI),r=j.item.effectRoot;
       if(!r){stop(j.item.id);continue;}
       j.root.position.copy(j.item.anchor.position);j.root.quaternion.copy(j.item.anchor.quaternion);
       const targetOffset=j.target?j.target.anchor.position.clone().sub(j.item.anchor.position).applyQuaternion(j.item.anchor.quaternion.clone().invert()):new THREE.Vector3();
       for(const m of j.models)m.update(dt,reduced,false);
       const fade=clamp((1-p)*5),placement=Math.min(clamp(p*5),fade);j.root.scale.setScalar(j.size*(p>.8?fade:1));
+      // The pool unfolds on the ground before the swimmer enters, then retracts after exit.
+      const water=['swim','wet'].includes(j.action);
+      const poolScale=Math.min(clamp(p/.16),clamp((1-p)/.12));
+      const boarding=Math.min(clamp((p-.16)/.16),clamp((.88-p)/.16));
+      if(water){j.root.scale.setScalar(j.size);if(j.prop)j.prop.scale.setScalar(1.05*Math.max(.001,poolScale));}
       j.parts.mark.position.y=1.9+(reduced?0:Math.sin(j.age*1.5)*.08);
       for(const s of j.symbols)s.quaternion.copy(j.item.anchor.quaternion).invert();
       r.position.set(0,0,0);r.rotation.set(0,0,0);
       const offset=r.position;
-      if(['swim','wet','skate','sail','ride','sit'].includes(j.action)&&j.target)offset.addScaledVector(targetOffset,placement);
+      if(['swim','wet','skate','sail','ride','sit'].includes(j.action)&&j.target)offset.addScaledVector(targetOffset,water?boarding:placement);
       if(j.target?.effectRoot&&!['swim','wet','sail','ride','skate','sit','get','take'].includes(j.action)){
         const desired=new THREE.Vector3(1.1*j.size,0,0).applyQuaternion(j.item.anchor.quaternion).add(j.item.anchor.position).sub(j.target.anchor.position).applyQuaternion(j.target.anchor.quaternion.clone().invert());
         j.target.effectRoot.position.copy(desired.multiplyScalar(placement));
       }
-      if(j.action==='swim'){offset.x+=wave*.45;offset.y+=.2;r.rotation.z=wave*.09;}
+      if(j.action==='swim'){if(j.prop)offset.addScaledVector(j.poolOffset,boarding);offset.x+=wave*.45*boarding;offset.y+=.2*boarding;r.rotation.z=wave*.09*boarding;}
       if(j.action==='sail'||j.action==='ride'){offset.y+=(j.action==='sail'?.75:.55)*j.size;offset.x+=travel*.65;if(j.prop){j.prop.position.x=travel*.65/j.size;j.prop.position.y=j.action==='sail'?travel*.55:0;offset.y+=j.prop.position.y*j.size;}r.rotation.z=wave*.04;}
       if(j.action==='skate'){offset.x+=wave*.65;r.rotation.z=wave*.12;}
       if(j.action==='sit'){offset.y-=.1;r.rotation.x=-.13;}

@@ -1,5 +1,11 @@
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
+  sunny:{word:'sunny',meaning:'晴朗的',inSource:false},
+  rainy:{word:'rainy',meaning:'下雨的',inSource:false},
+  snowy:{word:'snowy',meaning:'下雪的',inSource:false},
+  snow:{word:'snow',meaning:'雪',inSource:false},
+  sunshine:{word:'sunshine',meaning:'阳光',inSource:false},
+  weather:{word:'weather',meaning:'天气',inSource:false},
   "hello": {
     "word": "hello",
     "meaning": "你好",

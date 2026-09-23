@@ -26,6 +26,13 @@ for(const action of BEHAVIOR_ACTIONS){
  for(let i=0;i<90;i++){effects.update(entries,1/60,i/60,false);controller.update(1/60,i/60,false);}
  assert.equal(controller.stats.active,0,action.id);assert.ok(entries.has('cat'));assert.equal(stage.scene.children.length,1,`${action.id}: leaked temporary root`);
 }
+cat.entrance=0;controller.start({id:'cat',action:'swim',duration:10});
+const poolRoot=stage.scene.getObjectByName('behavior-swim');assert.equal(poolRoot.visible,false);
+controller.update(.2,0,false);assert.equal(poolRoot.visible,false);cat.entrance=2;
+controller.update(.8,1,false);const temporaryPool=poolRoot.getObjectByName('creation-swimming-pool');assert.ok(temporaryPool.scale.x>0&&temporaryPool.scale.x<1);assert.equal(cat.effectRoot.position.x,0);assert.equal(poolRoot.position.y,cat.anchor.position.y);
+controller.update(3.2,4,false);assert.ok(cat.effectRoot.position.x>1,'swimmer boards only after unfolding');
+controller.update(4.9,9,false);assert.equal(cat.effectRoot.position.x,0,'swimmer exits before pool retracts');assert.ok(temporaryPool.scale.x<1.05);
+controller.update(1.2,11,false);assert.equal(controller.stats.active,0);assert.ok(entries.has('cat'));
 const pool=add('pool','prop:swimming-pool');controller.start({id:'cat',action:'swim'});assert.equal(controller.stats.jobs[0].target,'pool');assert.equal(controller.stats.temporaryModels,0);controller.stop('cat');assert.ok(entries.has('pool'));
 const demoCat=add('demo-cat');controller.start({id:'demo-cat',action:'swim'});assert.equal(controller.stats.jobs[0].target,null);assert.equal(controller.stats.temporaryModels,1);controller.stop();entries.delete('demo-cat');effects.remove(demoCat);demoCat.model.dispose();demoCat.anchor.removeFromParent();
 controller.start({id:'cat',action:'sail'});assert.equal(controller.stats.temporaryModels,1);controller.stop();assert.equal(controller.stats.active,0);

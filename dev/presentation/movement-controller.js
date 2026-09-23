@@ -394,7 +394,7 @@ export function createMovementController({ entries, stage }) {
     update,
     clear() { stop(); },
     get stats() {
-      return { active: jobs.size, jobs: [...jobs.values()].map(({ id, mode, phase }) => ({ id, mode, phase })) };
+      return { active: jobs.size, jobs: [...jobs].map(([id, { mode, phase }]) => ({ id, mode, phase })) };
     },
   };
 }
