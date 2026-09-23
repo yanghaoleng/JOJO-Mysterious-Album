@@ -25,13 +25,14 @@ async function word(p,w){if(await p.locator('#word-options-toggle').getAttribute
 async function next(p){await p.locator('#next-lesson').click();await settle(p);await p.waitForFunction(()=>!document.getElementById('word-mic')||document.getElementById('word-mic').dataset.state!=='speaking');}
 try{
  const p=await pageFor();await start(p,5);await enter(p);
- transcript='a';await p.locator('#word-mic').click();
+ const initialTTS=tts.length;transcript='a';await p.locator('#listen-example').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);assert.equal(tts.at(-1).text,'A big head.');
  for(const [word,nextWord] of [['a','big'],['big','head'],['head','two hands']]){
    await p.waitForFunction(w=>window.__WORD_GAME__.status.progress.heard.includes(w),word,{timeout:18000});
    transcript=nextWord;
    await p.waitForFunction(()=>window.__WORD_GAME__.status.recording&&!window.__WORD_GAME__.status.busy,{timeout:18000});
    assert.equal((await status(p)).listening,true);
  }
+ assert.ok(tts.slice(initialTTS).length>=2);assert.ok(tts.slice(initialTTS).every(r=>r.text==='A big head.'),'No isolated-word readings');
  await next(p);await p.waitForFunction(()=>window.__WORD_GAME__.status.recording,{timeout:18000});
  await p.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance,null,{timeout:18000});
  assert.equal(Object.values((await status(p)).entities).filter(e=>e.asset==='prop:robot-hand'&&!e.id.startsWith('demo-')).length,2);

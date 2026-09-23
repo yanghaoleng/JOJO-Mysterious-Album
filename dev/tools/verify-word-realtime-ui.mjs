@@ -20,6 +20,7 @@ try{
  send(451,{results:[{text:'DOMI',is_interim:false}]});send(459);
  await page.waitForFunction(()=>Object.values(window.__WORD_GAME__.status.entities).some(e=>e.asset==='npc:domi'));
  send(459);await page.waitForTimeout(100);assert.equal(Object.values(await page.evaluate(()=>window.__WORD_GAME__.status.entities)).filter(e=>e.asset==='npc:domi').length,1);
+ send(350,{text:'head'});connection.send(Buffer.alloc(4800));await page.waitForTimeout(100);assert.notEqual(await page.locator('#word-mic').getAttribute('data-state'),'speaking','unsolicited cloud word must stay silent');send(359);
  const before=await page.evaluate(()=>window.__WORD_GAME__.status.entities);
  send(450);send(451,{results:[{text:'让花长大',is_interim:false}]});send(459);await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>window.__WORD_GAME__.status.entities),before);
  await page.locator('#word-options-toggle').click();await page.locator('#voice-mode').click();await page.waitForURL('**voice=legacy');assert.equal(await page.evaluate(()=>localStorage.getItem('jma.word-voice-mode')),'legacy');assert.deepEqual(errors,[]);

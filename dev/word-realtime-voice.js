@@ -63,7 +63,7 @@ export class RealtimeWordVoice extends StoryVoice {
     if(event===459&&!this.answerDelivered){this.answerDelivered=true;const text=this.partial?.trim();if(text)Promise.resolve(this.onAnswer(text)).catch(()=>this.onError('Please try again.'));}
     if(event===350){
       // Only audio belonging to an English subtitle is accepted.
-      this.ignoreAudio=!/[a-z]/i.test(data.text||'')||/[\u3400-\u9fff]/.test(data.text||'');
+      this.ignoreAudio=(this.getMode?.()==='game'&&!this.rtRead)||!/[a-z]/i.test(data.text||'')||/[\u3400-\u9fff]/.test(data.text||'');
       if(!this.ignoreAudio){this.onState('speaking');this.captureFeedback('reply','',data.text||'');}
     }
     if(event===359){clearTimeout(this.endTimer);this.endTimer=setTimeout(()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},Math.max(0,(this.playAt-(this.context?.currentTime||0))*1000)+30);}
