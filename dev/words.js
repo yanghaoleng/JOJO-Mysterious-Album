@@ -161,8 +161,12 @@ async function introAnswer(raw){
   $('intro-question').textContent=confirmation;$('intro-help').textContent='Domi 正带你去一个好玩的地方。';
   await active.say(confirmation,'sprout');
   if(view!=='intro'||introVersion!==version||voice!==active)return;
+  // Keep the user-unlocked audio context across the child-to-teacher voice handoff.
+  // A fresh context can remain suspended indefinitely without another touch.
+  const audioContext=active.context,workletReady=active.workletReady;
+  active.context=null;active.workletReady=null;
   resetWordRun({keepShared:Boolean(sharedScene)});persist();ensureVoice({gameMode:true});
-  await voice.unlock().catch(()=>{});
+  if(audioContext?.state!=='closed'){voice.context=audioContext;voice.workletReady=workletReady;}
   await transitionScene(()=>{openChapter(c.id,{fresh:true,shared:sharedScene});continuousListening=true;voice.listen(false);});
 }
 function renderAge(){
@@ -421,6 +425,16 @@ function renderComplete(){
   $('share-world').onclick=async()=>{const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError')return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中上面的链接复制，发给朋友即可。';}};
   $('choose-age-again').onclick=()=>void transitionScene(renderAge);
 }
+// Block browser page zoom without taking scrolling, rapid button taps or image saving away.
+for(const type of ['gesturestart','gesturechange'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
+let lastTouchTap=null,touchStartedAt=0;
+document.addEventListener('touchstart',()=>{touchStartedAt=performance.now();},{passive:true});
+document.addEventListener('touchend',e=>{
+  const touch=e.changedTouches[0],at=performance.now();
+  if(!touch||e.touches.length||at-touchStartedAt>400||e.target.closest('button,a,input,textarea,select,[role=button],canvas')){lastTouchTap=null;return;}
+  if(lastTouchTap&&at-lastTouchTap.at<320&&Math.hypot(touch.clientX-lastTouchTap.x,touch.clientY-lastTouchTap.y)<25)e.preventDefault();
+  lastTouchTap={at,x:touch.clientX,y:touch.clientY};
+},{passive:false});
 $('change-age').onclick=()=>void transitionScene(renderAge);
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&$('word-menu')&&!$('word-menu').hidden)toggleMenu(false);

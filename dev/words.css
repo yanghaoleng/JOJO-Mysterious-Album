@@ -60,3 +60,6 @@
 @media(max-height:650px){.intro-heading{top:9%}.intro-heading h1{font-size:24px}.intro-controls{bottom:20px}.intro-controls .recommend-card p{margin-bottom:12px}}
 
 .answer-result{display:flex;flex-direction:column;align-items:center;max-width:100%;text-align:center}.heard-line .heard{display:inline-flex;align-items:center;gap:4px}.heard-line .lucide-check{width:14px;height:14px}.complete-stamp{display:flex;justify-content:center;margin:0 auto 12px}.complete-stamp .lucide-check{width:72px;height:72px;stroke-width:2.5}
+
+/* Pan and scroll remain available; page pinch/double-tap zoom does not. */
+html,body,.word-layout{touch-action:pan-x pan-y}
