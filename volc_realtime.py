@@ -64,15 +64,23 @@ def connect():
         'X-Api-Connect-Id': str(uuid.uuid4())}, timeout=12)
 
 
+def paced_reading_text(text):
+    """Punctuation creates a pause at each word without splitting the reading into requests."""
+    words = re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", text)
+    if len(words) < 2 or re.search(r"[\u3400-\u9fff]", text):
+        return text
+    return ', '.join(words) + (text[-1] if text[-1:] in '.!?' else '.')
+
+
 def session_config(lesson='', mode='game'):
     return {
         'asr': {'extra': {'enable_custom_vad': True, 'end_smooth_window_ms': 700,
             'enable_asr_twopass': True, 'context': {'hotwords': speech_hotwords()}}},
         'tts': {'speaker': 'zh_female_vv_jupiter_bigtts',
-            'audio_config': {'channel': 1, 'format': 'pcm_s16le', 'sample_rate': 24000, 'speech_rate': -10 if mode == 'onboarding' else -28}},
+            'audio_config': {'channel': 1, 'format': 'pcm_s16le', 'sample_rate': 24000, 'speech_rate': -10 if mode == 'onboarding' else -40}},
         'dialog': {'bot_name': 'English Playmate',
             'system_role': 'You are a friendly English tutor in a 3D word game for children ages 3 to 10. '
-                'Speak ONLY English, even if the child speaks Chinese. Ignore Chinese background speech or a parent coaching the child. Never generate a language correction; the client controls infrequent reminders. '
+                'Speak ONLY English in responses to the child. For an explicit application-supplied Chinese opening or word-swap instruction, read that supplied text verbatim in Chinese. Ignore Chinese background speech or a parent coaching the child. Never generate a language correction; the client controls infrequent reminders. '
                 'Use one short encouraging sentence, at most 12 words. Accept playful nouns and adjectives. '
                 'JOJO, BOBO and DOMI are character names. Never claim a scene action succeeded or advance a lesson; the game handles those. '
                 + ('You are DOMI welcoming a new player. Ask for a nickname, then their age (three to ten), one question at a time. After both, acknowledge their age and say you will take them somewhere fun. The game transitions automatically; never ask them to tap or confirm. Never request any other personal information or contact details. ' if mode == 'onboarding' else 'Never request personal information. Never prompt the child to repeat an isolated word. Any reading example must be the complete current sentence. ') + 'Do not discuss adult topics. Current example: ' + lesson[:180],
@@ -173,10 +181,10 @@ def serve_realtime(handler):
                 controls += 1
                 if controls > 600: raise ValueError('control_limit')
                 kind, text = value.get('type'), str(value.get('text', ''))[:240]
-                if kind == 'say' and re.search('[a-zA-Z]', text) and not re.search('[\u3400-\u9fff]', text):
+                if kind == 'say' and text.strip() and (value.get('wordPrompt') is True or (re.search('[a-zA-Z]', text) and not re.search('[\u3400-\u9fff]', text))):
                     # SayHello supports explicit reading without a preceding ASR turn.
                     # ChatTTSText (500) waits for a user query and cannot start a lesson.
-                    upstream.send_binary(packet(300, {'content': text}, sid))
+                    upstream.send_binary(packet(300, {'content': paced_reading_text(text) if value.get('wordPauses') is True else text}, sid))
                 elif kind == 'close': break
     except (EOFError, OSError, ValueError, RuntimeError, struct.error):
         pass

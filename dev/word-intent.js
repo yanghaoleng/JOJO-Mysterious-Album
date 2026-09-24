@@ -5,13 +5,13 @@ import { ASSETS } from './content/assets.js';
 
 const colors={red:'#de7066',blue:'#6eabd0',yellow:'#efd06d',green:'#8cba87',pink:'#e5a1b5',purple:'#b09ace',orange:'#e9a260',white:'#f2ede1',black:'#45474e',brown:'#ac7957','红':'#de7066','蓝':'#6eabd0','黄':'#efd06d','绿':'#8cba87','粉':'#e5a1b5','紫':'#b09ace','橙':'#e9a260','白':'#f2ede1','黑':'#45474e','棕':'#ac7957'};
 const quantities={a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,'一':1,'两':2,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
-const effectWords={grow:['grow','grows','growing','生长','长大','长高'],shrink:['shrink','shrinks','small','tiny','little','变小','小小'],long:['long','longer','变长','长长'],tall:['tall','taller','高高'],normal:['normal','正常','恢复'],jump:['jump','jumps','hop','leap','跳'],fly:['fly','flies','flying','飞'],swim:['swim','swims','swimming','游泳'],run:['run','runs','running','跑'],walk:['walk','walks','walking','go','走'],roll:['roll','rolls','滚'],dance:['dance','dances','dancing','跳舞'],spin:['spin','spins','spinning','旋转'],sail:['sail','sails','航行'],sleep:['sleep','sleeps','睡觉'],sleepy:['sleepy','困'],stop:['stop','stops','停'],happy:['happy','开心','快乐'],sad:['sad','伤心','难过'],angry:['angry','生气'],funny:['funny','搞笑'],wet:['wet','湿'],dry:['dry','干燥','弄干'],fast:['fast','faster','快'],slow:['slow','slowly','慢'],high:['high','高高地'],rainbow:['rainbow','彩虹色'],hum:['hum','hums','哼唱','哼歌'],hot:['hot','热的','变热','烫'],yummy:['yummy','好吃','美味'],new:['new','崭新','焕然一新']};
+const effectWords={cold:['cold','冷的','很冷','变冷'],hungry:['hungry','饿了','饿的','饥饿'],thirsty:['thirsty','渴了','渴的','口渴'],dirty:['dirty','脏的','弄脏','变脏'],grow:['grow','grows','growing','生长','长大','长高'],shrink:['shrink','shrinks','small','tiny','little','变小','小小'],long:['long','longer','变长','长长'],tall:['tall','taller','高高'],normal:['normal','正常','恢复'],jump:['jump','jumps','hop','leap','跳'],fly:['fly','flies','flying','飞'],swim:['swim','swims','swimming','游泳'],run:['run','runs','running','跑'],walk:['walk','walks','walking','go','走'],roll:['roll','rolls','滚'],dance:['dance','dances','dancing','跳舞'],spin:['spin','spins','spinning','旋转'],sail:['sail','sails','航行'],sleep:['sleep','sleeps','睡觉'],sleepy:['sleepy','困'],stop:['stop','stops','停'],happy:['happy','开心','快乐'],sad:['sad','伤心','难过'],angry:['angry','生气'],funny:['funny','搞笑'],wet:['wet','湿'],dry:['dry','干燥','弄干'],fast:['fast','faster','快'],slow:['slow','slowly','慢'],high:['high','高高地'],rainbow:['rainbow','彩虹色'],hum:['hum','hums','哼唱','哼歌'],hot:['hot','热的','变热','烫'],yummy:['yummy','好吃','美味'],new:['new','崭新','焕然一新']};
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 export const hasWord=(text,word)=>/[a-z]/i.test(word)?new RegExp(`\\b${esc(word)}\\b`,'i').test(text):text.includes(word);
 function aliases(item){const words=[item.word,...(item.aliases||[]),item.zh];if(!/s$/.test(item.word))words.push(item.word+'s');if(item.word.endsWith('y'))words.push(item.word.slice(0,-1)+'ies');return [...new Set(words)].filter(Boolean);}
 export const WORD_CHARACTER_NAMES=Object.freeze({'yellow:jiaojiao':'JOJO','npc:zhuxiaodi':'BOBO','npc:domi':'DOMI'});
 const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:WORD_CHARACTER_NAMES[a.id]?.toLowerCase()||a.name,zh:a.name,assetId:a.id,match:[...(WORD_CHARACTER_NAMES[a.id]?[WORD_CHARACTER_NAMES[a.id]]:[]),a.name,a.id.split(':').at(-1)]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
-export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...Object.values(WORD_CHARACTER_NAMES),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
+export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...Object.values(WORD_CHARACTER_NAMES),...[...BEHAVIOR_ACTIONS,...BEHAVIOR_EFFECTS].flatMap(a=>a.aliases).filter(w=>/^[a-z ]+$/i.test(w)),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
 export function findWordObjects(text) {
   const hits=[];
   for(const item of lexicon)for(const alias of item.match){
@@ -46,7 +46,7 @@ export function planWordIntent(text,{entities={},chapter='color',focusId=null,fe
     const segmentStart=Math.max(...[' and ', ' with ', ' near ', ' on ', ' in ', ' over ', ' beside ', ',', '，', '和', '戴上', '旁边'].map(s=>before.toLowerCase().includes(s)?before.toLowerCase().lastIndexOf(s)+s.length:0));
     const prefix=before.slice(segmentStart);
     const suffix=text.slice(h.end,objects[i+1]?.index??text.length).split(/\band\b|\b(?:with|near|on|in|over|beside)\b|[,，。和]/i)[0];
-    const descriptors=['shrink','long','tall','normal','happy','sad','angry','sleepy','funny','wet','dry','rainbow'];
+    const descriptors=['shrink','long','tall','normal','happy','sad','angry','sleepy','funny','wet','dry','rainbow','cold','hungry','thirsty','dirty'];
     const after=objects[i+1]&&!/\b(?:is|are|becomes?)\b|变/.test(suffix)?Object.entries(effectWords).filter(([effect,words])=>!descriptors.includes(effect)&&words.some(w=>hasWord(suffix,w))).map(([effect])=>effect).join(' '):suffix;
     const scope=`${prefix} ${h.alias} ${after}`;
     let count=1,explicit=false;
@@ -158,7 +158,7 @@ export function planBehaviorIntent(text,context={}) {
 
 export function replaceableWordRanges(text) {
   const ranges=findWordObjects(text).map(({index,end})=>({start:index,end}));
-  const adjectives=new Set('big huge giant small tiny little long tall happy sad angry funny sleepy wet dry fast slow high hot yummy new red blue yellow green pink purple orange white black brown rainbow'.split(' '));
+  const adjectives=new Set('cold hungry thirsty dirty big huge giant small tiny little long tall happy sad angry funny sleepy wet dry fast slow high hot yummy new red blue yellow green pink purple orange white black brown rainbow'.split(' '));
   for(const hit of String(text).matchAll(/[a-z]+/gi))if(adjectives.has(hit[0].toLowerCase()))ranges.push({start:hit.index,end:hit.index+hit[0].length});
   return ranges;
 }

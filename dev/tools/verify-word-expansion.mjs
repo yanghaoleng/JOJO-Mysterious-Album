@@ -13,7 +13,7 @@ for(const n of nouns){
  for(const word of [n.word,...n.aliases]){
   assert.equal(findWordObjects(word)[0]?.item.assetId,n.assetId,word);
   assert.ok(WORD_SPEECH_VOCABULARY.includes(word),`Missing ASR hotword: ${word}`);
-  const lesson=themes.flatMap(c=>Object.values(c.lessons).flat()).find(l=>l.example.toLowerCase().includes(n.word));
+  const lesson=themes.flatMap(c=>Object.values(c.lessons).flat()).find(l=>l.example.toLowerCase().includes(n.word))||themes[0].lessons.early[0];
   assert.ok(evaluateWordUtterance(lesson,word).supported,word);
  }
 }

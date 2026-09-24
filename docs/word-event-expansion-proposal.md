@@ -1,6 +1,6 @@
 # 动词与形容词扩展提案
 
-状态：待确认，未接入事件。此次已发布的三个新主题仅使用现有事件。
+状态：首批已实现：push / pull、throw、kick、hide，以及 cold、hungry、thirsty、dirty。其余条目仍为待确认提案。
 
 ## 内容已扩充
 
@@ -10,7 +10,7 @@
 | 6–7 岁 | 同三主题各 6 句，共 18 句 | Make a green turtle swim. / Put an acorn in the box. |
 | 8–10 岁 | 同三主题各 6 句，共 18 句 | Make two little green turtles swim. / Give the little walrus a yellow cape. |
 
-各小节依次为完整领读、单空、双空、三轮自由表达；每轮自由表达另有两个备选例句。共新增 54 个主例句与 54 个备选表达。推荐保持单卡，不增加章节选择步骤。第一次沿用年龄默认主题，同一会话重新开始时轮换其余主题；刷新后重新开始轮换。
+当前各小节已改为单名词、另一个名词、数量、颜色、大小加颜色、最后完整句；前两轮中文提问，第三轮中文介绍彩虹换词。旧的丰富例句库保留供后续使用。推荐保持单卡，不增加章节选择步骤。第一次沿用年龄默认主题，同一会话重新开始时轮换其余主题；刷新后重新开始轮换。
 
 新增 12 款独立模型：turtle、octopus、jellyfish、starfish、tent、acorn、pinecone、hedgehog、penguin、seal、walrus、igloo。它们是新创作扩展，不是原 R 线词表的新增来源记录。海豹、海象、企鹅只在想象中的冰雪乐园相遇，不暗示三者生活在同一自然栖息地。
 
@@ -42,4 +42,4 @@ throw 与现有 get 的接取效果可以组合；无需再做一个重复的 ca
 | heavy / light 重的／轻的 | 6+ | A heavy ball. / A light box. | 下落、起跳和移动速度形成对照；轻物有缓慢漂降 | 中；需要与现有 fast/slow/high 的优先级规则 |
 | soft / hard 软的／硬的 | 8+ | A soft ball. / A hard box. | 接触时轻压回弹／保持形状，用实际反馈表达 | 中至高；先支持球和盒子，避免复杂动物扭曲 |
 
-首批建议：push/pull、throw、kick、hide，加 cold、hungry、thirsty、dirty。若更偏低龄，也可先把 wake up 与表情类提前。以上仅为方案，确认后再增加识别规则、运行器与“元素之间的行为事件”表。
+首批建议：push/pull、throw、kick、hide，加 cold、hungry、thirsty、dirty。若更偏低龄，也可先把 wake up 与表情类提前。首批已增加识别规则、运行器与“元素之间的行为事件”表；其余项目未接入。

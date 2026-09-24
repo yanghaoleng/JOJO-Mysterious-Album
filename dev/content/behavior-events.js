@@ -2,6 +2,11 @@
 // All finite events own their helper props and release them after the performance.
 const event=(id,word,meaning,aliases,result,example,prop=null)=>({id,word,meaning,aliases,result,example,prop});
 export const BEHAVIOR_ACTIONS = [
+  event('push','push','推',['push','pushes','pushing','推'],'角色接近并把目标沿地面推开；只说物品时直接推动它。','让机器人推球'),
+  event('pull','pull','拉',['pull','pulls','pulling','拉'],'目标与角色一起后移，结束后保留移动的位置。','让机器人拉盒子'),
+  event('throw','throw','扔',['throw','throws','throwing','扔','抛'],'球从角色身旁沿抛物线飞出，落地回弹；缺球自动补球。','让企鹅扔球','rword-ball'),
+  event('kick','kick','踢',['kick','kicks','kicking','踢'],'角色轻倾触球，球沿地面滚出；缺球自动补球。','让机器人踢球','rword-ball'),
+  event('hide','hide','躲藏',['hide','hides','hiding','躲藏','躲起来'],'补一个遮挡盒，角色移到盒子后方、偶尔探头，再回到原位；盒子自动收起。','让海龟躲起来','rword-box'),
   event('swim','swim','游泳',['swim','swims','swimming','游泳'],'缺少水池时补小水池；游动结束后水池收起，原对象保留。','让小猫游泳','swimming-pool'),
   event('sail','sail','航行',['sail','sails','航行'],'优先使用指定船或飞机；缺少载具时补飞机，乘坐巡游后返回。','让小猫航行','airplane'),
   event('ride','ride','骑乘',['ride','rides','骑车','骑上','骑乘'],'缺少载具时补自行车；乘坐移动后回到原位。','让小熊骑车','rword-bike'),
@@ -33,6 +38,10 @@ export const BEHAVIOR_ACTIONS = [
   event('look-out','look out','当心',['look out','当心','小心'],'警告符号亮起，目标侧身躲开滚来的球。','让小猫当心','rword-ball'),
 ];
 export const BEHAVIOR_EFFECTS = [
+  event('cold','cold','冷的',['cold','冷的','很冷','变冷'],'出现蓝色雪花与轻颤，和 hot 热气形成对照。','让企鹅变冷'),
+  event('hungry','hungry','饿的',['hungry','饿了','饿的','饥饿'],'出现食物想象泡泡；可以继续说 eat 指定食物。','让刺猬饿了'),
+  event('thirsty','thirsty','渴的',['thirsty','渴了','渴的','口渴'],'出现水滴想象泡泡；可以继续说 sip 来喝水。','让海龟渴了'),
+  event('dirty','dirty','脏的',['dirty','脏的','弄脏','变脏'],'泥点贴在模型表面，clean 清除泥点。','把帐篷弄脏'),
   event('hum','hum','哼唱',['hum','hums','哼唱','哼歌'],'头顶飘动音符，不需要嘴型或真实演唱。','让小猫哼唱'),
   event('sleep','sleep','睡觉',['sleep','sleeps','睡觉','打盹'],'头顶飘 Z 字符，轻微呼吸；不强制模型躺倒。','让小猫睡觉'),
   event('sleepy','sleepy','困倦',['sleepy','困了','困倦','困'],'困倦表情与小 Z 字符。','让小猫变得困倦'),

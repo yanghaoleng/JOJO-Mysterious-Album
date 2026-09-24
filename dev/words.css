@@ -79,16 +79,8 @@ html,body,.word-layout{touch-action:pan-x pan-y}
 @keyframes word-transcript-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.transcript-loading svg{animation:none}}
 
-/* Full-viewport blur above the complete scene composite, below sharp lesson UI. */
-.scene-focus{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;background:#14232b;opacity:0;visibility:hidden;transition:opacity 600ms cubic-bezier(.77,0,.175,1),visibility 0s linear 600ms}
-.scene-focus::before{content:"";position:absolute;inset:0;background-image:var(--scene-focus-image,linear-gradient(150deg,#223b4c,#746174 55%,#102731));background-size:cover;background-position:center;filter:blur(96px) saturate(.65);transform:scale(1.2)}
 #word-panel{z-index:2}
-.lesson-focus .scene-focus{opacity:1;visibility:visible;transition-delay:0s}
 .lesson-heading{transition:opacity 180ms cubic-bezier(.23,1,.32,1)}
-.lesson-focus-pending .lesson-heading{opacity:0}
-.lesson-focus .play-bottom,.lesson-focus-pending .play-bottom{opacity:.35;transition:opacity 250ms cubic-bezier(.23,1,.32,1)}
-.lesson-focus .play-bottom button,.lesson-focus-pending .play-bottom button{pointer-events:none}
-@media(prefers-reduced-motion:reduce){.scene-focus{transition:opacity 100ms linear,visibility 0s linear 100ms!important}.lesson-heading{transition-duration:80ms}}
 
 .word-layout[aria-busy=true] #word-panel button{pointer-events:none}
 .answer-result .next-button{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif}

@@ -71,9 +71,11 @@ function reduce(state, c, context) {
       if(c.action==='swim'){entity.effects||={};entity.effects.surface='wet';}
     }
     if (c.type === 'entity.effect') {
-      const slot = ['grow','shrink','normal'].includes(c.effect) ? 'shape' : ['long','tall'].includes(c.effect) ? 'stretch' : ['happy','sad','angry','sleepy','funny','yummy'].includes(c.effect) ? 'emotion' : ['wet','dry'].includes(c.effect) ? 'surface' : ['fast','slow'].includes(c.effect) ? 'speed' : ['hum','hot','new'].includes(c.effect)?'symbol':c.effect==='high'?'altitude':c.effect==='rainbow'?'palette':['dance','spin'].includes(c.effect)?'gesture':'motion';
+      const slot = ['grow','shrink','normal'].includes(c.effect) ? 'shape' : ['long','tall'].includes(c.effect) ? 'stretch' : ['happy','sad','angry','sleepy','funny','yummy'].includes(c.effect) ? 'emotion' : ['wet','dry'].includes(c.effect) ? 'surface' : ['fast','slow'].includes(c.effect) ? 'speed' : ['hum','hot','new','cold','hungry','thirsty'].includes(c.effect)?'symbol':c.effect==='high'?'altitude':c.effect==='rainbow'?'palette':['dance','spin'].includes(c.effect)?'gesture':'motion';
       entity.effects ||= {};
-      entity.effects[slot] = c.effect;
+      if(c.effect==='dirty')entity.effects.dirt=true;
+      else if(c.effect==='clean')delete entity.effects.dirt;
+      else entity.effects[slot] = c.effect;
       if(c.effect==='stop') {delete entity.effects.gesture; delete entity.effects.altitude; delete entity.effects.symbol; if(entity.effects.emotion==='sleepy')delete entity.effects.emotion;}
     }
     if (c.type === 'entity.attach') {

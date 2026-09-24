@@ -19,7 +19,7 @@ export function mountWordText(node, value, variant = 'text', options = {}) {
       root.render(<span className="read-along-text">{parts.map(({text:word,index:i,matched})=>{
         const index=offset;offset+=word.length;
         if(!/[A-Za-z_]/.test(word))return <React.Fragment key={i}>{word}</React.Fragment>;
-        const replaceable=word.includes('_')||ranges.some(r=>index<r.end&&index+word.length>r.start);
+        const replaceable=(options.canReplace?options.canReplace(i):true)&&(word.includes('_')||ranges.some(r=>index<r.end&&index+word.length>r.start));
         const clickable=replaceable&&options.canReplace?.(i)&&!reading;
         const active=reading&&reading.start>=0&&index<reading.end&&index+word.length>reading.start;
         return <span key={i} role={clickable?'button':undefined} tabIndex={clickable?0:undefined} aria-label={clickable?`换一个 ${word}`:undefined} onClick={clickable?()=>options.onReplace(i):undefined} onKeyDown={clickable?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();options.onReplace(i);}}:undefined} data-replaceable={replaceable||undefined} className={`read-along-word${replaceable?' replaceable-word':''}${active?' is-reading':''}${matched?' is-matched-word':''}`}>

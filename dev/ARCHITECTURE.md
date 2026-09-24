@@ -194,7 +194,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 
 ### 词语行为事件与临时道具
 
-`content/behavior-events.js` 是互动定义和陈列馆表格的同一份内容：29 种短表演、9 组符号/状态，再加已有的动作和颜色尺寸。`word-intent.js` 同时服务英语章节和世界工坊；文档内的词语事件在本地确定性解析，其余世界、镜头与群体指令仍调用原场景接口。语音转写与文字进入相同入口，命令仍经 `intent-gateway` 校验。
+`content/behavior-events.js` 是互动定义和陈列馆表格的同一份内容：34 种短表演、13 组符号/状态，再加已有的动作和颜色尺寸。`word-intent.js` 同时服务英语章节和世界工坊；文档内的词语事件在本地确定性解析，其余世界、镜头与群体指令仍调用原场景接口。语音转写与文字进入相同入口，命令仍经 `intent-gateway` 校验。
 
 `entity.event` 接受已登记 action、当前场景中的主体/可选对象、2～20 秒时长和可选两种混合色。它是短暂表演，不把进行中的道具或动画计时写入存档。`behavior-controller.js` 为缺少道具的事件创建私有预制模型，游泳优先复用水池，航行优先复用指定/已有飞机或船，否则默认飞机；结束、停止、更换事件、移除对象、切换世界时释放临时模型、材质和几何。已有对象保留。游泳留下 wet 状态；清洁完成提交 dry；混色结果通过 entity.color 写回，均经过运行器。
 
@@ -234,16 +234,21 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 
 小游戏通过 `continuousMeter` 保持已获许可的麦克风音量监测，其他章节维持原采集策略；领读期间只监测音量，避免把播放内容当作孩子答案。麦克风使用六点波形，识别等待独立显示在字幕区域，暂停和离页释放采集。`WORD_PRAISES` 声明六句英文鼓励，匹配后随机选择并避免连续重复，使用领读女声；完成或取消后按当前关卡与用户收音意愿恢复。
 
-小游戏首句使用可取消的聚焦阶段：场景模糊、完整领读、清晰过渡、示范命令，再恢复收音；换关/离开/暂停会取消旧阶段。中文过滤在两种语音入口共用 `createWordLanguageGate`，提取混合语句中的英文；按实际语音段累计 12 秒中文、间隔 45 秒提醒，超过 8 秒无声重置连续性。继续按钮在已通过且持续收音时静音 3 秒自动翻页，声音重置、处理/朗读/菜单/暂停冻结。验证 `verify-word-language.mjs`、`verify-word-opening-ui.mjs`、`verify-word-countdown.mjs`。
+小游戏已取消模糊和截图覆盖层，始终直接显示清晰场景。前两轮只自动播放中文提示，孩子英文输入后再造物；主动点喇叭或连续两次未完成时才示范当前完整表达。中文过滤在两种语音入口共用 `createWordLanguageGate`，提取混合语句中的英文；按实际语音段累计 12 秒中文、间隔 45 秒提醒，超过 8 秒无声重置连续性。继续按钮在已通过且持续收音时静音 3 秒自动翻页，声音重置、处理/朗读/菜单/暂停冻结。验证 `verify-word-language.mjs`、`verify-word-opening-ui.mjs`、`verify-word-countdown.mjs`。
 
 Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key，实时识别保持连接；第二句问年龄始终显式请求播放。课堂继续使用实时女声。通用 `/api/tts` 的 realtime 请求在有新版 Key 时通过端到端 300 事件取回 PCM 并封装 WAV，保留旧接口调用方和录音资源；wow-child 保持专用童声路径。
 
-题干的 `createWordSuggestions` 维护可替换词位置和已确认标记：识别先匹配原词/当前词，再将同类替代词放入对应位置；已确认词浅绿且退出自动轮换，手动点词仅清除该位置的确认。快照随本关进度保留，喇叭读取当前完整句。提示与状态在收音上方同一行轮播。强模糊使用整个 WebGL 画面的静态帧覆盖层，固定 blur 后仅渐变透明度，避免浏览器 backdrop 合成漏出清晰的模型。
+题干的 `createWordSuggestions` 维护可替换词位置和已确认标记：识别先匹配原词/当前词，再将同类替代词放入对应位置；已确认词浅绿且退出自动轮换，手动点词仅清除该位置的确认。快照随本关进度保留，喇叭读取当前完整句。提示与状态在收音上方同一行轮播。前两轮不显示或轮换彩虹虚线，第三轮中文介绍后启用。
 
-小游戏 `focusWordEvent` 对已执行成功的新模型/动作选择最新对象，镜头适度拉近至 1.3 并锁定世界空间三维中心；入场期间先看落点，模型稳定后跟随移动。手动拖动释放锁定，新场景清理；其他模块的二维跟随契约保持兼容。实时课堂语速由原 -10 调至 -28（0.9 × 0.8），经典备用合成以 readingSpeed=.8 作用于 gentle 音色，童声不变。验证 `verify-word-caption.mjs`、`verify-word-focus-ui.mjs`。
+小游戏 `focusWordEvent` 对已执行成功的新模型/动作选择最新对象，镜头适度拉近至 1.3 并锁定世界空间三维中心；入场期间先看落点，模型稳定后跟随移动。手动拖动释放锁定，新场景清理；其他模块的二维跟随契约保持兼容。实时课堂语速为 -40，经典备用合成以 readingSpeed=.65 作用于 gentle 音色，童声不变。应用领读通过 wordPauses 将英文单词以逗号分隔，仍以一次整句请求播放；中文应用提示单独带 wordPrompt，用户中文输入继续静默过滤。验证 `verify-word-caption.mjs`、`verify-word-focus-ui.mjs`。
 
-聚焦模糊在透明状态下先解码整幅截图，再以 600ms 透明度渐变进入；朗读结束等待实际退出过渡完成后才生成示范。快速翻页/暂停通过既有 epoch 取消旧流程，减少动态效果使用 100ms 淡化。浏览器检查采样进入与退出的中间帧，防止截图在不透明状态替换导致硬切。
 
 ### 主题词汇扩展（2026-09-24）
 
-`content/word-expansion.js` 提供海底、露营和冰雪三个主题，各含三档年龄的六轮内容。九章共 162 个主例句，原章节与课次 ID 保持不变。`RLINE_EXTENSIONS` 中 12 个新名词带 `extension: true` 和空原课次，不冒充原 R 线来源；独立模型入口、热词、复数识别与字幕替换词同步登记。推荐仅保留一个主题卡，通过本次会话的上一主题轮换，不保存语音或学习记录；新动词形容词提案见 `docs/word-event-expansion-proposal.md`，尚未接入事件。验证入口：`dev/tools/verify-word-expansion.mjs` 与 `dev/tools/verify-word-expansion-ui.mjs`。
+`content/word-expansion.js` 提供海底、露营和冰雪三个主题，各含三档年龄的六轮内容。九章共 162 个主例句，原章节与课次 ID 保持不变。`RLINE_EXTENSIONS` 中 12 个新名词带 `extension: true` 和空原课次，不冒充原 R 线来源；独立模型入口、热词、复数识别与字幕替换词同步登记。推荐仅保留一个主题卡，通过本次会话的上一主题轮换，不保存语音或学习记录；新动词形容词提案见 `docs/word-event-expansion-proposal.md`，首批 push/pull/throw/kick/hide 与 cold/hungry/thirsty/dirty 已接入，其余仍待确认。验证入口：`dev/tools/verify-word-expansion.mjs` 与 `dev/tools/verify-word-expansion-ui.mjs`。
+
+### 六步入门流程与容错（2026-09-24）
+
+九章三档年龄均为单名词、另一个名词、数量加名词、颜色加名词、大小加颜色加名词、最后完整句。课次 ID 保持稳定；旧的丰富例句保存在 `WORD_SENTENCE_LIBRARY`，扩展词仍通过词菜单和替换候选可玩。每章前两轮由中文提问引导，第三轮用中文介绍彩虹虚线；中文仅为应用脚本播报，儿童输入仍只执行提取后的英文。无需先点 Domi，默认选年龄。
+
+`normalizeWordAttempt` 对当前题干内至多一个未知词做保守拼写修正，支持少量常见同音转写；已知有效词不会被改成题干词。缺冠词不阻止完成，不把文本匹配称为发音评分。`verify-word-teaching-ui.mjs` 检查逐步教学、无模糊、换词、连续收音、六轮完成和重选清理；`verify-word-tolerance.mjs` 检查容错与创意词保留。

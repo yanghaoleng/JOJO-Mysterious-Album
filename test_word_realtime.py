@@ -2,7 +2,7 @@ import json
 import struct
 import unittest
 from unittest.mock import patch
-from volc_realtime import packet, unpack, session_config, connect
+from volc_realtime import packet, unpack, session_config, connect, paced_reading_text
 from volc_asr import speech_hotwords, transcribe_pcm, transcribe_pcm
 
 class RealtimeProtocolTest(unittest.TestCase):
@@ -53,6 +53,12 @@ class RealtimeProtocolTest(unittest.TestCase):
         self.assertIn('你好，我是叫叫。',calls[2].args[0].decode('utf8',errors='ignore'))
         ws.close.assert_called_once()
 
+    def test_word_pauses_preserve_complete_prompt(self):
+        self.assertEqual(paced_reading_text('Big blue head.'),'Big, blue, head.')
+        self.assertEqual(paced_reading_text('head'),'head')
+        self.assertEqual(paced_reading_text('苹果的英文怎么说？'),'苹果的英文怎么说？')
+        self.assertIn('Chinese opening',session_config()['dialog']['system_role'])
+
     def test_bad_frames(self):
         for data in [b'', b'\x11\xf0\x10\x00'+struct.pack('>I',45000003)]:
             with self.assertRaises((ValueError,RuntimeError)):unpack(data)
@@ -65,7 +71,7 @@ class RealtimeProtocolTest(unittest.TestCase):
         self.assertIn('ONLY English',config['dialog']['system_role'])
         self.assertEqual(config['tts']['audio_config']['format'],'pcm_s16le')
         self.assertIn('gentle female', config['dialog']['speaking_style'])
-        self.assertEqual(config['tts']['audio_config']['speech_rate'], -28)
+        self.assertEqual(config['tts']['audio_config']['speech_rate'], -40)
         self.assertEqual(session_config('', 'onboarding')['tts']['audio_config']['speech_rate'], -10)
         self.assertIn('young child voice', session_config('', 'onboarding')['dialog']['speaking_style'])
 

@@ -23,7 +23,12 @@ for (const chapter of WORD_CHAPTERS) {
   for (const band of WORD_AGE_BANDS) {
     const lessons = getChapterLessons(chapter.id, band.minAge);
     assert.equal(lessons.length, 6);
-    assert.deepEqual(lessons.map((lesson) => lesson.mode), ['build', 'cloze', 'cloze', 'open', 'open', 'open']);
+    assert.deepEqual(lessons.map((lesson) => lesson.mode), ['build', 'build', 'build', 'build', 'build', 'open']);
+    assert.deepEqual(lessons.slice(0,5).map(l=>tokenizeWordUtterance(l.example).length),[1,1,2,2,3]);
+    assert.ok(lessons[0].chineseGuide.includes('英文怎么说'));
+    assert.ok(lessons[1].chineseGuide.includes('不同'));
+    assert.ok(lessons[2].chineseGuide.includes('彩色虚线'));
+    assert.deepEqual(lessons.map(l=>l.allowSwaps),[false,false,true,true,true,true]);
     assert.equal(new Set(lessons.map((lesson) => lesson.example)).size, 6);
     for (const [index, lesson] of lessons.entries()) {
       assert.ok(!ids.has(lesson.id), `Duplicate stable lesson ID: ${lesson.id}`);
@@ -74,13 +79,13 @@ assert.equal(ids.size, 162);
 const build = getChapterLessons('monster', 3)[0];
 const other = getChapterLessons('color', 3)[0];
 const oldProgress = evaluateWordUtterance(build, build.example).progress;
-assert.equal(evaluateWordUtterance(other, 'red', oldProgress).coverage, 1 / 3, 'Progress must not leak between lesson IDs');
-const hands = getChapterLessons('monster', 3)[1];
+assert.equal(evaluateWordUtterance(other, 'red', oldProgress).coverage, 0, 'Progress must not leak between lesson IDs');
+const hands = getChapterLessons('monster', 3)[2];
 assert.equal(evaluateWordUtterance(hands, 'two hand').targetComplete, true, 'Inflections should not hard-fail a child');
 const rhyme = getChapterLessons('rhyme', 8);
-assert.ok(rhyme[4].knowledge[0].includes('snail / sail'));
+assert.equal(tokenizeWordUtterance(rhyme[4].example).length,3);
 assert.ok(!JSON.stringify(WORD_CHAPTERS).includes('pan / ham'), 'Do not claim pan and ham rhyme');
-console.log(`Word curriculum verified: ${ids.size} lessons, 3 age bands, 9 chapters; full-word accumulation, cloze progression, creative alternatives and independent progress passed.`);
+console.log(`Word curriculum verified: ${ids.size} lessons, 3 age bands, 9 chapters; full-word accumulation, gradual noun/quantity/color/size progression, creative alternatives and independent progress passed.`);
 
 for(const text of ['大大的头','a 大 head','让 flower grow','机器人','123','こんにちは'])assert.equal(acceptsEnglishUtterance(text),false,text);
 for(const text of ['A big head.','Grow, flower!','two hands','a sleepy robot'])assert.equal(acceptsEnglishUtterance(text),true,text);

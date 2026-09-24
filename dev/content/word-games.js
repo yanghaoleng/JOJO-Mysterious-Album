@@ -1187,6 +1187,7 @@ const EXTENSION_WORDS = {
   make: '让；做出', put: '放', give: '给', has: '有', have: '有', can: '能；可以',
   let: '让', this: '这个', that: '那个', your: '你的', like: '喜欢', want: '想要',
   little: '小小的', small: '小的', huge: '巨大的', tiny: '很小的', purple: '紫色的',
+  cold:'冷的', hungry:'饿的', thirsty:'渴的', dirty:'脏的', push:'推', pull:'拉', throw:'扔', kick:'踢', hide:'躲藏',
   brown: '棕色的', pink: '粉色的', orange: '橙色的', white: '白色的', black: '黑色的', rainbow: '彩虹；彩虹色的',
   grow: '生长；变大', shrink: '缩小', spin: '旋转', dance: '跳舞', float: '漂浮',
   fast: '快的；快地', slow: '慢的；慢慢地', slowly: '慢慢地', high: '高高地',
@@ -1436,11 +1437,40 @@ function prepareLesson(chapterId, bandId, source, index) {
   };
 }
 
+// Keep the richer sentence library for future practice, but introduce one concept at a time.
+const gentleTopics = {
+  monster: ['head','hand','hands','blue','big','Robot, jump!','Make the robot jump.','Make the big blue robot jump.'],
+  color: ['ball','train','balls','red','little','Ball, spin!','Make the red ball spin.','Make two little red balls spin.'],
+  sports: ['frog','duck','ducks','green','little','Duck, swim!','Make the duck swim.','Make two little ducks swim.'],
+  toys: ['ball','box','balls','yellow','big','Put a ball in the box.','Put a red ball in the box.','Put two little balls in the box.'],
+  garden: ['flower','tree','flowers','red','little','Flower, grow!','Make the red flower grow.','Make two little red flowers grow.'],
+  rhyme: ['cat','hat','hats','blue','big','Cat, jump!','Give the cat a hat.','Give the little cat a blue hat.'],
+  ocean: ['turtle','octopus','jellyfish','green','little','Turtle, swim!','Make the green turtle swim.','Make two little turtles swim.'],
+  camp: ['tent','hedgehog','acorns','red','big','Hedgehog, walk!','Make the hedgehog walk.','Make the little hedgehog walk slowly.'],
+  polar: ['penguin','seal','penguins','blue','little','Penguin, jump!','Make the little penguin jump.','Make two little penguins jump high.'],
+};
+function gentleLessons(chapter, band) {
+  const [noun,friend,plural,color,size,...sentences]=gentleTopics[chapter.id];
+  const ageIndex=['early','middle','older'].indexOf(band.id);
+  const friendPlural={head:'heads',hand:'hands',train:'trains',duck:'ducks',box:'boxes',tree:'trees',hat:'hats',octopus:'octopuses',hedgehog:'hedgehogs',seal:'seals'}[friend]||`${friend}s`;
+  const examples=[noun,friend,`Two ${friendPlural}.`,`${color} ${noun}.`,`${size} ${color} ${noun}.`,sentences[ageIndex]];
+  const hints=['说一个词，让它出现；换成你喜欢的东西也可以','再认识一个朋友，读什么就变出什么','试试加上数量，一次变出两个','给它一种颜色，把两个词连起来','保留颜色，再加上大小，一点点把短语变长','最后试一句话，让它动起来'];
+  return examples.map((example,index)=>{
+    const mode=index===5?'open':'build',words=tokenize(example),id=`${chapter.id}-${band.id}-${index+1}`;
+    return {id,stage:index+1,mode,example,targets:unique(words),buildWords:mode==='build'?words:[],displayText:example,blankWords:[],blankCount:0,
+      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?[noun,friend]:[],
+      chineseGuide:index===0?`你想先变出${wordInfo(noun).meaning}，还是${wordInfo(friend).meaning}？${wordInfo(noun).meaning}或者${wordInfo(friend).meaning}的英文怎么说？试着说一个吧。`:index===1?`再变一个不同的东西吧！${wordInfo(friend).meaning}的英文怎么说？也可以说你喜欢的其他英文单词。`:index===2?'看，彩色虚线下面的词可以换哦！试着说一个不一样的英文单词，也可以点一下彩色虚线，看看新的例子。':'',words:unique(words).map(wordInfo),supportWords:[],prompt:hints[index],
+      knowledge:[[ '名词对应一个看得见的对象','用另一个名词自由创造','two + 复数名词','颜色放在名词前','大小 + 颜色 + 名词','用完整表达安排一个动作或位置'][index]],
+      alternatives:index===5?[`Make the ${noun} spin.`,`Make the ${friend} jump.`]:[],allowCreative:true,
+      goalLabel:['认识一个词','再说一个词','加上数量','加上颜色','加上大小','说一句话'][index]};
+  });
+}
+export const WORD_SENTENCE_LIBRARY = curriculum;
 export const WORD_CHAPTERS = chapterInfo.map((chapter) => ({
   ...chapter,
   words: chapter.words.split(' ').map(wordInfo),
   lessons: Object.fromEntries(WORD_AGE_BANDS.map((band) => [band.id,
-    curriculum[chapter.id][band.id].map((source, index) => prepareLesson(chapter.id, band.id, source, index)),
+    gentleLessons(chapter, band),
   ])),
 }));
 
@@ -1481,10 +1511,10 @@ export function createWordSuggestions(lesson, saved) {
   const tokens=tokenize(lesson.mode==='cloze'?lesson.displayText:lesson.example);
   const original=tokenize(lesson.example);
   const groups=[
-    ['big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow'],
+    ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow'],
     ['turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
-    ['turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds'],
-    ['grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
+    ['turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats'],
+    ['push','pull','throw','kick','hide','grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
     ['slowly','quickly','fast'],
     ['water','plant'],
     ['grows','jumps','dances','swims','flies','spins','runs','walks','sleeps'],
@@ -1525,8 +1555,9 @@ export function createWordSuggestions(lesson, saved) {
       }
       return tokens.join('');
     },
-    canChange:index=>choices.has(index),
+    canChange:index=>lesson.allowSwaps!==false&&choices.has(index),
     change(index){
+      if(lesson.allowSwaps===false)return this.text;
       const indices=[...choices.keys()].filter(i=>!confirmed.has(i));if(index===undefined&&!indices.length)return tokens.join('');
       if(index===undefined)index=indices[cursor++%indices.length];
       const pool=choices.get(index);if(!pool)return tokens.join('');

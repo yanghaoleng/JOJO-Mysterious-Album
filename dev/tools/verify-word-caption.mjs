@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createWordSuggestions,getChapterLessons} from '../content/word-games.js';
-const lesson=getChapterLessons('monster',5)[0];
+const lesson={example:'A big head.',mode:'build',allowSwaps:true};
 const s=createWordSuggestions(lesson);s.change(2);assert.notEqual(s.text,lesson.example);
 s.accept('a');assert.equal(s.parts.filter(p=>p.matched).length,1);
 s.accept('blue flower');assert.equal(s.text,'A blue flower.');assert.deepEqual(s.parts.filter(p=>p.matched).map(p=>p.text),['A','blue','flower']);
@@ -8,6 +8,6 @@ for(let i=0;i<8;i++)assert.equal(s.change(),'A blue flower.','Accepted words sta
 const restored=createWordSuggestions(lesson,s.snapshot);assert.equal(restored.text,s.text);assert.deepEqual(restored.parts,s.parts);
 s.change(2);assert.equal(s.parts[2].matched,false);assert.equal(s.parts[4].matched,true);
 s.accept('happy DOMI',{nouns:['domi']});assert.equal(s.text,'A happy domi.');s.accept('flibberwock');assert.equal(s.text,'A happy domi.');
-const cloze=createWordSuggestions(getChapterLessons('monster',5)[1]);cloze.accept('two feet');assert.equal(cloze.text,'Two feet.');assert.equal(cloze.parts.filter(p=>p.matched).length,2);
+const cloze=createWordSuggestions(getChapterLessons('monster',5)[2]);cloze.accept('two feet');assert.equal(cloze.text,'Two feet.');assert.equal(cloze.parts.filter(p=>p.matched).length,2);
 const multi=createWordSuggestions({example:'Put the ball in the box.',mode:'open'});multi.accept('put the cat in the hat');assert.equal(multi.text,'Put the cat in the hat.');assert.equal(multi.parts.filter(p=>p.matched).length,6);
 console.log('PASS accumulated green words, creative replacements, accepted word locking, explicit changes, saved sentence, cloze and multiple noun slots.');

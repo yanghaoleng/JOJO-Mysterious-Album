@@ -266,7 +266,7 @@ export class StoryVoice {
     }
   }
 
-  async say(text, voice = 'sprout', onStart = () => {}, npcId = '', onProgress) {
+  async say(text, voice = 'sprout', onStart = () => {}, npcId = '', onProgress, options = {}) {
     this.skip();
     this.cancelASR();
     const configuredProfile = typeof this.speechProfile === 'function' ? this.speechProfile() : this.speechProfile;
@@ -282,7 +282,7 @@ export class StoryVoice {
     void (async () => {
       try {
         session.requestTimeout = setTimeout(() => session.controller.abort(), speechProfile ? 15000 : 9000);
-        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true, ...(this.readingSpeed===.8?{readingSpeed:.8}:{}), ...(onProgress ? { responseFormat: 'json' } : {}), ...(speechProfile ? { speechProfile } : {}) }), signal: session.controller.signal });
+        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true, ...([.65,.8].includes(this.readingSpeed)?{readingSpeed:this.readingSpeed}:{}), ...(options.wordPauses?{wordPauses:true}:{}), ...(options.wordPrompt?{wordPrompt:true}:{}), ...(onProgress ? { responseFormat: 'json' } : {}), ...(speechProfile ? { speechProfile } : {}) }), signal: session.controller.signal });
         if (!response.ok) {
           if (speechProfile) {
             const error = await response.json().catch(() => null);
@@ -329,11 +329,15 @@ export class StoryVoice {
         }
         try {
           if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) throw new Error('speech_unavailable');
-          const speech = new window.SpeechSynthesisUtterance(text);
-          speech.lang = this.language;
+          const sourceWords=[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?/g)];
+          const spaced=options.wordPauses&&this.language==='en-US'&&sourceWords.length>1;
+          const spokenText=spaced?sourceWords.map(m=>m[0]).join(', ')+'.':text;
+          const spokenWords=[...spokenText.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?/g)];
+          const speech = new window.SpeechSynthesisUtterance(spokenText);
+          speech.lang = options.wordPrompt?'zh-CN':this.language;
           if(this.preferredVoice==='female'){
-            const choices=window.speechSynthesis.getVoices().filter(v=>v.lang.startsWith(this.language.split('-')[0]));
-            const female=choices.find(v=>/Samantha|Victoria|Karen|Moira|Tessa|Fiona|Siri.*Female|Aria|Jenny|Zira|Susan|Hazel/i.test(v.name));
+            const choices=window.speechSynthesis.getVoices().filter(v=>v.lang.startsWith(speech.lang.split('-')[0]));
+            const female=choices.find(v=>/Tingting|Ting-Ting|Meijia|Sinji|Huihui|Xiaoxiao|Samantha|Victoria|Karen|Moira|Tessa|Fiona|Siri.*Female|Aria|Jenny|Zira|Susan|Hazel/i.test(v.name));
             if(!female)throw new Error('female_voice_unavailable');
             speech.voice=female;
           }
@@ -342,8 +346,9 @@ export class StoryVoice {
           speech.onerror = () => this.finish(session);
           speech.onboundary = event => {
             if (this.utterance !== session || !Number.isInteger(event.charIndex)) return;
-            const start = event.charIndex;
-            const end = Math.min(text.length, start + (event.charLength || Array.from(text.slice(start))[0]?.length || 1));
+            const wordIndex=spaced?spokenWords.findIndex(m=>event.charIndex>=m.index&&event.charIndex<m.index+m[0].length):-1;
+            const start = wordIndex>=0?sourceWords[wordIndex].index:event.charIndex;
+            const end = wordIndex>=0?start+sourceWords[wordIndex][0].length:Math.min(text.length, start + (event.charLength || Array.from(text.slice(start))[0]?.length || 1));
             session.reading = { start, end, spokenEnd: start };
             onProgress?.({ status: 'playing', ...session.reading });
           };

@@ -43,5 +43,22 @@ for(const [state,kind]of [[{symbol:'hum'},'note'],[{motion:'sleep'},'z'],[{emoti
 effects.sync(cat,{id:'cat',effects:{motion:'stop'}});assert.equal(cat.wordSymbols.length,0);
 const runtime=new WorldRuntime();runtime.enter({storyId:'test',sceneId:'test',world:'meadow',actors:[]});
 const invalid=runtime.dispatch([{type:'entity.spawn',id:'x',asset:'prop:rword-cat',position:[0,0]},{type:'entity.event',id:'x',action:'swim',target:'missing'}]);assert.equal(invalid.ok,false);assert.equal(Object.keys(runtime.snapshot.worlds.meadow?.entities||{}).length,0);
+
+cat.position=[0,0];const ball=add('ball','prop:rword-ball');ball.position=[1,0];
+for(const [action,end] of [['push',2.6],['pull',-.5],['throw',2.3],['kick',3.3]]){
+ dispatches.length=0;controller.start({id:'cat',action,target:'ball',duration:2});
+ controller.update(1,1,false);assert.ok(ball.effectRoot.position.length()>.1,action+' moves target visibly');
+ controller.update(1.1,2.1,false);assert.ok(dispatches.flat().some(c=>c.type==='entity.move'&&c.id==='ball'&&Math.abs(c.position[0]-end)<.001),action+' persists landing');
+ assert.equal(ball.effectRoot.position.length(),0);assert.equal(controller.stats.temporaryModels,0);
+}
+controller.start({id:'ball',action:'throw',duration:2});assert.equal(controller.stats.temporaryModels,0,'Direct ball does not duplicate helper');controller.stop();
+controller.start({id:'cat',action:'hide',duration:2});controller.update(1.15,1.15,false);assert.equal(cat.model.group.visible,false);controller.stop();assert.equal(cat.model.group.visible,true);assert.equal(controller.stats.active,0);
+for(const [symbol,kind]of [['cold','snowflake'],['hungry','food'],['thirsty','drop']]){effects.sync(cat,{id:'cat',effects:{symbol}});assert.equal(cat.wordSymbolKind,kind);}
+effects.sync(cat,{id:'cat',effects:{dirt:true}});assert.ok(cat.dirtPatches.children.length>0,'Surface rays find actual mesh');assert.equal(cat.dirtPatches.visible,true);effects.sync(cat,{id:'cat',effects:{}});assert.equal(cat.dirtPatches.visible,false);
+const dirtRuntime=new WorldRuntime();dirtRuntime.enter({storyId:'dirty',sceneId:'dirty',world:'meadow',actors:[]});
+assert.ok(dirtRuntime.dispatch([{type:'entity.spawn',id:'x',asset:'prop:rword-cat',position:[0,0]},{type:'entity.effect',id:'x',effect:'dirty'},{type:'entity.effect',id:'x',effect:'wet'}]).ok);
+assert.equal(dirtRuntime.snapshot.worlds.meadow.entities.x.effects.dirt,true);
+assert.ok(dirtRuntime.dispatch([{type:'entity.effect',id:'x',effect:'clean'}]).ok);assert.equal(dirtRuntime.snapshot.worlds.meadow.entities.x.effects.dirt,undefined);assert.equal(dirtRuntime.snapshot.worlds.meadow.entities.x.effects.surface,'wet');
+effects.remove(ball);ball.model.dispose();ball.anchor.removeFromParent();entries.delete('ball');
 controller.dispose();effects.dispose();cat.model.dispose();
 console.log(`PASS: ${BEHAVIOR_ACTIONS.length} finite events + ${BEHAVIOR_EFFECTS.length} states, all documented examples, valid geometry, temporary-prop reuse/cleanup, stop/removal, note/Z symbols and atomic validation.`);

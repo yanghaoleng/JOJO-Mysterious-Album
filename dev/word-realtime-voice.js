@@ -65,10 +65,10 @@ export class RealtimeWordVoice extends StoryVoice {
     }
     if(event===459&&!this.answerDelivered){this.answerDelivered=true;const text=this.partial?.trim();Promise.resolve(text&&this.onAnswer(text,{durationMs:Math.max(0,performance.now()-(this.asrStartedAt??performance.now()))})).catch(()=>this.onError('Please try again.')).finally(()=>{if(this.recording&&!this.rtRead&&!this.utterance)this.onState('listening');});}
     if(event===350){
-      // Only audio belonging to an English subtitle is accepted.
+      // Accept English replies and explicit application-supplied Chinese teaching scripts.
       // Explicit readings can start with an empty subtitle; real text arrives in event 351.
       const text=data.text||this.rtRead?.text||'';
-      this.ignoreAudio=!this.rtRead||!/[a-z]/i.test(text)||/[\u3400-\u9fff]/.test(text);
+      this.ignoreAudio=!this.rtRead||(!this.rtRead.wordPrompt&&(!/[a-z]/i.test(text)||/[\u3400-\u9fff]/.test(text)));
       if(!this.ignoreAudio){this.onState('speaking');this.captureFeedback('reply','',data.text||'');}
     }
     if(event===351&&!this.ignoreAudio&&data.text){this.captureFeedback('reply','',data.text);}
@@ -84,17 +84,17 @@ export class RealtimeWordVoice extends StoryVoice {
   }
   stopPlayback(){clearTimeout(this.endTimer);for(const source of this.sources){try{source.stop();}catch{}source.disconnect();}this.sources.clear();this.playAt=0;this.ignoreAudio=true;}
   finishRead(status='cancelled'){if(!this.rtRead)return;clearTimeout(this.rtRead.timer);this.rtRead.progress?.({status,start:-1,end:-1});this.rtRead.resolve();this.rtRead=null;}
-  async say(text,voice,onStart=()=>{},npcId='',onProgress){
-    if(this.getMode?.()==='onboarding'||this.realtimeFailed)return super.say(text,voice,onStart,npcId,onProgress);
+  async say(text,voice,onStart=()=>{},npcId='',onProgress,options={}){
+    if(this.getMode?.()==='onboarding'||this.realtimeFailed)return super.say(text,voice,onStart,npcId,onProgress,options);
     const generation=this.rtGeneration;
-    try{await this.unlock();await this.connectRealtime();}catch{if(generation===this.rtGeneration)return super.say(text,voice,onStart,npcId,onProgress);return;}
+    try{await this.unlock();await this.connectRealtime();}catch{if(generation===this.rtGeneration)return super.say(text,voice,onStart,npcId,onProgress,options);return;}
     if(generation!==this.rtGeneration)return;
     this.skip();this.ignoreAudio=false;onStart();
     return new Promise(resolve=>{
       this.onState('speaking');
-      this.rtRead={resolve,text,progress:onProgress,timer:setTimeout(()=>{this.stopPlayback();this.finishRead();},20000)};
+      this.rtRead={resolve,text,wordPrompt:options.wordPrompt===true,progress:onProgress,timer:setTimeout(()=>{this.stopPlayback();this.finishRead();},20000)};
       // Real-time does not provide word timestamps: never fabricate timing.
-      this.socket.send(JSON.stringify({type:'say',text}));
+      this.socket.send(JSON.stringify({type:'say',text,wordPauses:options.wordPauses===true,wordPrompt:options.wordPrompt===true}));
     });
   }
   skip(){super.skip();this.stopPlayback();this.finishRead();}

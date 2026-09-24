@@ -47,7 +47,7 @@ export const COMMANDS = Object.freeze({
   "world.float": ["on", "targets"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
-export const WORD_EFFECTS = ['grow', 'shrink', 'long', 'tall', 'normal', 'jump', 'fly', 'swim', 'run', 'run-stop', 'walk', 'roll', 'dance', 'spin', 'sail', 'sleep', 'stop', 'happy', 'sad', 'angry', 'sleepy', 'funny', 'wet', 'dry', 'fast', 'slow', 'high', 'rainbow', 'hum', 'hot', 'yummy', 'new'];
+export const WORD_EFFECTS = ['cold','hungry','thirsty','dirty','clean','grow', 'shrink', 'long', 'tall', 'normal', 'jump', 'fly', 'swim', 'run', 'run-stop', 'walk', 'roll', 'dance', 'spin', 'sail', 'sleep', 'stop', 'happy', 'sad', 'angry', 'sleepy', 'funny', 'wet', 'dry', 'fast', 'slow', 'high', 'rainbow', 'hum', 'hot', 'yummy', 'new'];
 export const ATTACH_SLOTS = ['on', 'in', 'over', 'beside', 'near', 'head', 'hair', 'face', 'left-eye', 'right-eye', 'middle-eye', 'nose', 'mouth', 'left-ear', 'right-ear', 'left-hand', 'right-hand', 'left-foot', 'right-foot', 'tail'];
 export const MAX_WORLD_ENTITIES = 300;
 export function oldestEntities(entities) {

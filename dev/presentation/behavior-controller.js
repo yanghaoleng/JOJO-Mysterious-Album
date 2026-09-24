@@ -32,8 +32,17 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
     j.mesh=mesh;
     const symbol=(kind,pos=[0,2,0])=>{const s=createEventSymbol(kind);s.position.set(...pos);root.add(s);j.symbols.push(s);return s;};j.symbol=symbol;
     const prop=(id,pos=[1.1,0,0],scale=.8)=>{const m=createCreationModel(id);m.group.position.set(...pos);m.group.scale.multiplyScalar(scale);root.add(m.group);j.models.push(m);return m.group;};
-    const defaultProp=command.action==='wet'?'swimming-pool':def?.prop;
-    if(defaultProp&&(!target||['clean','dip','sip','dig','knit','draw','read'].includes(j.action)))j.prop=prop(defaultProp,['swim','wet','sail','ride','skate','sit','pop'].includes(j.action)?[0,0,0]:[1.1,0,0],['swim','wet','skate'].includes(j.action)?1.05:.85);
+    const directBall=['prop:ball','prop:rword-ball'].includes(item.asset)&&['throw','kick'].includes(j.action);
+    const defaultProp=command.action==='wet'?'swimming-pool':directBall?null:def?.prop;
+    if(defaultProp&&(!target||['clean','dip','sip','dig','knit','draw','read'].includes(j.action)))j.prop=prop(defaultProp,['swim','wet','sail','ride','skate','sit','pop','hide'].includes(j.action)?[0,0,0]:[1.1,0,0],['swim','wet','skate'].includes(j.action)?1.05:.85);
+    if(['push','pull','throw','kick'].includes(j.action)){
+      j.projectile=j.target||(!j.prop?j.item:null);
+      const origin=[...(j.item.position||[0,0])],start=[...(j.projectile?.position||origin)];
+      j.moveStart=start;j.moveOrigin=origin;
+      j.moveEnd=j.action==='pull'?[start[0]-1.5,start[1]]:j.action==='push'?[start[0]+1.6,start[1]]:j.action==='kick'?[start[0]+2.3,start[1]]:[origin[0]+2.3,origin[1]];
+      if(j.prop)j.propStart=j.prop.position.clone();
+    }
+    if(j.action==='hide'&&j.prop){j.prop.position.set(0,0,.35);j.prop.scale.multiplyScalar(1.35);}
     if(['swim','wet'].includes(j.action)&&j.prop){
       j.poolOffset=new THREE.Vector3(2*size,0,0);
       if(stage.world&&item.position){
@@ -102,7 +111,7 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
       r.position.set(0,0,0);r.rotation.set(0,0,0);
       const offset=r.position;
       if(['swim','wet','skate','sail','ride','sit'].includes(j.action)&&j.target)offset.addScaledVector(targetOffset,water?boarding:placement);
-      if(j.target?.effectRoot&&!['swim','wet','sail','ride','skate','sit','get','take'].includes(j.action)){
+      if(j.target?.effectRoot&&!['swim','wet','sail','ride','skate','sit','get','take','push','pull','throw','kick','hide'].includes(j.action)){
         const desired=new THREE.Vector3(1.1*j.size,0,0).applyQuaternion(j.item.anchor.quaternion).add(j.item.anchor.position).sub(j.target.anchor.position).applyQuaternion(j.target.anchor.quaternion.clone().invert());
         j.target.effectRoot.position.copy(desired.multiplyScalar(placement));
       }
@@ -117,6 +126,37 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
       if(['get','take'].includes(j.action)){
         if(j.prop){j.prop.position.x=1.1-travel*.9;j.prop.position.y=travel*.55;}
         if(j.target?.effectRoot){const d=j.item.anchor.position.clone().sub(j.target.anchor.position).applyQuaternion(j.target.anchor.quaternion.clone().invert());j.target.effectRoot.position.copy(d.multiplyScalar(travel*.7));j.target.effectRoot.position.y+=travel*.5;}
+      }
+      if(['push','pull','throw','kick'].includes(j.action)){
+        const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
+        const move=(entry,position,lift=0)=>{
+          if(!entry?.effectRoot)return;
+          const from=entry.position||[0,0],delta=new THREE.Vector3(position[0]-from[0],lift,position[1]-from[1]);
+          if(stage.world?.surfacePoint){const a=new THREE.Vector3(),b=new THREE.Vector3();stage.world.surfacePoint(...from,0,a);stage.world.surfacePoint(...position,0,b);delta.copy(b).sub(a).applyQuaternion(entry.anchor.quaternion.clone().invert());delta.y+=lift;}
+          entry.effectRoot.position.copy(delta);
+        };
+        const [sx,sz]=j.moveStart,[ex,ez]=j.moveEnd;
+        if(j.action==='push'||j.action==='pull'){
+          const amount=smooth((p-.23)/.62),position=[sx+(ex-sx)*amount,sz+(ez-sz)*amount];
+          move(j.projectile,position);
+          if(j.target){const side=j.action==='push'?-.7:-.65,approach=smooth(p/.23);move(j.item,[j.moveOrigin[0]+(position[0]+side-j.moveOrigin[0])*approach,j.moveOrigin[1]+(position[1]-j.moveOrigin[1])*approach]);r.rotation.z=reduced?0:(j.action==='push'?-.12:.1)*Math.sin(p*Math.PI);}
+        }else{
+          const launch=clamp((p-.25)/.6),approach=smooth(p/.25),held=j.action==='kick'?[sx,sz]:[j.moveOrigin[0]+.65,j.moveOrigin[1]];
+          if(j.action==='kick'&&j.target)move(j.item,[j.moveOrigin[0]+(sx-.65-j.moveOrigin[0])*approach,j.moveOrigin[1]+(sz-j.moveOrigin[1])*approach]);
+          const position=p<.25?[sx+(held[0]-sx)*approach,sz+(held[1]-sz)*approach]:[held[0]+(ex-held[0])*launch,held[1]+(ez-held[1])*launch];
+          const height=reduced?0:j.action==='throw'?(p<.25?approach*.55:(launch<.84?(1-launch/.84)*.55+Math.sin(launch/.84*Math.PI)*1.25:Math.sin((launch-.84)/.16*Math.PI)*.18)):Math.max(0,Math.sin(launch*Math.PI*3))*.12*(1-launch);
+          if(j.prop){j.prop.position.set((position[0]-j.moveOrigin[0])/j.size,height/j.size+.1,(position[1]-j.moveOrigin[1])/j.size);j.prop.rotation.z=-launch*Math.PI*3;}
+          else{move(j.projectile,position,height);j.projectile.effectRoot.rotation.z=-launch*Math.PI*3;}
+          if(j.target||j.prop)r.rotation.z=reduced?0:-Math.sin(clamp((p-.12)/.25)*Math.PI)*.18;
+        }
+      }
+      if(j.action==='hide'){
+        if(j.target)offset.addScaledVector(targetOffset,placement);
+        offset.z-=Math.min(clamp(p/.22),clamp((1-p)/.18))*.7;
+        const peeking=p>.4&&p<.46||p>.64&&p<.7;
+        j.item.model.group.visible=j.visibility.get(j.item)&&(p<.25||p>.8||peeking);
+        if(peeking&&!reduced)offset.y=.22;
+        j.parts.mark.visible=p>.25&&p<.8;
       }
       if(j.action==='tap'){j.parts.hammer.rotation.z=wave*.6;}
       if(j.action==='clean'){for(const [i,m]of j.parts.dirt.entries())m.visible=p<i/6+.18;if(j.prop)j.prop.position.set(wave*.35,.6,.4);}
@@ -134,7 +174,13 @@ export function createBehaviorController({entries,stage,dispatch=()=>({ok:true})
       if(j.action==='read')j.parts.lines.forEach((m,i)=>m.visible=p>(i+1)/7);
       if(j.action==='help'){j.parts.bars.forEach(m=>m.visible=p<.5);if(j.target?.effectRoot)j.target.effectRoot.position.y+=travel*.5;}
       if(j.action==='pay')j.parts.coin.position.x=travel*1.1;
-      if(p>=1){const id=j.item.id,action=j.action;stop(id);if(action==='clean')dispatch([{type:'entity.effect',id,effect:'dry'}]);if(action==='mix')dispatch([{type:'entity.color',id,color:j.mixedColor}]);}
+      if(p>=1){const id=j.item.id,action=j.action;
+        const moves=[];
+        if(j.projectile&&j.moveEnd)moves.push({type:'entity.move',id:j.projectile.id,position:j.moveEnd});
+        if(j.target&&['push','pull'].includes(action))moves.push({type:'entity.move',id,position:[j.moveEnd[0]-(action==='push'?.7:.65),j.moveEnd[1]]});
+        if(j.target&&action==='kick')moves.push({type:'entity.move',id,position:[j.moveStart[0]-.65,j.moveStart[1]]});
+        stop(id);if(moves.length)dispatch(moves);
+        if(action==='clean')dispatch([{type:'entity.effect',id,effect:'dry'},{type:'entity.effect',id,effect:'clean'}]);if(action==='mix')dispatch([{type:'entity.color',id,color:j.mixedColor}]);}
     }
   }
   return {start,stop,update,clear:()=>stop(),dispose:()=>stop(),get stats(){return {active:jobs.size,temporaryModels:[...jobs.values()].reduce((s,j)=>s+j.models.length,0),disposed,jobs:[...jobs.values()].map(j=>({id:j.item.id,action:j.action,target:j.target?.id||null,progress:j.age/j.duration}))};}};

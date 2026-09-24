@@ -39,9 +39,9 @@ function title(main,subtitle=''){ $('world-title').textContent=main;$('world-sub
 function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let lessonHint='',statusHint='',hintTimer=null,hintIndex=0;
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
-let openingPending=false,openingActive=false,openingEpoch=0,countdownUntil=0;
+let openingEpoch=0,countdownUntil=0;
 const languageGate=createWordLanguageGate();
-function cancelOpening(){openingEpoch++;openingPending=false;openingActive=false;document.querySelector('.word-layout').classList.remove('lesson-focus','lesson-focus-reading','lesson-focus-pending');}
+function cancelOpening(){openingEpoch++;}
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const primeRewardSound=()=>void playUISFX('select',{volume:0}).catch(()=>{});
 document.addEventListener('pointerdown',primeRewardSound,{once:true,passive:true});document.addEventListener('keydown',primeRewardSound,{once:true});
@@ -85,7 +85,7 @@ function newWorld(world='meadow',snapshot){
     game=createGameSession({story:{id:'word-play',version:1},stage,saved:snapshot,onChange:()=>{if(view==='play')saveJourney();}});
     game.bind({id:`words-${chapter?.id||'welcome'}`,world},[]);
     ambience=createWordAmbience({entities,send:commands=>apply(commands,{ambient:true,scatter:false}),reduced:()=>reducedMotion.matches,
-      canAct:()=>!openingActive&&!openingPending&&view==='play'&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!['speaking','thinking','transcribing'].includes(voiceState),
+      canAct:()=>view==='play'&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!['speaking','thinking','transcribing'].includes(voiceState),
       occupied:()=>{const p=stage.worldPresenter;return [...p.stats.filter(e=>!e.settled||e.occupied).map(e=>e.id),...p.behaviorStats.jobs.flatMap(e=>[e.id,e.target]),...p.feedingStats.jobs.flatMap(e=>[e.id,e.target]),...p.movementStats.jobs.map(e=>e.id)];},
       camera:()=>{}});
     stage.worldPresenter.onPickEntity=id=>{focusId=id;const e=entities()[id];if(e)feedback('Try big, blue, or jump!');};
@@ -257,13 +257,12 @@ function openChapter(id,{fresh=false,shared=null}={}){
   if(chapter.id==='monster'&&migrated)for(const world of Object.values(migrated.worlds||{}))for(const e of Object.values(world.entities||{}))if(/^wg-(body|head|hand|foot)-/.test(e.id)&&/^prop:rword-(body|head|hand|foot)$/.test(e.asset))e.asset=e.asset.replace('rword-','robot-');
   newWorld(chapter.world,migrated);
   if(chapter.weather&&!migrated)apply([{type:'weather.set',preset:chapter.weather}]);
-  if(chapter.id==='monster'&&!Object.values(entities()).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
   frameWordScene();renderLesson();saveJourney();sharedScene=null;
 
 }
 function currentLesson(){return getChapterLessons(chapter.id,age)[lessonIndex];}
-let sentenceMotion=null,sentenceSuggestions=null;
+let sentenceMotion=null,sentenceSuggestions=null,lessonGuideRead=false;
 function currentExample(){return sentenceSuggestions?.readingText||currentLesson().example;}
 function updateSentence(result,text=''){
   if(!sentenceSuggestions)return;
@@ -273,10 +272,10 @@ function updateSentence(result,text=''){
 }
 function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
-  openingPending=true;document.querySelector('.word-layout').classList.add('lesson-focus-pending');
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
-  const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，说完整的一句，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
+  const firstPrompt=lesson.prompt;
   $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===5?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
+  lessonGuideRead=false;
   const suggestions=sentenceSuggestions=createWordSuggestions(lesson,progress.sentence);
   const changeWord=index=>{if(voiceState==='speaking'||voiceState==='thinking'||busy||transitioning)return;sentenceMotion.update(suggestions.change(index));};
   sentenceMotion=textMotion('lesson-sentence',suggestions.text,'text',{getParts:()=>suggestions.parts,canReplace:suggestions.canChange,onReplace:index=>{changeWord(index);scheduleSuggestion();}});
@@ -314,8 +313,8 @@ function renderLesson(){
 function renderWordOptions(){
   const lesson=currentLesson();
   const base=lesson.mode==='build'?lesson.buildWords:lesson.example.toLowerCase().match(/[a-z]+/g)||[];
-  const ideas=['sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...Object.values(WORD_CHARACTER_NAMES)];
-  $('word-options').innerHTML=[...new Set([...base,...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
+  const ideas=['cold','hungry','thirsty','dirty','push','pull','throw','kick','hide','sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...Object.values(WORD_CHARACTER_NAMES)];
+  $('word-options').innerHTML=[...new Set([...base,...(lesson.choiceWords||[]),...chapter.words.map(w=>w.word),...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
 }
 let menuOpen=false,menuAnimation=null,inputEpoch=0,inputQueue=Promise.resolve(),pendingWords=0;
 function showContinue(show){
@@ -325,7 +324,7 @@ function showContinue(show){
 }
 function tickAutoContinue(){
   const badge=$('continue-countdown'),button=$('next-lesson');
-  const eligible=view==='play'&&button&&!button.hidden&&continuousListening&&voice?.enabled&&voice.recording&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!openingActive&&!openingPending&&!menuOpen&&!['speaking','transcribing','thinking','requesting'].includes(voiceState);
+  const eligible=view==='play'&&button&&!button.hidden&&continuousListening&&voice?.enabled&&voice.recording&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!menuOpen&&!['speaking','transcribing','thinking','requesting'].includes(voiceState);
   if(!eligible){countdownUntil=0;if(badge)badge.hidden=true;return;}
   const now=performance.now();if(!countdownUntil)countdownUntil=now+3000;
   const left=Math.max(0,Math.ceil((countdownUntil-now)/1000));
@@ -358,7 +357,7 @@ async function toggleMenu(open=!menuOpen){
 function ensureVoice({gameMode=false}={}){
   if(voice)return;
   const onboarding=view==='intro'&&!gameMode;
-  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentExample():'',language:'en-US',readingSpeed:onboarding?1:.8,speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',continuousMeter:true,
+  voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentExample():'',language:'en-US',readingSpeed:onboarding?1:.65,speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',continuousMeter:true,
     onState:state=>{music.setVoiceState(continuousListening&&state==='off'?'listening':state);voiceState=state;syncVoiceInput(state);transcriptPending(state==='transcribing'||state==='thinking');voiceHint(({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:praising?'说得真棒！听听给你的鼓励':'先听一听，再跟着说',transcribing:'正在听懂你的话',thinking:'正在听懂你的话',off:continuousListening?'我会一直听，你可以接着说':'轮到你啦，试着说出来',paused:'已暂停，点一下继续'})[state]||'我在听');},
     onAnswer:(raw,details)=>{transcriptPending(false);const {text,remind}=languageGate.accept(raw,details);if(!text){if(remind){voiceHint('准备好时，试着用英语说给我听吧');if(view==='intro')return askIntro('Please speak in English.');if(view==='play')return speak('Please speak in English.');}return;}return view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive)});},onLevel:level=>{voiceInput?.setLevel(level);if(level>.05)countdownUntil=performance.now()+3000;},
     onError:(message,details={})=>{transcriptPending(false);if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}voiceHint(({
@@ -381,42 +380,25 @@ function initVoice(){
   $('word-mic').onclick=async()=>{if(continuousListening){continuousListening=false;voice.pause();voiceInput.setState('paused');$('mic-heading').textContent='已暂停，点一下继续';}else{continuousListening=true;const activeVoice=voice;activeVoice.skip();activeVoice.listen(true);await activeVoice.enable();if(voice===activeVoice&&!activeVoice.enabled)continuousListening=false;}};
 }
 async function sayGuidance(text){
-  const mount=sentenceMotion,example=currentExample(),session=game,active=voice;
-  const focused=openingPending&&text===example,epoch=openingEpoch;
+  const active=voice,session=game,mount=sentenceMotion,example=currentExample(),epoch=openingEpoch;
   const current=()=>view==='play'&&game===session&&sentenceMotion===mount&&voice===active&&openingEpoch===epoch;
-  const ensureDemo=()=>{if(chapter.id==='monster'&&!Object.values(wordSceneEntities(entities(),'demo')).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'demo-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);};
   active.listen(false);
-  const layer=document.querySelector('.scene-focus'),root=document.querySelector('.word-layout');
-  const waitForFade=async()=>{void getComputedStyle(layer).opacity;await Promise.allSettled(layer.getAnimations().map(animation=>animation.finished));};
-  if(focused){
-    openingPending=false;openingActive=true;
-    // Replace the scene snapshot only while its layer is fully transparent.
-    await waitForFade();if(!current())return;
-    try{
-      stage.renderer.render(stage.scene,stage.camera);
-      const image=new Image();image.src=stage.renderer.domElement.toDataURL('image/jpeg',.8);
-      await image.decode();if(!current())return;
-      layer.style.setProperty('--scene-focus-image',`url("${image.src}")`);
-    }catch{if(!current())return;layer.style.removeProperty('--scene-focus-image');}
-    void getComputedStyle(layer).opacity;
-    root.classList.remove('lesson-focus-pending');root.classList.add('lesson-focus','lesson-focus-reading');
-    await waitForFade();if(!current())return;
-  }
-  else if(example.toLowerCase().includes(text.toLowerCase()))ensureDemo();
-  const narrate=createWordNarration(text,{getContext:()=>({entities:entities(),chapter:chapter.id,focusId}),apply});
-  const offset=example.toLowerCase().indexOf(text.toLowerCase());let ended=false;
-  await active.say(text,'gentle',()=>{},'',offset>=0?packet=>{
-    if(current()){mount.read(example,{...packet,start:packet.start<0?-1:packet.start+offset,end:packet.end<0?-1:packet.end+offset});if(focused)ended=packet.status==='ended'||ended;else narrate(packet);}
-  }:undefined);
-  if(!current())return;
-  if(focused){
-    root.classList.remove('lesson-focus','lesson-focus-reading');
-    await waitForFade();
+  const lesson=currentLesson();
+  if(lesson.chineseGuide&&!lessonGuideRead){
+    lessonGuideRead=true;
+    voiceHint(lesson.warmup?'说出你喜欢的那个东西的英文，就能把它变出来':'彩色虚线下面的词可以换，试试你的新点子');
+    await active.say(lesson.chineseGuide,'gentle',()=>{},'',undefined,{wordPrompt:true});
     if(!current())return;
-    openingActive=false;
-    if(ended){ensureDemo();narrate({status:'ended'});}
+    if(lesson.warmup){continuousListening=true;active.listen(true);await active.enable();if(!active.enabled)continuousListening=false;return;}
   }
-  resumeListening();
+  const narrate=createWordNarration(text,{getContext:()=>({entities:entities(),chapter:chapter.id,focusId}),apply});
+  const offset=example.toLowerCase().indexOf(text.toLowerCase());
+  await active.say(text,'gentle',()=>{},'',packet=>{
+    if(!current())return;
+    if(offset>=0)mount.read(example,{...packet,start:packet.start<0?-1:packet.start+offset,end:packet.end<0?-1:packet.end+offset});
+    narrate(packet);
+  },{wordPauses:true});
+  if(current())resumeListening();
 }
 async function sayPraise(){
   if(!voice||document.hidden||view!=='play')return;
@@ -428,11 +410,13 @@ async function sayPraise(){
 }
 async function speak(text){if(!voice||busy||document.hidden||view!=='play')return;await voice.unlock().catch(()=>{});if(view==='play')await sayGuidance(text);}
 async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
-  const text=englishWordContent(raw);if(!text||busy||view!=='play'||openingActive)return;
+  let text=englishWordContent(raw);if(!text||busy||view!=='play')return;
   const session=game,version=++turn,lesson=currentLesson();busy=true;if(!fromRealtime)voice?.listen(false);
   if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;voiceHint('正在把你的想法变出来');
   try{
-    const result=evaluateWordUtterance(lesson,text,progress);
+    const result=evaluateWordUtterance(lesson,text,progress,{reference:currentExample()});
+    text=result.normalizedText;
+    if(result.corrections.length)$('word-transcript').textContent=`“${text}”`;
     let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
     // The first sentence is a construction: an earlier colour/number remains meaningful when its noun arrives.
     if(lesson.mode==='build'&&result.currentMatched.length&&result.matched.length>result.currentMatched.length){
@@ -467,15 +451,16 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     for(const word of plan.matched)heardWords.add(word);
     focusId=plan.focusId||focusId;
     const made=applied.ok;
-    canAdvance=canAdvance||progress?.unlocked||result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&result.progress.heard.length>=2&&plan.matched.length>0);
+    const warmupSuccess=lesson.warmup&&made&&findWordObjects(text).length>0;
+    canAdvance=warmupSuccess||canAdvance||progress?.unlocked||result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&(lesson.warmup||result.progress.heard.length>=2)&&plan.matched.length>0);
     progress.unlocked=canAdvance;
     creative=made&&!result.targetComplete;
     if(creative)lessonHint='你可以换一个名词或形容词，让世界继续变化';
     updateSentence(result,text);
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
-    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':result.targetComplete?'说得真棒，你做到了！':result.nextWord?'再试着说出完整的一句吧':'再试一个词吧'));
+    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':result.targetComplete?'说得真棒，你做到了！':result.nextWord?(lesson.warmup?'试着说一个英文单词吧':'把这几个词连起来，再试一次吧'):'再试一个词吧'));
     feedback(made?'Your world is changing!':result.currentMatched.length?`I heard ${result.currentMatched.join(', ')}.`:'Try another word.');
-    const matched=(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
+    const matched=warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
     if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
     saveJourney();
@@ -535,7 +520,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();cancelOpening();continuousListening=false;voice?.pause();voice?.skip();voiceInput?.setState('paused');voiceHint('已暂停，按回车继续');}
 });
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
-$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);if(chapter.id==='monster')apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
+$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);clearInterval(autoContinueTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
@@ -550,4 +535,4 @@ $('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.cl
 // Domi welcome is temporarily disabled; restore this call to enable it again.
 // renderIntro();
 renderAge();
-window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:openingActive||openingPending,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
+window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:false,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};

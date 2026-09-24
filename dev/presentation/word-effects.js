@@ -46,6 +46,21 @@ export function createWordEffects() {
     face.userData.dispose=()=>{sphere.dispose();mouthGeometry.dispose();ink.dispose();};
     return face;
   }
+  function surfaceDirt(model) {
+    const group=new THREE.Group();group.name='surface-dirt';model.updateWorldMatrix(true,true);
+    const inverse=model.matrixWorld.clone().invert(),bounds=new THREE.Box3(),meshes=[];
+    model.traverse(m=>{if(m.isMesh){meshes.push(m);m.geometry.computeBoundingBox();bounds.union(m.geometry.boundingBox.clone().applyMatrix4(inverse.clone().multiply(m.matrixWorld)));}});
+    const geometry=new THREE.SphereGeometry(1,10,6),material=new THREE.MeshStandardMaterial({color:'#816247',roughness:1});
+    const size=bounds.getSize(new THREE.Vector3()),ray=new THREE.Raycaster(),direction=new THREE.Vector3(0,0,-1).transformDirection(model.matrixWorld);
+    if(!bounds.isEmpty())for(let n=0;n<14;n++){
+      const x=bounds.min.x+size.x*(.15+(n*7%13)/13*.7),y=bounds.min.y+size.y*(.15+(n*5%11)/11*.65);
+      ray.set(new THREE.Vector3(x,y,bounds.max.z+1).applyMatrix4(model.matrixWorld),direction);
+      const hit=ray.intersectObjects(meshes,false)[0];if(!hit)continue;
+      const patch=new THREE.Mesh(geometry,material),r=Math.max(.025,Math.min(size.x,size.y)*(.045+(n%3)*.012));
+      patch.position.copy(model.worldToLocal(hit.point.clone()));patch.position.z+=.007;patch.scale.set(r,r*.7,.012);group.add(patch);
+    }
+    group.userData.dispose=()=>{geometry.dispose();material.dispose();};return group;
+  }
   function sync(item, record) {
     if(item.wordEffects?.motion!==record.effects?.motion)item.wordMotionAge=0;
     item.wordEffects = record.effects || {};
@@ -61,12 +76,14 @@ export function createWordEffects() {
       item.wordEmotion = item.wordEffects.emotion;
       if (item.wordEmotion) {item.emotionBadge=item.wordEmotion==='happy'?surfaceSmile(item.model.group,record.asset):badge(item.wordEmotion);(item.wordEmotion==='happy'?item.model.group:item.anchor).add(item.emotionBadge);}
     }
-    const kind=item.wordEffects.motion==='sleep'||item.wordEffects.emotion==='sleepy'?'z':item.wordEffects.symbol==='hum'?'note':item.wordEffects.symbol==='hot'?'steam':item.wordEffects.symbol==='new'?'star':item.wordEffects.emotion==='yummy'?'heart':null;
+    const kind=item.wordEffects.motion==='sleep'||item.wordEffects.emotion==='sleepy'?'z':item.wordEffects.symbol==='hum'?'note':item.wordEffects.symbol==='hot'?'steam':item.wordEffects.symbol==='new'?'star':item.wordEffects.symbol==='cold'?'snowflake':item.wordEffects.symbol==='hungry'?'food':item.wordEffects.symbol==='thirsty'?'drop':item.wordEffects.emotion==='yummy'?'heart':null;
     if(kind!==item.wordSymbolKind){
       for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}
       item.wordSymbolKind=kind;item.wordSymbols=kind?Array.from({length:3},()=>createEventSymbol(kind)):[];
       for(const s of item.wordSymbols)item.anchor.add(s);
     }
+    if(item.wordEffects.dirt&&!item.dirtPatches){item.dirtPatches=surfaceDirt(item.model.group);item.model.group.add(item.dirtPatches);}
+    if(item.dirtPatches)item.dirtPatches.visible=Boolean(item.wordEffects.dirt);
     if(item.wordEffects.surface==='wet'&&!item.waterDrops){
       const root=new THREE.Group(),geometry=new THREE.SphereGeometry(.055,8,6),material=new THREE.MeshBasicMaterial({color:'#74bde3'});
       for(let i=0;i<5;i++){const drop=new THREE.Mesh(geometry,material);drop.scale.y=1.6;root.add(drop);}
@@ -105,6 +122,7 @@ export function createWordEffects() {
       if (e.gesture==='spin') root.rotation.y=reduced?.3:t*2.4;
       if (e.motion==='sail') {root.position.x=Math.sin(t*.7)*.8;root.rotation.z=Math.sin(t*1.5)*.08;}
       if (e.motion==='sleep') root.scale.y*=1+Math.sin(t*1.3)*.025;
+      if(e.symbol==='cold'&&!reduced)root.rotation.z+=Math.sin(t*19)*.02;
       if (e.surface==='wet') {root.rotation.z+=Math.sin(t*16)*.015;}
       if(e.emotion==='funny')root.rotation.z+=Math.sin(t*4)*.13;
       if(item.waterDrops?.visible)item.waterDrops.children.forEach((drop,i)=>{drop.position.set(Math.sin(i*2)*.5,1.4-((t*.8+i*.23)%1.4),Math.cos(i*2)*.4);});
@@ -141,6 +159,6 @@ export function createWordEffects() {
     }
     for(const item of entries.values())attach(item);
   }
-  function remove(item){if(!item)return;for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}item.emotionBadge?.userData.dispose?.();item.emotionBadge?.removeFromParent();item.waterDrops?.userData.dispose();item.waterDrops?.removeFromParent();owned.delete(item);}
+  function remove(item){if(!item)return;for(const s of item.wordSymbols||[]){s.userData.dispose();s.removeFromParent();}item.emotionBadge?.userData.dispose?.();item.emotionBadge?.removeFromParent();item.dirtPatches?.userData.dispose();item.dirtPatches?.removeFromParent();item.waterDrops?.userData.dispose();item.waterDrops?.removeFromParent();owned.delete(item);}
   return {sync,cue,update,remove,dispose(){for(const item of owned)remove(item);}};
 }
