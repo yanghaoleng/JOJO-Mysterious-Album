@@ -13,12 +13,12 @@ try{
    if(data.type==='start')ws.send(JSON.stringify({type:'ready'}));
    if(data.type==='say'){sayCount++;readings.push(data.text);send(350,{text:''});ws.send(Buffer.alloc(4800));send(351,{text:data.text});send(359);}
  });});
- await page.goto(`${origin}/dev/words?voice=realtime`);await page.locator('#skip-intro').click();await page.locator('#choose-age').click();await page.locator('#continue-chapter').click();
+ await page.goto(`${origin}/dev/words?voice=realtime`);await page.locator('#choose-age').click();
  await page.waitForFunction(()=>window.__WORD_GAME__?.status.view==='play');await page.waitForTimeout(500);assert.ok(sayCount>0);
- await page.locator('#word-mic').click();await page.waitForTimeout(600);assert.ok(audioChunks>0,'Microphone frames stream before the end of a sentence');
+ await page.waitForFunction(()=>window.__WORD_GAME__.status.recording);await page.waitForTimeout(600);assert.ok(audioChunks>0,'Microphone frames stream before the end of a sentence');
  assert.equal(await page.locator('#answer-feedback').count(),0);
  assert.equal(await page.locator('#word-mic .voice-input-control__wave i').count(),6);
- send(450);await page.waitForFunction(()=>!document.getElementById('transcript-loading').hidden);
+ send(450);await page.waitForFunction(()=>window.__WORD_GAME__.status.voiceState==='transcribing');
  assert.equal(await page.locator('#word-mic').getAttribute('data-voice-visual'),'wave');assert.equal(await page.locator('#word-mic').isEnabled(),true);
  send(451,{results:[{text:'DOMI',is_interim:true}]});await page.waitForFunction(()=>document.getElementById('word-transcript').textContent.includes('DOMI'));
  assert.equal(Object.values(await page.evaluate(()=>window.__WORD_GAME__.status.entities)).some(e=>e.asset==='npc:domi'),false,'Interim words must not execute');
@@ -37,7 +37,7 @@ try{
  const fresh=await browser.newContext({reducedMotion:'reduce'}),fallback=await fresh.newPage();
  await fallback.routeWebSocket('**/api/word-realtime',ws=>ws.close());
  await fallback.route('**/api/tts',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
- await fallback.goto(`${origin}/dev/words?voice=realtime`);await fallback.locator('#skip-intro').click();await fallback.locator('#choose-age').click();await fallback.locator('#continue-chapter').click();
+ await fallback.goto(`${origin}/dev/words?voice=realtime`);await fallback.locator('#choose-age').click();
  await fallback.waitForFunction(()=>document.getElementById('voice-mode')?.textContent.includes('已回退经典'));
  assert.match(await fallback.locator('#mic-heading').innerText(),/实时语音|朗读暂时|跟着说|试着说出来/);console.log('PASS unavailable realtime keeps classic fallback status while preserving any TTS failure message');
 }finally{await browser.close();}

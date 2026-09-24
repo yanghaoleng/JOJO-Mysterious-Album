@@ -1,9 +1,15 @@
 import { StoryVoice } from './voice.js';
+import { PcmStreamPlayer } from './pcm-stream-player.js';
 
 // The classic implementation stays intact. A failed realtime connection falls
 // back for this visit; choosing classic also persists across reloads.
 export class RealtimeWordVoice extends StoryVoice {
-  constructor(options){super(options);this.getLesson=options.getLesson;this.getMode=options.getMode;this.realtimeFailed=false;this.sources=new Set();this.playAt=0;this.rtGeneration=0;}
+  constructor(options){super(options);this.getLesson=options.getLesson;this.getMode=options.getMode;this.realtimeFailed=false;this.player=null;this.rtGeneration=0;}
+  async preparePlayback(){
+    const context=await this.unlock();
+    if(this.player?.context!==context){this.player?.dispose();this.player=new PcmStreamPlayer(context,{onDrain:()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},onError:()=>{this.stopPlayback();this.finishRead();}});}
+    await this.player.prepare();
+  }
   get realtimeActive(){return !this.realtimeFailed&&this.socket?.readyState===WebSocket.OPEN;}
   async connectRealtime(){
     if(this.realtimeFailed)throw new Error('realtime_unavailable');
@@ -38,7 +44,7 @@ export class RealtimeWordVoice extends StoryVoice {
   async enable(){
     this.onState('requesting');
     const generation=this.rtGeneration;
-    try{await this.connectRealtime();}catch{}
+    try{await this.connectRealtime();await this.preparePlayback();}catch{this.realtimeFailed=true;}
     if(generation!==this.rtGeneration)return;
     return super.enable();
   }
@@ -72,22 +78,18 @@ export class RealtimeWordVoice extends StoryVoice {
       if(!this.ignoreAudio){this.onState('speaking');this.captureFeedback('reply','',data.text||'');}
     }
     if(event===351&&!this.ignoreAudio&&data.text){this.captureFeedback('reply','',data.text);}
-    if(event===359&&this.rtRead&&!this.ignoreAudio){clearTimeout(this.endTimer);this.endTimer=setTimeout(()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},Math.max(0,(this.playAt-(this.context?.currentTime||0))*1000)+30);}
+    if(event===359&&this.rtRead&&!this.ignoreAudio)this.player?.end();
   }
   playPCM(data){
-    if(this.ignoreAudio||!this.context||data.byteLength%2)return;
-    const pcm=new Int16Array(data),buffer=this.context.createBuffer(1,pcm.length,24000),channel=buffer.getChannelData(0);
-    for(let i=0;i<pcm.length;i++)channel[i]=pcm[i]/32768;
-    const source=this.context.createBufferSource();source.buffer=buffer;source.connect(this.context.destination);
-    const start=Math.max(this.context.currentTime+.025,this.playAt);this.playAt=start+buffer.duration;
-    this.sources.add(source);source.onended=()=>{this.sources.delete(source);source.disconnect();};source.start(start);
+    if(this.ignoreAudio||!this.player?.node)return;
+    this.player.append(data);
   }
-  stopPlayback(){clearTimeout(this.endTimer);for(const source of this.sources){try{source.stop();}catch{}source.disconnect();}this.sources.clear();this.playAt=0;this.ignoreAudio=true;}
+  stopPlayback(){this.player?.reset();this.ignoreAudio=true;}
   finishRead(status='cancelled'){if(!this.rtRead)return;clearTimeout(this.rtRead.timer);this.rtRead.progress?.({status,start:-1,end:-1});this.rtRead.resolve();this.rtRead=null;}
   async say(text,voice,onStart=()=>{},npcId='',onProgress,options={}){
     if(this.getMode?.()==='onboarding'||this.realtimeFailed)return super.say(text,voice,onStart,npcId,onProgress,options);
     const generation=this.rtGeneration;
-    try{await this.unlock();await this.connectRealtime();}catch{if(generation===this.rtGeneration)return super.say(text,voice,onStart,npcId,onProgress,options);return;}
+    try{await this.connectRealtime();await this.preparePlayback();}catch{if(generation===this.rtGeneration){this.realtimeFailed=true;return super.say(text,voice,onStart,npcId,onProgress,options);}return;}
     if(generation!==this.rtGeneration)return;
     this.skip();this.ignoreAudio=false;onStart();
     return new Promise(resolve=>{
@@ -98,5 +100,5 @@ export class RealtimeWordVoice extends StoryVoice {
     });
   }
   skip(){super.skip();this.stopPlayback();this.finishRead();}
-  pause(){this.rtGeneration++;this.rtConnecting=null;this.socket?.close();this.socket=null;this.stopPlayback();this.finishRead();super.pause();}
+  pause(){this.rtGeneration++;this.rtConnecting=null;this.socket?.close();this.socket=null;this.stopPlayback();this.finishRead();this.player?.dispose();this.player=null;super.pause();}
 }

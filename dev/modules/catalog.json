@@ -90,10 +90,11 @@
       "id": "logic:word-realtime-voice",
       "kind": "logic",
       "name": "英语冒险 · 可切换实时语音",
-      "description": "在单词菜单切换豆包端到端实时对话与经典语音。新服务需开通 volc.speech.dialog 权限；连接失败回退经典方案。验证 test_word_realtime.py。",
+      "description": "在单词菜单切换豆包端到端实时对话与经典语音。新服务需开通 volc.speech.dialog 权限；连接失败回退经典方案。连续音频播放工作线程消除流式分段接缝，验证 test_word_realtime.py 与 verify-pcm-playback.mjs。",
       "source": "dev/word-realtime-voice.js",
       "capabilities": [
         "实时音频与字幕",
+        "连续 PCM 音频与缓冲抗抖",
         "英文角色道具热词",
         "经典语音回滚",
         "断线回退",

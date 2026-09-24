@@ -77,7 +77,7 @@ def session_config(lesson='', mode='game'):
         'asr': {'extra': {'enable_custom_vad': True, 'end_smooth_window_ms': 700,
             'enable_asr_twopass': True, 'context': {'hotwords': speech_hotwords()}}},
         'tts': {'speaker': 'zh_female_vv_jupiter_bigtts',
-            'audio_config': {'channel': 1, 'format': 'pcm_s16le', 'sample_rate': 24000, 'speech_rate': -10 if mode == 'onboarding' else -40}},
+            'audio_config': {'channel': 1, 'format': 'pcm_s16le', 'sample_rate': 24000, 'speech_rate': -10 if mode == 'onboarding' else -20}},
         'dialog': {'bot_name': 'English Playmate',
             'system_role': 'You are a friendly English tutor in a 3D word game for children ages 3 to 10. '
                 'Speak ONLY English in responses to the child. For an explicit application-supplied Chinese opening or word-swap instruction, read that supplied text verbatim in Chinese. Ignore Chinese background speech or a parent coaching the child. Never generate a language correction; the client controls infrequent reminders. '

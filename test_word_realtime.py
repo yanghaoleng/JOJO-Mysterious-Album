@@ -71,7 +71,7 @@ class RealtimeProtocolTest(unittest.TestCase):
         self.assertIn('ONLY English',config['dialog']['system_role'])
         self.assertEqual(config['tts']['audio_config']['format'],'pcm_s16le')
         self.assertIn('gentle female', config['dialog']['speaking_style'])
-        self.assertEqual(config['tts']['audio_config']['speech_rate'], -40)
+        self.assertEqual(config['tts']['audio_config']['speech_rate'], -20)
         self.assertEqual(session_config('', 'onboarding')['tts']['audio_config']['speech_rate'], -10)
         self.assertIn('young child voice', session_config('', 'onboarding')['dialog']['speaking_style'])
 
