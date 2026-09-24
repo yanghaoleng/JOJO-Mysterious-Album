@@ -86,3 +86,5 @@ html,body,.word-layout{touch-action:pan-x pan-y}
 .answer-result .next-button{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif}
 .continue-countdown{font:inherit;color:inherit;white-space:pre;font-variant-numeric:tabular-nums}
 .read-along-word.is-matched-word{color:#acf0bf;text-shadow:0 0 12px #93e9ab30}
+
+.chapter-countdown{font:inherit;font-variant-numeric:tabular-nums;white-space:pre}

@@ -39,14 +39,14 @@ function title(main,subtitle=''){ $('world-title').textContent=main;$('world-sub
 function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let lessonHint='',statusHint='',hintTimer=null,hintIndex=0;
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
-let openingEpoch=0,countdownUntil=0;
+let openingEpoch=0,countdownUntil=0,chapterCountdownUntil=0,chapterStarting=false;
 const languageGate=createWordLanguageGate();
 function cancelOpening(){openingEpoch++;}
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const primeRewardSound=()=>void playUISFX('select',{volume:0}).catch(()=>{});
 document.addEventListener('pointerdown',primeRewardSound,{once:true,passive:true});document.addEventListener('keydown',primeRewardSound,{once:true});
 const reward=createWordReward({getTranscript:()=>$('word-transcript'),checkIcon,reduced:()=>reducedMotion.matches,playSound:()=>playUISFX('reward',{volume:.55}).catch(()=>{})});
-function clearPanel(){clearInterval(hintTimer);hintTimer=null;lessonHint='';statusHint='';hintIndex=0;sentenceSuggestions=null;countdownUntil=0;cancelOpening();languageGate.reset();reward.clear();menuAnimation?.cancel();menuAnimation=null;menuOpen=false;inputEpoch++;inputQueue=Promise.resolve();pendingWords=0;document.querySelectorAll('.flying-word').forEach(n=>n.remove());document.querySelector('.word-layout').classList.remove('word-menu-open');clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
+function clearPanel(){clearInterval(hintTimer);hintTimer=null;lessonHint='';statusHint='';hintIndex=0;sentenceSuggestions=null;countdownUntil=0;chapterCountdownUntil=0;cancelOpening();languageGate.reset();reward.clear();menuAnimation?.cancel();menuAnimation=null;menuOpen=false;inputEpoch++;inputQueue=Promise.resolve();pendingWords=0;document.querySelectorAll('.flying-word').forEach(n=>n.remove());document.querySelector('.word-layout').classList.remove('word-menu-open');clearInterval(tipTimer);clearTimeout(speechTimer);textMounts.forEach(m=>m.dispose());textMounts=[];voiceInput?.dispose?.();voiceInput=null;}
 function textMotion(id,value,variant='text',options={}){const mount=mountWordText($(id),value,variant,options);textMounts.push(mount);return mount;}
 async function transitionScene(change){
   if(transitioning)return;
@@ -232,7 +232,23 @@ function renderAge(){
   };update(0);
   $('age-minus').onclick=()=>update(-1);$('age-plus').onclick=()=>update(1);
   $('age-number').onkeydown=e=>{if(['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();update(e.key==='Home'?3-age:e.key==='End'?10-age:['ArrowUp','ArrowRight'].includes(e.key)?1:-1);}};
-  $('choose-age').onclick=()=>{resetWordRun({keepShared:Boolean(sharedScene)});persist();void transitionScene(renderChapters);};
+  $('choose-age').onclick=()=>{resetWordRun({keepShared:Boolean(sharedScene)});persist();ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(renderChapters);};
+}
+function startRecommendedChapter(){
+  if(view!=='chapters'||transitioning||chapterStarting)return;
+  const id=$('continue-chapter')?.closest('[data-chapter]')?.dataset.chapter;
+  if(!chapters[id])return;
+  chapterStarting=true;chapterCountdownUntil=0;
+  ensureVoice();void voice.unlock().catch(()=>{});
+  void transitionScene(()=>openChapter(id,sharedScene?{fresh:true,shared:sharedScene}:{})).finally(()=>{chapterStarting=false;});
+}
+function tickChapterCountdown(){
+  const badge=$('chapter-countdown');
+  if(view!=='chapters'||!badge||transitioning||chapterStarting||document.hidden)return;
+  if(!chapterCountdownUntil)chapterCountdownUntil=performance.now()+3000;
+  const left=Math.max(0,Math.ceil((chapterCountdownUntil-performance.now())/1000));
+  badge.textContent=` ${left}`;
+  if(left===0)startRecommendedChapter();
 }
 function renderChapters(){
   leave();chapter=null;setView('chapters');feedback('');
@@ -241,8 +257,8 @@ function renderChapters(){
   if(c.weather)apply([{type:'weather.set',preset:c.weather}]);
   const preview=c.preview||{monster:'robot-toy',color:'rword-train',sports:'rword-frog',toys:'rword-robot',garden:'rword-flower',rhyme:'rword-cat'}[c.id];
   apply([{type:'entity.spawn',id:'chapter-preview',asset:`prop:${preview}`,position:[0,0],scale:1.25}]);
-  $('word-panel').innerHTML=`<div class="onboarding"><article class="recommend-card" data-chapter="${c.id}"><div class="eyebrow">${sharedScene?'朋友的小世界':'为你准备的小冒险'}</div><h2>${escape(c.title)}</h2><p>${escape(c.subtitle)}</p><button class="primary-button" id="continue-chapter">继续 ${arrowRight}</button></article></div>`;
-  $('continue-chapter').onclick=()=>{ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(()=>openChapter(c.id,sharedScene?{fresh:true,shared:sharedScene}:{}));};
+  $('word-panel').innerHTML=`<div class="onboarding"><article class="recommend-card" data-chapter="${c.id}"><div class="eyebrow">${sharedScene?'朋友的小世界':'为你准备的小冒险'}</div><h2>${escape(c.title)}</h2><p>${escape(c.subtitle)}</p><button class="primary-button" id="continue-chapter" aria-label="开始${escape(c.title)}，倒计时结束后自动进入">开始<span class="chapter-countdown" id="chapter-countdown" aria-hidden="true"> 3</span>${arrowRight}</button></article></div>`;
+  $('continue-chapter').onclick=startRecommendedChapter;
 }
 function openChapter(id,{fresh=false,shared=null}={}){
   leave();chapter=chapters[id];if(!chapter){renderChapters();return;}
@@ -521,7 +537,7 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
 $('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){chapterCountdownUntil=0;cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);clearInterval(autoContinueTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
 try{
@@ -529,7 +545,7 @@ try{
   if(payload){const bytes=Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));const data=JSON.parse(new TextDecoder().decode(bytes));
     if([1,2].includes(data.v)&&chapters[data.chapter]&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;age=data.age;}}
 }catch{}
-const autoContinueTimer=setInterval(tickAutoContinue,100);
+const autoContinueTimer=setInterval(()=>{tickChapterCountdown();tickAutoContinue();},100);
 const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
 $('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;});
 // Domi welcome is temporarily disabled; restore this call to enable it again.
