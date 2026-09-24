@@ -88,3 +88,14 @@ html,body,.word-layout{touch-action:pan-x pan-y}
 .read-along-word.is-matched-word{color:#acf0bf;text-shadow:0 0 12px #93e9ab30}
 
 .chapter-countdown{font:inherit;font-variant-numeric:tabular-nums;white-space:pre}
+/* The holiday lives on its own origin, but shares the reliable word controls. */
+body[data-festival=midautumn]{background:#182845}
+body[data-festival=midautumn] .word-layout[data-view=play] .scene-shade{background:linear-gradient(180deg,#12213f82 0%,#12213f13 35%,#0b19300a 52%,#0c1834c7 100%)}
+body[data-festival=midautumn] .lesson-progress .current{background:#ffe1a0;box-shadow:0 0 12px #f7c76c}
+body[data-festival=midautumn] .lesson-progress .done{background:#e3bd78}
+body[data-festival=midautumn] .sentence{text-shadow:0 2px 20px #08182a,0 0 26px #ffdb8a28}
+body[data-festival=midautumn] .listen-button,body[data-festival=midautumn] .retry-button,body[data-festival=midautumn] .music-button{background:#fff4d723;border:1px solid #ffe6a433}
+body[data-festival=midautumn] .listen-button:hover{background:#ffdb9950}
+body[data-festival=midautumn] .word-menu{background:#17263cf2;border-color:#f3d5935c}
+body[data-festival=midautumn] .answer-result .next-button{color:#4a351d;background:#fff2d4}
+body[data-festival=midautumn] .voice-hint{color:#fff0cf}

@@ -3,6 +3,13 @@ import { RLINE_EXTENSIONS } from './rline-nouns.js';
 export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
+  moon:{word:'moon',meaning:'月亮',inSource:false},
+  mooncake:{word:'mooncake',meaning:'月饼',inSource:false},
+  lantern:{word:'lantern',meaning:'灯笼',inSource:false},
+  lanterns:{word:'lanterns',meaning:'灯笼（复数）',inSource:false},
+  round:{word:'round',meaning:'圆圆的',inSource:false},
+  bright:{word:'bright',meaning:'明亮的',inSource:false},
+  sweet:{word:'sweet',meaning:'甜的',inSource:false},
   sunny:{word:'sunny',meaning:'晴朗的',inSource:false},
   rainy:{word:'rainy',meaning:'下雨的',inSource:false},
   snowy:{word:'snowy',meaning:'下雪的',inSource:false},
@@ -1216,7 +1223,7 @@ export const WORD_AGE_BANDS = [
   { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme', 'ocean', 'camp', 'polar'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
 ];
 
-const PLURAL_BASES = { turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
+const PLURAL_BASES = { lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
 const tokenize = (text) => (String(text).toLowerCase().match(/[a-z]+/g) || []);
 const unique = (items) => [...new Set(items)];
 function wordInfo(word) {
@@ -1387,6 +1394,7 @@ const curriculum = {
 };
 
 const chapterInfo = [
+  { id: 'midautumn', world: 'word-midautumn', title: '月亮的中秋夜', subtitle: '说出月亮、月饼和灯笼，让兔子来过节', emoji: '🌕', words: 'moon mooncake lantern rabbit round bright sweet red big eat', knowledge: ['月亮、月饼、灯笼和兔子', '数量、颜色与大小', '用一句话邀请兔子吃月饼'], preview:'festival-mooncake' },
   { id: 'monster', world: 'pocket', title: '机器人零件铺', subtitle: '用声音拼出你的专属小机器人', emoji: '🤖', words: 'robot head hand foot eye tail big happy', knowledge: ['身体部位与数量', '大小、颜色、情绪', 'foot → feet 的变化'] },
   { id: 'color', world: 'meadow', title: '颜色救援队', subtitle: '让灰色世界变成你的颜色', emoji: '🎨', words: 'red blue yellow green ball train car robot', knowledge: ['颜色 + 名词', '数量与大小', '指定对象并改变颜色'] },
   { id: 'sports', world: 'cove', title: '小动物运动会', subtitle: '你来指挥，小动物来比赛', emoji: '🐸', words: 'frog duck bird dog jump swim fly stop', knowledge: ['动物与动作', '快慢和高低', '连续动作与空间关系'] },
@@ -1465,12 +1473,29 @@ function gentleLessons(chapter, band) {
       goalLabel:['认识一个词','再说一个词','加上数量','加上颜色','加上大小','说一句话'][index]};
   });
 }
+function midautumnLessons(band){
+  const examples=['moon','mooncake','Two lanterns.','Red lantern.','Big round mooncake.','Make the rabbit eat a mooncake.'];
+  const prompts=['说出 moon，圆月就会来到夜空','说出 mooncake，桌上会多一块月饼','说 two lanterns，试试看能不能点亮两盏灯','给灯笼加上一种颜色，你也可以换别的颜色','说说月饼的大小和形状，也可以换成你喜欢的点心','最后说一句话，请兔子吃月饼'];
+  const guides=[
+    '你想先变出月亮，还是月饼？月亮的英文怎么说？试着说出来。',
+    '我们再变一个不同的东西吧。月饼的英文怎么说？你也可以说别的点心。',
+    '看，彩色虚线下面的词可以换哦！可以试试不同的数量和物件。',
+  ];
+  return examples.map((example,index)=>{
+    const words=tokenize(example),mode=index===5?'open':'build';
+    return {id:`midautumn-${band.id}-${index+1}`,stage:index+1,mode,example,targets:unique(words),buildWords:mode==='build'?words:[],displayText:example,blankWords:[],blankCount:0,
+      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?['moon','mooncake']:[],chineseGuide:guides[index]||'',
+      words:unique(words).map(wordInfo),supportWords:[],prompt:prompts[index],knowledge:[['moon 和 mooncake 是中秋夜的两个名词','一个新名词可以变出新东西','two + lanterns 表示两盏灯','颜色放在名词前','大小和形状可以一起描述月饼','rabbit、eat、mooncake 组成一个动作句'][index]],
+      alternatives:index===5?['Make the rabbit eat a cake.','Make the bear eat a mooncake.']:[],allowCreative:true,
+      goalLabel:['认识月亮','变出月饼','点亮灯笼','加上颜色','描述月饼','请兔子吃月饼'][index]};
+  });
+}
 export const WORD_SENTENCE_LIBRARY = curriculum;
 export const WORD_CHAPTERS = chapterInfo.map((chapter) => ({
   ...chapter,
   words: chapter.words.split(' ').map(wordInfo),
   lessons: Object.fromEntries(WORD_AGE_BANDS.map((band) => [band.id,
-    gentleLessons(chapter, band),
+    chapter.id==='midautumn'?midautumnLessons(band):gentleLessons(chapter, band),
   ])),
 }));
 
@@ -1497,7 +1522,7 @@ export function getRecommendedWordChapter(age, { previous = null } = {}) {
   return WORD_CHAPTERS.find(c=>c.id===route[(index+1)%route.length]);
 }
 export function getWordInspiration(lesson) {
-  const swaps={big:['little','blue'],happy:['sleepy','funny'],hands:['feet','eyes'],head:['robot','flower'],red:['blue','green'],blue:['red','yellow'],frog:['duck','robot'],robot:['cat','robot'],flower:['tree','poop'],cat:['pig','robot'],toy:['robot','cat'],jump:['dance','swim']};
+  const swaps={big:['little','blue'],round:['big','sweet'],moon:['lantern','star'],mooncake:['cake','ball'],lantern:['mooncake','flower'],happy:['sleepy','funny'],hands:['feet','eyes'],head:['robot','flower'],red:['blue','green'],blue:['red','yellow'],frog:['duck','robot'],robot:['cat','robot'],flower:['tree','poop'],cat:['pig','robot'],toy:['robot','cat'],jump:['dance','swim']};
   const variants=[];
   for(const [word,replacements] of Object.entries(swaps))if(new RegExp(`\\b${word}\\b`,'i').test(lesson.example)){
     for(const replacement of replacements)variants.push(lesson.example.replace(new RegExp(`\\b${word}\\b`,'i'),replacement));
@@ -1511,9 +1536,9 @@ export function createWordSuggestions(lesson, saved) {
   const tokens=tokenize(lesson.mode==='cloze'?lesson.displayText:lesson.example);
   const original=tokenize(lesson.example);
   const groups=[
-    ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow'],
-    ['turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
-    ['turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats'],
+    ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow','round','bright','sweet'],
+    ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
+    ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats'],
     ['push','pull','throw','kick','hide','grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
     ['slowly','quickly','fast'],
     ['water','plant'],

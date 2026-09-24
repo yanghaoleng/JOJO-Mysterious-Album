@@ -4,6 +4,8 @@
 
 陈列馆：[/dev/modules/](https://jma.mikeywa.site/dev/modules/)。机器可读目录：[/dev/modules/catalog.json](https://jma.mikeywa.site/dev/modules/catalog.json)。目录包含现有模块和历史录制素材，并不表示每项都出现在当前主线。
 
+独立中秋英语章节从 `midautumn.html` 进入，不走选龄页；独立域名计划为 `midautumn.mikeywa.site`，启用后由独立 HTTPS 站点的根路径直达。它复用 `dev/words.js` 的语音、造物、分享和六步进度，在 `body[data-festival=midautumn]` 下隔离存档及界面；`word-midautumn` 世界与三款中秋道具仍经资源注册表、统一世界命令和模块目录接入。
+
 ## 架构设计表
 
 | 层 | 负责什么 | 主要位置 | 后续如何修改 |

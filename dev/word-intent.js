@@ -158,7 +158,7 @@ export function planBehaviorIntent(text,context={}) {
 
 export function replaceableWordRanges(text) {
   const ranges=findWordObjects(text).map(({index,end})=>({start:index,end}));
-  const adjectives=new Set('cold hungry thirsty dirty big huge giant small tiny little long tall happy sad angry funny sleepy wet dry fast slow high hot yummy new red blue yellow green pink purple orange white black brown rainbow'.split(' '));
+  const adjectives=new Set('cold hungry thirsty dirty big huge giant small tiny little long tall happy sad angry funny sleepy wet dry fast slow high hot yummy new round bright sweet red blue yellow green pink purple orange white black brown rainbow'.split(' '));
   for(const hit of String(text).matchAll(/[a-z]+/gi))if(adjectives.has(hit[0].toLowerCase()))ranges.push({start:hit.index,end:hit.index+hit[0].length});
   return ranges;
 }

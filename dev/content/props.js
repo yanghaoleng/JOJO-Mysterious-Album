@@ -2,6 +2,9 @@ import { RLINE_MODEL_WORDS } from './rline-nouns.js';
 import { PROP_COLLECTION } from './prop-collection.js';
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
+  ['festival-moon', '中秋圆月', 'moon|moons|full moon|月亮|圆月', '暖金色圆月轻轻漂浮。', 'jiaojiao'],
+  ['festival-mooncake', '中秋月饼', 'mooncake|mooncakes|moon cake|月饼', '有花纹和层次的月饼轻轻回应。', 'jiaojiao'],
+  ['festival-lantern', '中秋灯笼', 'lantern|lanterns|灯笼|花灯', '红纸灯笼与流苏轻轻摆动。', 'jiaojiao'],
   ["robot-body", "机器人身体", "机器人身体|robot body", "可拼装的机械身体，支持颜色、大小和动作变化。", "jiaojiao"],
   ["robot-head", "机器人头", "机器人头|robot head", "可拼装的机械头，支持颜色、大小和动作变化。", "jiaojiao"],
   ["robot-hand", "机器人手", "机器人手|robot hand", "可拼装的机械手，支持颜色、大小和动作变化。", "jiaojiao"],
@@ -243,3 +246,4 @@ Object.assign(PROP_CATEGORIES,{"little-flame": "玩具", "gold-coin": "玩具", 
 Object.assign(PROP_CATEGORIES, Object.fromEntries(RLINE_MODEL_WORDS.map(n => [n.assetId.slice(5), 'R线名词模型库'])));
 
 PROP_CATEGORIES['swimming-pool']='场景道具';
+Object.assign(PROP_CATEGORIES,{'festival-moon':'中秋节','festival-mooncake':'中秋节','festival-lantern':'中秋节'});

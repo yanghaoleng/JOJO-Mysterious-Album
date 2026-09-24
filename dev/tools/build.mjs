@@ -24,6 +24,7 @@ for(const [html,assets] of [
   ['dev/index.html',['dev/app.bundle.js','dev/app.css','dev/exploration.css']],
   ['dev/debate.html',['dev/debate.bundle.js','dev/debate.css','dev/exploration.css']],
   ['dev/words.html',['dev/words.bundle.js','dev/words.css']],
+  ['midautumn.html',['dev/words.bundle.js','dev/words.css']],
   ['dev/modules/index.html',['dev/modules/gallery.bundle.js','dev/modules/gallery.css','dev/exploration.css']],
 ]){
   let content=await readFile(html,'utf8');

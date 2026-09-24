@@ -689,6 +689,133 @@
       ]
     },
     {
+      "id": "prop:festival-moon",
+      "kind": "prop",
+      "name": "中秋圆月",
+      "description": "暖金色圆月轻轻漂浮。",
+      "source": "dev/modules/props/festival-moon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-moon",
+        "kind": "prop",
+        "edible": false,
+        "name": "中秋圆月",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-moon",
+      "tags": [],
+      "keywords": [
+        "moon",
+        "moons",
+        "full moon",
+        "月亮",
+        "圆月"
+      ]
+    },
+    {
+      "id": "prop:festival-mooncake",
+      "kind": "prop",
+      "name": "中秋月饼",
+      "description": "有花纹和层次的月饼轻轻回应。",
+      "source": "dev/modules/props/festival-mooncake.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-mooncake",
+        "kind": "prop",
+        "edible": false,
+        "name": "中秋月饼",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-mooncake",
+      "tags": [],
+      "keywords": [
+        "mooncake",
+        "mooncakes",
+        "moon cake",
+        "月饼"
+      ]
+    },
+    {
+      "id": "prop:festival-lantern",
+      "kind": "prop",
+      "name": "中秋灯笼",
+      "description": "红纸灯笼与流苏轻轻摆动。",
+      "source": "dev/modules/props/festival-lantern.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-lantern",
+        "kind": "prop",
+        "edible": false,
+        "name": "中秋灯笼",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-lantern",
+      "tags": [],
+      "keywords": [
+        "lantern",
+        "lanterns",
+        "灯笼",
+        "花灯"
+      ]
+    },
+    {
       "id": "prop:robot-body",
       "kind": "prop",
       "name": "机器人身体",
@@ -23424,6 +23551,19 @@
       "keywords": [
         "星星 MOMO"
       ]
+    },
+    {
+      "id": "world:word-midautumn",
+      "kind": "world",
+      "name": "中秋月夜",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
     },
     {
       "id": "world:word-snowfield",

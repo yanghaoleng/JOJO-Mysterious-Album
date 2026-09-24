@@ -22,12 +22,12 @@ import { ASSETS } from './content/assets.js';
 
 const icon=(node,name)=>createElement(node,{width:18,height:18,'stroke-width':2,'aria-hidden':'true',class:`word-arrow-icon lucide lucide-${name}`}).outerHTML;
 const arrowRight=icon(ArrowRight,'arrow-right'),arrowUpRight=icon(ArrowUpRight,'arrow-up-right'),arrowLeft=icon(ArrowLeft,'arrow-left'),checkIcon=icon(Check,'check');
-const $=id=>document.getElementById(id), STORE='jma.word-play.v1';
+const $=id=>document.getElementById(id),festivalMode=document.body.dataset.festival==='midautumn',STORE=festivalMode?'jma.word-midautumn.v1':'jma.word-play.v1';
 const music=createWordMusic($('word-music'),{onIcon:muted=>{$('word-music').innerHTML=icon(muted?VolumeX:Music2,muted?'volume-x':'music-2');}});
 const chapters=Object.fromEntries(WORD_CHAPTERS.map(c=>[c.id,c]));
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let saved;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch{}
-let age=getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
+let age=festivalMode?6:getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
 const journeys=saved?.journeys&&typeof saved.journeys==='object'?saved.journeys:{};
 let continuousListening=false,failedReadAttempts=0,rewardedThisLesson=false,praising=false,lastPraise='';
 let introStep='name',introName='',introVersion=0;
@@ -36,7 +36,7 @@ function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
 function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
 function title(main,subtitle=''){ $('world-title').textContent=main;$('world-subtitle').textContent=subtitle; }
-function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
+function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=festivalMode||next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let lessonHint='',statusHint='',hintTimer=null,hintIndex=0;
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
 let openingEpoch=0,countdownUntil=0,chapterCountdownUntil=0,chapterStarting=false;
@@ -157,7 +157,7 @@ function welcomeWorld(){
 function resetWordRun({keepShared=false}={}){
   introVersion++;introName='';music.randomize();cancelTurn();voice?.stop();voice=null;progress=null;lessonIndex=0;lastAnswer='';focusId=null;canAdvance=false;creative=false;heardWords.clear();saved=null;
   for(const key of Object.keys(journeys))delete journeys[key];
-  try{localStorage.removeItem(STORE);for(const key of Object.keys(sessionStorage))if(key.startsWith('jma.word-play'))sessionStorage.removeItem(key);}catch{}
+  try{localStorage.removeItem(STORE);for(const key of Object.keys(sessionStorage))if(key.startsWith(STORE))sessionStorage.removeItem(key);}catch{}
   if(!keepShared){sharedScene=null;if(location.hash.startsWith('#make='))history.replaceState(null,'',location.pathname+location.search);}
   chapter=null;
 }
@@ -272,8 +272,10 @@ function openChapter(id,{fresh=false,shared=null}={}){
   const migrated=snapshot?JSON.parse(JSON.stringify(snapshot)):null;
   if(chapter.id==='monster'&&migrated)for(const world of Object.values(migrated.worlds||{}))for(const e of Object.values(world.entities||{}))if(/^wg-(body|head|hand|foot)-/.test(e.id)&&/^prop:rword-(body|head|hand|foot)$/.test(e.asset))e.asset=e.asset.replace('rword-','robot-');
   newWorld(chapter.world,migrated);
+  if(festivalMode&&!migrated&&!shared?.commands?.length)apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});
   if(chapter.weather&&!migrated)apply([{type:'weather.set',preset:chapter.weather}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
+  if(festivalMode){stage?.clearFollowTarget();if(stage)stage.zoom=1;}
   frameWordScene();renderLesson();saveJourney();sharedScene=null;
 
 }
@@ -289,7 +291,7 @@ function updateSentence(result,text=''){
 function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
-  const firstPrompt=lesson.prompt;
+  const firstPrompt=festivalMode&&lessonIndex===0?'点一下月亮或喇叭，听完提示，再说一个英文词':lesson.prompt;
   $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===5?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
   lessonGuideRead=false;
   const suggestions=sentenceSuggestions=createWordSuggestions(lesson,progress.sentence);
@@ -504,7 +506,7 @@ function shareURL(){
   const world={version:1,worlds:{[chapter.world]:game.runtime.snapshot.worlds[chapter.world]}};
   const bytes=new TextEncoder().encode(JSON.stringify({v:2,chapter:chapter.id,age,world}));
   const payload=btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
-  return `${location.origin}/dev/words.html#make=${payload}`;
+  return `${location.origin}${festivalMode?(location.pathname==='/'?'/':'/midautumn.html'):'/dev/words.html'}#make=${payload}`;
 }
 function captureCard(){
   if(stage)stage.renderer.render(stage.scene,stage.camera);
@@ -514,9 +516,9 @@ async function renderComplete(){
   setView('complete');title('你的话，成了一个世界。');feedback('');saveJourney();
   const completedGame=game;await document.fonts.load('700 68px MohrRounded').catch(()=>{});if(view!=='complete'||game!==completedGame)return;
   const card=captureCard(),image=card.toDataURL('image/png');
-  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">把你的点子，交给朋友。</h2><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">重新选择年龄</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
+  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">${festivalMode?'把这轮月亮，送给朋友。':'把你的点子，交给朋友。'}</h2><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">${festivalMode?'再玩一次':'重新选择年龄'}</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
   $('share-world').onclick=async()=>{const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError')return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中上面的链接复制，发给朋友即可。';}};
-  $('choose-age-again').onclick=()=>void transitionScene(renderAge);
+  $('choose-age-again').onclick=()=>void transitionScene(()=>{if(festivalMode){resetWordRun();openChapter('midautumn',{fresh:true});}else renderAge();});
 }
 // Block browser page zoom without taking scrolling, rapid button taps or image saving away.
 for(const type of ['gesturestart','gesturechange'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
@@ -536,19 +538,19 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();cancelOpening();continuousListening=false;voice?.pause();voice?.skip();voiceInput?.setState('paused');voiceHint('已暂停，按回车继续');}
 });
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
-$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
+$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(festivalMode)apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){chapterCountdownUntil=0;cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);clearInterval(autoContinueTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
 try{
   const payload=location.hash.match(/^#make=([A-Za-z0-9_-]{1,100000})$/)?.[1];
   if(payload){const bytes=Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));const data=JSON.parse(new TextDecoder().decode(bytes));
-    if([1,2].includes(data.v)&&chapters[data.chapter]&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;age=data.age;}}
+    if([1,2].includes(data.v)&&chapters[data.chapter]&&(!festivalMode||data.chapter==='midautumn')&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;if(!festivalMode)age=data.age;}}
 }catch{}
 const autoContinueTimer=setInterval(()=>{tickChapterCountdown();tickAutoContinue();},100);
 const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
-$('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;});
+$('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;if(festivalMode&&view==='play'&&!lessonGuideRead){continuousListening=true;void speak(currentExample());}});
 // Domi welcome is temporarily disabled; restore this call to enable it again.
 // renderIntro();
-renderAge();
+if(festivalMode)openChapter('midautumn',{fresh:!sharedScene,shared:sharedScene});else renderAge();
 window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:false,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};

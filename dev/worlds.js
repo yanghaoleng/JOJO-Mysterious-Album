@@ -11,6 +11,7 @@ import { createSolarWorld } from './solar-worlds.js';
 export { WORLD_CATALOG } from './content/worlds.js';
 
 const PALETTES = {
+  'word-midautumn': ['#5c7668','#375c57','#c8b07c'],
   'word-snowfield': ['#e8f2f6','#c7e0ed','#d7eaf2'],
   orchard: ['#aebf83', '#79965b', '#d7b988'], bakery: ['#d9be95', '#b99369', '#ecd7b2'],
   bridge: ['#a8bc91', '#779878', '#d2c6a7'], home: ['#bac491', '#8fa264', '#dec59d'],
@@ -295,6 +296,43 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
     }
     for (const [x,z,r] of [[-2.5,1.9,.6],[2.8,1.8,.45],[-1.9,-3,.52]])
       ball('#f3f8fa',x,.08,z,r,.12,r*.75);
+  }
+
+  if (id === 'word-midautumn') {
+    // The centre stays open for spoken creations; the festival lives at the edges.
+    path([[0,-3.7],[.18,-2.5],[0,-1.4]],'#c5aa76',.67);
+    tree(-3.05,-1.35,2.75,false,'#507561');
+    tree(3.05,-1.85,2.55,false,'#567866');
+    const moon=part(-1.7,3.15,-4.5,staticRoot,0,'paint');
+    const moonPaint=clay('#e7b95f',true);moonPaint.emissiveIntensity=1.12;
+    ball(moonPaint,0,0,0,.94,.94,.94,moon);
+    [[-.33,.29,.12],[.36,-.23,.16],[.18,.48,.08]].forEach(([x,y,r])=>ball(clay('#d29e50',true),x,y,.88,r,r*.8,.025,moon));
+    for(let i=0;i<9;i++){
+      const x=-3.8+(i%5)*1.75,z=-4.25-Math.floor(i/5)*.3;
+      const star=ball(clay('#f6d996',true),x,3.4+(i%3)*.42,z,.035,.035,.035,liveRoot);
+      animators.push(time=>{star.scale.setScalar(.035*(.75+Math.sin(time*1.8+i)*.22));});
+    }
+    for(const [x,z] of [[-3.3,.2],[3.15,.15]]){
+      const pole=part(x,0,z,staticRoot,0,'wood');
+      rod('#856442',[0,.05,0],[0,2.65,0],.065,pole);
+      rod('#a47b4b',[0,2.56,0],[x<0?.87:-.87,2.56,0],.044,pole);
+      const lantern=part(x+(x<0?.87:-.87),1.8,z,liveRoot,0,'fabric');
+      rod('#d2ab61',[0,.6,0],[0,.87,0],.023,lantern);
+      ball(clay('#d75843',true),0,.32,0,.37,.43,.33,lantern);
+      cylinder('#d7b169',0,.71,0,.29,.29,.085,lantern);
+      cylinder('#d7b169',0,-.07,0,.27,.27,.08,lantern);
+      rod('#d2ab61',[0,-.08,0],[0,-.51,0],.022,lantern);
+      for(const side of [-1,1])rod('#e7b75e',[side*.22,.55,0],[side*.22,.05,0],.019,lantern);
+      animators.push(time=>{lantern.rotation.z=Math.sin(time*.8+x)*.055;});
+    }
+    const table=part(.1,0,1.8,staticRoot,0,'wood');
+    box('#987348',0,.54,0,1.45,.13,.82,table);
+    for(const x of [-.55,.55])for(const z of [-.25,.25])box('#73583d',x,.28,z,.1,.54,.1,table);
+    for(const x of [-.32,.32]){
+      cylinder('#c78d4b',x,.7,0,.24,.24,.17,table);
+      cylinder('#e2b96e',x,.8,0,.25,.25,.04,table);
+      torus('#9b683b',x,.83,0,.13,.016,table,[Math.PI/2,0,0]);
+    }
   }
 
   if (id === 'orchard') {

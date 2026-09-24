@@ -15,6 +15,9 @@ import { build as robot_head } from './robot-head.js';
 import { build as robot_hand } from './robot-hand.js';
 import { build as robot_foot } from './robot-foot.js';
 import { build as swimming_pool } from './swimming-pool.js';
+import { build as festival_moon } from './festival-moon.js';
+import { build as festival_mooncake } from './festival-mooncake.js';
+import { build as festival_lantern } from './festival-lantern.js';
 import { build as rword_body } from './rword-body.js';
 import { build as rword_head } from './rword-head.js';
 import { build as rword_hand } from './rword-hand.js';
@@ -935,6 +938,9 @@ export const PROP_BUILDERS = Object.freeze({
   bakery,
   swing,
   lantern,
+  'festival-moon': festival_moon,
+  'festival-mooncake': festival_mooncake,
+  'festival-lantern': festival_lantern,
   stage,
   ladder,
   prototype,
