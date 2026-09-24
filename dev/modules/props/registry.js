@@ -28,6 +28,16 @@ import { build as animal_goat } from './animal-goat.js';
 import { build as animal_sheep } from './animal-sheep.js';
 import { build as animal_monkey } from './animal-monkey.js';
 import { build as animal_rooster } from './animal-rooster.js';
+import { build as festival_star } from './festival-star.js';
+import { build as festival_cloud } from './festival-cloud.js';
+import { build as festival_osmanthus } from './festival-osmanthus.js';
+import { build as festival_pomelo } from './festival-pomelo.js';
+import { build as festival_tea } from './festival-tea.js';
+import { build as festival_teapot } from './festival-teapot.js';
+import { build as festival_moonlight } from './festival-moonlight.js';
+import { build as festival_firework } from './festival-firework.js';
+import { build as festival_gift } from './festival-gift.js';
+import { build as festival_fan } from './festival-fan.js';
 import { build as festival_moon } from './festival-moon.js';
 import { build as festival_mooncake } from './festival-mooncake.js';
 import { build as festival_lantern } from './festival-lantern.js';
@@ -964,6 +974,16 @@ export const PROP_BUILDERS = Object.freeze({
   'animal-sheep': animal_sheep,
   'animal-monkey': animal_monkey,
   'animal-rooster': animal_rooster,
+  'festival-star': festival_star,
+  'festival-cloud': festival_cloud,
+  'festival-osmanthus': festival_osmanthus,
+  'festival-pomelo': festival_pomelo,
+  'festival-tea': festival_tea,
+  'festival-teapot': festival_teapot,
+  'festival-moonlight': festival_moonlight,
+  'festival-firework': festival_firework,
+  'festival-gift': festival_gift,
+  'festival-fan': festival_fan,
   'festival-moon': festival_moon,
   'festival-mooncake': festival_mooncake,
   'festival-lantern': festival_lantern,

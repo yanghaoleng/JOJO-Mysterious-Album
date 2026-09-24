@@ -92,20 +92,28 @@ export function createWordEffects() {
     if(item.waterDrops)item.waterDrops.visible=item.wordEffects.surface==='wet';
   }
   function cue(item, command) {
-    if(command.cue==='cancel'){item.wordCue=null;item.wordDrop=null;item.cueRoot?.position.set(0,0,0);item.cueRoot?.scale.setScalar(1);return;}
+    if(command.cue==='cancel'){item.wordCue=null;item.wordDrop=null;item.wordFlyAway=null;item.cueRoot?.position.set(0,0,0);item.cueRoot?.rotation.set(0,0,0);item.cueRoot?.scale.setScalar(1);return;}
     if(command.cue==='mention')item.wordCue={age:0};
     if(command.cue==='put-in'){item.wordCue=null;item.wordDrop={age:0,target:command.target,start:item.anchor.position.clone()};}
+    if(command.cue==='fly-away'){item.wordCue=null;item.wordDrop=null;item.wordFlyAway={age:0};}
   }
   function update(entries, dt, time, reduced) {
     for (const item of entries.values()) {
       const root = item.effectRoot; if (!root) continue;
-      item.cueRoot.position.set(0,0,0);item.cueRoot.scale.setScalar(1);
+      item.cueRoot.position.set(0,0,0);item.cueRoot.rotation.set(0,0,0);item.cueRoot.scale.setScalar(1);
       if(item.wordCue&&(item.entrance===undefined||item.entrance>=2)){
         const c=item.wordCue;c.age+=dt;
         const p=Math.min(1,c.age/.9),wave=Math.abs(Math.sin(p*Math.PI*2));
         item.cueRoot.position.y=reduced?0:wave*Math.min(.55,Math.max(.22,(item.modelTop||.7)*.42));
         item.cueRoot.scale.setScalar(1+(reduced?.06:.1)*wave);
         if(p>=1)item.wordCue=null;
+      }
+      if(item.wordFlyAway){
+        const flight=item.wordFlyAway;flight.age+=dt;
+        const p=Math.min(1,flight.age/1.25),ease=p*p*(3-2*p);
+        item.cueRoot.position.set(reduced?0:3.8*ease,5.2*ease,reduced?0:1.1*ease);
+        item.cueRoot.rotation.z=reduced?0:-p*1.25;
+        item.cueRoot.scale.setScalar(Math.max(.05,1-.94*ease));
       }
       const e=item.wordEffects || {}, t=reduced?0:time*(e.speed==='fast'?1.9:e.speed==='slow'?.42:1);
       item.wordMotionAge=(item.wordMotionAge||0)+dt;
@@ -127,6 +135,7 @@ export function createWordEffects() {
       if(e.emotion==='funny')root.rotation.z+=Math.sin(t*4)*.13;
       if(item.waterDrops?.visible)item.waterDrops.children.forEach((drop,i)=>{drop.position.set(Math.sin(i*2)*.5,1.4-((t*.8+i*.23)%1.4),Math.cos(i*2)*.4);});
       if(e.palette==='rainbow') {let i=0;item.model.group.traverse(node=>{if(!node.isMesh)return;for(const mat of Array.isArray(node.material)?node.material:[node.material])if(mat.color){const hsl={};mat.color.getHSL(hsl);if(hsl.l>.18)mat.color.setHSL((i++*.13+t*.04)%1,.55,.65);}});}
+      if(e.luminance==='glow')item.model.group.traverse(node=>{if(!node.isMesh)return;for(const mat of Array.isArray(node.material)?node.material:[node.material])if(mat.emissive)mat.emissiveIntensity=Math.max(mat.emissiveIntensity,.48+(reduced?0:Math.sin(time*3)*.13));});
       for(const [i,s] of (item.wordSymbols||[]).entries()){const age=reduced?i*.3:(time*.55+i*.32)%1;s.position.set(.25+age*.35,(item.modelTop||item.scale*1.3)*root.scale.y+.3+age*.8,0);s.scale.setScalar(.65+age*.35);s.quaternion.copy(item.anchor.quaternion).invert();}
       if(item.emotionBadge&&item.wordEmotion!=='happy') {item.emotionBadge.position.set(.4*item.scale,1.5*item.scale*root.scale.y+.35,0);item.emotionBadge.quaternion.copy(item.anchor.quaternion).invert();}
     }

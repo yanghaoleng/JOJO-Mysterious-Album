@@ -4,7 +4,9 @@
 
 陈列馆：[/dev/modules/](https://jma.mikeywa.site/dev/modules/)。机器可读目录：[/dev/modules/catalog.json](https://jma.mikeywa.site/dev/modules/catalog.json)。目录包含现有模块和历史录制素材，并不表示每项都出现在当前主线。
 
-独立中秋英语章节从 `midautumn.html` 进入，不走选龄页；独立域名计划为 `midautumn.mikeywa.site`，启用后由独立 HTTPS 站点的根路径直达。它复用 `dev/words.js` 的语音、造物、分享和六步进度，在 `body[data-festival=midautumn]` 下隔离存档及界面；`word-midautumn` 世界与三款中秋道具仍经资源注册表、统一世界命令和模块目录接入。
+独立中秋英语章节从 `midautumn.html` 进入，不走选龄页；独立域名计划为 `midautumn.mikeywa.site`，启用后由独立 HTTPS 站点的根路径直达。它复用 `dev/words.js` 的语音、造物、分享和六步进度，在 `body[data-festival=midautumn]` 下隔离存档及界面；`word-midautumn` 世界与 13 款中秋道具仍经资源注册表、统一世界命令和模块目录接入。扩展词集中于 `content/midautumn-words.js`，当前 54 个节日词，10 款新模型经独立 `modules/props/festival-*.js` 登记；详见 `verify-midautumn-words.mjs`、`verify-midautumn-models-ui.mjs`。
+
+`entity.cue:fly-away` 只在点击便便时触发，表现层先将它飞离画面，再由会话层移除对应实体；计时器在会话销毁时清理，场景切换后不会误删新对象。该互动在世界工坊和英语世界共用，验证入口 `dev/tools/verify-poop-flight-ui.mjs`。
 
 ## 架构设计表
 

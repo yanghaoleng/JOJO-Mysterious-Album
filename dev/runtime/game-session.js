@@ -13,6 +13,7 @@ export function createGameSession({
   onError = console.warn,
 }) {
   let director;
+  const flyAwayTimers = new Map();
   const presenter = createWorldPresenter(stage, {
     onLifeCommands: commands => runtime.dispatch(commands, {source:"script"}),
     onConsume: (eater, food, position) => runtime.dispatch([
@@ -20,6 +21,25 @@ export function createGameSession({
       {type:'entity.remove',id:food},
     ], {source:'script'}),
     onInteract: (id) => {
+      const entity=runtime.snapshot.worlds[runtime.context.world]?.entities[id];
+      if(['prop:poop','prop:rword-poop'].includes(entity?.asset)){
+        if(flyAwayTimers.has(id))return;
+        const worldId=runtime.context.world;
+        const result=runtime.dispatch([
+          {type:'entity.state',id,state:'active'},
+          {type:'entity.cue',id,cue:'fly-away'},
+        ],{source:'player'});
+        if(!result.ok)return;
+        emit('entity.interact',{entityId:id});
+        const timer=setTimeout(()=>{
+          flyAwayTimers.delete(id);
+          const current=runtime.snapshot.worlds[worldId]?.entities[id];
+          if(runtime.context.world===worldId&&current?.asset===entity.asset&&current.createdOrder===entity.createdOrder)
+            runtime.dispatch([{type:'entity.remove',id}],{source:'script'});
+        },stage.reduced?160:1300);
+        flyAwayTimers.set(id,timer);
+        return;
+      }
       const result = runtime.dispatch(
         [{ type: "entity.state", id, state: "active" }],
         { source: "player" },
@@ -73,6 +93,8 @@ export function createGameSession({
       return result;
     },
     dispose() {
+      for(const timer of flyAwayTimers.values())clearTimeout(timer);
+      flyAwayTimers.clear();
       runtime.dispose();
       presenter.dispose();
       if (stage.worldPresenter === presenter) stage.worldPresenter = null;

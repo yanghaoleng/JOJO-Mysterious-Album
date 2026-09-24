@@ -47,7 +47,7 @@ export const COMMANDS = Object.freeze({
   "world.float": ["on", "targets"],
 });
 export const REACTIONS = ["celebrate", "listen", "wave", "hop"];
-export const WORD_EFFECTS = ['cold','hungry','thirsty','dirty','clean','grow', 'shrink', 'long', 'tall', 'normal', 'jump', 'fly', 'swim', 'run', 'run-stop', 'walk', 'roll', 'dance', 'spin', 'sail', 'sleep', 'stop', 'happy', 'sad', 'angry', 'sleepy', 'funny', 'wet', 'dry', 'fast', 'slow', 'high', 'rainbow', 'hum', 'hot', 'yummy', 'new'];
+export const WORD_EFFECTS = ['cold','hungry','thirsty','dirty','clean','grow', 'shrink', 'long', 'tall', 'normal', 'jump', 'fly', 'swim', 'run', 'run-stop', 'walk', 'roll', 'dance', 'spin', 'sail', 'sleep', 'stop', 'happy', 'sad', 'angry', 'sleepy', 'funny', 'wet', 'dry', 'fast', 'slow', 'high', 'rainbow', 'hum', 'hot', 'yummy', 'glow', 'new'];
 export const ATTACH_SLOTS = ['on', 'in', 'over', 'beside', 'near', 'head', 'hair', 'face', 'left-eye', 'right-eye', 'middle-eye', 'nose', 'mouth', 'left-ear', 'right-ear', 'left-hand', 'right-hand', 'left-foot', 'right-foot', 'tail'];
 export const MAX_WORLD_ENTITIES = 300;
 export function oldestEntities(entities) {
@@ -145,7 +145,7 @@ export function validateCommand(command) {
   );
   const c = copy(command);
   if (c.type === 'entity.cue') {
-    requireValue(['mention','put-in','cancel'].includes(c.cue), 'Unknown word cue');
+    requireValue(['mention','put-in','fly-away','cancel'].includes(c.cue), 'Unknown word cue');
     requireValue(c.cue === 'put-in' ? safeId(c.target) && c.target !== c.id : c.target === undefined, 'Invalid cue target');
   }
   if (c.type === 'entity.event') {

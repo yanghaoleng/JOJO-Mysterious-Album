@@ -1,6 +1,7 @@
 import { createExpansionCurriculum, WORD_EXPANSION_CHAPTERS } from './word-expansion.js';
 import { RLINE_EXTENSIONS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
+import { MID_AUTUMN_PROPS, MID_AUTUMN_EXTRA_WORDS, MID_AUTUMN_CHAPTER_WORDS } from './midautumn-words.js';
 export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
@@ -1211,6 +1212,8 @@ for (const [word, meaning] of Object.entries(EXTENSION_WORDS)) {
 }
 for (const noun of RLINE_EXTENSIONS) WORD_VOCABULARY[noun.word] = { word: noun.word, meaning: noun.zh, inSource: false };
 for (const animal of ANIMAL_WORDS) for (const word of [animal.word, ...animal.aliases]) WORD_VOCABULARY[word] = { word, meaning: animal.zh, inSource: false };
+for (const prop of MID_AUTUMN_PROPS) for (const word of [prop.word, ...prop.aliases]) WORD_VOCABULARY[word] = { word, meaning: prop.zh, inSource: false };
+for (const entry of MID_AUTUMN_EXTRA_WORDS) if (!WORD_VOCABULARY[entry.word]) WORD_VOCABULARY[entry.word] = { word: entry.word, meaning: entry.zh, inSource: false };
 // Original cells include the part-of-speech prefix in these two entries.
 for (const word of ['bug', 'rug']) {
   if (!WORD_VOCABULARY[word] && WORD_VOCABULARY[`${word} n`]) {
@@ -1225,7 +1228,7 @@ export const WORD_AGE_BANDS = [
   { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme', 'ocean', 'camp', 'polar'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
 ];
 
-const PLURAL_BASES = { ...Object.fromEntries(ANIMAL_WORDS.flatMap(animal => animal.aliases.map(alias => [alias, animal.word]))),  lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
+const PLURAL_BASES = { ...Object.fromEntries(ANIMAL_WORDS.flatMap(animal => animal.aliases.map(alias => [alias, animal.word]))), ...Object.fromEntries(MID_AUTUMN_PROPS.flatMap(prop => prop.aliases.filter(alias=>!alias.includes(' ')).map(alias => [alias, prop.word]))), lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
 const tokenize = (text) => (String(text).toLowerCase().match(/[a-z]+/g) || []);
 const unique = (items) => [...new Set(items)];
 function wordInfo(word) {
@@ -1396,7 +1399,7 @@ const curriculum = {
 };
 
 const chapterInfo = [
-  { id: 'midautumn', world: 'word-midautumn', title: '月亮的中秋夜', subtitle: '说出月亮、月饼和灯笼，让兔子来过节', emoji: '🌕', words: 'moon mooncake lantern rabbit round bright sweet red big eat', knowledge: ['月亮、月饼、灯笼和兔子', '数量、颜色与大小', '用一句话邀请兔子吃月饼'], preview:'festival-mooncake' },
+  { id: 'midautumn', world: 'word-midautumn', title: '月亮的中秋夜', subtitle: '说出月亮、月饼和灯笼，让兔子来过节', emoji: '🌕', words: MID_AUTUMN_CHAPTER_WORDS.join(' '), knowledge: ['月亮、月饼、灯笼、桂花、柚子和热茶', '星星、云朵、月光、烟花、礼物与扇子', '颜色、大小、光亮、心情与节日动作'], preview:'festival-mooncake' },
   { id: 'monster', world: 'pocket', title: '机器人零件铺', subtitle: '用声音拼出你的专属小机器人', emoji: '🤖', words: 'robot head hand foot eye tail big happy', knowledge: ['身体部位与数量', '大小、颜色、情绪', 'foot → feet 的变化'] },
   { id: 'color', world: 'meadow', title: '颜色救援队', subtitle: '让灰色世界变成你的颜色', emoji: '🎨', words: 'red blue yellow green ball train car robot', knowledge: ['颜色 + 名词', '数量与大小', '指定对象并改变颜色'] },
   { id: 'sports', world: 'cove', title: '小动物运动会', subtitle: '你来指挥，小动物来比赛', emoji: '🐸', words: 'frog duck bird dog jump swim fly stop', knowledge: ['动物与动作', '快慢和高低', '连续动作与空间关系'] },
@@ -1477,7 +1480,7 @@ function gentleLessons(chapter, band) {
 }
 function midautumnLessons(band){
   const examples=['moon','mooncake','Two lanterns.','Red lantern.','Big round mooncake.','Make the rabbit eat a mooncake.'];
-  const prompts=['说出 moon，圆月就会来到夜空','说出 mooncake，桌上会多一块月饼','说 two lanterns，试试看能不能点亮两盏灯','给灯笼加上一种颜色，你也可以换别的颜色','说说月饼的大小和形状，也可以换成你喜欢的点心','最后说一句话，请兔子吃月饼'];
+  const prompts=['说出 moon，圆月就会来到夜空；也可以试试 star 或 cloud','说出 mooncake，桌上会多一块月饼；还可以变出 pomelo 或 tea','说 two lanterns；星星、礼物和扇子也能试试数量','给灯笼加一种颜色；也可以说 golden star 或 red gift','说说月饼的大小和形状，还能换成柚子、桂花或茶壶','最后说一句话；也可以请兔子赏月、喝茶或一起庆祝'];
   const guides=[
     '你想先变出月亮，还是月饼？月亮的英文怎么说？试着说出来。',
     '我们再变一个不同的东西吧。月饼的英文怎么说？你也可以说别的点心。',
@@ -1486,9 +1489,9 @@ function midautumnLessons(band){
   return examples.map((example,index)=>{
     const words=tokenize(example),mode=index===5?'open':'build';
     return {id:`midautumn-${band.id}-${index+1}`,stage:index+1,mode,example,targets:unique(words),buildWords:mode==='build'?words:[],displayText:example,blankWords:[],blankCount:0,
-      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?['moon','mooncake']:[],chineseGuide:guides[index]||'',
+      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?['moon','mooncake','star','pomelo']:[],chineseGuide:guides[index]||'',
       words:unique(words).map(wordInfo),supportWords:[],prompt:prompts[index],knowledge:[['moon 和 mooncake 是中秋夜的两个名词','一个新名词可以变出新东西','two + lanterns 表示两盏灯','颜色放在名词前','大小和形状可以一起描述月饼','rabbit、eat、mooncake 组成一个动作句'][index]],
-      alternatives:index===5?['Make the rabbit eat a cake.','Make the bear eat a mooncake.']:[],allowCreative:true,
+      alternatives:[['star','cloud','moonlight'],['pomelo','tea','osmanthus'],['Two stars.','Two gifts.','Two fans.'],['Golden star.','Orange pomelo.','White cloud.'],['Big sweet pomelo.','Bright moonlight.','Warm tea.'],['Make the rabbit drink tea.','Wish upon a star.','Celebrate with fireworks.']][index],allowCreative:true,
       goalLabel:['认识月亮','变出月饼','点亮灯笼','加上颜色','描述月饼','请兔子吃月饼'][index]};
   });
 }
@@ -1539,8 +1542,8 @@ export function createWordSuggestions(lesson, saved) {
   const original=tokenize(lesson.example);
   const groups=[
     ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow','round','bright','sweet'],
-    ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird',...ANIMAL_WORDS.map(animal=>animal.word)],
-    ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats',...ANIMAL_WORDS.flatMap(animal=>animal.aliases.filter(alias=>alias.endsWith('s')||alias==='oxen'))],
+    ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird',...ANIMAL_WORDS.map(animal=>animal.word),...MID_AUTUMN_PROPS.map(prop=>prop.word)],
+    ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats',...ANIMAL_WORDS.flatMap(animal=>animal.aliases.filter(alias=>alias.endsWith('s')||alias==='oxen')),...MID_AUTUMN_PROPS.flatMap(prop=>prop.aliases.filter(alias=>alias.endsWith('s')&&!alias.includes(' ')))],
     ['push','pull','throw','kick','hide','grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
     ['slowly','quickly','fast'],
     ['water','plant'],

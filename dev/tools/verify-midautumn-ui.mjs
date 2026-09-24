@@ -52,8 +52,13 @@ try{
     await page.locator('#next-lesson').click();
     await page.waitForFunction(()=>window.__WORD_GAME__.status.lessonIndex===1);
     assert.match(await page.locator('#lesson-sentence').innerText(),/^mooncake$/i);
+    await page.locator('#word-options-toggle').click();
+    for(const word of ['osmanthus','pomelo','tea','teapot','moonlight','firework','gift','fan','wish','reunion'])
+      assert.equal(await page.locator(`#word-options [data-word="${word}"]`).count(),1,word);
+    await page.locator('#word-options [data-word="pomelo"]').click();
+    await page.waitForFunction(()=>Object.values(window.__WORD_GAME__.status.entities).some(entity=>entity.asset==='prop:festival-pomelo'));
     assert.deepEqual(errors,[]);
-    console.log(`PASS Mid-Autumn ${viewport.width}px: direct night scene, child voice, first noun model, chapter progress`);
+    console.log(`PASS Mid-Autumn ${viewport.width}px: direct night scene, child voice, festival word menu and new model`);
     await context.close();
   }
 }finally{await browser.close();}

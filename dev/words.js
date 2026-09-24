@@ -89,7 +89,7 @@ function newWorld(world='meadow',snapshot){
       canAct:()=>view==='play'&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!['speaking','thinking','transcribing'].includes(voiceState),
       occupied:()=>{const p=stage.worldPresenter;return [...p.stats.filter(e=>!e.settled||e.occupied).map(e=>e.id),...p.behaviorStats.jobs.flatMap(e=>[e.id,e.target]),...p.feedingStats.jobs.flatMap(e=>[e.id,e.target]),...p.movementStats.jobs.map(e=>e.id)];},
       camera:()=>{}});
-    stage.worldPresenter.onPickEntity=id=>{focusId=id;const e=entities()[id];if(e)feedback('Try big, blue, or jump!');};
+    stage.worldPresenter.onPickEntity=id=>{focusId=id;const e=entities()[id];if(e)feedback(['prop:poop','prop:rword-poop'].includes(e.asset)?'便便飞走啦！':'Try big, blue, or jump!');};
     $('webgl-error').hidden=true;webglFailed=false;
   }catch(error){webglFailed=true;$('webgl-error').hidden=false;console.error('Word world:',error);}
 }
@@ -447,7 +447,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     const filler=new Set('uh um er erm hmm a an the my your his her its this that these those is are am be has have make makes give put let please it them with and then on in at near beside over together to of i you we they do want can big little tiny small giant blue green red purple pink white black brown orange yellow rainbow high fast slowly slow grow grows growing dance dances dancing spin spins spinning fly flies flying run runs stop stops swim swims jump jumps walk walks sleep sleepy funny happy sad angry two three four five six seven eight nine ten one'.split(' '));
     for(const word of ["it's","that's","there's"])filler.add(word);
     const unresolved=result.unknownWords.filter(word=>!filler.has(word)&&!plan.matched.includes(word)&&!plan.matched.includes(word.replace(/s$/,'')));
-    if((!plan.commands.length&&!result.currentMatched.length&&(text.toLowerCase().match(/[a-z]+/g)||[]).some(w=>!filler.has(w)))||unresolved.length){
+    if((!plan.commands.length&&!result.currentMatched.length&&!(festivalMode&&result.knownWords.length)&&(text.toLowerCase().match(/[a-z]+/g)||[]).some(w=>!filler.has(w)))||unresolved.length){
       request=new AbortController();
       try{
         const response=await requestJSON('/api/scene-control',{text,context:{world:chapter.world,entities:playerEntities(),worlds:[chapter.world]}},18000,request.signal);
@@ -477,7 +477,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
     if(creative)lessonHint='你可以换一个名词或形容词，让世界继续变化';
     updateSentence(result,text);
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
-    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':result.targetComplete?'说得真棒，你做到了！':result.nextWord?(lesson.warmup?'试着说一个英文单词吧':'把这几个词连起来，再试一次吧'):'再试一个词吧'));
+    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':!made&&festivalMode&&result.knownWords.length?'听到这个中秋词啦，再加一个物品词试试':result.targetComplete?'说得真棒，你做到了！':result.nextWord?(lesson.warmup?'试着说一个英文单词吧':'把这几个词连起来，再试一次吧'):'再试一个词吧'));
     feedback(made?'Your world is changing!':result.currentMatched.length?`I heard ${result.currentMatched.join(', ')}.`:'Try another word.');
     const matched=warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
     if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}

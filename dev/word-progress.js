@@ -1,9 +1,11 @@
 import { WORD_VOCABULARY } from './content/word-games.js';
 import { ANIMAL_WORDS } from './content/animal-words.js';
+import { MID_AUTUMN_PROPS } from './content/midautumn-words.js';
 
 // Text recognition is used only to find words, never to grade pronunciation.
 const INFLECTIONS = {
   ...Object.fromEntries(ANIMAL_WORDS.flatMap(animal => animal.aliases.map(alias => [alias, animal.word]))),
+  ...Object.fromEntries(MID_AUTUMN_PROPS.flatMap(prop => prop.aliases.filter(alias=>!alias.includes(' ')).map(alias => [alias, prop.word]))),
   lanterns:'lantern',mooncakes:'mooncake',moons:'moon',
   turtles:'turtle',octopuses:'octopus',jellyfishes:'jellyfish',starfishes:'starfish',tents:'tent',acorns:'acorn',pinecones:'pinecone',hedgehogs:'hedgehog',penguins:'penguin',seals:'seal',walruses:'walrus',igloos:'igloo',
   pushes:'push',pushing:'push',pulls:'pull',pulling:'pull',throws:'throw',throwing:'throw',kicks:'kick',kicking:'kick',hides:'hide',hiding:'hide',

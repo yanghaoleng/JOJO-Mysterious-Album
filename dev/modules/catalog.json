@@ -2,6 +2,19 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:festival-models",
+      "kind": "logic",
+      "name": "中秋夜词汇造型库",
+      "description": "桂花、柚子、茶、茶壶、星星、云朵、月光、烟花、礼物、扇子十款独立造型。可在模块陈列馆“中秋节”分组逐个预览；验证 dev/tools/verify-midautumn-models-ui.mjs。",
+      "source": "dev/modules/festival-models.js",
+      "capabilities": [
+        "十款中秋独立模型",
+        "单词与复数热词",
+        "可复用造型与释放"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "logic:animal-models",
       "kind": "logic",
       "name": "常见动物与十二生肖造型库",
@@ -52,11 +65,12 @@
       "id": "story:words",
       "kind": "story",
       "name": "独立章节 · 开口造世界",
-      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话；中秋独立章节直达。实际入口 /dev/words.html。",
+      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话；中秋独立章节直达，扩充到 54 个节日词。实际入口 /dev/words.html。",
       "source": "dev/content/word-games.js",
       "capabilities": [
         "三个年龄档",
         "九章162轮与中秋独立章节",
+        "中秋54个词与十款新造型",
         "中文问答与渐进短语",
         "第三步彩虹换词教学",
         "目标词与知识点",
@@ -277,12 +291,14 @@
       "id": "logic:word-effects",
       "kind": "logic",
       "name": "所有物件的生长与动作",
-      "description": "花和便便都能生长、跳、飞、游、变长或表达心情，身体部件可装配。验证入口 dev/tools/verify-word-game.mjs。",
+      "description": "花和便便都能生长、跳、飞、游、变长或表达心情；点击便便会飞走并清理，明亮等词使物件发光。验证 dev/tools/verify-word-game.mjs 与 verify-poop-flight-ui.mjs。",
       "source": "dev/presentation/word-effects.js",
       "capabilities": [
         "点名跳两下与落入盒子",
         "生长与缩小",
         "跳跃飞行游泳",
+        "点击便便飞走",
+        "节日词发光",
         "模型表面笑脸",
         "情绪",
         "部件装配",
@@ -1235,6 +1251,415 @@
         "rooster",
         "roosters",
         "公鸡"
+      ]
+    },
+    {
+      "id": "prop:festival-star",
+      "kind": "prop",
+      "name": "星星",
+      "description": "星星在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-star.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-star",
+        "kind": "prop",
+        "edible": false,
+        "name": "星星",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-star",
+      "tags": [],
+      "keywords": [
+        "star",
+        "stars",
+        "星星"
+      ]
+    },
+    {
+      "id": "prop:festival-cloud",
+      "kind": "prop",
+      "name": "云朵",
+      "description": "云朵在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-cloud.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-cloud",
+        "kind": "prop",
+        "edible": false,
+        "name": "云朵",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-cloud",
+      "tags": [],
+      "keywords": [
+        "cloud",
+        "clouds",
+        "云朵"
+      ]
+    },
+    {
+      "id": "prop:festival-osmanthus",
+      "kind": "prop",
+      "name": "桂花",
+      "description": "桂花在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-osmanthus.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-osmanthus",
+        "kind": "prop",
+        "edible": false,
+        "name": "桂花",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-osmanthus",
+      "tags": [],
+      "keywords": [
+        "osmanthus",
+        "osmanthus flower",
+        "osmanthus flowers",
+        "桂花"
+      ]
+    },
+    {
+      "id": "prop:festival-pomelo",
+      "kind": "prop",
+      "name": "柚子",
+      "description": "柚子在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-pomelo.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-pomelo",
+        "kind": "prop",
+        "edible": false,
+        "name": "柚子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-pomelo",
+      "tags": [],
+      "keywords": [
+        "pomelo",
+        "pomelos",
+        "柚子"
+      ]
+    },
+    {
+      "id": "prop:festival-tea",
+      "kind": "prop",
+      "name": "茶",
+      "description": "茶在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-tea.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-tea",
+        "kind": "prop",
+        "edible": false,
+        "name": "茶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-tea",
+      "tags": [],
+      "keywords": [
+        "tea",
+        "茶"
+      ]
+    },
+    {
+      "id": "prop:festival-teapot",
+      "kind": "prop",
+      "name": "茶壶",
+      "description": "茶壶在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-teapot.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-teapot",
+        "kind": "prop",
+        "edible": false,
+        "name": "茶壶",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-teapot",
+      "tags": [],
+      "keywords": [
+        "teapot",
+        "teapots",
+        "茶壶"
+      ]
+    },
+    {
+      "id": "prop:festival-moonlight",
+      "kind": "prop",
+      "name": "月光",
+      "description": "月光在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-moonlight.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-moonlight",
+        "kind": "prop",
+        "edible": false,
+        "name": "月光",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-moonlight",
+      "tags": [],
+      "keywords": [
+        "moonlight",
+        "月光"
+      ]
+    },
+    {
+      "id": "prop:festival-firework",
+      "kind": "prop",
+      "name": "烟花",
+      "description": "烟花在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-firework.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-firework",
+        "kind": "prop",
+        "edible": false,
+        "name": "烟花",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-firework",
+      "tags": [],
+      "keywords": [
+        "firework",
+        "fireworks",
+        "烟花"
+      ]
+    },
+    {
+      "id": "prop:festival-gift",
+      "kind": "prop",
+      "name": "礼物",
+      "description": "礼物在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-gift.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-gift",
+        "kind": "prop",
+        "edible": false,
+        "name": "礼物",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-gift",
+      "tags": [],
+      "keywords": [
+        "gift",
+        "gifts",
+        "礼物"
+      ]
+    },
+    {
+      "id": "prop:festival-fan",
+      "kind": "prop",
+      "name": "扇子",
+      "description": "扇子在中秋夜轻轻活动。",
+      "source": "dev/modules/props/festival-fan.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:festival-fan",
+        "kind": "prop",
+        "edible": false,
+        "name": "扇子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "中秋节",
+      "variety": "prop:festival-fan",
+      "tags": [],
+      "keywords": [
+        "fan",
+        "fans",
+        "扇子"
       ]
     },
     {

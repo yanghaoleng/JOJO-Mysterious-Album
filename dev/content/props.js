@@ -1,9 +1,11 @@
 import { RLINE_MODEL_WORDS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
+import { MID_AUTUMN_PROPS } from './midautumn-words.js';
 import { PROP_COLLECTION } from './prop-collection.js';
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
   ...ANIMAL_WORDS.map(animal => [animal.model, animal.zh, [animal.word, ...animal.aliases, animal.zh].join('|'), `${animal.zh}在场景中轻轻活动。`, 'jiaojiao']),
+  ...MID_AUTUMN_PROPS.map(prop => [prop.model, prop.zh, [prop.word, ...prop.aliases, prop.zh].join('|'), `${prop.zh}在中秋夜轻轻活动。`, 'jiaojiao']),
   ['festival-moon', '中秋圆月', 'moon|moons|full moon|月亮|圆月', '暖金色圆月轻轻漂浮。', 'jiaojiao'],
   ['festival-mooncake', '中秋月饼', 'mooncake|mooncakes|moon cake|月饼', '有花纹和层次的月饼轻轻回应。', 'jiaojiao'],
   ['festival-lantern', '中秋灯笼', 'lantern|lanterns|灯笼|花灯', '红纸灯笼与流苏轻轻摆动。', 'jiaojiao'],
@@ -251,3 +253,5 @@ PROP_CATEGORIES['swimming-pool']='场景道具';
 Object.assign(PROP_CATEGORIES,{'festival-moon':'中秋节','festival-mooncake':'中秋节','festival-lantern':'中秋节'});
 
 Object.assign(PROP_CATEGORIES, Object.fromEntries(ANIMAL_WORDS.map(animal => [animal.model, '动物与生肖'])));
+
+Object.assign(PROP_CATEGORIES, Object.fromEntries(MID_AUTUMN_PROPS.map(prop => [prop.model, '中秋节'])));

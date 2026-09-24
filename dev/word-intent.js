@@ -1,24 +1,25 @@
 import { BEHAVIOR_ACTIONS, BEHAVIOR_EFFECTS } from './content/behavior-events.js';
 import { RLINE_MODEL_WORDS } from './content/rline-nouns.js';
 import { CREATION_KITS } from './content/props.js';
+import { MID_AUTUMN_CHAPTER_WORDS } from './content/midautumn-words.js';
 import { ASSETS } from './content/assets.js';
 
-const colors={red:'#de7066',blue:'#6eabd0',yellow:'#efd06d',green:'#8cba87',pink:'#e5a1b5',purple:'#b09ace',orange:'#e9a260',white:'#f2ede1',black:'#45474e',brown:'#ac7957','红':'#de7066','蓝':'#6eabd0','黄':'#efd06d','绿':'#8cba87','粉':'#e5a1b5','紫':'#b09ace','橙':'#e9a260','白':'#f2ede1','黑':'#45474e','棕':'#ac7957'};
+const colors={red:'#de7066',blue:'#6eabd0',yellow:'#efd06d',golden:'#e7bb68',green:'#8cba87',pink:'#e5a1b5',purple:'#b09ace',orange:'#e9a260',white:'#f2ede1',black:'#45474e',brown:'#ac7957','红':'#de7066','蓝':'#6eabd0','黄':'#efd06d','绿':'#8cba87','粉':'#e5a1b5','紫':'#b09ace','橙':'#e9a260','白':'#f2ede1','黑':'#45474e','棕':'#ac7957'};
 const quantities={a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,'一':1,'两':2,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
-const effectWords={cold:['cold','冷的','很冷','变冷'],hungry:['hungry','饿了','饿的','饥饿'],thirsty:['thirsty','渴了','渴的','口渴'],dirty:['dirty','脏的','弄脏','变脏'],grow:['grow','grows','growing','生长','长大','长高'],shrink:['shrink','shrinks','small','tiny','little','变小','小小'],long:['long','longer','变长','长长'],tall:['tall','taller','高高'],normal:['normal','正常','恢复'],jump:['jump','jumps','hop','leap','跳'],fly:['fly','flies','flying','飞'],swim:['swim','swims','swimming','游泳'],run:['run','runs','running','跑'],walk:['walk','walks','walking','go','走'],roll:['roll','rolls','滚'],dance:['dance','dances','dancing','跳舞'],spin:['spin','spins','spinning','旋转'],sail:['sail','sails','航行'],sleep:['sleep','sleeps','睡觉'],sleepy:['sleepy','困'],stop:['stop','stops','停'],happy:['happy','开心','快乐'],sad:['sad','伤心','难过'],angry:['angry','生气'],funny:['funny','搞笑'],wet:['wet','湿'],dry:['dry','干燥','弄干'],fast:['fast','faster','快'],slow:['slow','slowly','慢'],high:['high','高高地'],rainbow:['rainbow','彩虹色'],hum:['hum','hums','哼唱','哼歌'],hot:['hot','热的','变热','烫'],yummy:['yummy','好吃','美味'],new:['new','崭新','焕然一新']};
+const effectWords={cold:['cold','冷的','很冷','变冷'],hungry:['hungry','饿了','饿的','饥饿'],thirsty:['thirsty','渴了','渴的','口渴'],dirty:['dirty','脏的','弄脏','变脏'],grow:['grow','grows','growing','生长','长大','长高'],shrink:['shrink','shrinks','small','tiny','little','变小','小小'],long:['long','longer','变长','长长'],tall:['tall','taller','高高'],normal:['normal','正常','恢复'],jump:['jump','jumps','hop','leap','跳'],fly:['fly','flies','flying','飞'],swim:['swim','swims','swimming','游泳'],run:['run','runs','running','跑'],walk:['walk','walks','walking','go','走'],roll:['roll','rolls','滚'],dance:['dance','dances','dancing','跳舞'],spin:['spin','spins','spinning','旋转'],sail:['sail','sails','航行'],sleep:['sleep','sleeps','睡觉'],sleepy:['sleepy','困'],stop:['stop','stops','停'],happy:['happy','开心','快乐'],sad:['sad','伤心','难过'],angry:['angry','生气'],funny:['funny','搞笑'],wet:['wet','湿'],dry:['dry','干燥','弄干'],fast:['fast','faster','快'],slow:['slow','slowly','慢'],high:['high','高高地'],rainbow:['rainbow','彩虹色'],hum:['hum','hums','哼唱','哼歌'],hot:['hot','warm','热的','变热','烫'],yummy:['yummy','sweet','delicious','好吃','美味'],glow:['glow','glowing','bright','shiny','shine','light','beautiful','full','发光','闪亮'],new:['new','崭新','焕然一新']};
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 export const hasWord=(text,word)=>/[a-z]/i.test(word)?new RegExp(`\\b${esc(word)}\\b`,'i').test(text):text.includes(word);
 function aliases(item){const words=[item.word,...(item.aliases||[]),item.zh];if(!/s$/.test(item.word))words.push(item.word+'s');if(item.word.endsWith('y'))words.push(item.word.slice(0,-1)+'ies');return [...new Set(words)].filter(Boolean);}
 export const WORD_CHARACTER_NAMES=Object.freeze({'yellow:jiaojiao':'JOJO','npc:zhuxiaodi':'BOBO','npc:domi':'DOMI'});
 const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:WORD_CHARACTER_NAMES[a.id]?.toLowerCase()||a.id.split(':').at(-1),zh:a.name,assetId:a.id,match:[...(WORD_CHARACTER_NAMES[a.id]?[WORD_CHARACTER_NAMES[a.id]]:[]),a.name,...(a.id==='yellow:round'?[]:[a.id.split(':').at(-1)])]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
-export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...Object.values(WORD_CHARACTER_NAMES),...[...BEHAVIOR_ACTIONS,...BEHAVIOR_EFFECTS].flatMap(a=>a.aliases).filter(w=>/^[a-z ]+$/i.test(w)),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
+export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...MID_AUTUMN_CHAPTER_WORDS,...Object.values(WORD_CHARACTER_NAMES),...[...BEHAVIOR_ACTIONS,...BEHAVIOR_EFFECTS].flatMap(a=>a.aliases).filter(w=>/^[a-z ]+$/i.test(w)),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
 export function findWordObjects(text) {
   const hits=[];
   for(const item of lexicon)for(const alias of item.match){
     const re=/[a-z]/i.test(alias)?new RegExp(`\\b${esc(alias)}\\b`,'ig'):new RegExp(esc(alias),'g');
     for(const match of text.matchAll(re))hits.push({item,index:match.index,end:match.index+match[0].length,alias:match[0]});
   }
-  hits.sort((a,b)=>a.index-b.index||(b.end-b.index)-(a.end-a.index)||Number(b.item.assetId.startsWith('prop:rword-'))-Number(a.item.assetId.startsWith('prop:rword-')));
+  hits.sort((a,b)=>a.index-b.index||(b.end-b.index)-(a.end-a.index)||Number(b.item.assetId.startsWith('prop:festival-'))-Number(a.item.assetId.startsWith('prop:festival-'))||Number(b.item.assetId.startsWith('prop:rword-'))-Number(a.item.assetId.startsWith('prop:rword-')));
   const result=[];
   for(const hit of hits)if(!result.some(h=>hit.index<h.end&&hit.end>h.index))result.push(hit);
   return result;
@@ -99,7 +100,12 @@ export function planWordIntent(text,{entities={},chapter='color',focusId=null,fe
     const hits=words.filter(w=>hasWord(text,w));if(hits.length){commands.push({type:'weather.set',preset});matched.push(...hits);}
   }
   if(hasWord(text,'weather'))matched.push('weather');
-  if(/\b(eat|eats)\b|吃/.test(text)&&targets.length>=2)commands.push({type:'feeding.start',eaters:targets[0].ids,foods:targets.slice(1).flatMap(t=>t.ids)});
+  if(/\b(eat|eats|drink|drinks)\b|吃|喝/.test(text)&&targets.length>=2)commands.push({type:'feeding.start',eaters:targets[0].ids,foods:targets.slice(1).flatMap(t=>t.ids)});
+  if(chapter==='midautumn'){
+    if(hasWord(text,'night')||hasWord(text,'autumn'))commands.push({type:'environment.set',preset:'night'});
+    for(const [word,effect] of [['wish','stars'],['share','heart'],['reunion','heart'],['together','heart'],['celebrate','firework'],['festival','firework']])
+      if(hasWord(text,word)){commands.push({type:'fx.play',effect});matched.push(word);}
+  }
   if(/^water\b|浇水|浇花/i.test(text))for(const {hit,ids}of targets)if(hit.item.word!=='water')for(const id of ids)commands.push({type:'entity.effect',id,effect:'grow'},{type:'entity.effect',id,effect:'wet'});
   if(/\brun\b.*\bthen\s+stop\b|先跑.*再停/i.test(text))for(const {ids}of targets)for(const id of ids)commands.push({type:'entity.effect',id,effect:'run-stop'});
   const events=BEHAVIOR_ACTIONS.filter(a=>a.aliases.some(w=>hasWord(text,w)));
