@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import { ANIMAL_WORDS } from '../content/animal-words.js';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
+const base = process.env.QA_ORIGIN || 'http://127.0.0.1:8920';
+const browser = await chromium.launch({channel:'chrome',headless:true});
+const page = await browser.newPage({viewport:{width:1320,height:820},deviceScaleFactor:1});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(base+'/dev/modules/');
+await page.locator('#filters [data-choice="prop"]').click();
+await page.locator('#prop-categories button', {hasText:'动物与生肖'}).click();
+assert.equal(await page.locator('#module-list [data-module^="prop:animal-"]').count(), ANIMAL_WORDS.length);
+await page.locator('[data-module="prop:animal-elephant"]').click();
+assert.equal(await page.evaluate(()=>window.__MODULE_GALLERY__.status.selected),'prop:animal-elephant');
+await page.evaluate(async()=>{
+  const THREE=await import('/vendor/three.module.js');
+  const {createCreationModel}=await import('/dev/creation-models.js');
+  const {ANIMAL_WORDS}=await import('/dev/content/animal-words.js');
+  document.body.innerHTML='';
+  document.body.style.cssText='margin:0;padding:18px;background:#f3eee5;font:16px system-ui;color:#33434b;display:grid;grid-template-columns:repeat(5,1fr);gap:12px';
+  const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  renderer.setSize(220,210);renderer.setClearColor('#f3eee5');
+  window.animalRenders=[];
+  for(const animal of ANIMAL_WORDS){
+    const scene=new THREE.Scene();scene.add(new THREE.HemisphereLight('#ffffff','#bea484',2.4));
+    const light=new THREE.DirectionalLight('#ffffff',2.5);light.position.set(3,5,5);scene.add(light);
+    const m=createCreationModel(animal.model);scene.add(m.group);
+    const bounds=new THREE.Box3().setFromObject(m.group),center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
+    const radius=Math.max(size.x,size.y,size.z)*.72;
+    const camera=new THREE.OrthographicCamera(-radius,radius,radius,-radius,.01,100);
+    camera.position.copy(center).add(new THREE.Vector3(2.6,1.8,4).normalize().multiplyScalar(7));camera.lookAt(center);
+    renderer.render(scene,camera);
+    const pixels=new Uint8Array(220*210*4),gl=renderer.getContext();gl.readPixels(0,0,220,210,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+    let visible=0;for(let i=0;i<pixels.length;i+=4)if(Math.abs(pixels[i]-243)+Math.abs(pixels[i+1]-238)+Math.abs(pixels[i+2]-229)>35)visible++;
+    if(visible<100)throw Error('Blank '+animal.word);
+    window.animalRenders.push({word:animal.word,zh:animal.zh,image:renderer.domElement.toDataURL()});m.dispose();
+  }
+  renderer.dispose();
+  document.body.innerHTML=window.animalRenders.map(a=>`<div style="background:#fff9;border-radius:12px;text-align:center;padding:8px"><img src="${a.image}" width="220" height="210"><div><b>${a.word}</b> · ${a.zh}</div></div>`).join('');
+});
+await page.screenshot({path:'/tmp/jma-animal-models.png',fullPage:true});
+assert.equal(await page.evaluate(()=>window.animalRenders.length),ANIMAL_WORDS.length);
+assert.deepEqual(errors,[]);
+await browser.close();
+console.log('PASS: 13 nonblank animal WebGL renders; /tmp/jma-animal-models.png');

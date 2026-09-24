@@ -1,5 +1,6 @@
 import { createExpansionCurriculum, WORD_EXPANSION_CHAPTERS } from './word-expansion.js';
 import { RLINE_EXTENSIONS } from './rline-nouns.js';
+import { ANIMAL_WORDS } from './animal-words.js';
 export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
@@ -1209,6 +1210,7 @@ for (const [word, meaning] of Object.entries(EXTENSION_WORDS)) {
   if (!WORD_VOCABULARY[word]) WORD_VOCABULARY[word] = { word, meaning, inSource: false };
 }
 for (const noun of RLINE_EXTENSIONS) WORD_VOCABULARY[noun.word] = { word: noun.word, meaning: noun.zh, inSource: false };
+for (const animal of ANIMAL_WORDS) for (const word of [animal.word, ...animal.aliases]) WORD_VOCABULARY[word] = { word, meaning: animal.zh, inSource: false };
 // Original cells include the part-of-speech prefix in these two entries.
 for (const word of ['bug', 'rug']) {
   if (!WORD_VOCABULARY[word] && WORD_VOCABULARY[`${word} n`]) {
@@ -1223,7 +1225,7 @@ export const WORD_AGE_BANDS = [
   { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme', 'ocean', 'camp', 'polar'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
 ];
 
-const PLURAL_BASES = { lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
+const PLURAL_BASES = { ...Object.fromEntries(ANIMAL_WORDS.flatMap(animal => animal.aliases.map(alias => [alias, animal.word]))),  lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
 const tokenize = (text) => (String(text).toLowerCase().match(/[a-z]+/g) || []);
 const unique = (items) => [...new Set(items)];
 function wordInfo(word) {
@@ -1537,8 +1539,8 @@ export function createWordSuggestions(lesson, saved) {
   const original=tokenize(lesson.example);
   const groups=[
     ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow','round','bright','sweet'],
-    ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
-    ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats'],
+    ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird',...ANIMAL_WORDS.map(animal=>animal.word)],
+    ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats',...ANIMAL_WORDS.flatMap(animal=>animal.aliases.filter(alias=>alias.endsWith('s')||alias==='oxen'))],
     ['push','pull','throw','kick','hide','grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
     ['slowly','quickly','fast'],
     ['water','plant'],

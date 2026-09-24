@@ -2,6 +2,20 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:animal-models",
+      "kind": "logic",
+      "name": "常见动物与十二生肖造型库",
+      "description": "十三款独立动物模型：大象、小鸡、长颈鹿、斑马、蛇及生肖所需造型；鼠兔狗猪沿用现有 R 线模型。可在模块陈列馆的“动物与生肖”分组逐个预览。",
+      "source": "dev/modules/animal-models.js",
+      "capabilities": [
+        "十三款独立造型",
+        "十二生肖齐全",
+        "自主轻动作",
+        "语音热词与点词"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "logic:behavior-events",
       "kind": "logic",
       "name": "词语互动事件与自动道具",
@@ -38,17 +52,18 @@
       "id": "story:words",
       "kind": "story",
       "name": "独立章节 · 开口造世界",
-      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话。实际入口 /dev/words.html。",
+      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话；中秋独立章节直达。实际入口 /dev/words.html。",
       "source": "dev/content/word-games.js",
       "capabilities": [
         "三个年龄档",
-        "九章162轮",
+        "九章162轮与中秋独立章节",
         "中文问答与渐进短语",
         "第三步彩虹换词教学",
         "目标词与知识点",
         "开放例句",
         "海底、露营与冰雪主题",
-        "12款扩展名词模型"
+        "12款扩展名词模型",
+        "13款常见动物与完整十二生肖"
       ],
       "dependencies": [
         "logic:word-progress",
@@ -686,6 +701,540 @@
       ],
       "dependencies": [
         "logic:intent"
+      ]
+    },
+    {
+      "id": "prop:animal-elephant",
+      "kind": "prop",
+      "name": "大象",
+      "description": "大象在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-elephant.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-elephant",
+        "kind": "prop",
+        "edible": false,
+        "name": "大象",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-elephant",
+      "tags": [],
+      "keywords": [
+        "elephant",
+        "elephants",
+        "大象"
+      ]
+    },
+    {
+      "id": "prop:animal-chick",
+      "kind": "prop",
+      "name": "小鸡",
+      "description": "小鸡在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-chick.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-chick",
+        "kind": "prop",
+        "edible": false,
+        "name": "小鸡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-chick",
+      "tags": [],
+      "keywords": [
+        "chick",
+        "chicks",
+        "chicken",
+        "chickens",
+        "小鸡"
+      ]
+    },
+    {
+      "id": "prop:animal-giraffe",
+      "kind": "prop",
+      "name": "长颈鹿",
+      "description": "长颈鹿在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-giraffe.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-giraffe",
+        "kind": "prop",
+        "edible": false,
+        "name": "长颈鹿",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-giraffe",
+      "tags": [],
+      "keywords": [
+        "giraffe",
+        "giraffes",
+        "长颈鹿"
+      ]
+    },
+    {
+      "id": "prop:animal-zebra",
+      "kind": "prop",
+      "name": "斑马",
+      "description": "斑马在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-zebra.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-zebra",
+        "kind": "prop",
+        "edible": false,
+        "name": "斑马",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-zebra",
+      "tags": [],
+      "keywords": [
+        "zebra",
+        "zebras",
+        "斑马"
+      ]
+    },
+    {
+      "id": "prop:animal-snake",
+      "kind": "prop",
+      "name": "蛇",
+      "description": "蛇在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-snake.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-snake",
+        "kind": "prop",
+        "edible": false,
+        "name": "蛇",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-snake",
+      "tags": [],
+      "keywords": [
+        "snake",
+        "snakes",
+        "蛇"
+      ]
+    },
+    {
+      "id": "prop:animal-ox",
+      "kind": "prop",
+      "name": "牛（生肖）",
+      "description": "牛（生肖）在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-ox.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-ox",
+        "kind": "prop",
+        "edible": false,
+        "name": "牛（生肖）",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-ox",
+      "tags": [],
+      "keywords": [
+        "ox",
+        "oxen",
+        "牛（生肖）"
+      ]
+    },
+    {
+      "id": "prop:animal-tiger",
+      "kind": "prop",
+      "name": "老虎",
+      "description": "老虎在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-tiger.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-tiger",
+        "kind": "prop",
+        "edible": false,
+        "name": "老虎",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-tiger",
+      "tags": [],
+      "keywords": [
+        "tiger",
+        "tigers",
+        "老虎"
+      ]
+    },
+    {
+      "id": "prop:animal-dragon",
+      "kind": "prop",
+      "name": "龙",
+      "description": "龙在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-dragon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-dragon",
+        "kind": "prop",
+        "edible": false,
+        "name": "龙",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-dragon",
+      "tags": [],
+      "keywords": [
+        "dragon",
+        "dragons",
+        "龙"
+      ]
+    },
+    {
+      "id": "prop:animal-horse",
+      "kind": "prop",
+      "name": "马",
+      "description": "马在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-horse.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-horse",
+        "kind": "prop",
+        "edible": false,
+        "name": "马",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-horse",
+      "tags": [],
+      "keywords": [
+        "horse",
+        "horses",
+        "马"
+      ]
+    },
+    {
+      "id": "prop:animal-goat",
+      "kind": "prop",
+      "name": "山羊",
+      "description": "山羊在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-goat.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-goat",
+        "kind": "prop",
+        "edible": false,
+        "name": "山羊",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-goat",
+      "tags": [],
+      "keywords": [
+        "goat",
+        "goats",
+        "山羊"
+      ]
+    },
+    {
+      "id": "prop:animal-sheep",
+      "kind": "prop",
+      "name": "绵羊",
+      "description": "绵羊在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-sheep.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-sheep",
+        "kind": "prop",
+        "edible": false,
+        "name": "绵羊",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-sheep",
+      "tags": [],
+      "keywords": [
+        "sheep",
+        "绵羊"
+      ]
+    },
+    {
+      "id": "prop:animal-monkey",
+      "kind": "prop",
+      "name": "猴子",
+      "description": "猴子在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-monkey.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-monkey",
+        "kind": "prop",
+        "edible": false,
+        "name": "猴子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-monkey",
+      "tags": [],
+      "keywords": [
+        "monkey",
+        "monkeys",
+        "猴子"
+      ]
+    },
+    {
+      "id": "prop:animal-rooster",
+      "kind": "prop",
+      "name": "公鸡",
+      "description": "公鸡在场景中轻轻活动。",
+      "source": "dev/modules/props/animal-rooster.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:animal-rooster",
+        "kind": "prop",
+        "edible": false,
+        "name": "公鸡",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "动物与生肖",
+      "variety": "prop:animal-rooster",
+      "tags": [],
+      "keywords": [
+        "rooster",
+        "roosters",
+        "公鸡"
       ]
     },
     {

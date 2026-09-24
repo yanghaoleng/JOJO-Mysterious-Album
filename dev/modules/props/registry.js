@@ -15,6 +15,19 @@ import { build as robot_head } from './robot-head.js';
 import { build as robot_hand } from './robot-hand.js';
 import { build as robot_foot } from './robot-foot.js';
 import { build as swimming_pool } from './swimming-pool.js';
+import { build as animal_elephant } from './animal-elephant.js';
+import { build as animal_chick } from './animal-chick.js';
+import { build as animal_giraffe } from './animal-giraffe.js';
+import { build as animal_zebra } from './animal-zebra.js';
+import { build as animal_snake } from './animal-snake.js';
+import { build as animal_ox } from './animal-ox.js';
+import { build as animal_tiger } from './animal-tiger.js';
+import { build as animal_dragon } from './animal-dragon.js';
+import { build as animal_horse } from './animal-horse.js';
+import { build as animal_goat } from './animal-goat.js';
+import { build as animal_sheep } from './animal-sheep.js';
+import { build as animal_monkey } from './animal-monkey.js';
+import { build as animal_rooster } from './animal-rooster.js';
 import { build as festival_moon } from './festival-moon.js';
 import { build as festival_mooncake } from './festival-mooncake.js';
 import { build as festival_lantern } from './festival-lantern.js';
@@ -938,6 +951,19 @@ export const PROP_BUILDERS = Object.freeze({
   bakery,
   swing,
   lantern,
+  'animal-elephant': animal_elephant,
+  'animal-chick': animal_chick,
+  'animal-giraffe': animal_giraffe,
+  'animal-zebra': animal_zebra,
+  'animal-snake': animal_snake,
+  'animal-ox': animal_ox,
+  'animal-tiger': animal_tiger,
+  'animal-dragon': animal_dragon,
+  'animal-horse': animal_horse,
+  'animal-goat': animal_goat,
+  'animal-sheep': animal_sheep,
+  'animal-monkey': animal_monkey,
+  'animal-rooster': animal_rooster,
   'festival-moon': festival_moon,
   'festival-mooncake': festival_mooncake,
   'festival-lantern': festival_lantern,

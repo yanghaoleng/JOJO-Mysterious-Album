@@ -7,6 +7,7 @@ import { StoryVoice, requestJSON } from './voice.js';
 import { RealtimeWordVoice } from './word-realtime-voice.js';
 let voiceMode='realtime',voicePreference=null;try{voicePreference=new URLSearchParams(location.search).get('voice')||localStorage.getItem('jma.word-voice-mode');voiceMode=voicePreference||'realtime';}catch{}
 import { createVoiceInput } from '../src/voice-input-control.js';
+import { ANIMAL_WORDS, ZODIAC_ANIMALS } from './content/animal-words.js';
 import { WORD_CHAPTERS, WORD_PRAISES, WORD_VOCABULARY, getAgeBand, getChapterLessons, getRecommendedWordChapter, createWordSuggestions } from './content/word-games.js';
 import { acceptsEnglishUtterance, englishWordContent, createWordLanguageGate, createWordProgress, evaluateWordUtterance } from './word-progress.js';
 import { wordSceneEntities, scatterWordSpawns, unknownWordCommands, playerWordProposal } from './word-scene.js';
@@ -331,7 +332,7 @@ function renderLesson(){
 function renderWordOptions(){
   const lesson=currentLesson();
   const base=lesson.mode==='build'?lesson.buildWords:lesson.example.toLowerCase().match(/[a-z]+/g)||[];
-  const ideas=['cold','hungry','thirsty','dirty','push','pull','throw','kick','hide','sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...Object.values(WORD_CHARACTER_NAMES)];
+  const ideas=['cold','hungry','thirsty','dirty','push','pull','throw','kick','hide','sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...ANIMAL_WORDS.map(animal=>animal.word),...ZODIAC_ANIMALS.map(animal=>animal.word),...Object.values(WORD_CHARACTER_NAMES)];
   $('word-options').innerHTML=[...new Set([...base,...(lesson.choiceWords||[]),...chapter.words.map(w=>w.word),...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
 }
 let menuOpen=false,menuAnimation=null,inputEpoch=0,inputQueue=Promise.resolve(),pendingWords=0;

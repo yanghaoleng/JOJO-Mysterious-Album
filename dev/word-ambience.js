@@ -12,7 +12,7 @@ export function createWordAmbience({entities,send,occupied=()=>[],canAct=()=>tru
     if(reduced()||lease||at<nextAction)return;nextAction=at+12000+random()*8000;
     const all=Object.values(entities()),blocked=new Set(occupied());for(const [id,until]of protectedUntil)if(until<=at)protectedUntil.delete(id);
     const free=e=>!e.id.startsWith('demo-')&&!e.attachment&&!blocked.has(e.id)&&!protectedUntil.has(e.id)&&!['sleepy'].includes(e.effects?.emotion)&&(!e.effects?.motion||e.effects.motion==='stop')&&!e.effects?.gesture;
-    const actors=all.filter(e=>free(e)&&(/^(npc:|yellow:|actor:)/.test(e.asset)||/^prop:(rword-)?(cat|dog|duck|bird|hen|pig|bear|rabbit|bunny|frog|fox|rat|cub|teddy|robot|turtle|octopus|jellyfish|starfish|hedgehog|penguin|seal|walrus)$/.test(e.asset)));
+    const actors=all.filter(e=>free(e)&&(/^(npc:|yellow:|actor:)/.test(e.asset)||(/^prop:animal-/.test(e.asset)||/^prop:(rword-)?(cat|dog|duck|bird|hen|pig|bear|rabbit|bunny|frog|fox|rat|cub|teddy|robot|turtle|octopus|jellyfish|starfish|hedgehog|penguin|seal|walrus)$/.test(e.asset))));
     if(!actors.length)return;const actor=actors[Math.floor(random()*actors.length)],foods=all.filter(e=>free(e)&&/^prop:(rword-)?(apple|nut|cake|bread|banana|carrot|cookie|hamburger|acorn)$/.test(e.asset));
     const choice=Math.floor(random()*4);let commands,ids=[actor.id];
     if(choice===2&&foods.length){const food=foods[Math.floor(random()*foods.length)];ids.push(food.id);commands=[{type:'feeding.start',eaters:[actor.id],foods:[food.id]}];}

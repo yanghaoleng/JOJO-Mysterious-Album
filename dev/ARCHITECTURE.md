@@ -254,3 +254,7 @@ Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key
 九章三档年龄均为单名词、另一个名词、数量加名词、颜色加名词、大小加颜色加名词、最后完整句。课次 ID 保持稳定；旧的丰富例句保存在 `WORD_SENTENCE_LIBRARY`，扩展词仍通过词菜单和替换候选可玩。每章前两轮由中文提问引导，第三轮用中文介绍彩虹虚线；中文仅为应用脚本播报，儿童输入仍只执行提取后的英文。无需先点 Domi，默认选年龄。
 
 `normalizeWordAttempt` 对当前题干内至多一个未知词做保守拼写修正，支持少量常见同音转写；已知有效词不会被改成题干词。缺冠词不阻止完成，不把文本匹配称为发音评分。`verify-word-teaching-ui.mjs` 检查逐步教学、无模糊、换词、连续收音、六轮完成和重选清理；`verify-word-tolerance.mjs` 检查容错与创意词保留。
+
+### 常见动物与十二生肖扩展（2026-09-24）
+
+`content/animal-words.js` 单独收录创作扩展词，不改动原 R 线来源。大象、小鸡、长颈鹿、斑马、蛇、牛、虎、龙、马、山羊、绵羊、猴子、公鸡共 13 款独立模型；十二生肖中的鼠、兔、狗、猪沿用现有 R 线模型。每款新模型在 `modules/props/animal-*.js` 有独立入口，共用 `modules/animal-models.js` 的造型辅助；模块陈列馆归入“动物与生肖”。英文单复数、语音热词、点词菜单、彩虹替换词和场景指令同步登记。验证入口：`dev/tools/verify-animal-words.mjs` 与 `dev/tools/verify-animal-models-ui.mjs`。

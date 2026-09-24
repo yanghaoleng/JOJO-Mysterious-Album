@@ -31,7 +31,7 @@ const categories = document.createElement("nav");
 categories.id = "prop-categories";
 categories.setAttribute("aria-label", "道具二级分类");
 $("filters").after(categories);
-for (const name of ["全部", "R线名词模型库", "交通工具", "食物", "玩具", "场景道具"]) {
+for (const name of ["全部", "R线名词模型库", "动物与生肖", "交通工具", "食物", "玩具", "场景道具"]) {
   const b = document.createElement("button"); b.type = "button"; b.textContent = name;
   b.onclick = () => { propCategory = name; renderList(); };
   categories.append(b);
