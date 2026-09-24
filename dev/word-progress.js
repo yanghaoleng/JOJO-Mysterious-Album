@@ -2,6 +2,7 @@ import { WORD_VOCABULARY } from './content/word-games.js';
 
 // Text recognition is used only to find words, never to grade pronunciation.
 const INFLECTIONS = {
+  turtles:'turtle',octopuses:'octopus',jellyfishes:'jellyfish',starfishes:'starfish',tents:'tent',acorns:'acorn',pinecones:'pinecone',hedgehogs:'hedgehog',penguins:'penguin',seals:'seal',walruses:'walrus',igloos:'igloo',
   feet: 'foot', children: 'child', mice: 'mouse', men: 'man', women: 'woman',
   hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', noses: 'nose', mouths: 'mouth',
   legs: 'leg', tails: 'tail', bodies: 'body', cars: 'car', balls: 'ball', trains: 'train',

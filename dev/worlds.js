@@ -11,6 +11,7 @@ import { createSolarWorld } from './solar-worlds.js';
 export { WORLD_CATALOG } from './content/worlds.js';
 
 const PALETTES = {
+  'word-snowfield': ['#e8f2f6','#c7e0ed','#d7eaf2'],
   orchard: ['#aebf83', '#79965b', '#d7b988'], bakery: ['#d9be95', '#b99369', '#ecd7b2'],
   bridge: ['#a8bc91', '#779878', '#d2c6a7'], home: ['#bac491', '#8fa264', '#dec59d'],
   observatory: ['#9bafaf', '#758994', '#c4c9c5'], reef: ['#b9d5c5', '#70b5ad', '#e0d4b4'],
@@ -281,6 +282,20 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
       spark.rotation.y = time + n;
     });
   });
+
+  if (id === 'word-snowfield') {
+    // Keep the centre open for the child's models; distant ice landmarks frame it.
+    cylinder(water('#9cc9de'), -.4, .008, -1.9, 1.05, 1.05, .025);
+    torus(paint('#eff8fb'), -.4, .045, -1.9, 1.08, .045);
+    for (const [x,z,h] of [[-2.9,-1.2,.7],[2.7,-1.7,1.05],[1.7,-3.1,.62]]) {
+      const ice=part(x,0,z,staticRoot,.18,'stone');
+      box('#c6e3f0',0,h/2,0,.7,h,.64,ice);
+      box('#f5fbff',0,h+.025,0,.74,.09,.68,ice);
+      box('#daeef6',.43,h*.24,.17,.42,h*.48,.46,ice);
+    }
+    for (const [x,z,r] of [[-2.5,1.9,.6],[2.8,1.8,.45],[-1.9,-3,.52]])
+      ball('#f3f8fa',x,.08,z,r,.12,r*.75);
+  }
 
   if (id === 'orchard') {
     tree(-2.55, -1.45, 3.2, true, '#809a5f');
@@ -648,7 +663,7 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
   }
 
   // Sparse foreground accents frame the stage without filling character standing space.
-  if (!['cloud', 'moon', 'pocket', 'reef'].includes(id)) {
+  if (!['cloud', 'moon', 'pocket', 'reef', 'word-snowfield'].includes(id)) {
     [[-3.27, 2.06], [2.91, 2.08], [-1.65, 3.52], [1.15, 3.58]].forEach(([x, z], i) => {
       grass(x, z, 0.8 + (i % 2) * 0.25);
       if (i % 2 === 0) pebble(x + 0.35, z + 0.12, 0.55);
@@ -671,7 +686,7 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
     anchor.name = `radial-terrain-${i}`;
     secondaryAnchors.push({ point: anchor.position.toArray(), normal: normal.toArray() });
     const size = 0.45 + (i % 3) * 0.14;
-    if (id === 'moon' || id === 'observatory') {
+    if (id === 'moon' || id === 'observatory' || id === 'word-snowfield') {
       ball(palette[1], 0, 0.016, 0, size, 0.026, size, anchor);
       torus(palette[2], 0, 0.04, 0, size, size * 0.1, anchor);
       if (i % 3 === 0) {

@@ -59,7 +59,9 @@ async function transitionScene(change){
 }
 function cancelTurn(keepListening=false){cancelOpening();languageGate.reset();turn++;request?.abort();request=null;busy=false;clearTimeout(speechTimer);if(keepListening)voice?.listen(false);else{continuousListening=false;voice?.pause();}voice?.skip();}
 function resumeListening(){if(continuousListening&&['play','intro'].includes(view)&&!document.hidden&&!transitioning){voice?.listen(true);if(!voice?.enabled)void voice?.enable();}}
-function recommendation(){return getRecommendedWordChapter(age);}
+// Session-only theme rotation survives a fresh world, but stores no speech or learning history.
+const previousThemes=new Map();
+function recommendation(){return getRecommendedWordChapter(age,{previous:previousThemes.get(getAgeBand(age)?.id)});}
 const speakerIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>';
 
 function leave(){introVersion++;saveJourney();cancelTurn();stopUISFX();}
@@ -236,13 +238,15 @@ function renderChapters(){
   leave();chapter=null;setView('chapters');feedback('');
   const c=sharedScene?chapters[sharedScene.chapter]:recommendation();
   newWorld(c.world);
-  const preview={monster:'robot-toy',color:'rword-train',sports:'rword-frog',toys:'rword-robot',garden:'rword-flower',rhyme:'rword-cat'}[c.id];
+  if(c.weather)apply([{type:'weather.set',preset:c.weather}]);
+  const preview=c.preview||{monster:'robot-toy',color:'rword-train',sports:'rword-frog',toys:'rword-robot',garden:'rword-flower',rhyme:'rword-cat'}[c.id];
   apply([{type:'entity.spawn',id:'chapter-preview',asset:`prop:${preview}`,position:[0,0],scale:1.25}]);
   $('word-panel').innerHTML=`<div class="onboarding"><article class="recommend-card" data-chapter="${c.id}"><div class="eyebrow">${sharedScene?'朋友的小世界':'为你准备的小冒险'}</div><h2>${escape(c.title)}</h2><p>${escape(c.subtitle)}</p><button class="primary-button" id="continue-chapter">继续 ${arrowRight}</button></article></div>`;
   $('continue-chapter').onclick=()=>{ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(()=>openChapter(c.id,sharedScene?{fresh:true,shared:sharedScene}:{}));};
 }
 function openChapter(id,{fresh=false,shared=null}={}){
   leave();chapter=chapters[id];if(!chapter){renderChapters();return;}
+  previousThemes.set(getAgeBand(age).id,id);
   const record=fresh?null:journeys[journeyKey()];
   lessonIndex=Number.isInteger(record?.lessonIndex)?Math.max(0,Math.min(5,record.lessonIndex)):0;
   if(record?.completed)lessonIndex=0;
@@ -252,6 +256,7 @@ function openChapter(id,{fresh=false,shared=null}={}){
   const migrated=snapshot?JSON.parse(JSON.stringify(snapshot)):null;
   if(chapter.id==='monster'&&migrated)for(const world of Object.values(migrated.worlds||{}))for(const e of Object.values(world.entities||{}))if(/^wg-(body|head|hand|foot)-/.test(e.id)&&/^prop:rword-(body|head|hand|foot)$/.test(e.asset))e.asset=e.asset.replace('rword-','robot-');
   newWorld(chapter.world,migrated);
+  if(chapter.weather&&!migrated)apply([{type:'weather.set',preset:chapter.weather}]);
   if(chapter.id==='monster'&&!Object.values(entities()).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
   frameWordScene();renderLesson();saveJourney();sharedScene=null;
@@ -530,7 +535,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();cancelOpening();continuousListening=false;voice?.pause();voice?.skip();voiceInput?.setState('paused');voiceHint('已暂停，按回车继续');}
 });
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
-$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.id==='monster')apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
+$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);if(chapter.id==='monster')apply([{type:'entity.spawn',id:'wg-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);clearInterval(autoContinueTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.

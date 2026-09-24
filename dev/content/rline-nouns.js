@@ -2498,6 +2498,162 @@ export const RLINE_NOUNS = Object.freeze([
   }
 ]);
 export const RLINE_EXTENSIONS = Object.freeze([
+{
+  "word": "turtle",
+  "zh": "海龟",
+  "assetId": "prop:rword-turtle",
+  "aliases": [
+    "turtles"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "圆甲壳、四只鳍足与小尾巴",
+  "extension": true
+},
+{
+  "word": "octopus",
+  "zh": "章鱼",
+  "assetId": "prop:rword-octopus",
+  "aliases": [
+    "octopuses"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "圆脑袋与八条弯曲触腕",
+  "extension": true
+},
+{
+  "word": "jellyfish",
+  "zh": "水母",
+  "assetId": "prop:rword-jellyfish",
+  "aliases": [
+    "jellyfishes"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "半透明伞盖与垂落触须",
+  "extension": true
+},
+{
+  "word": "starfish",
+  "zh": "海星",
+  "assetId": "prop:rword-starfish",
+  "aliases": [
+    "starfishes"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "五条圆润星形腕与表面小点",
+  "extension": true
+},
+{
+  "word": "tent",
+  "zh": "帐篷",
+  "assetId": "prop:rword-tent",
+  "aliases": [
+    "tents"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "三角帐篷、敞开入口与支杆",
+  "extension": true
+},
+{
+  "word": "acorn",
+  "zh": "橡子",
+  "assetId": "prop:rword-acorn",
+  "aliases": [
+    "acorns"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "带纹路的果帽与橡子果实",
+  "extension": true
+},
+{
+  "word": "pinecone",
+  "zh": "松果",
+  "assetId": "prop:rword-pinecone",
+  "aliases": [
+    "pinecones"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "层层交错的木色鳞片",
+  "extension": true
+},
+{
+  "word": "hedgehog",
+  "zh": "刺猬",
+  "assetId": "prop:rword-hedgehog",
+  "aliases": [
+    "hedgehogs"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "尖鼻子、短腿与柔和锥形背刺",
+  "extension": true
+},
+{
+  "word": "penguin",
+  "zh": "企鹅",
+  "assetId": "prop:rword-penguin",
+  "aliases": [
+    "penguins"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "黑白身体、橙色脚掌与摆动鳍翅",
+  "extension": true
+},
+{
+  "word": "seal",
+  "zh": "海豹",
+  "assetId": "prop:rword-seal",
+  "aliases": [
+    "seals"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "光滑身体、鳍足与胡须",
+  "extension": true
+},
+{
+  "word": "walrus",
+  "zh": "海象",
+  "assetId": "prop:rword-walrus",
+  "aliases": [
+    "walruses"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "宽口鼻、两根长牙与鳍足",
+  "extension": true
+},
+{
+  "word": "igloo",
+  "zh": "冰屋",
+  "assetId": "prop:rword-igloo",
+  "aliases": [
+    "igloos"
+  ],
+  "lessons": [],
+  "sourceLines": [],
+  "category": "主题冒险扩展",
+  "representation": "半球冰砖屋与拱形入口",
+  "extension": true
+},
   {
     "word": "poop",
     "zh": "便便",

@@ -36,13 +36,15 @@
       "id": "story:words",
       "kind": "story",
       "name": "独立章节 · 开口造世界",
-      "description": "选具体年龄后只推荐一章，六章各六轮，机器人拼装、逐词搭句、挖空与自由创造。实际入口 /dev/words.html。",
+      "description": "选具体年龄后只推荐一章，九章各六轮，机器人拼装、逐词搭句、挖空与自由创造。实际入口 /dev/words.html。",
       "source": "dev/content/word-games.js",
       "capabilities": [
         "三个年龄档",
-        "六章108轮",
+        "九章162轮",
         "目标词与知识点",
-        "开放例句"
+        "开放例句",
+        "海底、露营与冰雪主题",
+        "12款扩展名词模型"
       ],
       "dependencies": [
         "logic:word-progress",
@@ -7218,6 +7220,498 @@
       "keywords": [
         "grass",
         "草"
+      ]
+    },
+    {
+      "id": "prop:rword-turtle",
+      "kind": "prop",
+      "name": "turtle · 海龟",
+      "description": "海龟轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-turtle.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-turtle",
+        "kind": "prop",
+        "edible": false,
+        "name": "turtle · 海龟",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-turtle",
+      "tags": [],
+      "keywords": [
+        "turtle",
+        "海龟",
+        "turtles"
+      ]
+    },
+    {
+      "id": "prop:rword-octopus",
+      "kind": "prop",
+      "name": "octopus · 章鱼",
+      "description": "章鱼轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-octopus.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-octopus",
+        "kind": "prop",
+        "edible": false,
+        "name": "octopus · 章鱼",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-octopus",
+      "tags": [],
+      "keywords": [
+        "octopus",
+        "章鱼",
+        "octopuses"
+      ]
+    },
+    {
+      "id": "prop:rword-jellyfish",
+      "kind": "prop",
+      "name": "jellyfish · 水母",
+      "description": "水母轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-jellyfish.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-jellyfish",
+        "kind": "prop",
+        "edible": false,
+        "name": "jellyfish · 水母",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-jellyfish",
+      "tags": [],
+      "keywords": [
+        "jellyfish",
+        "水母",
+        "jellyfishes"
+      ]
+    },
+    {
+      "id": "prop:rword-starfish",
+      "kind": "prop",
+      "name": "starfish · 海星",
+      "description": "海星轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-starfish.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-starfish",
+        "kind": "prop",
+        "edible": false,
+        "name": "starfish · 海星",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-starfish",
+      "tags": [],
+      "keywords": [
+        "starfish",
+        "海星",
+        "starfishes"
+      ]
+    },
+    {
+      "id": "prop:rword-tent",
+      "kind": "prop",
+      "name": "tent · 帐篷",
+      "description": "帐篷轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-tent.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-tent",
+        "kind": "prop",
+        "edible": false,
+        "name": "tent · 帐篷",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-tent",
+      "tags": [],
+      "keywords": [
+        "tent",
+        "帐篷",
+        "tents"
+      ]
+    },
+    {
+      "id": "prop:rword-acorn",
+      "kind": "prop",
+      "name": "acorn · 橡子",
+      "description": "橡子轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-acorn.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-acorn",
+        "kind": "prop",
+        "edible": false,
+        "name": "acorn · 橡子",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-acorn",
+      "tags": [],
+      "keywords": [
+        "acorn",
+        "橡子",
+        "acorns"
+      ]
+    },
+    {
+      "id": "prop:rword-pinecone",
+      "kind": "prop",
+      "name": "pinecone · 松果",
+      "description": "松果轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-pinecone.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-pinecone",
+        "kind": "prop",
+        "edible": false,
+        "name": "pinecone · 松果",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-pinecone",
+      "tags": [],
+      "keywords": [
+        "pinecone",
+        "松果",
+        "pinecones"
+      ]
+    },
+    {
+      "id": "prop:rword-hedgehog",
+      "kind": "prop",
+      "name": "hedgehog · 刺猬",
+      "description": "刺猬轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-hedgehog.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-hedgehog",
+        "kind": "prop",
+        "edible": false,
+        "name": "hedgehog · 刺猬",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-hedgehog",
+      "tags": [],
+      "keywords": [
+        "hedgehog",
+        "刺猬",
+        "hedgehogs"
+      ]
+    },
+    {
+      "id": "prop:rword-penguin",
+      "kind": "prop",
+      "name": "penguin · 企鹅",
+      "description": "企鹅轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-penguin.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-penguin",
+        "kind": "prop",
+        "edible": false,
+        "name": "penguin · 企鹅",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-penguin",
+      "tags": [],
+      "keywords": [
+        "penguin",
+        "企鹅",
+        "penguins"
+      ]
+    },
+    {
+      "id": "prop:rword-seal",
+      "kind": "prop",
+      "name": "seal · 海豹",
+      "description": "海豹轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-seal.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-seal",
+        "kind": "prop",
+        "edible": false,
+        "name": "seal · 海豹",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-seal",
+      "tags": [],
+      "keywords": [
+        "seal",
+        "海豹",
+        "seals"
+      ]
+    },
+    {
+      "id": "prop:rword-walrus",
+      "kind": "prop",
+      "name": "walrus · 海象",
+      "description": "海象轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-walrus.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-walrus",
+        "kind": "prop",
+        "edible": false,
+        "name": "walrus · 海象",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-walrus",
+      "tags": [],
+      "keywords": [
+        "walrus",
+        "海象",
+        "walruses"
+      ]
+    },
+    {
+      "id": "prop:rword-igloo",
+      "kind": "prop",
+      "name": "igloo · 冰屋",
+      "description": "冰屋轻轻摇动，回应你的声音。这是自由创作扩展词。",
+      "source": "dev/modules/props/rword-igloo.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:rword-igloo",
+        "kind": "prop",
+        "edible": false,
+        "name": "igloo · 冰屋",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "R线名词模型库",
+      "variety": "prop:rword-igloo",
+      "tags": [],
+      "keywords": [
+        "igloo",
+        "冰屋",
+        "igloos"
       ]
     },
     {
@@ -22924,6 +23418,19 @@
       "keywords": [
         "星星 MOMO"
       ]
+    },
+    {
+      "id": "world:word-snowfield",
+      "kind": "world",
+      "name": "冰雪乐园",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
     },
     {
       "id": "world:mercury",

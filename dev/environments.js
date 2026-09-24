@@ -25,6 +25,7 @@ const environment = (radius, period, colors, lighting = {}) => Object.freeze({
 });
 
 export const WORLD_ENVIRONMENTS = Object.freeze({
+  'word-snowfield': environment(5.35, 'day', {base:'#e5f1f7',glow:'#f7fcff',horizon:'#c5dfec',ink:'#334954',muted:'#627b88',accent:'#719bb5',paper:'#f8fcff'}, {sky:'#d8efff',sun:'#f4fbff',bounce:'#c8e3ef',rim:'#e4f8ff'}),
   ...Object.fromEntries(SOLAR_PLANETS.map(p=>[p.id,environment(p.radius,'night',{base:'#dce2ed',glow:'#f4ead8',horizon:'#bac8dd'})])),
   orchard: environment(5.6, 'day', {
     base: '#f2efe2', glow: '#fff5d5', horizon: '#dce9d5',

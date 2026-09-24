@@ -1,3 +1,15 @@
+import { build as rword_turtle } from './rword-turtle.js';
+import { build as rword_octopus } from './rword-octopus.js';
+import { build as rword_jellyfish } from './rword-jellyfish.js';
+import { build as rword_starfish } from './rword-starfish.js';
+import { build as rword_tent } from './rword-tent.js';
+import { build as rword_acorn } from './rword-acorn.js';
+import { build as rword_pinecone } from './rword-pinecone.js';
+import { build as rword_hedgehog } from './rword-hedgehog.js';
+import { build as rword_penguin } from './rword-penguin.js';
+import { build as rword_seal } from './rword-seal.js';
+import { build as rword_walrus } from './rword-walrus.js';
+import { build as rword_igloo } from './rword-igloo.js';
 import { build as robot_body } from './robot-body.js';
 import { build as robot_head } from './robot-head.js';
 import { build as robot_hand } from './robot-hand.js';
@@ -455,6 +467,19 @@ import { build as special16 } from "./fart.js";
 import { build as special17 } from "./gas-cloud.js";
 import { build as special18 } from "./poop.js";
 export const PROP_BUILDERS = Object.freeze({
+  'rword-turtle': rword_turtle,
+  'rword-octopus': rword_octopus,
+  'rword-jellyfish': rword_jellyfish,
+  'rword-starfish': rword_starfish,
+  'rword-tent': rword_tent,
+  'rword-acorn': rword_acorn,
+  'rword-pinecone': rword_pinecone,
+  'rword-hedgehog': rword_hedgehog,
+  'rword-penguin': rword_penguin,
+  'rword-seal': rword_seal,
+  'rword-walrus': rword_walrus,
+  'rword-igloo': rword_igloo,
+
   'robot-body': robot_body,
   'robot-head': robot_head,
   'robot-hand': robot_hand,

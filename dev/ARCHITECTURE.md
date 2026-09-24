@@ -243,3 +243,7 @@ Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key
 小游戏 `focusWordEvent` 对已执行成功的新模型/动作选择最新对象，镜头适度拉近至 1.3 并锁定世界空间三维中心；入场期间先看落点，模型稳定后跟随移动。手动拖动释放锁定，新场景清理；其他模块的二维跟随契约保持兼容。实时课堂语速由原 -10 调至 -28（0.9 × 0.8），经典备用合成以 readingSpeed=.8 作用于 gentle 音色，童声不变。验证 `verify-word-caption.mjs`、`verify-word-focus-ui.mjs`。
 
 聚焦模糊在透明状态下先解码整幅截图，再以 600ms 透明度渐变进入；朗读结束等待实际退出过渡完成后才生成示范。快速翻页/暂停通过既有 epoch 取消旧流程，减少动态效果使用 100ms 淡化。浏览器检查采样进入与退出的中间帧，防止截图在不透明状态替换导致硬切。
+
+### 主题词汇扩展（2026-09-24）
+
+`content/word-expansion.js` 提供海底、露营和冰雪三个主题，各含三档年龄的六轮内容。九章共 162 个主例句，原章节与课次 ID 保持不变。`RLINE_EXTENSIONS` 中 12 个新名词带 `extension: true` 和空原课次，不冒充原 R 线来源；独立模型入口、热词、复数识别与字幕替换词同步登记。推荐仅保留一个主题卡，通过本次会话的上一主题轮换，不保存语音或学习记录；新动词形容词提案见 `docs/word-event-expansion-proposal.md`，尚未接入事件。验证入口：`dev/tools/verify-word-expansion.mjs` 与 `dev/tools/verify-word-expansion-ui.mjs`。

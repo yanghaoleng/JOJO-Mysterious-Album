@@ -1,5 +1,6 @@
 import { SOLAR_PLANETS } from './solar-planets.js';
 export const WORLD_CATALOG = [
+  { id: 'word-snowfield', name: '冰雪乐园', tint: '#e0eef5' },
   ...SOLAR_PLANETS,
   { id: 'orchard', name: '红苹果园', tint: '#e7eedc' },
   { id: 'bakery', name: '阿暖面包房', tint: '#f3e7d5' },

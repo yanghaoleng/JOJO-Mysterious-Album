@@ -1,3 +1,5 @@
+import { createExpansionCurriculum, WORD_EXPANSION_CHAPTERS } from './word-expansion.js';
+import { RLINE_EXTENSIONS } from './rline-nouns.js';
 export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
 /** R 线语音小游戏内容。词表来自用户提供的钉钉英语 R 线单词库；扩展词单独标记。 */
 export const WORD_VOCABULARY = {
@@ -1185,7 +1187,7 @@ const EXTENSION_WORDS = {
   make: '让；做出', put: '放', give: '给', has: '有', have: '有', can: '能；可以',
   let: '让', this: '这个', that: '那个', your: '你的', like: '喜欢', want: '想要',
   little: '小小的', small: '小的', huge: '巨大的', tiny: '很小的', purple: '紫色的',
-  pink: '粉色的', orange: '橙色的', white: '白色的', black: '黑色的', rainbow: '彩虹；彩虹色的',
+  brown: '棕色的', pink: '粉色的', orange: '橙色的', white: '白色的', black: '黑色的', rainbow: '彩虹；彩虹色的',
   grow: '生长；变大', shrink: '缩小', spin: '旋转', dance: '跳舞', float: '漂浮',
   fast: '快的；快地', slow: '慢的；慢慢地', slowly: '慢慢地', high: '高高地',
   giant: '巨大的', poop: '大便', flying: '飞行的', glowing: '发光的',
@@ -1198,6 +1200,7 @@ const EXTENSION_WORDS = {
 for (const [word, meaning] of Object.entries(EXTENSION_WORDS)) {
   if (!WORD_VOCABULARY[word]) WORD_VOCABULARY[word] = { word, meaning, inSource: false };
 }
+for (const noun of RLINE_EXTENSIONS) WORD_VOCABULARY[noun.word] = { word: noun.word, meaning: noun.zh, inSource: false };
 // Original cells include the part-of-speech prefix in these two entries.
 for (const word of ['bug', 'rug']) {
   if (!WORD_VOCABULARY[word] && WORD_VOCABULARY[`${word} n`]) {
@@ -1207,12 +1210,12 @@ for (const word of ['bug', 'rug']) {
 }
 
 export const WORD_AGE_BANDS = [
-  { id: 'early', minAge: 3, maxAge: 5, label: '3–5 岁 · 单词变魔法', recommended: ['monster', 'color'], description: '先说一个词，再试两三个词；听提示也能玩。' },
-  { id: 'middle', minAge: 6, maxAge: 7, label: '6–7 岁 · 短句小导演', recommended: ['sports', 'toys'], description: '用短句安排动作、颜色和位置，再试自己的新点子。' },
-  { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
+  { id: 'early', minAge: 3, maxAge: 5, label: '3–5 岁 · 单词变魔法', recommended: ['monster', 'color', 'ocean', 'camp', 'polar'], description: '先说一个词，再试两三个词；听提示也能玩。' },
+  { id: 'middle', minAge: 6, maxAge: 7, label: '6–7 岁 · 短句小导演', recommended: ['sports', 'toys', 'ocean', 'camp', 'polar'], description: '用短句安排动作、颜色和位置，再试自己的新点子。' },
+  { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme', 'ocean', 'camp', 'polar'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
 ];
 
-const PLURAL_BASES = { cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
+const PLURAL_BASES = { turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
 const tokenize = (text) => (String(text).toLowerCase().match(/[a-z]+/g) || []);
 const unique = (items) => [...new Set(items)];
 function wordInfo(word) {
@@ -1223,6 +1226,7 @@ function wordInfo(word) {
 const row = (example, targets, prompt, knowledge, alternatives = []) => ({ example, targets: targets.split(' '), prompt, knowledge: [knowledge], alternatives });
 
 const curriculum = {
+  ...createExpansionCurriculum(row),
   monster: {
     early: [
       row('A big head.', 'big head', '给小机器人装一个大脑袋。跟着词卡，一个词一个词说。', 'a + 大小 + 身体部位：把三个词连起来。'),
@@ -1388,6 +1392,7 @@ const chapterInfo = [
   { id: 'toys', world: 'home', title: '神奇玩具盒', subtitle: '把想得到的惊喜说进盒子', emoji: '🎁', words: 'toy box robot ball cat hat bear cape', knowledge: ['玩具与配饰', 'in / on / beside', '颜色、数量与位置的组合'] },
   { id: 'garden', world: 'orchard', title: '会变的花园', subtitle: '花会长大，大便也可以', emoji: '🌱', words: 'flower tree water bee garden seed green grow poop', knowledge: ['植物与小动物', 'water 也能表示浇水', '生长、缩小与自由创作'] },
   { id: 'rhyme', world: 'bridge', title: '押韵魔法门', subtitle: '让声音相像的朋友相遇', emoji: '🚪', words: 'cat hat mat pig wig bug rug bee tree snail sail', knowledge: ['听辨相同韵尾', '短元音和长元音', '用押韵词编自己的场景'] },
+  ...WORD_EXPANSION_CHAPTERS,
 ];
 
 const SPECIFIC_BLANKS = {
@@ -1452,12 +1457,14 @@ export function getChapterLessons(chapterId, age) {
   return band && chapter ? chapter.lessons[band.id] : [];
 }
 
-/** A single invitation per exact age; stable chapter IDs preserve existing saves. */
-export function getRecommendedWordChapter(age) {
+/** One card per age; a session-only previous ID rotates themes without changing saved lesson IDs. */
+export function getRecommendedWordChapter(age, { previous = null } = {}) {
   const band=getAgeBand(age);
   if(!band)return null;
   const second=band.id==='early'?Number(age)===4:Number(age)===band.maxAge;
-  return WORD_CHAPTERS.find(c=>c.id===band.recommended[second?1:0]);
+  const route=[band.recommended[second?1:0],...band.recommended.slice(2),band.recommended[second?0:1]];
+  const index=route.indexOf(previous);
+  return WORD_CHAPTERS.find(c=>c.id===route[(index+1)%route.length]);
 }
 export function getWordInspiration(lesson) {
   const swaps={big:['little','blue'],happy:['sleepy','funny'],hands:['feet','eyes'],head:['robot','flower'],red:['blue','green'],blue:['red','yellow'],frog:['duck','robot'],robot:['cat','robot'],flower:['tree','poop'],cat:['pig','robot'],toy:['robot','cat'],jump:['dance','swim']};
@@ -1475,8 +1482,8 @@ export function createWordSuggestions(lesson, saved) {
   const original=tokenize(lesson.example);
   const groups=[
     ['big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow'],
-    ['head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
-    ['hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds'],
+    ['turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird'],
+    ['turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds'],
     ['grow','jump','dance','swim','fly','spin','run','walk','sleep','go'],
     ['slowly','quickly','fast'],
     ['water','plant'],
@@ -1485,7 +1492,10 @@ export function createWordSuggestions(lesson, saved) {
   const choices=new Map();
   tokens.forEach((word,i)=>{
     const base=(word.includes('_')?original[i]:word)?.toLowerCase();
-    const group=groups.find(g=>g.includes(base));
+    const prefix=original.slice(0,i).join('').toLowerCase().match(/[a-z]+/g)||[];
+    while(groups[0].includes(prefix.at(-1)))prefix.pop();
+    const countedFish=['jellyfish','starfish'].includes(base)&&['two','three','four','five','six','seven','eight','nine','ten'].includes(prefix.at(-1));
+    const group=countedFish?groups[2]:groups.find(g=>g.includes(base));
     if(group)choices.set(i,[...new Set([base,...group])]);
   });
   const confirmed=new Set();
