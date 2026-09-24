@@ -41,7 +41,7 @@ let lessonHint='',statusHint='',hintTimer=null,hintIndex=0;
 let textMounts=[], tipTimer=null, speechTimer=null, transitioning=false, voiceState='off';
 let openingPending=false,openingActive=false,openingEpoch=0,countdownUntil=0;
 const languageGate=createWordLanguageGate();
-function cancelOpening(){openingEpoch++;openingPending=false;openingActive=false;document.querySelector('.word-layout').classList.remove('lesson-focus','lesson-focus-reading');}
+function cancelOpening(){openingEpoch++;openingPending=false;openingActive=false;document.querySelector('.word-layout').classList.remove('lesson-focus','lesson-focus-reading','lesson-focus-pending');}
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const primeRewardSound=()=>void playUISFX('select',{volume:0}).catch(()=>{});
 document.addEventListener('pointerdown',primeRewardSound,{once:true,passive:true});document.addEventListener('keydown',primeRewardSound,{once:true});
@@ -268,7 +268,7 @@ function updateSentence(result,text=''){
 }
 function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
-  openingPending=true;document.querySelector('.word-layout').classList.add('lesson-focus');
+  openingPending=true;document.querySelector('.word-layout').classList.add('lesson-focus-pending');
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
   const firstPrompt=chapter.id==='monster'&&lessonIndex===0&&getAgeBand(age).id==='early'?'跟随朗读，画出一个大大的头。':lesson.mode==='build'?'跟随朗读，说完整的一句，让想法变出来。':lesson.mode==='cloze'?'补上空白，试着说出完整的一句。':'你可以说出别的名词或形容词。';
   $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===5?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
@@ -381,9 +381,22 @@ async function sayGuidance(text){
   const current=()=>view==='play'&&game===session&&sentenceMotion===mount&&voice===active&&openingEpoch===epoch;
   const ensureDemo=()=>{if(chapter.id==='monster'&&!Object.values(wordSceneEntities(entities(),'demo')).some(e=>e.asset==='prop:robot-body'))apply([{type:'entity.spawn',id:'demo-body-0',asset:'prop:robot-body',position:[0,0],scale:.9}]);};
   active.listen(false);
+  const layer=document.querySelector('.scene-focus'),root=document.querySelector('.word-layout');
+  const waitForFade=async()=>{void getComputedStyle(layer).opacity;await Promise.allSettled(layer.getAnimations().map(animation=>animation.finished));};
   if(focused){
-    try{stage.renderer.render(stage.scene,stage.camera);document.querySelector('.scene-focus').style.setProperty('--scene-focus-image',`url("${stage.renderer.domElement.toDataURL('image/jpeg',.8)}")`);}catch{document.querySelector('.scene-focus').style.removeProperty('--scene-focus-image');}
-    openingPending=false;openingActive=true;document.querySelector('.word-layout').classList.add('lesson-focus-reading');await new Promise(resolve=>setTimeout(resolve,reducedMotion.matches?80:180));if(!current())return;}
+    openingPending=false;openingActive=true;
+    // Replace the scene snapshot only while its layer is fully transparent.
+    await waitForFade();if(!current())return;
+    try{
+      stage.renderer.render(stage.scene,stage.camera);
+      const image=new Image();image.src=stage.renderer.domElement.toDataURL('image/jpeg',.8);
+      await image.decode();if(!current())return;
+      layer.style.setProperty('--scene-focus-image',`url("${image.src}")`);
+    }catch{if(!current())return;layer.style.removeProperty('--scene-focus-image');}
+    void getComputedStyle(layer).opacity;
+    root.classList.remove('lesson-focus-pending');root.classList.add('lesson-focus','lesson-focus-reading');
+    await waitForFade();if(!current())return;
+  }
   else if(example.toLowerCase().includes(text.toLowerCase()))ensureDemo();
   const narrate=createWordNarration(text,{getContext:()=>({entities:entities(),chapter:chapter.id,focusId}),apply});
   const offset=example.toLowerCase().indexOf(text.toLowerCase());let ended=false;
@@ -392,8 +405,8 @@ async function sayGuidance(text){
   }:undefined);
   if(!current())return;
   if(focused){
-    document.querySelector('.word-layout').classList.remove('lesson-focus','lesson-focus-reading');
-    await new Promise(resolve=>setTimeout(resolve,reducedMotion.matches?100:280));
+    root.classList.remove('lesson-focus','lesson-focus-reading');
+    await waitForFade();
     if(!current())return;
     openingActive=false;
     if(ended){ensureDemo();narrate({status:'ended'});}

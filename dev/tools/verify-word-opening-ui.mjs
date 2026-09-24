@@ -8,6 +8,7 @@ try{
  const send=(event,data={})=>socket.send(JSON.stringify({type:'event',event,data}));
  const finish=()=>{send(351,{text:pendingRead});send(359);};
  await p.routeWebSocket('**/api/word-realtime',ws=>{socket=ws;ws.onMessage(m=>{if(typeof m!=='string')return;const d=JSON.parse(m);if(d.type==='start')ws.send(JSON.stringify({type:'ready'}));if(d.type==='say'){pendingRead=d.text;says.push(d.text);send(350,{text:''});ws.send(Buffer.alloc(4800));if(d.text==='Please speak in English.'||d.text==='Great job!')finish();}});});
+ await p.addInitScript(()=>{window.__focusFrames=[];const tick=()=>{const e=document.querySelector('.scene-focus');if(e&&window.__WORD_GAME__?.status.view==='play'){window.__focusFrames.push({opacity:Number(getComputedStyle(e).opacity),image:!!e.style.getPropertyValue('--scene-focus-image'),entering:document.querySelector('.word-layout').classList.contains('lesson-focus')});}requestAnimationFrame(tick);};requestAnimationFrame(tick);});
  await p.goto(`${base}/dev/words`);await p.locator('#skip-intro').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age'&&!document.querySelector('.word-layout').hasAttribute('aria-busy'));await p.locator('#choose-age').click();await p.locator('#continue-chapter').click();
  await p.waitForFunction(()=>window.__WORD_GAME__?.status.voiceState==='speaking');
  assert.equal(await p.locator('.lesson-focus-reading').count(),1);
@@ -18,6 +19,7 @@ try{
  await p.waitForFunction(()=>!window.__WORD_GAME__.status.opening);assert.ok((await demos()).length>0);
  assert.ok(Number(await p.locator('.scene-focus').evaluate(e=>getComputedStyle(e).opacity))<.001);
  await p.screenshot({path:'/tmp/jma-opening-clear.png'});
+ const frames=await p.evaluate(()=>window.__focusFrames);for(const entering of [true,false]){const fade=frames.filter(f=>f.entering===entering&&f.opacity>.02&&f.opacity<.98);assert.ok(fade.length>=3,`Visible ${entering?'entry':'exit'} opacity transition`);assert.ok(fade.every(f=>f.image),'Snapshot decoded before fade');}console.log('PASS blur fades in and out through multiple intermediate frames, with its image ready before entry');
  await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);
  const readings=says.length;send(450);send(451,{results:[{text:'宝贝看这边，跟妈妈读'}]});send(459);await p.waitForTimeout(300);assert.equal(says.length,readings);assert.equal(await p.locator('#word-transcript').isVisible(),false);
  send(450);send(451,{results:[{text:'宝贝你说 A big head 就对了'}]});send(459);
