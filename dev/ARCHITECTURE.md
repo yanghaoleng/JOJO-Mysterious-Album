@@ -237,3 +237,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 小游戏首句使用可取消的聚焦阶段：场景模糊、完整领读、清晰过渡、示范命令，再恢复收音；换关/离开/暂停会取消旧阶段。中文过滤在两种语音入口共用 `createWordLanguageGate`，提取混合语句中的英文；按实际语音段累计 12 秒中文、间隔 45 秒提醒，超过 8 秒无声重置连续性。继续按钮在已通过且持续收音时静音 3 秒自动翻页，声音重置、处理/朗读/菜单/暂停冻结。验证 `verify-word-language.mjs`、`verify-word-opening-ui.mjs`、`verify-word-countdown.mjs`。
 
 Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key，实时识别保持连接；第二句问年龄始终显式请求播放。课堂继续使用实时女声。通用 `/api/tts` 的 realtime 请求在有新版 Key 时通过端到端 300 事件取回 PCM 并封装 WAV，保留旧接口调用方和录音资源；wow-child 保持专用童声路径。
+
+题干的 `createWordSuggestions` 维护可替换词位置和已确认标记：识别先匹配原词/当前词，再将同类替代词放入对应位置；已确认词浅绿且退出自动轮换，手动点词仅清除该位置的确认。快照随本关进度保留，喇叭读取当前完整句。提示与状态在收音上方同一行轮播。强模糊使用整个 WebGL 画面的静态帧覆盖层，固定 blur 后仅渐变透明度，避免浏览器 backdrop 合成漏出清晰的模型。
+
+小游戏 `focusWordEvent` 对已执行成功的新模型/动作选择最新对象，镜头适度拉近至 1.3 并锁定世界空间三维中心；入场期间先看落点，模型稳定后跟随移动。手动拖动释放锁定，新场景清理；其他模块的二维跟随契约保持兼容。实时课堂语速由原 -10 调至 -28（0.9 × 0.8），经典备用合成以 readingSpeed=.8 作用于 gentle 音色，童声不变。验证 `verify-word-caption.mjs`、`verify-word-focus-ui.mjs`。

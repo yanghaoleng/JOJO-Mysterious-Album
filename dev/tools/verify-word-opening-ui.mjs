@@ -11,12 +11,12 @@ try{
  await p.goto(`${base}/dev/words`);await p.locator('#skip-intro').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age'&&!document.querySelector('.word-layout').hasAttribute('aria-busy'));await p.locator('#choose-age').click();await p.locator('#continue-chapter').click();
  await p.waitForFunction(()=>window.__WORD_GAME__?.status.voiceState==='speaking');
  assert.equal(await p.locator('.lesson-focus-reading').count(),1);
- assert.equal(await p.locator('#word-stage').evaluate(e=>getComputedStyle(e,'::after').opacity),'1');
+ assert.equal(await p.locator('.scene-focus').evaluate(e=>getComputedStyle(e).opacity),'1');
  const demos=()=>p.evaluate(()=>Object.keys(window.__WORD_GAME__.status.entities).filter(id=>id.startsWith('demo-')));
  assert.deepEqual(await demos(),[],'No demo model while the first sentence is being read');
  await p.screenshot({path:'/tmp/jma-opening-blurred.png'});finish();
  await p.waitForFunction(()=>!window.__WORD_GAME__.status.opening);assert.ok((await demos()).length>0);
- assert.ok(Number(await p.locator('#word-stage').evaluate(e=>getComputedStyle(e,'::after').opacity))<.001);
+ assert.ok(Number(await p.locator('.scene-focus').evaluate(e=>getComputedStyle(e).opacity))<.001);
  await p.screenshot({path:'/tmp/jma-opening-clear.png'});
  await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);
  const readings=says.length;send(450);send(451,{results:[{text:'宝贝看这边，跟妈妈读'}]});send(459);await p.waitForTimeout(300);assert.equal(says.length,readings);assert.equal(await p.locator('#word-transcript').isVisible(),false);

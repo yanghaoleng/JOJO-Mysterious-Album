@@ -2774,6 +2774,8 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                 if not text:
                     self.respond_json(400, {"error": "text_required"})
                     return
+                if voice == "gentle" and payload.get("readingSpeed") == .8:
+                    preset = {**preset, "volc_speed": preset["volc_speed"] * .8, "fish_speed": preset["fish_speed"] * .8}
                 with_timestamps = payload.get("responseFormat") == "json"
                 if payload.get("realtime") is True and os.environ.get("VOLC_REALTIME_API_KEY") and voice != "wow-child":
                     audio, provider = realtime_reading_audio(text, voice, preset), "volc-realtime"

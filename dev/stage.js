@@ -122,15 +122,16 @@ export class DioramaStage {
         this.yaw += dt * this.orbit.speed;
         this.updateCamera();
       }
-      if (this.followTarget) {
+      if (this.followTarget && !(this.followTarget.worldSpace && this.cameraAnim)) {
         // Locked follow: glide the camera target towards the selected entity.
         const p = this.followTarget.provider();
         if (p) {
           const k = 1 - Math.exp(-dt * 3.2);
           const nx = this.target.x + (p[0] - this.target.x) * k;
-          const nz = this.target.z + (p[1] - this.target.z) * k;
-          if (Math.abs(nx - this.target.x) > 0.0004 || Math.abs(nz - this.target.z) > 0.0004) {
-            this.target.set(nx, this.target.y, nz);
+          const ny = this.followTarget.worldSpace ? this.target.y + (p[1] - this.target.y) * k : this.target.y;
+          const nz = this.target.z + (p[this.followTarget.worldSpace ? 2 : 1] - this.target.z) * k;
+          if (Math.abs(nx - this.target.x) > 0.0004 || Math.abs(nz - this.target.z) > 0.0004 || Math.abs(ny - this.target.y) > 0.0004) {
+            this.target.set(nx, ny, nz);
             this.updateCamera();
           }
         } else {
@@ -445,8 +446,8 @@ export class DioramaStage {
   setNearestSubjectProvider(fn) { this.nearestSubjectProvider = fn; }
 
   // Lock the camera onto an entity: every shot keeps tracking it as it moves.
-  setFollowTarget(provider, name = "") {
-    this.followTarget = { provider, name };
+  setFollowTarget(provider, name = "", { worldSpace = false } = {}) {
+    this.followTarget = { provider, name, worldSpace };
     this.onFollowChange?.(name);
     this.onCameraHistoryChange?.();
   }

@@ -31,8 +31,8 @@ export async function requestJSON(path, body, timeout = 12000, signal) {
 }
 
 export class StoryVoice {
-  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '', language = 'zh-CN', preferredVoice = '', continuousMeter = false }) {
-    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile, language, preferredVoice, continuousMeter });
+  constructor({ onState, onAnswer, onLevel, onError, onCapture = () => {}, speechProfile = '', language = 'zh-CN', preferredVoice = '', continuousMeter = false, readingSpeed = 1 }) {
+    Object.assign(this, { onState, onAnswer, onLevel, onError, onCapture, speechProfile, language, preferredVoice, continuousMeter, readingSpeed });
     this.enabled = false;
     this.wanted = false;
     this.sequence = 0;
@@ -282,7 +282,7 @@ export class StoryVoice {
     void (async () => {
       try {
         session.requestTimeout = setTimeout(() => session.controller.abort(), speechProfile ? 15000 : 9000);
-        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true, ...(onProgress ? { responseFormat: 'json' } : {}), ...(speechProfile ? { speechProfile } : {}) }), signal: session.controller.signal });
+        const response = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Conversation-Speech': 'seed-realtime' }, body: JSON.stringify({ text, voice, npcId, realtime: true, ...(this.readingSpeed===.8?{readingSpeed:.8}:{}), ...(onProgress ? { responseFormat: 'json' } : {}), ...(speechProfile ? { speechProfile } : {}) }), signal: session.controller.signal });
         if (!response.ok) {
           if (speechProfile) {
             const error = await response.json().catch(() => null);
@@ -337,7 +337,7 @@ export class StoryVoice {
             if(!female)throw new Error('female_voice_unavailable');
             speech.voice=female;
           }
-          speech.rate = getNpc(npcId)?.speechRate || .92;
+          speech.rate = (getNpc(npcId)?.speechRate || .92) * this.readingSpeed;
           speech.onend = () => this.finish(session, true);
           speech.onerror = () => this.finish(session);
           speech.onboundary = event => {

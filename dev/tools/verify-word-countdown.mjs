@@ -11,9 +11,9 @@ try{
  await p.goto(`${base}/dev/words`);await p.locator('#skip-intro').click();await p.locator('#choose-age').click();await p.locator('#continue-chapter').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='play'&&!window.__WORD_GAME__.status.opening);
  await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);
  send(450);send(451,{results:[{text:'A big head.'}]});send(459);
- await p.locator('#continue-countdown').waitFor({state:'visible'});await p.waitForFunction(()=>document.getElementById('continue-countdown').textContent==='2');
+ await p.locator('#continue-countdown').waitFor({state:'visible'});await p.waitForFunction(()=>document.getElementById('continue-countdown').textContent.trim()==='2');
  send(450);send(451,{results:[{text:'妈妈说再试一次'}]});await p.waitForTimeout(3300);assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.lessonIndex),0,'Active speech suspends countdown');send(459);
- await p.waitForFunction(()=>!document.getElementById('continue-countdown').hidden&&document.getElementById('continue-countdown').textContent==='3');
+ await p.waitForFunction(()=>!document.getElementById('continue-countdown').hidden&&document.getElementById('continue-countdown').textContent.trim()==='3');
  await p.keyboard.press('Space');await p.waitForTimeout(3300);assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.lessonIndex),0,'Paused capture never advances');
  await p.keyboard.press('Enter');await p.waitForFunction(()=>window.__WORD_GAME__.status.lessonIndex===1&&!window.__WORD_GAME__.status.opening);
  await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);

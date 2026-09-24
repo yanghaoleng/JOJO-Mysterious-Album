@@ -1469,7 +1469,7 @@ export function getWordInspiration(lesson) {
 }
 
 // Stable token positions let every suggestion change exactly one word.
-export function createWordSuggestions(lesson) {
+export function createWordSuggestions(lesson, saved) {
   const tokenize=text=>text.match(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)||[];
   const tokens=tokenize(lesson.mode==='cloze'?lesson.displayText:lesson.example);
   const original=tokenize(lesson.example);
@@ -1488,14 +1488,39 @@ export function createWordSuggestions(lesson) {
     const group=groups.find(g=>g.includes(base));
     if(group)choices.set(i,[...new Set([base,...group])]);
   });
+  const confirmed=new Set();
+  if(saved?.tokens?.length===tokens.length&&saved.tokens.every((t,i)=>typeof t==='string'&&t.length<80&&(/^[A-Za-z]+(?:[ '\-][A-Za-z]+)*$/.test(t)||t===tokens[i]))) {
+    tokens.splice(0,tokens.length,...saved.tokens);
+    for(const i of saved.confirmed||[])if(Number.isInteger(i)&&i>=0&&i<tokens.length)confirmed.add(i);
+  }
+  const nounSlots=new Set([...choices.keys()].filter(i=>groups[1].includes(original[i]?.toLowerCase())||groups[2].includes(original[i]?.toLowerCase())));
+  const format=(word,i)=>/^[A-Z]/.test(original[i])?word[0].toUpperCase()+word.slice(1):word;
   let cursor=0;
   return {
     get text(){return tokens.join('');},
+    get readingText(){return tokens.map((t,i)=>t.includes('_')?original[i]:t).join('');},
+    get parts(){return tokens.map((text,index)=>({text,index,matched:confirmed.has(index)}));},
+    get snapshot(){return {tokens:[...tokens],confirmed:[...confirmed]};},
+    accept(text,{nouns=[]}={}){
+      const input=tokenize(text.toLowerCase()).filter(w=>/[a-z]/.test(w));
+      const used=new Set(),pending=[];
+      // Exact words are reserved before assigning alternatives to compatible slots.
+      for(const word of input){
+        const i=tokens.findIndex((t,i)=>!used.has(i)&&(t.toLowerCase()===word||original[i]?.toLowerCase()===word));
+        if(i>=0){tokens[i]=format(word,i);confirmed.add(i);used.add(i);}else pending.push(word);
+      }
+      for(const word of pending){
+        const i=[...choices.keys()].find(i=>!used.has(i)&&(choices.get(i).includes(word)||(nouns.includes(word)&&nounSlots.has(i))));
+        if(i!==undefined){tokens[i]=format(word,i);confirmed.add(i);used.add(i);}
+      }
+      return tokens.join('');
+    },
     canChange:index=>choices.has(index),
     change(index){
-      const indices=[...choices.keys()];if(!indices.length)return tokens.join('');
+      const indices=[...choices.keys()].filter(i=>!confirmed.has(i));if(index===undefined&&!indices.length)return tokens.join('');
       if(index===undefined)index=indices[cursor++%indices.length];
       const pool=choices.get(index);if(!pool)return tokens.join('');
+      confirmed.delete(index);
       const before=tokens[index],next=pool[(pool.indexOf(before.toLowerCase())+1)%pool.length];
       tokens[index]=/^[A-Z]/.test(before)?next[0].toUpperCase()+next.slice(1):next;
       return tokens.join('');
