@@ -233,3 +233,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 `word-ambience.js` 通过现有 gateway 派发晴雨雪和有限角色表演，每轮 7 秒后释放；显式指令抢占自主表演，保护近期指令、示范模型、附着物和正在运动的角色。手动镜头操作暂停自动运镜 15 秒，减少动态偏好下关闭自动运镜和自主走动。`group.patrol` 可选 speed/distance 经契约限幅，默认行为不变。
 
 小游戏通过 `continuousMeter` 保持已获许可的麦克风音量监测，其他章节维持原采集策略；领读期间只监测音量，避免把播放内容当作孩子答案。麦克风使用六点波形，识别等待独立显示在字幕区域，暂停和离页释放采集。`WORD_PRAISES` 声明六句英文鼓励，匹配后随机选择并避免连续重复，使用领读女声；完成或取消后按当前关卡与用户收音意愿恢复。
+
+小游戏首句使用可取消的聚焦阶段：场景模糊、完整领读、清晰过渡、示范命令，再恢复收音；换关/离开/暂停会取消旧阶段。中文过滤在两种语音入口共用 `createWordLanguageGate`，提取混合语句中的英文；按实际语音段累计 12 秒中文、间隔 45 秒提醒，超过 8 秒无声重置连续性。继续按钮在已通过且持续收音时静音 3 秒自动翻页，声音重置、处理/朗读/菜单/暂停冻结。验证 `verify-word-language.mjs`、`verify-word-opening-ui.mjs`、`verify-word-countdown.mjs`。
+
+Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key，实时识别保持连接；第二句问年龄始终显式请求播放。课堂继续使用实时女声。通用 `/api/tts` 的 realtime 请求在有新版 Key 时通过端到端 300 事件取回 PCM 并封装 WAV，保留旧接口调用方和录音资源；wow-child 保持专用童声路径。

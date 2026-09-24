@@ -260,7 +260,7 @@ export class StoryVoice {
     if (transcript && sequence === this.sequence) {
       // Story handling is separate from transcription: a later story error
       // must never relabel a successfully received transcript as an ASR failure.
-      try { await this.onAnswer(transcript); }
+      try { await this.onAnswer(transcript,{durationMs:voiced*1000}); }
       catch { this.onError('文字已经识别，故事回应暂时没跟上。可以再试一次。'); }
       finally { if (sequence === this.sequence) this.refreshListening(); }
     }

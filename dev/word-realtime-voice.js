@@ -58,12 +58,12 @@ export class RealtimeWordVoice extends StoryVoice {
     this.socket.send(pcm.buffer);
   }
   handleRealtime(event,data){
-    if(event===450){this.stopPlayback();this.finishRead();this.partial='';this.ignoreAudio=false;this.answerDelivered=false;this.onState('transcribing');}
+    if(event===450){this.asrStartedAt=performance.now();this.stopPlayback();this.finishRead();this.partial='';this.ignoreAudio=false;this.answerDelivered=false;this.onState('transcribing');}
     if(event===451){
       const results=data.results||[];this.partial=results.map(r=>r.text||'').join('');
       this.captureFeedback('partial','',this.partial);
     }
-    if(event===459&&!this.answerDelivered){this.answerDelivered=true;const text=this.partial?.trim();if(text)Promise.resolve(this.onAnswer(text)).catch(()=>this.onError('Please try again.'));}
+    if(event===459&&!this.answerDelivered){this.answerDelivered=true;const text=this.partial?.trim();Promise.resolve(text&&this.onAnswer(text,{durationMs:Math.max(0,performance.now()-(this.asrStartedAt??performance.now()))})).catch(()=>this.onError('Please try again.')).finally(()=>{if(this.recording&&!this.rtRead&&!this.utterance)this.onState('listening');});}
     if(event===350){
       // Only audio belonging to an English subtitle is accepted.
       // Explicit readings can start with an empty subtitle; real text arrives in event 351.
@@ -72,7 +72,7 @@ export class RealtimeWordVoice extends StoryVoice {
       if(!this.ignoreAudio){this.onState('speaking');this.captureFeedback('reply','',data.text||'');}
     }
     if(event===351&&!this.ignoreAudio&&data.text){this.captureFeedback('reply','',data.text);}
-    if(event===359){clearTimeout(this.endTimer);this.endTimer=setTimeout(()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},Math.max(0,(this.playAt-(this.context?.currentTime||0))*1000)+30);}
+    if(event===359&&this.rtRead&&!this.ignoreAudio){clearTimeout(this.endTimer);this.endTimer=setTimeout(()=>{this.finishRead('ended');this.onState(this.recording?'listening':'off');},Math.max(0,(this.playAt-(this.context?.currentTime||0))*1000)+30);}
   }
   playPCM(data){
     if(this.ignoreAudio||!this.context||data.byteLength%2)return;
@@ -85,7 +85,7 @@ export class RealtimeWordVoice extends StoryVoice {
   stopPlayback(){clearTimeout(this.endTimer);for(const source of this.sources){try{source.stop();}catch{}source.disconnect();}this.sources.clear();this.playAt=0;this.ignoreAudio=true;}
   finishRead(status='cancelled'){if(!this.rtRead)return;clearTimeout(this.rtRead.timer);this.rtRead.progress?.({status,start:-1,end:-1});this.rtRead.resolve();this.rtRead=null;}
   async say(text,voice,onStart=()=>{},npcId='',onProgress){
-    if(this.realtimeFailed)return super.say(text,voice,onStart,npcId,onProgress);
+    if(this.getMode?.()==='onboarding'||this.realtimeFailed)return super.say(text,voice,onStart,npcId,onProgress);
     const generation=this.rtGeneration;
     try{await this.unlock();await this.connectRealtime();}catch{if(generation===this.rtGeneration)return super.say(text,voice,onStart,npcId,onProgress);return;}
     if(generation!==this.rtGeneration)return;

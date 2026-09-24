@@ -15,10 +15,10 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use
 const out='/tmp/jma-word-welcome';await mkdir(out,{recursive:true});
 try{
  const context=await browser.newContext({permissions:['microphone'],reducedMotion:'reduce',viewport:{width:390,height:844}}),p=await context.newPage();
- const errors=[];p.on('pageerror',e=>errors.push(e.message));let connection,mode,chunks=0;const realtimeReadings=[];
+ const errors=[];p.on('pageerror',e=>errors.push(e.message));let connection,mode,chunks=0;const realtimeReadings=[],childReadings=[];
  const send=(event,data={})=>connection.send(JSON.stringify({type:'event',event,data}));
  await p.routeWebSocket('**/api/word-realtime',ws=>{connection=ws;ws.onMessage(message=>{if(typeof message!=='string'){chunks++;return;}const d=JSON.parse(message);if(d.type==='start'){mode=d.mode;ws.send(JSON.stringify({type:'ready'}));}if(d.type==='say'){realtimeReadings.push(d.text);send(350,{text:d.text});ws.send(Buffer.alloc(4800));send(359);}});});
- await p.route('**/api/tts',r=>r.fulfill({contentType:'audio/wav',body:wav(.25)}));
+ await p.route('**/api/tts',r=>{childReadings.push(r.request().postDataJSON());return r.fulfill({contentType:'audio/wav',body:wav(.25)});});
  await p.goto(`${origin}/dev/words`);await p.waitForFunction(()=>window.__WORD_GAME__?.status.view==='intro');
  assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.entities['welcome-domi'].asset),'npc:domi');
  await p.screenshot({path:`${out}/welcome-mobile.png`});
@@ -26,9 +26,9 @@ try{
  await p.waitForFunction(()=>!window.__WORD_GAME__.status.music.paused);
  await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);assert.equal(mode,'onboarding');await p.waitForTimeout(500);assert.ok(chunks>0);assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.music.paused),true);
  send(450);send(451,{results:[{text:'My name is Lily.'}]});send(459);send(350,{text:'Hi Lily! How old are you?'});send(359);
- await p.waitForFunction(()=>window.__WORD_GAME__.status.introStep==='age');
+ await p.waitForFunction(()=>window.__WORD_GAME__.status.introStep==='age'&&window.__WORD_GAME__.status.recording);assert.ok(childReadings.some(r=>r.text.includes('How old are you')&&r.speechProfile==='wow-child'));
  send(450);send(451,{results:[{text:'I am seven.'}]});send(459);
- await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='play');assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.age),7);assert.ok(realtimeReadings.some(t=>t.includes("You're 7!")&&t.includes('somewhere fun')));assert.equal(await p.locator('#start-world').count(),0);
+ await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='play');assert.equal(await p.evaluate(()=>window.__WORD_GAME__.status.age),7);assert.ok(childReadings.some(r=>r.text.includes("You're 7!")&&r.text.includes('somewhere fun')&&r.speechProfile==='wow-child'));assert.equal(await p.locator('#start-world').count(),0);
  await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);await p.keyboard.press('Space');
  assert.equal(await p.evaluate(()=>JSON.stringify(localStorage).includes('Lily')),false);await p.screenshot({path:`${out}/ready-mobile.png`});
  await p.waitForFunction(()=>document.querySelectorAll('#lesson-sentence [role=button]').length>0);

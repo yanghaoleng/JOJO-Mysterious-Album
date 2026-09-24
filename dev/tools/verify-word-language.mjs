@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {englishWordContent,createWordLanguageGate,evaluateWordUtterance} from '../word-progress.js';
+import {getChapterLessons} from '../content/word-games.js';
+let clock=0;const gate=createWordLanguageGate({now:()=>clock});
+const hear=(raw,ms,gap=0)=>{clock+=ms+gap;return gate.accept(raw,{durationMs:ms});};
+assert.deepEqual(hear('宝贝跟我读',4000),{text:'',remind:false});
+assert.equal(hear('你看这里',4000).remind,false);
+assert.equal(hear('我们再试一次',4100).remind,true);
+assert.equal(hear('慢慢说就好了',15000).remind,false,'45 second cooldown');
+assert.equal(hear('再听一遍',1000,20000).remind,false,'silence must not count');
+assert.deepEqual(hear('妈妈说你来读 A big head 然后再试',1500),{text:'A big head',remind:false});
+assert.equal(evaluateWordUtterance(getChapterLessons('monster',5)[0],englishWordContent('你说 A big head 就对了')).targetComplete,true);
+assert.equal(hear('可以慢一点说',5000).remind,false,'English resets the Chinese streak');
+clock+=50000;gate.reset();assert.equal(hear('中文陪读',11999).remind,false);assert.equal(hear('再来',1000).remind,true);
+gate.reset();assert.equal(hear('好',1000).remind,false);
+assert.equal(englishWordContent('别着急，慢慢来。'),'');
+console.log('PASS brief Chinese ignored, measured 12-second threshold, silence excluded, 45-second cooldown, English extraction and correct mixed sentence.');

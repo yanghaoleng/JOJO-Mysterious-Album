@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
+const base=process.env.QA_ORIGIN||'http://127.0.0.1:8918';
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+try{
+ const context=await browser.newContext({permissions:['microphone'],viewport:{width:390,height:844}}),p=await context.newPage();p.setDefaultTimeout(20000);
+ let socket,pendingRead='';const says=[],errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const send=(event,data={})=>socket.send(JSON.stringify({type:'event',event,data}));
+ const finish=()=>{send(351,{text:pendingRead});send(359);};
+ await p.routeWebSocket('**/api/word-realtime',ws=>{socket=ws;ws.onMessage(m=>{if(typeof m!=='string')return;const d=JSON.parse(m);if(d.type==='start')ws.send(JSON.stringify({type:'ready'}));if(d.type==='say'){pendingRead=d.text;says.push(d.text);send(350,{text:''});ws.send(Buffer.alloc(4800));if(d.text==='Please speak in English.'||d.text==='Great job!')finish();}});});
+ await p.goto(`${base}/dev/words`);await p.locator('#skip-intro').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age'&&!document.querySelector('.word-layout').hasAttribute('aria-busy'));await p.locator('#choose-age').click();await p.locator('#continue-chapter').click();
+ await p.waitForFunction(()=>window.__WORD_GAME__?.status.voiceState==='speaking');
+ assert.equal(await p.locator('.lesson-focus-reading').count(),1);
+ assert.equal(await p.locator('#word-stage').evaluate(e=>getComputedStyle(e,'::after').opacity),'1');
+ const demos=()=>p.evaluate(()=>Object.keys(window.__WORD_GAME__.status.entities).filter(id=>id.startsWith('demo-')));
+ assert.deepEqual(await demos(),[],'No demo model while the first sentence is being read');
+ await p.screenshot({path:'/tmp/jma-opening-blurred.png'});finish();
+ await p.waitForFunction(()=>!window.__WORD_GAME__.status.opening);assert.ok((await demos()).length>0);
+ assert.ok(Number(await p.locator('#word-stage').evaluate(e=>getComputedStyle(e,'::after').opacity))<.001);
+ await p.screenshot({path:'/tmp/jma-opening-clear.png'});
+ await p.locator('#word-mic').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);
+ const readings=says.length;send(450);send(451,{results:[{text:'宝贝看这边，跟妈妈读'}]});send(459);await p.waitForTimeout(300);assert.equal(says.length,readings);assert.equal(await p.locator('#word-transcript').isVisible(),false);
+ send(450);send(451,{results:[{text:'宝贝你说 A big head 就对了'}]});send(459);
+ await p.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance);assert.doesNotMatch(await p.locator('#word-transcript').innerText(),/[\u3400-\u9fff]/);await p.waitForFunction(()=>window.__WORD_GAME__.status.voiceState==='speaking');finish();await p.waitForFunction(()=>!window.__WORD_GAME__.status.busy&&window.__WORD_GAME__.status.recording);
+ const prior=says.length;send(450);send(451,{results:[{text:'这是妈妈在陪读，请看这里'}]});await p.waitForTimeout(12500);assert.equal(says.length,prior);send(459);await p.waitForTimeout(300);assert.equal(says.at(-1),'Please speak in English.');
+ await p.waitForFunction(()=>window.__WORD_GAME__.status.recording);const reminders=says.filter(s=>s==='Please speak in English.').length;send(450);send(451,{results:[{text:'再试一遍'}]});send(459);await p.waitForTimeout(300);assert.equal(says.filter(s=>s==='Please speak in English.').length,reminders);
+ await p.locator('#next-lesson').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.lessonIndex===1&&window.__WORD_GAME__.status.voiceState==='speaking');assert.equal(await p.locator('.lesson-focus').count(),1);finish();await p.waitForFunction(()=>!window.__WORD_GAME__.status.opening);
+ await p.locator('#listen-example').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.voiceState==='speaking');assert.equal(await p.locator('.lesson-focus').count(),0,'Manual replay is ordinary reading');finish();
+ await p.locator('#change-age').click();await p.waitForFunction(()=>window.__WORD_GAME__.status.view==='age');assert.equal(await p.locator('.lesson-focus').count(),0);assert.deepEqual(errors,[]);
+ console.log('PASS mobile opening blur/read/reveal/demonstration order, each lesson, normal replay, mixed English succeeds, short Chinese silent, 12-second reminder and cooldown, leave cleanup.');
+}finally{await browser.close();}

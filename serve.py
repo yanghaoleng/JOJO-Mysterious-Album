@@ -38,7 +38,7 @@ from scene_appearance import appearance_edit, decorate_spawns
 from scene_interactions import compound_scene_result, resolve_objects
 from scene_groups import select_scene_group, spawn_scene_group
 from volc_asr import transcribe_pcm
-from volc_realtime import serve_realtime
+from volc_realtime import serve_realtime, realtime_reading_audio
 from wow_director import validate_payload as validate_wow_payload, wow_turn_allowed, wow_turn_result
 from identity_mysql import (
     ADMIN_SESSION_SECONDS,
@@ -2215,11 +2215,12 @@ def volc_seed_tts(text, voice, preset=None, with_timestamps=False):
     """
     app_id = os.environ.get("VOLC_SPEECH_APP_ID", "")
     token = os.environ.get("VOLC_SPEECH_ACCESS_TOKEN", "")
+    api_key = os.environ.get("VOLC_REALTIME_API_KEY", "") if voice == "wow-child" else ""
     preset = preset if preset is not None else TTS_VOICES.get(voice, TTS_VOICES["star"])
     resource_id = preset.get("resource_id") or os.environ.get("VOLC_TTS_RESOURCE_ID", "volc.service_type.10029")
     voice_env = "VOLC_TTS_SPEAKER_" + re.sub(r"[^A-Z0-9]", "_", voice.upper())
     speaker = preset["speaker"] if voice == "wow-child" else os.environ.get(voice_env, "") or preset["speaker"] or os.environ.get("VOLC_TTS_SPEAKER_ID", "")
-    if not app_id or not token or not resource_id or not speaker:
+    if (not api_key and (not app_id or not token)) or not resource_id or not speaker:
         raise RuntimeError("tts_not_configured")
     request_id = str(uuid.uuid4())
     speech_rate = max(-50, min(100, round((preset["volc_speed"] - 1) * 100)))
@@ -2252,8 +2253,7 @@ def volc_seed_tts(text, voice, preset=None, with_timestamps=False):
         headers={
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
-            "X-Api-App-Id": app_id,
-            "X-Api-Access-Key": token,
+            **({"X-Api-Key": api_key} if api_key else {"X-Api-App-Id": app_id, "X-Api-Access-Key": token}),
             "X-Api-Resource-Id": resource_id,
             "X-Api-Request-Id": request_id,
         },
@@ -2434,11 +2434,11 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.close_connection = True
 
     def respond_audio(self, data, provider, npc_id="", voice="star", speech_rate=1, text=None):
-        content_type = "audio/mpeg"
+        content_type = "audio/wav" if data[:4] == b"RIFF" and data[8:12] == b"WAVE" else "audio/mpeg"
         if text is not None:
             alignment = getattr(data, "alignment", [])
             data = json.dumps({
-                "audio": base64.b64encode(data).decode("ascii"), "mimeType": "audio/mpeg", "text": text,
+                "audio": base64.b64encode(data).decode("ascii"), "mimeType": content_type, "text": text,
                 "alignment": alignment, "alignmentUnit": "seconds",
                 "alignmentSource": "provider" if alignment else "none", "granularity": "character-or-word",
                 "provider": provider, "voice": voice, "speechRate": speech_rate,
@@ -2775,7 +2775,10 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
                     self.respond_json(400, {"error": "text_required"})
                     return
                 with_timestamps = payload.get("responseFormat") == "json"
-                audio, provider = tts_audio(text, voice, preset, **({"with_timestamps": True} if with_timestamps else {}))
+                if payload.get("realtime") is True and os.environ.get("VOLC_REALTIME_API_KEY") and voice != "wow-child":
+                    audio, provider = realtime_reading_audio(text, voice, preset), "volc-realtime"
+                else:
+                    audio, provider = tts_audio(text, voice, preset, **({"with_timestamps": True} if with_timestamps else {}))
                 rate = preset["fish_speed"] if provider == "fish" else preset["volc_speed"]
                 self.respond_audio(audio, provider, profile["id"] if profile else "", voice, rate, text=text if with_timestamps else None)
                 return

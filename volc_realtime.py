@@ -5,6 +5,8 @@ The legacy ASR + TTS path remains in volc_asr.py and dev/voice.js.
 import base64
 import gzip
 import hashlib
+import io
+import wave
 import json
 import os
 import re
@@ -70,7 +72,7 @@ def session_config(lesson='', mode='game'):
             'audio_config': {'channel': 1, 'format': 'pcm_s16le', 'sample_rate': 24000, 'speech_rate': -10}},
         'dialog': {'bot_name': 'English Playmate',
             'system_role': 'You are a friendly English tutor in a 3D word game for children ages 3 to 10. '
-                'Speak ONLY English, even if the child speaks Chinese. For non-English input say only: Let us try it in English. '
+                'Speak ONLY English, even if the child speaks Chinese. Ignore Chinese background speech or a parent coaching the child. Never generate a language correction; the client controls infrequent reminders. '
                 'Use one short encouraging sentence, at most 12 words. Accept playful nouns and adjectives. '
                 'JOJO, BOBO and DOMI are character names. Never claim a scene action succeeded or advance a lesson; the game handles those. '
                 + ('You are DOMI welcoming a new player. Ask for a nickname, then their age (three to ten), one question at a time. After both, acknowledge their age and say you will take them somewhere fun. The game transitions automatically; never ask them to tap or confirm. Never request any other personal information or contact details. ' if mode == 'onboarding' else 'Never request personal information. Never prompt the child to repeat an isolated word. Any reading example must be the complete current sentence. ') + 'Do not discuss adult topics. Current example: ' + lesson[:180],
@@ -185,5 +187,52 @@ def serve_realtime(handler):
                 if sid: upstream.send_binary(packet(102, {}, sid))
                 upstream.send_binary(packet(2, {}))
             except (OSError, RuntimeError): pass
+            upstream.close()
+        SLOTS.release()
+
+
+def realtime_reading_audio(text, voice='star', preset=None):
+    """Compatibility audio response for existing live character-call clients.
+
+    The same token-billed realtime service reads the supplied reply; static
+    recordings and the explicitly selected classic synthesis path are untouched.
+    """
+    if not SLOTS.acquire(timeout=1):
+        raise RuntimeError('tts_busy')
+    upstream=None;sid=''
+    try:
+        upstream=connect()
+        upstream.send_binary(packet(1, {}))
+        if unpack(upstream.receive_binary())[0]!=50:raise RuntimeError('tts_realtime_connection')
+        sid=str(uuid.uuid4())
+        config=session_config()
+        male=voice in {'star','clever','bright','neighbor','youth','smart','moss'}
+        config['tts']['speaker']='zh_male_xiaotian_jupiter_bigtts' if male else 'zh_female_vv_jupiter_bigtts'
+        config['tts']['audio_config']['speech_rate']=max(-50,min(100,round(((preset or {}).get('volc_speed',1)-1)*100)))
+        config['dialog']['system_role']='Read only the supplied text faithfully, in its original language. Do not add a greeting, commentary, translation or extra answer.'
+        config['dialog']['speaking_style']="Use a friendly, clear, expressive voice at an unhurried pace for a children's story."
+        upstream.send_binary(packet(100,config,sid))
+        if unpack(upstream.receive_binary())[0]!=150:raise RuntimeError('tts_realtime_session')
+        upstream.send_binary(packet(300,{'content':text},sid))
+        chunks=[];size=0;deadline=time.monotonic()+24
+        while time.monotonic()<deadline:
+            event,body=unpack(upstream.receive_binary())
+            if event==352 and isinstance(body,bytes):
+                size+=len(body)
+                if size>4_000_000 or len(body)%2:raise RuntimeError('tts_realtime_audio_limit')
+                chunks.append(body)
+            if event==359:break
+        else:raise RuntimeError('tts_realtime_timeout')
+        if not chunks:raise RuntimeError('tts_realtime_empty')
+        output=io.BytesIO()
+        with wave.open(output,'wb') as audio:
+            audio.setnchannels(1);audio.setsampwidth(2);audio.setframerate(24000);audio.writeframes(b''.join(chunks))
+        return output.getvalue()
+    finally:
+        if upstream:
+            try:
+                if sid:upstream.send_binary(packet(102,{},sid))
+                upstream.send_binary(packet(2,{}))
+            except (OSError,RuntimeError):pass
             upstream.close()
         SLOTS.release()

@@ -79,3 +79,30 @@ export function acceptsEnglishUtterance(text) {
   const value=String(text||'').normalize('NFKC').trim();
   return /[a-z]/i.test(value) && !/[^\p{Script=Latin}\p{Number}\p{Punctuation}\p{Separator}\s]/u.test(value);
 }
+
+
+/** Ignore surrounding Chinese while retaining the child's English words. */
+export function englishWordContent(raw) {
+  const value=String(raw||'').normalize('NFKC').trim();
+  if(acceptsEnglishUtterance(value))return value;
+  return (value.match(/[a-z]+(?:['’-][a-z]+)*|\b\d+\b/gi)||[]).join(' ');
+}
+
+/** Measured speech time, not silent wall time; reminders have a separate cooldown. */
+export function createWordLanguageGate({now=()=>performance.now()}={}) {
+  let chineseMs=0,lastChineseEnd=-Infinity,lastReminder=-Infinity;
+  return {
+    reset(){chineseMs=0;lastChineseEnd=-Infinity;},
+    accept(raw,{durationMs=0}={}) {
+      const text=englishWordContent(raw),time=now();
+      if(text){chineseMs=0;lastChineseEnd=-Infinity;return {text,remind:false};}
+      if(!/[\u3400-\u9fff]/.test(String(raw)))return {text:'',remind:false};
+      const duration=Math.max(0,Math.min(30000,Number(durationMs)||0));
+      if(time-duration-lastChineseEnd>8000)chineseMs=0;
+      chineseMs+=duration;lastChineseEnd=time;
+      const remind=chineseMs>=12000&&time-lastReminder>=45000;
+      if(remind){lastReminder=time;chineseMs=0;}
+      return {text:'',remind};
+    }
+  };
+}

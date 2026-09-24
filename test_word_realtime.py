@@ -38,6 +38,21 @@ class RealtimeProtocolTest(unittest.TestCase):
         self.assertNotIn('X-Api-App-ID',headers)
         self.assertEqual(session_config()['dialog']['extra']['input_mod'],'keep_alive')
 
+    def test_live_reading_returns_real_wav_container(self):
+        import io, wave
+        from unittest.mock import MagicMock
+        from volc_realtime import realtime_reading_audio
+        ws=MagicMock()
+        with patch('volc_realtime.connect',return_value=ws), patch('volc_realtime.unpack',side_effect=[(50,{}),(150,{}),(350,{'text':''}),(352,b'\x01\x00'*2400),(359,{})]):
+            data=realtime_reading_audio('你好，我是叫叫。','star')
+        with wave.open(io.BytesIO(data)) as audio:
+            self.assertEqual(audio.getframerate(),24000)
+            self.assertEqual(audio.getnframes(),2400)
+        calls=ws.send_binary.call_args_list
+        self.assertIn('zh_male_xiaotian_jupiter_bigtts',calls[1].args[0].decode('utf8',errors='ignore'))
+        self.assertIn('你好，我是叫叫。',calls[2].args[0].decode('utf8',errors='ignore'))
+        ws.close.assert_called_once()
+
     def test_bad_frames(self):
         for data in [b'', b'\x11\xf0\x10\x00'+struct.pack('>I',45000003)]:
             with self.assertRaises((ValueError,RuntimeError)):unpack(data)
