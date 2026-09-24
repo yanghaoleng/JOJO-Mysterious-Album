@@ -625,7 +625,7 @@
       "id": "logic:presenter",
       "kind": "logic",
       "name": "3D 世界呈现器",
-      "description": "根据世界状态同步模型、碰撞与动画；释放被移除的实例，不推进剧情。",
+      "description": "根据世界状态同步模型、碰撞与动画；月亮、星星、烟花、月光默认在空中柔和展开，移动后保留悬浮高度；释放被移除的实例，不推进剧情。",
       "source": "dev/presentation/world-presenter.js",
       "capabilities": [
         "模型增删",
@@ -1666,7 +1666,7 @@
       "id": "prop:festival-moon",
       "kind": "prop",
       "name": "中秋圆月",
-      "description": "暖金色圆月轻轻漂浮。",
+      "description": "带陨石坑的黄色圆月，没有星环，默认悬浮在天空。",
       "source": "dev/modules/props/festival-moon.js",
       "capabilities": [
         "activate",

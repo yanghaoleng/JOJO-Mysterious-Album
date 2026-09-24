@@ -2,11 +2,19 @@ import { RLINE_MODEL_WORDS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
 import { MID_AUTUMN_PROPS } from './midautumn-words.js';
 import { PROP_COLLECTION } from './prop-collection.js';
+// Shared placement rules keep scene entry, relocation and camera focus in agreement.
+export const SKY_PROP_HEIGHTS = Object.freeze({
+  'prop:festival-moon': 2.7, 'prop:festival-star': 2.5,
+  'prop:festival-firework': 3, 'prop:festival-moonlight': 2.5,
+});
+export function defaultFlightHeight(asset = '') {
+  return SKY_PROP_HEIGHTS[asset] ?? (/ufo/.test(asset) ? 2.6 : /spaceship|airplane|rocket/.test(asset) ? 1.7 : 0);
+}
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
   ...ANIMAL_WORDS.map(animal => [animal.model, animal.zh, [animal.word, ...animal.aliases, animal.zh].join('|'), `${animal.zh}在场景中轻轻活动。`, 'jiaojiao']),
   ...MID_AUTUMN_PROPS.map(prop => [prop.model, prop.zh, [prop.word, ...prop.aliases, prop.zh].join('|'), `${prop.zh}在中秋夜轻轻活动。`, 'jiaojiao']),
-  ['festival-moon', '中秋圆月', 'moon|moons|full moon|月亮|圆月', '暖金色圆月轻轻漂浮。', 'jiaojiao'],
+  ['festival-moon', '中秋圆月', 'moon|moons|full moon|月亮|圆月', '带陨石坑的黄色圆月，没有星环，默认悬浮在天空。', 'jiaojiao'],
   ['festival-mooncake', '中秋月饼', 'mooncake|mooncakes|moon cake|月饼', '有花纹和层次的月饼轻轻回应。', 'jiaojiao'],
   ['festival-lantern', '中秋灯笼', 'lantern|lanterns|灯笼|花灯', '红纸灯笼与流苏轻轻摆动。', 'jiaojiao'],
   ["robot-body", "机器人身体", "机器人身体|robot body", "可拼装的机械身体，支持颜色、大小和动作变化。", "jiaojiao"],

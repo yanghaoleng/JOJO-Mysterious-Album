@@ -39,14 +39,14 @@ try{
     assert.equal((await status()).lessonIndex,0);
     assert.equal((await status()).webglFailed,false);
     assert.equal(await page.locator('.age-stepper,#change-age:visible').count(),0);
-    assert.match(await page.locator('#lesson-sentence').innerText(),/^moon$/i);
+    assert.match(await page.locator('#lesson-sentence').innerText(),/^rabbit$/i);
     assert.ok((await status()).entities['festival-rabbit']);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     await page.locator('#listen-example').click();
     await page.waitForFunction(()=>window.__WORD_GAME__.status.recording);
-    assert.ok(readings.some(r=>r.wordPrompt&&r.text.includes('月亮的英文怎么说')));
-    for(const [event,data] of [[450,{}],[451,{results:[{text:'moon'}]}],[459,{}]])socket.send(JSON.stringify({type:'event',event,data}));
-    await page.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance&&Object.values(window.__WORD_GAME__.status.entities).some(e=>e.asset==='prop:festival-moon'));
+    assert.ok(readings.some(r=>r.wordPrompt&&r.text.includes('兔子的英文怎么说')));
+    for(const [event,data] of [[450,{}],[451,{results:[{text:'rabbit'}]}],[459,{}]])socket.send(JSON.stringify({type:'event',event,data}));
+    await page.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance&&Object.values(window.__WORD_GAME__.status.entities).some(e=>e.asset==='prop:rword-rabbit'));
     assert.equal((await status()).chapter,'midautumn');
     assert.ok(await page.locator('#next-lesson').isVisible());
     await page.locator('#next-lesson').click();

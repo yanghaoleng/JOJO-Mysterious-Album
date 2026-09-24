@@ -1,5 +1,6 @@
 import { createBehaviorController } from './behavior-controller.js';
 import * as THREE from "../../vendor/three.module.js";
+import { defaultFlightHeight, SKY_PROP_HEIGHTS } from "../content/props.js";
 import { ASSETS } from "../content/assets.js";
 import { createCreationModel } from "../creation-models.js";
 import { createActor } from "./actor-factory.js";
@@ -144,7 +145,8 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           actionUntil: 0,
           entrance: stage.reduced || suspended ? 2 : -(arrivalDelays.get(record.id) || 0),
           arrivalAt: batchStart + (stage.reduced ? 0 : (arrivalDelays.get(record.id) || 0) * 1000),
-          rest: (() => { const flying = /ufo|spaceship|airplane|rocket/.test(record.asset || ""); const lift = /ufo/.test(record.asset || "") ? 2.6 : 1.7; return flying ? anchor.position.clone().addScaledVector(normal, lift) : anchor.position.clone(); })(),
+          rest: anchor.position.clone().addScaledVector(normal, defaultFlightHeight(record.asset)),
+          skyProp: Object.hasOwn(SKY_PROP_HEIGHTS, record.asset),
           orientation: anchor.quaternion.clone(),
           position: [...record.position],
           contactRadius,
@@ -152,16 +154,15 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           landed: false,
           impact: null,
         };
-        const flyingRideInit = /ufo|spaceship|airplane|rocket/.test(record.asset || "");
-        if (flyingRideInit) item.anchor.position.addScaledVector(normal, 1.7);
-        item.anchor.position.addScaledVector(normal, stage.reduced || suspended ? 0 : 3);
+        item.anchor.position.copy(item.rest);
+        item.anchor.position.addScaledVector(normal, stage.reduced || suspended || item.skyProp ? 0 : 3);
         item.anchor.visible = item.entrance >= 0;
         entries.set(record.id, item);
         anchor.userData.worldEntity = record.id;
       }
       if(record.position.some((value,index)=>value!==item.position[index])) {
         item.normal.copy(stage.world.surfaceNormal(...record.position));
-        item.rest.copy(stage.world.planet.center).addScaledVector(item.normal,stage.world.planet.radius+.02);
+        item.rest.copy(stage.world.planet.center).addScaledVector(item.normal,stage.world.planet.radius+.02+defaultFlightHeight(item.asset));
         item.orientation.setFromUnitVectors(UP,item.normal);item.position=[...record.position];
         item.anchor.position.copy(item.rest);
       }
@@ -284,8 +285,8 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           const t = item.entrance, contact = .55, age = Math.max(0, t - contact);
           if (!item.landed && t >= contact) {
             item.landed = true;
-            if (!stage.reduced && t < 2) for (const other of entries.values()) {
-              if (other.suspended || other === item || !other.anchor.visible || other.entrance < contact) continue;
+            if (!stage.reduced && !item.skyProp && t < 2) for (const other of entries.values()) {
+              if (other.suspended || other.skyProp || other === item || !other.anchor.visible || other.entrance < contact) continue;
               const distance = item.rest.distanceTo(other.rest);
               const reach = item.contactRadius + other.contactRadius + .12;
               if (distance > reach || distance < .001) continue;
@@ -304,6 +305,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           item.anchor.quaternion.copy(item.orientation).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), tilt));
           const squash = t >= contact && t < 2 ? .12 * Math.exp(-9 * age) : 0;
           item.anchor.scale.set(1 + squash, 1 - squash, 1 + squash);
+          if(item.skyProp){const grow=Math.min(1,Math.max(0,t/.8));item.anchor.position.copy(item.rest).addScaledVector(item.normal,-.35*(1-grow));item.anchor.quaternion.copy(item.orientation);item.anchor.scale.setScalar(Math.max(.001,grow*grow*(3-2*grow)));}
           if(item.asset==='prop:swimming-pool'){item.anchor.position.copy(item.rest);item.anchor.quaternion.copy(item.orientation);const grow=Math.min(1,Math.max(.001,t/.9));item.anchor.scale.setScalar(grow*grow*(3-2*grow));}
         }
         if (item.entrance >= 2) item.anchor.quaternion.copy(item.orientation);

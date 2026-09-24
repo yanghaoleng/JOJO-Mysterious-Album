@@ -1,3 +1,4 @@
+import { defaultFlightHeight } from './content/props.js';
 import { ArrowRight, ArrowUpRight, ArrowLeft, Check, LoaderCircle, Music2, VolumeX, createElement } from 'lucide';
 import * as THREE from '../vendor/three.module.js';
 import { playUISFX, stopUISFX } from '../src/ui-sfx.js';
@@ -133,7 +134,7 @@ function focusWordEvent(commands){
     // Aim at the landing spot while the object enters, then follow its live 3D centre.
     if(!stage.worldPresenter.stats.find(e=>e.id===id)?.settled){
       let base=record;const seen=new Set();while(base.attachment&&entities()[base.attachment.target]&&!seen.has(base.id)){seen.add(base.id);base=entities()[base.attachment.target];}
-      stage.world.surfacePoint(...base.position,.55,center);return center.toArray();
+      stage.world.surfacePoint(...base.position,.55+defaultFlightHeight(base.asset),center);return center.toArray();
     }
     object.updateWorldMatrix(true,true);
     if(!measured){box.setFromObject(object);if(box.isEmpty())return null;box.getCenter(localCenter);object.worldToLocal(localCenter);measured=true;}
@@ -292,7 +293,7 @@ function updateSentence(result,text=''){
 function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
-  const firstPrompt=festivalMode&&lessonIndex===0?'点一下月亮或喇叭，听完提示，再说一个英文词':lesson.prompt;
+  const firstPrompt=festivalMode&&lessonIndex===0?'点一下兔子或喇叭，听完提示，再说一个英文词':lesson.prompt;
   $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===5?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
   lessonGuideRead=false;
   const suggestions=sentenceSuggestions=createWordSuggestions(lesson,progress.sentence);

@@ -19,7 +19,7 @@ try{
     const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
     renderer.setSize(220,210);renderer.setClearColor('#182845');
     window.festivalRenders=[];
-    for(const prop of MID_AUTUMN_PROPS){
+    for(const prop of [{model:'festival-moon',word:'moon',zh:'圆月'},...MID_AUTUMN_PROPS]){
       const scene=new THREE.Scene();scene.add(new THREE.HemisphereLight('#ffffff','#708bb6',2.4));
       const lamp=new THREE.DirectionalLight('#ffffff',2.5);lamp.position.set(3,5,5);scene.add(lamp);
       const model=createCreationModel(prop.model);scene.add(model.group);
@@ -35,7 +35,7 @@ try{
     document.body.innerHTML=window.festivalRenders.map(prop=>`<div style="background:#243b5a;border-radius:12px;text-align:center;padding:8px"><img src="${prop.image}" width="220" height="210"><div><b>${prop.word}</b> · ${prop.zh}</div></div>`).join('');
   });
   await page.screenshot({path:'/tmp/jma-midautumn-models.png',fullPage:true});
-  assert.equal(await page.evaluate(()=>window.festivalRenders.length),MID_AUTUMN_PROPS.length);
+  assert.equal(await page.evaluate(()=>window.festivalRenders.length),MID_AUTUMN_PROPS.length+1);
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten nonblank festival WebGL models and gallery category.');
+  console.log('PASS: eleven nonblank festival WebGL models and gallery category.');
 }finally{await browser.close();}

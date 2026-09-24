@@ -195,7 +195,7 @@ export const COMPONENTS = [
     kind: "logic",
     name: "3D 世界呈现器",
     description:
-      "根据世界状态同步模型、碰撞与动画；释放被移除的实例，不推进剧情。",
+      "根据世界状态同步模型、碰撞与动画；月亮、星星、烟花、月光默认在空中柔和展开，移动后保留悬浮高度；释放被移除的实例，不推进剧情。",
     source: "dev/presentation/world-presenter.js",
     capabilities: ["模型增删", "状态同步", "资源释放"],
     dependencies: [],

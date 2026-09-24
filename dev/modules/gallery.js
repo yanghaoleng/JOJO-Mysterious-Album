@@ -13,7 +13,7 @@ import { resolveSceneIndex } from "../runtime/story-progress.js";
 import { EVENT_PLAYGROUND } from "../content/examples/event-playground.js";
 import { AI_CONTROL_LEVEL } from "../content/examples/ai-control-level.js";
 import { UFO_PARTY_STORY } from "../content/examples/ufo-party.js";
-import { PROP_CATEGORIES } from "../content/props.js";
+import { PROP_CATEGORIES, SKY_PROP_HEIGHTS } from "../content/props.js";
 import { createElement, PanelLeftClose, PanelLeftOpen, Search, Library, BookOpen, Box, Users, Sparkles, Volume2, Route, Settings2 } from "lucide";
 import { arrangeInView } from "./scatter.js";
 import { capacityEvictions } from "../runtime/contracts.js";
@@ -1094,6 +1094,10 @@ function select(item) {
         scale: 1.2,
       },
     ]);
+    if (SKY_PROP_HEIGHTS[item.id]) {
+      stage.world.surfacePoint(0, 1.5, SKY_PROP_HEIGHTS[item.id] + 1, stage.target);
+      stage.resize();
+    }
     button("试试机关", () =>
       commands([
         { type: "entity.animate", id: "preview", animation: "activate" },

@@ -1479,20 +1479,20 @@ function gentleLessons(chapter, band) {
   });
 }
 function midautumnLessons(band){
-  const examples=['moon','mooncake','Two lanterns.','Red lantern.','Big round mooncake.','Make the rabbit eat a mooncake.'];
-  const prompts=['说出 moon，圆月就会来到夜空；也可以试试 star 或 cloud','说出 mooncake，桌上会多一块月饼；还可以变出 pomelo 或 tea','说 two lanterns；星星、礼物和扇子也能试试数量','给灯笼加一种颜色；也可以说 golden star 或 red gift','说说月饼的大小和形状，还能换成柚子、桂花或茶壶','最后说一句话；也可以请兔子赏月、喝茶或一起庆祝'];
+  const examples=['rabbit','mooncake','Two lanterns.','Red lantern.','Big round mooncake.','Make the rabbit eat a mooncake.'];
+  const prompts=['说出 rabbit，小兔子就会出现；也可以试试你喜欢的其他动物','说出 mooncake，桌上会多一块月饼；还可以变出 pomelo 或 tea','说 two lanterns；星星、礼物和扇子也能试试数量','给灯笼加一种颜色；也可以说 golden star 或 red gift','说说月饼的大小和形状，还能换成柚子、桂花或茶壶','最后说一句话；也可以请兔子赏月、喝茶或一起庆祝'];
   const guides=[
-    '你想先变出月亮，还是月饼？月亮的英文怎么说？试着说出来。',
+    '你喜欢兔子，还是月饼？兔子的英文怎么说？试着说 rabbit 吧。',
     '我们再变一个不同的东西吧。月饼的英文怎么说？你也可以说别的点心。',
     '看，彩色虚线下面的词可以换哦！可以试试不同的数量和物件。',
   ];
   return examples.map((example,index)=>{
     const words=tokenize(example),mode=index===5?'open':'build';
     return {id:`midautumn-${band.id}-${index+1}`,stage:index+1,mode,example,targets:unique(words),buildWords:mode==='build'?words:[],displayText:example,blankWords:[],blankCount:0,
-      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?['moon','mooncake','star','pomelo']:[],chineseGuide:guides[index]||'',
-      words:unique(words).map(wordInfo),supportWords:[],prompt:prompts[index],knowledge:[['moon 和 mooncake 是中秋夜的两个名词','一个新名词可以变出新东西','two + lanterns 表示两盏灯','颜色放在名词前','大小和形状可以一起描述月饼','rabbit、eat、mooncake 组成一个动作句'][index]],
+      hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?['rabbit','mooncake','star','pomelo']:[],chineseGuide:guides[index]||'',
+      words:unique(words).map(wordInfo),supportWords:[],prompt:prompts[index],knowledge:[['rabbit 和 mooncake 是中秋夜的两个名词','一个新名词可以变出新东西','two + lanterns 表示两盏灯','颜色放在名词前','大小和形状可以一起描述月饼','rabbit、eat、mooncake 组成一个动作句'][index]],
       alternatives:[['star','cloud','moonlight'],['pomelo','tea','osmanthus'],['Two stars.','Two gifts.','Two fans.'],['Golden star.','Orange pomelo.','White cloud.'],['Big sweet pomelo.','Bright moonlight.','Warm tea.'],['Make the rabbit drink tea.','Wish upon a star.','Celebrate with fireworks.']][index],allowCreative:true,
-      goalLabel:['认识月亮','变出月饼','点亮灯笼','加上颜色','描述月饼','请兔子吃月饼'][index]};
+      goalLabel:['认识兔子','变出月饼','点亮灯笼','加上颜色','描述月饼','请兔子吃月饼'][index]};
   });
 }
 export const WORD_SENTENCE_LIBRARY = curriculum;
