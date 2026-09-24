@@ -225,7 +225,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright-core/index.mjs node dev/tools/verify-modul
 
 ## 英语小游戏欢迎与音频
 
-`word-welcome.js` 只从英文提取昵称与 3–10 岁年龄，昵称在当前页面内存使用，不写存档。入口用已有 `npc:domi` 通过实体命令显示小号 DOMI，欢迎会话优先走实时对话，连接失败保留经典识别/朗读。跳过和重新选年龄走原年龄页，开始时释放欢迎语音并清理旧世界。服务端 onboarding 模式只允许询问昵称和年龄，其余模式仍禁止索取个人资料。
+`word-welcome.js` 只从英文提取昵称与 3–10 岁年龄，昵称在当前页面内存使用，不写存档。当前入口直接调用 `renderAge()`，`renderIntro()` 的启动调用暂时注释，完整欢迎实现保留以便恢复。恢复后使用已有 `npc:domi` 通过实体命令显示小号 DOMI，欢迎会话优先走实时对话，连接失败保留经典识别/朗读。跳过和重新选年龄走原年龄页，开始时释放欢迎语音并清理旧世界。服务端 onboarding 模式只允许询问昵称和年龄，其余模式仍禁止索取个人资料。
 
 `word-music.js` 使用三首作者标记 CC0 的本地纯音乐，首个手势后播放，静音偏好独立保存；录音、领读、后台时暂停，新一轮随机且避开上一首。来源、许可链接与原始文件哈希在 `assets/music/word-world/licenses.json`。字幕候选由 `createWordSuggestions` 保持固定词槽，每 12 秒仅变化一个，点击词槽重置计时；朗读中冻结，遵守减少动态效果设置。
 

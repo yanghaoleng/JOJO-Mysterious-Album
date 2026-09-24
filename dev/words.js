@@ -547,5 +547,7 @@ try{
 const autoContinueTimer=setInterval(tickAutoContinue,100);
 const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
 $('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;});
-renderIntro();
+// Domi welcome is temporarily disabled; restore this call to enable it again.
+// renderIntro();
+renderAge();
 window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:openingActive||openingPending,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
