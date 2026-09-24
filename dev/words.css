@@ -99,3 +99,18 @@ body[data-festival=midautumn] .listen-button:hover{background:#ffdb9950}
 body[data-festival=midautumn] .word-menu{background:#17263cf2;border-color:#f3d5935c}
 body[data-festival=midautumn] .answer-result .next-button{color:#4a351d;background:#fff2d4}
 body[data-festival=midautumn] .voice-hint{color:#fff0cf}
+
+/* Give the finished artwork roughly two thirds of the viewport height. */
+.onboarding.complete-panel{inset:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));max-width:none;max-height:none;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:8px;overflow:auto;overscroll-behavior:contain}
+.complete-panel>*{flex-shrink:0}
+.complete-heading{display:flex;align-items:center;justify-content:center;gap:12px}
+.complete-heading .complete-stamp{margin:0}
+.complete-heading .step-kicker{margin:0 0 5px;font-size:12px}
+.complete-heading .panel-title{margin:0;font-size:clamp(18px,2.4vw,26px);line-height:1.3}
+.complete-panel .share-preview{width:auto;height:66dvh;max-width:100%;object-fit:contain;border-radius:16px;margin:0}
+.complete-panel .save-image-hint{margin:0;line-height:20px}
+.complete-panel .lesson-actions{flex-wrap:nowrap;max-width:100%}
+.complete-panel .lesson-actions button{min-width:0;gap:16px;padding:14px 24px}
+.complete-panel #share-status{margin:0;max-width:100%}
+.complete-panel #share-status:empty{display:none}
+@media(max-width:600px){.complete-panel .share-preview{height:auto;width:min(100%,49.5dvh);aspect-ratio:3/4}.complete-heading{gap:6px}.complete-panel .lesson-actions button{padding:14px 20px}}
