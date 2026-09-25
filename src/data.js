@@ -3,7 +3,8 @@ import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js?v=20260831-
 installUISFX();
 
 const $ = id => document.getElementById(id);
-const PAGE_LABELS = { choose: '故事与角色主页', story: '已下线故事', echo: '旧回声故事', doudou: '送豆豆回家', moon: '登月计划', debug: '角色模拟器' };
+const PAGE_LABELS = { choose: '故事与角色主页', story: '已下线故事', echo: '旧回声故事', doudou: '送豆豆回家', moon: '登月计划', debug: '角色模拟器', words: '开口造世界' };
+const CHAPTER_LABELS = { monster: '机器人朋友', ocean: '海底朋友', camp: '森林露营', snow: '冰雪乐园', words: '开口造世界', choose: '入口与选择' };
 const EVENT_LABELS = {
   choose_mode_story: '选择雾灯花园',
   choose_mode_echo: '选择不见了的回声',
@@ -25,6 +26,9 @@ const EVENT_LABELS = {
   moon_start: '开始登月计划',
   moon_invention: '生成登月发明',
   moon_complete: '完成登月计划',
+  chapter_start: '进入英语章节',
+  chapter_complete: '完成英语章节',
+  voice_answer: '完成一次朗读作答',
   story_start: '开始第一张图鉴',
   story_world_enter: '进入雾灯花园',
   story_seed_1: '找到第 1 颗萤火种',
@@ -50,6 +54,7 @@ const DEPTH_LABELS = ['进入页面', '第一次选择', '继续探索', '完成
 
 let code = '';
 let activeRange = '7d';
+let activeGranularity = 'day';
 let loading = false;
 
 function paintGrain() {
@@ -126,6 +131,14 @@ function pushDigit(digit) {
 
 function number(value) {
   return new Intl.NumberFormat('zh-CN').format(Math.round(Number(value) || 0));
+}
+
+function percent(value) {
+  return value == null || value === '' ? '—' : `${Math.round(Number(value) * 100)}%`;
+}
+
+function chapterLabel(value) {
+  return CHAPTER_LABELS[value] || String(value || '未分章');
 }
 
 function duration(milliseconds) {
@@ -256,25 +269,87 @@ function renderDaily(rows) {
     const value = document.createElement('b');
     value.textContent = `${item.uv}/${item.pv}`;
     const date = document.createElement('small');
-    date.textContent = String(item.day || '').slice(5);
+    date.textContent = String(item.day || item.period || '').slice(5);
     column.append(bars, value, date);
     root.appendChild(column);
   }
 }
 
+function renderSources(rows) {
+  const root = $('source-list');
+  root.innerHTML = '';
+  if (!rows.length) { root.innerHTML = '<p class="empty-state">还没有来源数据</p>'; return; }
+  for (const item of rows) {
+    const row = document.createElement('div'); row.className = 'source-row';
+    const copy = document.createElement('div');
+    const title = document.createElement('b'); title.textContent = item.source === 'direct' ? '直接访问' : item.source;
+    const detail = document.createElement('span'); detail.textContent = `${number(item.uv)} 位用户 · ${number(item.sessions)} 个会话`;
+    copy.append(title, detail);
+    const value = document.createElement('strong'); value.textContent = `${number(item.pv)} PV`;
+    row.append(copy, value); root.appendChild(row);
+  }
+}
+
+function renderChapters(rows) {
+  const body = $('chapter-rows'); body.innerHTML = '';
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8" class="empty-state">进入章节后，这里会显示章节表现</td></tr>'; return; }
+  for (const item of rows) {
+    const row = document.createElement('tr');
+    [chapterLabel(item.chapter), number(item.uv), number(item.views), Number(item.avg_depth || 0).toFixed(1), number(item.completes), percent(item.d1_rate), percent(item.d7_rate), item.voice_attempts ? percent(item.voice_correct_rate) : '—'].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+    body.appendChild(row);
+  }
+}
+
+function renderRetention(retention) {
+  const root = $('retention-list'); root.innerHTML = '';
+  const overall = retention?.overall || {};
+  const cards = [['次日留存', percent(overall.d1Rate), overall.d1Total ? `${number(overall.d1Users)} / ${number(overall.d1Total)} 个成熟用户` : '数据成熟后计算'], ['第 7 日留存', percent(overall.d7Rate), overall.d7Total ? `${number(overall.d7Users)} / ${number(overall.d7Total)} 个成熟用户` : '需要至少 7 天历史'], ['最近一批 cohort', overall.cohorts?.[0]?.day || '—', overall.cohorts?.[0] ? `${number(overall.cohorts[0].users)} 位新用户` : '暂无']];
+  for (const [label, value, note] of cards) { const item = document.createElement('div'); item.className = 'retention-card'; const title = document.createElement('span'); title.textContent = label; const strong = document.createElement('strong'); strong.textContent = value; const small = document.createElement('small'); small.textContent = note; item.append(title, strong, small); root.appendChild(item); }
+}
+
+function renderUsers(rows) {
+  const body = $('user-rows'); body.innerHTML = '';
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8" class="empty-state">还没有可展示的用户行为</td></tr>'; return; }
+  for (const item of rows) {
+    const row = document.createElement('tr');
+    const shortId = String(item.identity || '').replace(/^visitor:/, '访客·').slice(0, 18);
+    const seen = item.last_seen_at ? new Date(Number(item.last_seen_at)).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+    [shortId, seen, number(item.views), number(item.chapters), Number(item.avg_depth || 0).toFixed(1), number(item.voice_attempts), item.voice_attempts ? percent(item.voice_correct / item.voice_attempts) : '—', duration(item.active_ms)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+    body.appendChild(row);
+  }
+}
+
+function renderVoice(data) {
+  const voice = data || {};
+  const hasAttempts = Number(voice.attempts || 0) > 0;
+  $('voice-attempts').textContent = number(voice.attempts);
+  $('voice-asr').textContent = hasAttempts ? percent(voice.asr_rate) : '—';
+  $('voice-correct').textContent = hasAttempts ? percent(voice.correct_rate) : '—';
+  $('voice-coverage').textContent = hasAttempts ? percent(voice.avg_coverage) : '—';
+  $('voice-duration').textContent = hasAttempts ? duration(voice.avg_duration_ms) : '—';
+}
+
 function renderDashboard(data) {
   const totals = data.totals || {};
   $('metric-uv').textContent = number(totals.uv);
+  $('metric-users').textContent = number(totals.users || totals.uv);
   $('metric-pv').textContent = number(totals.pv);
   $('metric-dwell').textContent = duration(totals.avg_active_ms);
   $('metric-depth').textContent = Number(totals.avg_depth || 0).toFixed(1);
   $('metric-interactions').textContent = `${number(totals.interactions)} 次有效交互`;
+  $('metric-retention').textContent = percent(data.retention?.d1Rate);
+  $('metric-voice').textContent = percent(data.voice?.correct_rate);
   $('generated-at').textContent = `更新于 ${new Date(data.generatedAt).toLocaleString('zh-CN', { hour12: false })}`;
   $('privacy-note').textContent = data.privacy || '';
   renderPages(data.pages || []);
   renderDepth(data.depth || []);
   renderEvents(data.events || []);
-  renderDaily(data.daily || []);
+  renderDaily(data[activeGranularity === 'week' ? 'weekly' : activeGranularity === 'month' ? 'monthly' : 'daily'] || []);
+  renderSources(data.sources || []);
+  renderChapters(data.chapters || []);
+  renderRetention(data.retention ? { overall: data.retention } : null);
+  renderUsers(data.users || []);
+  renderVoice(data.voice || {});
 }
 
 async function loadDashboard() {
@@ -340,6 +415,13 @@ document.querySelectorAll('[data-range]').forEach(button => {
   button.addEventListener('click', () => {
     activeRange = button.dataset.range;
     document.querySelectorAll('[data-range]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    loadDashboard();
+  });
+});
+document.querySelectorAll('[data-granularity]').forEach(button => {
+  button.addEventListener('click', () => {
+    activeGranularity = button.dataset.granularity;
+    document.querySelectorAll('[data-granularity]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     loadDashboard();
   });
 });

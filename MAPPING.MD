@@ -57,12 +57,13 @@
 | 云朵、海底漂流 | 轻漂浮场景 | `clouds`、`underwater`、`motion: "float"` | 比宇宙幅度更小，减弱动态时停止 |
 | 教室桌面、书桌 | 缩小落脚场景 | `classroom-desk` | 调整角色比例和桌面落脚高度 |
 | 复制配方 | 角色与档案导出 | `#copy-recipe` | 复制 recipe 和兴趣小档案，不上传数据 |
-| 数据后台、访问统计 | 自托管匿名运营后台 | `/Data`、`data.html`、`src/data.js` | 六位口令进入，查看 UV、PV、停留、事件、深度和每日趋势 |
-| 罗师傅密码盘、数字键盘 | 六位后台口令门 | `#code-form`、`.code-display`、`.keypad` | 顺序为 1 至 9、清除、0、退格；六位自动提交，错误抖动清空 |
+| 数据后台、访问统计 | 自托管匿名运营后台 | `/data`、`data.html`、`src/data.js` | 六位口令进入，查看访问趋势、来源、章节深度、留存、用户行为和朗读指标 |
+| 体重日历数字键盘 | 六位后台口令门 | `#code-form`、`.code-display`、`.keypad` | 顺序为 1 至 9、空位、0、退格；六位自动提交，错误抖动清空 |
 | 去重用户、访问人数 | 匿名浏览器 UV | `mengmeng-visitor-v1`、`visitor_id`、`COUNT(DISTINCT visitor_id)` | 同一浏览器稳定随机号；不使用账号、姓名或原始 IP |
 | 页面访问、页面人数 | 页面 PV / UV | `page_views`、`view_id`、`page` | 当前页面分为双入口主页、回声故事、角色模拟器；旧故事数据仍保留历史标签 |
 | 停留时长 | 前台有效停留 | `activeMs`、`active_ms` | 只累计页面可见且窗口聚焦的时间，15 秒心跳与离页补报 |
-| 交互事件 | 预设匿名事件 | `interaction_events`、`trackAnalytics()` | 只发固定事件名和深度，不发送按钮文字或孩子输入 |
+| 交互事件 | 预设匿名事件 | `interaction_events`、`trackAnalytics()` | 绑定后端匿名账户、页面与章节，只发固定事件和受限数值属性，不发送按钮文字或孩子输入 |
+| 朗读指标 | 章节语音尝试统计 | `voice_attempts`、`trackVoiceAttempt()` | 保存时长、ASR 成功、目标词覆盖率和完成标记，不保存录音或转写文本 |
 | 交互深度 | 单次页面最高进度 | `depth`、`max_depth` | 故事按开始、收集、雾门、通关递增；实验室按画像与脚本进度递增 |
 | 统计数据库 | SQLite WAL 持久化 | `/var/lib/kindergrimm/analytics.db`、`ANALYTICS_DB_PATH` | 位于发布目录外，版本切换不覆盖 |
 | 新腾讯服务器、锐驰服务器 | KinderGrimm 生产主机 | `lhins-qgi1l9jg`、`124.221.104.244`、`ssh mikeywa-rive` | 与 Rive 服务隔离端口、目录、systemd 和 Nginx 站点 |

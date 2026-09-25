@@ -21,6 +21,7 @@ import { createWordReward } from './word-reward.js';
 import { drawWordShareCard } from './word-share-card.js';
 import { createWordMusic } from './word-music.js';
 import { ASSETS } from './content/assets.js';
+import { setAnalyticsChapter, trackAnalytics, trackVoiceAttempt } from '../src/analytics.js';
 
 const icon=(node,name)=>createElement(node,{width:18,height:18,'stroke-width':2,'aria-hidden':'true',class:`word-arrow-icon lucide lucide-${name}`}).outerHTML;
 const arrowRight=icon(ArrowRight,'arrow-right'),arrowUpRight=icon(ArrowUpRight,'arrow-up-right'),arrowLeft=icon(ArrowLeft,'arrow-left'),checkIcon=icon(Check,'check');
@@ -264,6 +265,7 @@ function renderChapters(){
 }
 function openChapter(id,{fresh=false,shared=null}={}){
   leave();chapter=chapters[id];if(!chapter){renderChapters();return;}
+  setAnalyticsChapter(chapter.id);trackAnalytics('chapter_start',{depth:1,chapter:chapter.id});
   previousThemes.set(getAgeBand(age).id,id);
   const record=fresh?null:journeys[journeyKey()];
   lessonIndex=Number.isInteger(record?.lessonIndex)?Math.max(0,Math.min(5,record.lessonIndex)):0;
@@ -379,7 +381,7 @@ function ensureVoice({gameMode=false}={}){
   const onboarding=view==='intro'&&!gameMode;
   voice=new ((onboarding&&voicePreference!=='legacy')||voiceMode==='realtime'?RealtimeWordVoice:StoryVoice)({getMode:()=>onboarding?'onboarding':'game',getLesson:()=>view==='play'?currentExample():'',language:'en-US',readingSpeed:onboarding?1:.65,speechProfile:onboarding?'wow-child':'',preferredVoice:onboarding?'':'female',continuousMeter:true,
     onState:state=>{music.setVoiceState(continuousListening&&state==='off'?'listening':state);voiceState=state;syncVoiceInput(state);transcriptPending(state==='transcribing'||state==='thinking');voiceHint(({requesting:'正在打开麦克风',listening:'我会一直听，你可以接着说',speaking:praising?'说得真棒！听听给你的鼓励':'先听一听，再跟着说',transcribing:'正在听懂你的话',thinking:'正在听懂你的话',off:continuousListening?'我会一直听，你可以接着说':'轮到你啦，试着说出来',paused:'已暂停，点一下继续'})[state]||'我在听');},
-    onAnswer:(raw,details)=>{transcriptPending(false);const {text,remind}=languageGate.accept(raw,details);if(!text){if(remind){voiceHint('准备好时，试着用英语说给我听吧');if(view==='intro')return askIntro('Please speak in English.');if(view==='play')return speak('Please speak in English.');}return;}return view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive)});},onLevel:level=>{voiceInput?.setLevel(level);if(level>.05)countdownUntil=performance.now()+3000;},
+    onAnswer:(raw,details)=>{transcriptPending(false);const {text,remind}=languageGate.accept(raw,details);if(!text){if(remind){voiceHint('准备好时，试着用英语说给我听吧');if(view==='intro')return askIntro('Please speak in English.');if(view==='play')return speak('Please speak in English.');}return;}return view==='intro'?introAnswer(text):submit(text,{fromRealtime:Boolean(voice?.realtimeActive),durationMs:details?.durationMs});},onLevel:level=>{voiceInput?.setLevel(level);if(level>.05)countdownUntil=performance.now()+3000;},
     onError:(message,details={})=>{transcriptPending(false);if(details.code==='empty'&&view==='play'&&!busy&&!transitioning){surprisePoop();return;}voiceHint(({
       NotAllowedError:'请在浏览器和系统设置中允许使用麦克风',
       NotFoundError:'没有找到麦克风，请连接后再试',
@@ -429,12 +431,13 @@ async function sayPraise(){
   finally{praising=false;if(view==='play'&&game===session&&sentenceMotion===mount&&voice===active)resumeListening();}
 }
 async function speak(text){if(!voice||busy||document.hidden||view!=='play')return;await voice.unlock().catch(()=>{});if(view==='play')await sayGuidance(text);}
-async function submit(raw,{displayText,fromMenu=false,fromRealtime=false}={}){
+async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,durationMs=0}={}){
   let text=englishWordContent(raw);if(!text||busy||view!=='play')return;
   const session=game,version=++turn,lesson=currentLesson();busy=true;if(!fromRealtime)voice?.listen(false);
   if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;voiceHint('正在把你的想法变出来');
   try{
     const result=evaluateWordUtterance(lesson,text,progress,{reference:currentExample()});
+    if(!fromMenu){trackVoiceAttempt({chapter:chapter.id,lessonId:lesson.id,durationMs,source:fromRealtime?'realtime':'asr',asrOk:true,correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});trackAnalytics('voice_answer',{depth:5,chapter:chapter.id,properties:{correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs,source:fromRealtime?'realtime':'asr',lessonId:lesson.id}});}
     text=result.normalizedText;
     if(result.corrections.length)$('word-transcript').textContent=`“${text}”`;
     let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
@@ -515,7 +518,7 @@ function captureCard(){
   return drawWordShareCard({source:stage?.renderer.domElement,words:[...heardWords],examples:getChapterLessons(chapter.id,age).map(lesson=>lesson.example)});
 }
 async function renderComplete(){
-  setView('complete');title('你的话，成了一个世界。');feedback('');saveJourney();
+  setView('complete');title('你的话，成了一个世界。');feedback('');trackAnalytics('chapter_complete',{depth:20,chapter:chapter?.id});saveJourney();
   const completedGame=game;await document.fonts.load('700 68px MohrRounded').catch(()=>{});if(view!=='complete'||game!==completedGame)return;
   const card=captureCard(),image=card.toDataURL('image/png');
   $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-heading"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">${festivalMode?'把这轮月亮，送给朋友。':'把你的点子，交给朋友。'}</h2></div></div><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">${festivalMode?'再玩一次':'重新选择年龄'}</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;

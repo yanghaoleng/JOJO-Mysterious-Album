@@ -26,7 +26,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from collections import OrderedDict
 from concurrent.futures import Future
 from functools import partial
@@ -47,6 +47,7 @@ from identity_mysql import (
     list_users,
     make_admin_session,
     record_admin_login,
+    resume_anonymous_session,
     user_detail,
     valid_admin_session,
     verify_admin_password,
@@ -95,6 +96,8 @@ DATA_SESSION_SECONDS = 12 * 60 * 60
 SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{8,80}$")
 SAFE_PAGE = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 SAFE_EVENT = re.compile(r"^[a-z][a-z0-9_-]{0,47}$")
+SAFE_CHAPTER = re.compile(r"^[a-z][a-z0-9_-]{0,63}$")
+SAFE_LESSON = re.compile(r"^[a-z0-9][a-z0-9_-]{0,95}$")
 LOGIN_ATTEMPTS = {}
 LOGIN_ATTEMPTS_LOCK = threading.Lock()
 DIRECTOR_PROMPT = """你是“萌萌星的奇妙图鉴”的儿童安全世界导演。
@@ -367,7 +370,11 @@ def init_analytics():
                 view_id TEXT PRIMARY KEY,
                 visitor_id TEXT NOT NULL,
                 session_id TEXT NOT NULL,
+                user_id TEXT NOT NULL DEFAULT '',
                 page TEXT NOT NULL,
+                chapter TEXT NOT NULL DEFAULT '',
+                source TEXT NOT NULL DEFAULT 'direct',
+                source_detail TEXT NOT NULL DEFAULT '',
                 started_at INTEGER NOT NULL,
                 last_seen_at INTEGER NOT NULL,
                 active_ms INTEGER NOT NULL DEFAULT 0,
@@ -382,14 +389,36 @@ def init_analytics():
                 event_id TEXT NOT NULL UNIQUE,
                 visitor_id TEXT NOT NULL,
                 session_id TEXT NOT NULL,
+                user_id TEXT NOT NULL DEFAULT '',
                 view_id TEXT NOT NULL,
                 page TEXT NOT NULL,
+                chapter TEXT NOT NULL DEFAULT '',
                 event_name TEXT NOT NULL,
                 occurred_at INTEGER NOT NULL,
-                depth INTEGER NOT NULL DEFAULT 0
+                depth INTEGER NOT NULL DEFAULT 0,
+                properties_json TEXT NOT NULL DEFAULT ''
             );
             CREATE INDEX IF NOT EXISTS idx_events_occurred ON interaction_events(occurred_at);
             CREATE INDEX IF NOT EXISTS idx_events_page_occurred ON interaction_events(page, occurred_at);
+            CREATE TABLE IF NOT EXISTS voice_attempts (
+                attempt_id TEXT PRIMARY KEY,
+                visitor_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                user_id TEXT NOT NULL DEFAULT '',
+                chapter TEXT NOT NULL,
+                lesson_id TEXT NOT NULL,
+                attempted_at INTEGER NOT NULL,
+                duration_ms INTEGER NOT NULL DEFAULT 0,
+                source TEXT NOT NULL DEFAULT 'asr',
+                asr_ok INTEGER NOT NULL DEFAULT 0,
+                correct INTEGER NOT NULL DEFAULT 0,
+                coverage REAL NOT NULL DEFAULT 0,
+                target_count INTEGER NOT NULL DEFAULT 0,
+                matched_count INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS idx_voice_attempts_time ON voice_attempts(attempted_at);
+            CREATE INDEX IF NOT EXISTS idx_voice_attempts_chapter_time ON voice_attempts(chapter, attempted_at);
+            CREATE INDEX IF NOT EXISTS idx_voice_attempts_user_time ON voice_attempts(user_id, attempted_at);
             CREATE TABLE IF NOT EXISTS render_style_versions (
                 style_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -411,6 +440,30 @@ def init_analytics():
         existing_style_columns = {
             row["name"] for row in connection.execute("PRAGMA table_info(render_style_versions)")
         }
+        existing_page_view_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(page_views)")
+        }
+        for column, definition in (
+            ("user_id", "TEXT NOT NULL DEFAULT ''"),
+            ("chapter", "TEXT NOT NULL DEFAULT ''"),
+            ("source", "TEXT NOT NULL DEFAULT 'direct'"),
+            ("source_detail", "TEXT NOT NULL DEFAULT ''"),
+        ):
+            if column not in existing_page_view_columns:
+                connection.execute(f"ALTER TABLE page_views ADD COLUMN {column} {definition}")
+        existing_event_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(interaction_events)")
+        }
+        for column, definition in (
+            ("user_id", "TEXT NOT NULL DEFAULT ''"),
+            ("chapter", "TEXT NOT NULL DEFAULT ''"),
+            ("properties_json", "TEXT NOT NULL DEFAULT ''"),
+        ):
+            if column not in existing_event_columns:
+                connection.execute(f"ALTER TABLE interaction_events ADD COLUMN {column} {definition}")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_page_views_user_started ON page_views(user_id, started_at)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_page_views_chapter_started ON page_views(chapter, started_at)")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_events_chapter_occurred ON interaction_events(chapter, occurred_at)")
         for column in ("source_repo", "source_url", "source_commit", "source_files"):
             if column not in existing_style_columns:
                 connection.execute(
@@ -600,7 +653,40 @@ def create_render_style_version(payload, client):
     return render_style_record(row)
 
 
-def collect_analytics(payload):
+def analytics_user_id(handler):
+    """Resolve the HttpOnly anonymous account without trusting browser input."""
+    try:
+        session = resume_anonymous_session(handler.cookie(handler.anonymous_cookie_name()))
+        return str(session["user_id"]) if session and session.get("user_id") else ""
+    except Exception:
+        # Analytics must never make the game unavailable when MySQL is down.
+        return ""
+
+
+def analytics_source(payload):
+    source = re.sub(r"[^a-z0-9_-]+", "_", str(payload.get("source", "direct")).strip().lower()).strip("_")[:64]
+    detail = re.sub(r"[^a-z0-9._:-]+", "_", str(payload.get("sourceDetail", "")).strip().lower()).strip("_")[:120]
+    return source or "direct", detail
+
+
+def event_properties(value):
+    if not isinstance(value, dict):
+        return ""
+    allowed = {"correct", "coverage", "targetCount", "matchedCount", "durationMs", "source", "lessonId"}
+    result = {}
+    for key, item in value.items():
+        if key not in allowed:
+            continue
+        if isinstance(item, bool):
+            result[key] = item
+        elif isinstance(item, (int, float)) and math.isfinite(float(item)):
+            result[key] = item
+        elif isinstance(item, str):
+            result[key] = re.sub(r"[\x00-\x1f\x7f<>]", "", item)[:120]
+    return json.dumps(result, ensure_ascii=False, separators=(",", ":")) if result else ""
+
+
+def collect_analytics(payload, handler):
     visitor_id = str(payload.get("visitorId", ""))
     session_id = str(payload.get("sessionId", ""))
     view_id = str(payload.get("viewId", ""))
@@ -609,6 +695,11 @@ def collect_analytics(payload):
         raise ValueError("invalid_id")
     if not SAFE_PAGE.fullmatch(page):
         raise ValueError("invalid_page")
+    chapter = str(payload.get("chapter", page))
+    if not SAFE_CHAPTER.fullmatch(chapter):
+        chapter = page
+    source, source_detail = analytics_source(payload)
+    user_id = analytics_user_id(handler)
 
     now_ms = int(time.time() * 1000)
     started_at = max(now_ms - 24 * 60 * 60 * 1000, min(now_ms + 60_000, int(payload.get("startedAt", now_ms))))
@@ -625,42 +716,99 @@ def collect_analytics(payload):
         event_name = str(item.get("name", ""))
         if not SAFE_ID.fullmatch(event_id) or not SAFE_EVENT.fullmatch(event_name):
             continue
+        event_chapter = str(item.get("chapter", chapter))
+        if not SAFE_CHAPTER.fullmatch(event_chapter):
+            event_chapter = chapter
         event_at = max(started_at, min(now_ms + 60_000, int(item.get("at", now_ms))))
         event_depth = max(0, min(100, int(item.get("depth", depth))))
-        accepted_events.append((event_id, visitor_id, session_id, view_id, page, event_name, event_at, event_depth))
+        accepted_events.append((
+            event_id, visitor_id, session_id, user_id, view_id, page, event_chapter,
+            event_name, event_at, event_depth, event_properties(item.get("properties")),
+        ))
 
     with analytics_connection() as connection:
         connection.execute(
             """
             INSERT INTO page_views (
-                view_id, visitor_id, session_id, page, started_at, last_seen_at,
-                active_ms, max_depth, interaction_count
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                view_id, visitor_id, session_id, user_id, page, chapter, source, source_detail,
+                started_at, last_seen_at, active_ms, max_depth, interaction_count
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(view_id) DO UPDATE SET
+                user_id = CASE WHEN excluded.user_id <> '' THEN excluded.user_id ELSE page_views.user_id END,
                 last_seen_at = MAX(page_views.last_seen_at, excluded.last_seen_at),
                 active_ms = MAX(page_views.active_ms, excluded.active_ms),
                 max_depth = MAX(page_views.max_depth, excluded.max_depth),
-                interaction_count = MAX(page_views.interaction_count, excluded.interaction_count)
+                interaction_count = MAX(page_views.interaction_count, excluded.interaction_count),
+                chapter = CASE WHEN excluded.chapter <> '' THEN excluded.chapter ELSE page_views.chapter END,
+                source = CASE WHEN page_views.source = 'direct' AND excluded.source <> 'direct' THEN excluded.source ELSE page_views.source END,
+                source_detail = CASE WHEN page_views.source_detail = '' THEN excluded.source_detail ELSE page_views.source_detail END
             """,
             (
-                view_id, visitor_id, session_id, page, started_at, now_ms,
+                view_id, visitor_id, session_id, user_id, page, chapter, source, source_detail,
+                started_at, now_ms,
                 active_ms, depth, max(0, min(1000, int(payload.get("interactionCount", 0)))),
             ),
         )
         connection.executemany(
             """
             INSERT OR IGNORE INTO interaction_events (
-                event_id, visitor_id, session_id, view_id, page, event_name, occurred_at, depth
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                event_id, visitor_id, session_id, user_id, view_id, page, chapter,
+                event_name, occurred_at, depth, properties_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             accepted_events,
+        )
+
+
+def collect_voice_analytics(payload, handler):
+    visitor_id = str(payload.get("visitorId", ""))
+    session_id = str(payload.get("sessionId", ""))
+    attempt_id = str(payload.get("attemptId", ""))
+    chapter = str(payload.get("chapter", ""))
+    lesson_id = str(payload.get("lessonId", ""))
+    if not SAFE_ID.fullmatch(visitor_id) or not SAFE_ID.fullmatch(session_id) or not SAFE_ID.fullmatch(attempt_id):
+        raise ValueError("invalid_id")
+    if not SAFE_CHAPTER.fullmatch(chapter):
+        raise ValueError("invalid_chapter")
+    if not SAFE_LESSON.fullmatch(lesson_id):
+        raise ValueError("invalid_lesson")
+    try:
+        duration_ms = max(0, min(30_000, int(payload.get("durationMs", 0))))
+        coverage = max(0.0, min(1.0, float(payload.get("coverage", 0))))
+        target_count = max(0, min(100, int(payload.get("targetCount", 0))))
+        matched_count = max(0, min(target_count, int(payload.get("matchedCount", 0))))
+        asr_ok = 1 if payload.get("asrOk") else 0
+        correct = 1 if payload.get("correct") else 0
+    except (TypeError, ValueError):
+        raise ValueError("invalid_voice_metrics") from None
+    source = str(payload.get("source", "asr"))
+    if source not in {"asr", "realtime", "browser"}:
+        source = "asr"
+    now_ms = int(time.time() * 1000)
+    attempted_at = max(now_ms - 24 * 60 * 60 * 1000, min(now_ms + 60_000, int(payload.get("attemptedAt", now_ms))))
+    with analytics_connection() as connection:
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO voice_attempts (
+                attempt_id, visitor_id, session_id, user_id, chapter, lesson_id,
+                attempted_at, duration_ms, source, asr_ok, correct, coverage,
+                target_count, matched_count
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                attempt_id, visitor_id, session_id, analytics_user_id(handler), chapter, lesson_id,
+                attempted_at, duration_ms, source, asr_ok, correct, coverage,
+                target_count, matched_count,
+            ),
         )
 
 
 def range_start(value):
     now = datetime.now(timezone.utc)
     if value == "today":
-        return int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+        beijing = now + timedelta(hours=8)
+        midnight_utc = beijing.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(hours=8)
+        return int(midnight_utc.timestamp() * 1000)
     if value == "30d":
         return int(time.time() * 1000) - 30 * 24 * 60 * 60 * 1000
     if value == "all":
@@ -668,12 +816,67 @@ def range_start(value):
     return int(time.time() * 1000) - 7 * 24 * 60 * 60 * 1000
 
 
+def retention_summary(rows):
+    identities = {}
+    for row in rows:
+        identity = row["user_id"] or f"visitor:{row['visitor_id']}"
+        day = row["day"]
+        identities.setdefault(identity, {"days": set(), "chapters": {}})
+        identities[identity]["days"].add(day)
+        if row["chapter"]:
+            identities[identity]["chapters"].setdefault(row["chapter"], set()).add(day)
+
+    def rates(day_sets):
+        cohorts = {}
+        for days in day_sets.values():
+            first = min(days)
+            cohorts.setdefault(first, []).append(tuple(sorted(days)))
+        cohort_rows = []
+        d1_users = d1_total = d7_users = d7_total = 0
+        today = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+        for first, members in sorted(cohorts.items(), reverse=True):
+            first_date = datetime.strptime(first, "%Y-%m-%d").date()
+            cohort_size = len(members)
+            d1 = sum(1 for member in members if (first_date + timedelta(days=1)).isoformat() in member)
+            d7 = sum(1 for member in members if (first_date + timedelta(days=7)).isoformat() in member)
+            d1_mature = first_date + timedelta(days=1) <= today
+            d7_mature = first_date + timedelta(days=7) <= today
+            if d1_mature:
+                d1_users += d1
+                d1_total += cohort_size
+            if d7_mature:
+                d7_users += d7
+                d7_total += cohort_size
+            cohort_rows.append({
+                "day": first, "users": cohort_size,
+                "d1Users": d1 if d1_mature else None,
+                "d7Users": d7 if d7_mature else None,
+                "d1Rate": round(d1 / cohort_size, 4) if d1_mature and cohort_size else None,
+                "d7Rate": round(d7 / cohort_size, 4) if d7_mature and cohort_size else None,
+            })
+        return {
+            "d1Users": d1_users, "d1Total": d1_total,
+            "d7Users": d7_users, "d7Total": d7_total,
+            "d1Rate": round(d1_users / d1_total, 4) if d1_total else None,
+            "d7Rate": round(d7_users / d7_total, 4) if d7_total else None,
+            "cohorts": cohort_rows[:31],
+        }
+
+    overall = rates({identity: value["days"] for identity, value in identities.items()})
+    chapter_retention = {}
+    for chapter in sorted({chapter for value in identities.values() for chapter in value["chapters"]}):
+        chapter_retention[chapter] = rates({identity: value["chapters"][chapter] for identity, value in identities.items() if chapter in value["chapters"]})
+    return {"overall": overall, "chapters": chapter_retention}
+
+
 def analytics_summary(range_value):
     since = range_start(range_value)
     with analytics_connection() as connection:
         totals = connection.execute(
             """
-            SELECT COUNT(*) AS pv, COUNT(DISTINCT visitor_id) AS uv,
+            SELECT COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS users,
                    COUNT(DISTINCT session_id) AS sessions,
                    COALESCE(AVG(active_ms), 0) AS avg_active_ms,
                    COALESCE(AVG(max_depth), 0) AS avg_depth,
@@ -713,12 +916,150 @@ def analytics_summary(range_value):
         daily = connection.execute(
             """
             SELECT date(started_at / 1000, 'unixepoch', '+8 hours') AS day,
-                   COUNT(*) AS pv, COUNT(DISTINCT visitor_id) AS uv
+                   COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv
             FROM page_views WHERE started_at >= ?
             GROUP BY day ORDER BY day DESC LIMIT 31
             """,
             (since,),
         ).fetchall()
+        weekly = connection.execute(
+            """
+            SELECT strftime('%Y-W%W', started_at / 1000, 'unixepoch', '+8 hours') AS period,
+                   COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv
+            FROM page_views WHERE started_at >= ?
+            GROUP BY period ORDER BY period DESC LIMIT 26
+            """,
+            (since,),
+        ).fetchall()
+        monthly = connection.execute(
+            """
+            SELECT strftime('%Y-%m', started_at / 1000, 'unixepoch', '+8 hours') AS period,
+                   COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv
+            FROM page_views WHERE started_at >= ?
+            GROUP BY period ORDER BY period DESC LIMIT 18
+            """,
+            (since,),
+        ).fetchall()
+        sources = connection.execute(
+            """
+            SELECT CASE WHEN source = '' THEN 'direct' ELSE source END AS source,
+                   MAX(source_detail) AS source_detail,
+                   COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv,
+                   COUNT(DISTINCT session_id) AS sessions
+            FROM page_views WHERE started_at >= ?
+            GROUP BY source ORDER BY uv DESC, pv DESC
+            """,
+            (since,),
+        ).fetchall()
+        chapter_rows = connection.execute(
+            """
+            SELECT CASE WHEN chapter = '' THEN page ELSE chapter END AS chapter,
+                   COUNT(*) AS views,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv,
+                   COUNT(DISTINCT session_id) AS sessions,
+                   COALESCE(AVG(active_ms), 0) AS avg_active_ms,
+                   COALESCE(AVG(max_depth), 0) AS avg_depth
+            FROM page_views WHERE started_at >= ?
+            GROUP BY chapter ORDER BY uv DESC, views DESC
+            """,
+            (since,),
+        ).fetchall()
+        chapter_completes = connection.execute(
+            """
+            SELECT CASE WHEN chapter = '' THEN page ELSE chapter END AS chapter,
+                   COUNT(*) AS completes
+            FROM interaction_events
+            WHERE occurred_at >= ? AND event_name LIKE '%complete%'
+            GROUP BY chapter
+            """,
+            (since,),
+        ).fetchall()
+        voice_totals = connection.execute(
+            """
+            SELECT COUNT(*) AS attempts,
+                   COALESCE(SUM(asr_ok), 0) AS asr_ok,
+                   COALESCE(SUM(correct), 0) AS correct,
+                   COALESCE(AVG(coverage), 0) AS avg_coverage,
+                   COALESCE(AVG(duration_ms), 0) AS avg_duration_ms
+            FROM voice_attempts WHERE attempted_at >= ?
+            """,
+            (since,),
+        ).fetchone()
+        voice_chapters = connection.execute(
+            """
+            SELECT chapter, COUNT(*) AS attempts,
+                   COALESCE(SUM(asr_ok), 0) AS asr_ok,
+                   COALESCE(SUM(correct), 0) AS correct,
+                   COALESCE(AVG(coverage), 0) AS avg_coverage,
+                   COALESCE(AVG(duration_ms), 0) AS avg_duration_ms
+            FROM voice_attempts WHERE attempted_at >= ?
+            GROUP BY chapter ORDER BY attempts DESC
+            """,
+            (since,),
+        ).fetchall()
+        users = connection.execute(
+            """
+            SELECT CASE WHEN user_id <> '' THEN user_id ELSE 'visitor:' || visitor_id END AS identity,
+                   MAX(last_seen_at) AS last_seen_at,
+                   MIN(started_at) AS first_seen_at,
+                   COUNT(*) AS views,
+                   COUNT(DISTINCT CASE WHEN chapter <> '' THEN chapter ELSE page END) AS chapters,
+                   COALESCE(AVG(max_depth), 0) AS avg_depth,
+                   COALESCE(SUM(active_ms), 0) AS active_ms
+            FROM page_views WHERE started_at >= ?
+            GROUP BY identity ORDER BY last_seen_at DESC LIMIT 100
+            """,
+            (since,),
+        ).fetchall()
+        voice_users = connection.execute(
+            """
+            SELECT CASE WHEN user_id <> '' THEN user_id ELSE 'visitor:' || visitor_id END AS identity,
+                   COUNT(*) AS voice_attempts, COALESCE(SUM(correct), 0) AS voice_correct,
+                   COALESCE(AVG(coverage), 0) AS voice_coverage
+            FROM voice_attempts WHERE attempted_at >= ?
+            GROUP BY identity
+            """,
+            (since,),
+        ).fetchall()
+        retention_rows = connection.execute(
+            """
+            SELECT user_id, visitor_id, chapter,
+                   date(started_at / 1000, 'unixepoch', '+8 hours') AS day
+            FROM page_views WHERE started_at >= ?
+            """,
+            (since,),
+        ).fetchall()
+    complete_by_chapter = {row["chapter"]: int(row["completes"] or 0) for row in chapter_completes}
+    voice_by_chapter = {row["chapter"]: dict(row) for row in voice_chapters}
+    chapter_output = []
+    chapter_retention = retention_summary(retention_rows)["chapters"]
+    for row in chapter_rows:
+        chapter = row["chapter"]
+        item = dict(row)
+        item["completes"] = complete_by_chapter.get(chapter, 0)
+        voice = voice_by_chapter.get(chapter, {})
+        item["voice_attempts"] = int(voice.get("attempts", 0) or 0)
+        item["voice_correct_rate"] = round((int(voice.get("correct", 0) or 0) / item["voice_attempts"]), 4) if item["voice_attempts"] else None
+        item["d1_rate"] = chapter_retention.get(chapter, {}).get("d1Rate")
+        item["d7_rate"] = chapter_retention.get(chapter, {}).get("d7Rate")
+        chapter_output.append(item)
+    voice_by_user = {row["identity"]: dict(row) for row in voice_users}
+    user_output = []
+    for row in users:
+        item = dict(row)
+        voice = voice_by_user.get(item["identity"], {})
+        item["voice_attempts"] = int(voice.get("voice_attempts", 0) or 0)
+        item["voice_correct"] = int(voice.get("voice_correct", 0) or 0)
+        item["voice_coverage"] = voice.get("voice_coverage")
+        user_output.append(item)
+    voice_output = dict(voice_totals)
+    voice_output["asr_rate"] = round((int(voice_output.get("asr_ok", 0) or 0) / int(voice_output.get("attempts", 0) or 1)), 4) if voice_output.get("attempts") else None
+    voice_output["correct_rate"] = round((int(voice_output.get("correct", 0) or 0) / int(voice_output.get("attempts", 0) or 1)), 4) if voice_output.get("attempts") else None
+    retention = retention_summary(retention_rows)["overall"]
     return {
         "range": range_value,
         "generatedAt": int(time.time() * 1000),
@@ -727,15 +1068,23 @@ def analytics_summary(range_value):
         "events": [dict(row) for row in events],
         "depth": [dict(row) for row in depth_rows],
         "daily": [dict(row) for row in daily],
-        "privacy": "仅匿名访客号、页面、有效停留和预设交互；不记录输入文字、姓名、声音或原始 IP。",
+        "weekly": [dict(row) for row in weekly],
+        "monthly": [dict(row) for row in monthly],
+        "sources": [dict(row) for row in sources],
+        "chapters": chapter_output,
+        "voice": voice_output,
+        "voiceByChapter": [dict(row) for row in voice_chapters],
+        "users": user_output,
+        "retention": retention,
+        "privacy": "按匿名账户 Cookie 关联访问与章节行为；不记录孩子的原始录音、转写文本、姓名或原始 IP。朗读正确率是目标词覆盖率，不是专业发音评分。",
     }
 
 
 def session_secret():
     value = os.environ.get("DATA_SESSION_SECRET", "")
-    if not value:
+    if not value and os.environ.get("APP_ENV") == "production":
         raise RuntimeError("data_admin_not_configured")
-    return value.encode("utf-8")
+    return (value or "local-data-session-secret-997118").encode("utf-8")
 
 
 def make_data_session():
@@ -2684,17 +3033,21 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/analytics/collect":
             try:
-                collect_analytics(self.read_json())
+                collect_analytics(self.read_json(), self)
                 self.respond_json(202, {"ok": True})
             except (ValueError, json.JSONDecodeError, TypeError):
                 self.respond_json(400, {"error": "invalid_analytics_payload"})
             return
+        if path == "/api/analytics/voice":
+            try:
+                collect_voice_analytics(self.read_json(8192), self)
+                self.respond_json(202, {"ok": True})
+            except (ValueError, json.JSONDecodeError, TypeError):
+                self.respond_json(400, {"error": "invalid_voice_analytics_payload"})
+            return
         if path == "/api/data/login":
             client = self.client_key()
-            password = os.environ.get("DATA_ADMIN_PASSWORD", "")
-            if not password:
-                self.respond_json(503, {"error": "data_admin_not_configured"})
-                return
+            password = os.environ.get("DATA_ADMIN_PASSWORD", "997118")
             if not login_allowed(client):
                 self.respond_json(429, {"error": "too_many_attempts"})
                 return
@@ -2876,7 +3229,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         # ...and the extensionless path is served by the .html file.
-        if urlsplit(path).path.rstrip("/") == "/Data":
+        if urlsplit(path).path.rstrip("/").lower() == "/data":
             return str(ROOT / "data.html")
         fs = super().translate_path(path)
         if not os.path.exists(fs) and os.path.isfile(fs + ".html"):
@@ -2889,7 +3242,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             # Entry documents must pick up the current versioned modules after
             # release, including extensionless /wow-story and /dev/ routes.
             is_html = any(header.lower().startswith(b"content-type: text/html") for header in getattr(self, "_headers_buffer", ()))
-            if is_html or path.endswith(".html") or path.startswith("/api/") or path in {"/", "/Data"}:
+            if is_html or path.endswith(".html") or path.startswith("/api/") or path.lower() in {"/", "/data"}:
                 self.send_header("Cache-Control", "no-store, must-revalidate")
             else:
                 self.send_header("Cache-Control", "public, max-age=604800")

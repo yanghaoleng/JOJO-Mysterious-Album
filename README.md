@@ -196,12 +196,13 @@ npm run build
 
 ### 匿名访问统计与 `/Data`
 
-- `POST /api/analytics/collect`：接收匿名浏览器访客号、页面访问、有效前台停留、最高交互深度和预设事件名。不会接收孩子填写的文字、角色名、声音或原始 IP。
+- `POST /api/analytics/collect`：接收匿名浏览器访客号、后端匿名用户关联、页面访问、来源、章节、有效前台停留、最高交互深度和预设事件名。不会接收孩子填写的文字、角色名、声音或原始 IP。
+- `POST /api/analytics/voice`：记录章节朗读尝试的时长、ASR 是否成功、目标词覆盖率和是否完成目标；不记录原始录音或转写文本。
 - `POST /api/data/login`：校验六位服务端管理口令，成功后写入 12 小时有效的 `HttpOnly + SameSite=Strict + Secure` 会话。
-- `GET /api/data/summary`：按今日、近 7 天、近 30 天或全部聚合 UV、PV、平均有效停留、页面数据、交互事件和深度。
+- `GET /api/data/summary`：按今日、近 7 天、近 30 天或全部聚合 UV、PV、日/周/月趋势、来源、章节深度、用户行为、cohort 留存和朗读指标。
 - `POST /api/data/logout`：退出统计后台。
 
-统计后台入口为正式域名加 `/Data`。口令键盘复用罗师傅档期页的六格圆点、`1 至 9 / 清除 / 0 / 退格` 顺序、六位自动提交和错误抖动体验。数据库使用服务器本机 SQLite WAL，位于发布目录之外，切换版本不会丢失。
+统计后台入口为正式域名加 `/data`（同时兼容 `/Data`）。口令键盘复用体重日历的九宫格、空位、`0`、退格顺序，六位自动提交和错误抖动体验；默认口令为 `997118`，生产可用 `DATA_ADMIN_PASSWORD` 覆盖。数据库使用服务器本机 SQLite WAL，位于发布目录之外，切换版本不会丢失。
 
 ## 语音
 
@@ -221,9 +222,9 @@ python3 scripts/generate_star_offline.py
 
 - `index.html`：产品结构、响应式 UI、设计变量和无障碍信息。
 - `src/mode.js`：三入口主页、模拟器按需加载、统一返回主页和浏览器前进后退同步。
-- `src/analytics.js`：匿名访客号、有效停留、模式页面、交互事件和深度采集。
+- `src/analytics.js`：匿名访客号、来源、后端匿名账户绑定、有效停留、章节行为和朗读指标采集。
 - `src/ui-sfx.js`、`vendor/uisfx.js`：全站 Organic 语义音效和首次交互解锁；默认常开，不提供关闭入口。
-- `data.html`、`src/data.js`、`src/data.css`：六位口令门与自托管访问数据后台。
+- `data.html`、`src/data.js`、`src/data.css`：六位口令门与自托管产品数据后台，入口为 `/data`。
 - `src/lab.js`、`src/lab.css`：角色实验室、15 个完整角色模板、6 种动作、5 套连续脚本、17 问画像塑形、音色和三端布局。
 - `src/child-profile.js`：第三版本机儿童画像、旧档案迁移、17 维完成度、分组摘要和关卡启发映射。
 - `src/calligraph-bubble.jsx`、`vendor/calligraph-bubble.js`：Calligraph 逐字气泡组件及其本地浏览器包。
@@ -248,7 +249,7 @@ python3 scripts/generate_star_offline.py
 - 孩子的名字、选择、图鉴、实验室角色配方和兴趣小档案仅保存在当前设备的 `localStorage`；画像不询问姓名、学校、住址或精确生日。
 - 《送豆豆回家》会把 3 轮自由回答文本发送给 `/api/story-turn` 做低敏感度的动物、颜色和名字理解；《登月计划》会把当前发明想法发送给 `/api/moon-director` 组织下一段剧情和受限画面配方。
 - 角色实验室不调用大语言模型；需要朗读的动态台词只发送文字与音色 ID 到所选 TTS 服务，不上传麦克风声音，也不由项目服务端保存。
-- 正式第一关和角色实验室不录音。新版 `/story-v2` 获得麦克风许可后，会把单次发言送到同源 `/api/asr`，服务端再转给豆包识别；当前实现不落盘、不进入统计，但正式上线前仍需单独说明、家长授权和数据保留策略。连续故事不提供文字表单或点选回答，麦克风不可用时只提示授权、重试或更换兼容浏览器。产品只建立不包含儿童资料的匿名技术账户；匿名账户和访问统计都不保存孩子输入、声音或原始 IP。
+- 正式第一关和角色实验室不录音。新版 `/story-v2` 获得麦克风许可后，会把单次发言送到同源 `/api/asr`，服务端再转给豆包识别；当前实现不落盘、不进入统计。英语章节只把朗读时长、识别成功、目标词覆盖率和是否完成目标写入统计，不保存原始录音、转写文本或原始 IP。连续故事不提供文字表单或点选回答，麦克风不可用时只提示授权、重试或更换兼容浏览器。产品只建立不包含儿童资料的匿名技术账户。
 
 ## 部署变量
 
@@ -262,7 +263,7 @@ python3 scripts/generate_star_offline.py
 - `VOLC_SPEECH_APP_ID`、`VOLC_SPEECH_ACCESS_TOKEN`、`VOLC_SPEECH_RESOURCE_ID`：豆包大模型语音识别服务端鉴权；小时版 Resource ID 为 `volc.bigasr.sauc.duration`。
 - `VOLC_TTS_SPEAKER_ID`、`VOLC_TTS_RESOURCE_ID`：豆包 TTS 的全局回退音色与资源。15 个内置音色默认使用代码中已验证的发音人；获得声音复刻 speaker ID 后，可用 `VOLC_TTS_SPEAKER_<VOICE_ID>` 单独替换某个角色音色。
 - `PET_TTS_PROVIDER`：动态语音供应方，`volc` 或 `fish`；当前本机已切到 `volc`。
-- `DATA_ADMIN_PASSWORD`：六位统计后台口令，只放服务器环境变量。
+- `DATA_ADMIN_PASSWORD`：六位统计后台口令，默认 `997118`；生产建议只放服务器环境变量并按需覆盖。
 - `DATA_SESSION_SECRET`：统计后台签名密钥，至少 32 字节随机值。
 - `ANALYTICS_DB_PATH`：SQLite 路径，生产固定为 `/var/lib/kindergrimm/analytics.db`。
 - `MYSQL_URL`：匿名用户 MySQL 连接；本地 Docker 默认为 `mysql://root:root@127.0.0.1:3306/jojo_mysterious_album_dev`。

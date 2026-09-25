@@ -1,4 +1,4 @@
-import './anonymous-identity.js?v=20260920-user-id';
+import { identityReady } from './anonymous-identity.js?v=20260920-user-id';
 
 const VISITOR_KEY = 'mengmeng-visitor-v1';
 const ENDPOINT = '/api/analytics/collect';
@@ -31,11 +31,38 @@ function safeName(value) {
     .slice(0, 48);
 }
 
+function sourceContext() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const campaign = params.get('utm_source') || params.get('from') || '';
+    if (campaign) return { source: safeName(campaign) || 'campaign', detail: safeName(params.get('utm_campaign') || '') };
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    if (!referrer || referrer.origin === location.origin) return { source: 'direct', detail: '' };
+    return { source: safeName(referrer.hostname) || 'referrer', detail: safeName(referrer.hostname) };
+  } catch {
+    return { source: 'direct', detail: '' };
+  }
+}
+
+function safeProperties(value) {
+  if (!value || typeof value !== 'object') return {};
+  const allowed = new Set(['correct', 'coverage', 'targetCount', 'matchedCount', 'durationMs', 'source', 'lessonId']);
+  return Object.fromEntries(Object.entries(value).filter(([key, item]) => {
+    if (!allowed.has(key)) return false;
+    return typeof item === 'boolean' || (typeof item === 'number' && Number.isFinite(item)) || typeof item === 'string';
+  }).map(([key, item]) => [key, typeof item === 'string' ? item.slice(0, 120) : item]));
+}
+
+const source = sourceContext();
+
 const state = {
   visitorId: persistentVisitor(),
   sessionId: randomId('s'),
   viewId: randomId('p'),
   page: safeName(document.body.dataset.analyticsPage) || 'choose',
+  chapter: safeName(document.body.dataset.analyticsChapter) || safeName(document.body.dataset.analyticsPage) || 'choose',
+  source: source.source,
+  sourceDetail: source.detail,
   startedAt: Date.now(),
   activeMs: 0,
   activeSince: 0,
@@ -66,6 +93,9 @@ function snapshot() {
     sessionId: state.sessionId,
     viewId: state.viewId,
     page: state.page,
+    chapter: state.chapter,
+    source: state.source,
+    sourceDetail: state.sourceDetail,
     startedAt: state.startedAt,
     activeMs: Math.round(state.activeMs + liveSlice),
     depth: state.depth,
@@ -101,6 +131,7 @@ function beginPage(page) {
   flush();
   state.viewId = randomId('p');
   state.page = next;
+  state.chapter = safeName(document.body.dataset.analyticsChapter) || next;
   state.startedAt = Date.now();
   state.activeMs = 0;
   state.activeSince = 0;
@@ -111,7 +142,7 @@ function beginPage(page) {
   flush();
 }
 
-export function trackAnalytics(name, { depth = state.depth } = {}) {
+export function trackAnalytics(name, { depth = state.depth, chapter = state.chapter, properties = {} } = {}) {
   const eventName = safeName(name);
   if (!eventName) return;
   state.depth = Math.max(state.depth, Math.min(100, Number(depth) || 0));
@@ -121,6 +152,8 @@ export function trackAnalytics(name, { depth = state.depth } = {}) {
     name: eventName,
     at: Date.now(),
     depth: state.depth,
+    chapter: safeName(chapter) || state.chapter,
+    properties: safeProperties(properties),
   });
   if (state.events.length >= 8) flush();
 }
@@ -186,8 +219,41 @@ window.addEventListener('pagehide', () => {
 
 openActiveSlice();
 flush();
+void identityReady.finally(() => flush());
 state.timer = window.setInterval(flush, 15_000);
 
 export function setAnalyticsPage(page) {
   beginPage(page);
+}
+
+export function setAnalyticsChapter(chapter) {
+  const next = safeName(chapter) || state.page;
+  if (next === state.chapter) return;
+  state.chapter = next;
+  flush();
+}
+
+export function trackVoiceAttempt({ chapter, lessonId, durationMs = 0, source = 'asr', asrOk = true, correct = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  const body = JSON.stringify({
+    attemptId: randomId('a'),
+    visitorId: state.visitorId,
+    sessionId: state.sessionId,
+    chapter: safeName(chapter) || state.chapter,
+    lessonId: safeName(lessonId) || 'unknown',
+    durationMs: Math.round(Number(durationMs) || 0),
+    source: source === 'realtime' ? 'realtime' : 'asr',
+    asrOk: Boolean(asrOk),
+    correct: Boolean(correct),
+    coverage: Math.max(0, Math.min(1, Number(coverage) || 0)),
+    targetCount: Math.max(0, Math.round(Number(targetCount) || 0)),
+    matchedCount: Math.max(0, Math.round(Number(matchedCount) || 0)),
+    attemptedAt: Date.now(),
+  });
+  void fetch('/api/analytics/voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+    credentials: 'same-origin',
+  }).catch(() => {});
 }

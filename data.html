@@ -30,7 +30,7 @@
           <button type="button" data-key="1" data-uisfx="none">1</button><button type="button" data-key="2" data-uisfx="none">2</button><button type="button" data-key="3" data-uisfx="none">3</button>
           <button type="button" data-key="4" data-uisfx="none">4</button><button type="button" data-key="5" data-uisfx="none">5</button><button type="button" data-key="6" data-uisfx="none">6</button>
           <button type="button" data-key="7" data-uisfx="none">7</button><button type="button" data-key="8" data-uisfx="none">8</button><button type="button" data-key="9" data-uisfx="none">9</button>
-          <button type="button" data-action="clear" data-uisfx="cancel"><span>清除</span></button><button type="button" data-key="0" data-uisfx="none">0</button><button type="button" data-action="backspace" data-uisfx="back" aria-label="退格">⌫</button>
+          <span aria-hidden="true"></span><button type="button" data-key="0" data-uisfx="none">0</button><button type="button" class="key-icon" data-action="backspace" data-uisfx="back" aria-label="退格">⌫</button>
         </div>
         <button class="sr-only" type="submit" data-uisfx="none">进入数据页</button>
       </form>
@@ -67,9 +67,12 @@
     <section id="dashboard-content" aria-live="polite">
       <section class="metric-grid" aria-label="核心数据">
         <article class="metric-card primary"><span>去重访客</span><strong id="metric-uv">0</strong><small>同一浏览器只算一位</small></article>
+        <article class="metric-card"><span>匿名用户</span><strong id="metric-users">0</strong><small>由后端匿名账户或访客号去重</small></article>
         <article class="metric-card"><span>页面浏览</span><strong id="metric-pv">0</strong><small id="metric-pv-note">所有主要页面合计</small></article>
         <article class="metric-card"><span>平均有效停留</span><strong id="metric-dwell">0秒</strong><small>只统计页面可见且在前台的时间</small></article>
         <article class="metric-card"><span>平均交互深度</span><strong id="metric-depth">0</strong><small id="metric-interactions">0 次有效交互</small></article>
+        <article class="metric-card"><span>朗读完成率</span><strong id="metric-voice">—</strong><small>完成目标词的朗读尝试占比</small></article>
+        <article class="metric-card"><span>次日留存</span><strong id="metric-retention">—</strong><small>成熟新用户 cohort 的次日回访</small></article>
       </section>
 
       <section class="data-grid">
@@ -94,8 +97,33 @@
         </article>
 
         <article class="data-panel trend-panel">
-          <header><div><p class="panel-kicker">每日趋势</p><h2>访问变化</h2></div><span>北京时间</span></header>
+          <header><div><p class="panel-kicker">访问趋势</p><h2>访问变化</h2></div><div class="panel-tools"><span>北京时间</span><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></div></header>
           <div id="daily-chart" class="daily-chart"></div>
+        </article>
+
+        <article class="data-panel source-panel">
+          <header><div><p class="panel-kicker">来源</p><h2>访问从哪里来</h2></div><span>直接访问、UTM 来源与外部站点</span></header>
+          <div id="source-list" class="source-list"></div>
+        </article>
+
+        <article class="data-panel chapter-panel">
+          <header><div><p class="panel-kicker">章节表现</p><h2>每个章节走得多深</h2></div><span>留存只对已成熟的 cohort 计算</span></header>
+          <div class="table-wrap"><table><thead><tr><th>章节</th><th>用户</th><th>浏览</th><th>深度</th><th>完成</th><th>D1</th><th>D7</th><th>朗读</th></tr></thead><tbody id="chapter-rows"></tbody></table></div>
+        </article>
+
+        <article class="data-panel retention-panel">
+          <header><div><p class="panel-kicker">留存</p><h2>用户有没有回来</h2></div><span>按首次出现日分 cohort</span></header>
+          <div id="retention-list" class="retention-list"></div>
+        </article>
+
+        <article class="data-panel voice-panel">
+          <header><div><p class="panel-kicker">朗读</p><h2>语音使用质量</h2></div><span>不保存录音和原始转写</span></header>
+          <div class="voice-metrics"><div><span>尝试次数</span><strong id="voice-attempts">0</strong></div><div><span>识别成功</span><strong id="voice-asr">—</strong></div><div><span>目标完成</span><strong id="voice-correct">—</strong></div><div><span>目标词覆盖</span><strong id="voice-coverage">—</strong></div><div><span>平均说话时长</span><strong id="voice-duration">—</strong></div></div>
+        </article>
+
+        <article class="data-panel users-panel">
+          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>可按时间段查看最近 100 位</span></header>
+          <div class="table-wrap"><table><thead><tr><th>用户</th><th>最近访问</th><th>浏览</th><th>章节</th><th>深度</th><th>朗读</th><th>完成率</th><th>停留</th></tr></thead><tbody id="user-rows"></tbody></table></div>
         </article>
       </section>
 
