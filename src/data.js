@@ -52,6 +52,7 @@ const PROFILE_FIELD_LABELS = {
 };
 const LAB_TAB_LABELS = { interview: '成长问答', templates: '角色模板', face: '捏脸', body: '身体', actions: '动作', scene: '场景', voice: '声音', dialogue: '对话' };
 const DEPTH_LABELS = ['进入页面', '第一次选择', '继续探索', '完成关键选择', '进入连续互动', '到达核心玩法', '深入体验', '推进任务', '接近完成', '到达结尾', '完成体验'];
+const RANGE_LABELS = { today: '今日', '7d': '近 7 天', '30d': '近 30 天', all: '全部历史' };
 
 let code = '';
 let activeRange = '7d';
@@ -273,6 +274,12 @@ function renderDaily(rows) {
     pv.dataset.value = `PV ${number(item.pv)}`;
     pv.tabIndex = 0;
     pv.setAttribute('aria-label', `${item.day || item.period}，页面浏览 ${number(item.pv)}`);
+    for (const bar of [uv, pv]) {
+      bar.addEventListener('pointerdown', () => {
+        root.querySelectorAll('.day-bar.is-touched').forEach(node => node.classList.remove('is-touched'));
+        bar.classList.add('is-touched');
+      });
+    }
     bars.append(uv, pv);
     const value = document.createElement('b');
     value.textContent = `${item.uv}/${item.pv}`;
@@ -427,18 +434,67 @@ function renderVoice(data) {
   setSlotMetric('voice-duration', hasAttempts ? duration(voice.avg_duration_ms) : '—');
 }
 
+function comparisonText(current, previous, noun) {
+  const currentValue = Number(current || 0);
+  const previousValue = Number(previous || 0);
+  if (!previousValue) return currentValue ? `前一周期无${noun}，不计算增幅` : `当前与前一周期均无${noun}`;
+  const delta = (currentValue - previousValue) / previousValue;
+  const direction = delta > 0 ? '上升' : delta < 0 ? '下降' : '持平';
+  return delta === 0 ? `较前一周期持平` : `较前一周期${direction} ${Math.abs(Math.round(delta * 100))}%`;
+}
+
+function renderExecutiveSummary(data) {
+  const totals = data.totals || {};
+  const previous = data.previousTotals;
+  const topPage = data.pages?.[0];
+  const retention = data.retention || {};
+  const voice = data.voice || {};
+  const statements = [
+    ['规模', `${RANGE_LABELS[activeRange]}共有 ${number(totals.users)} 位匿名用户，产生 ${number(totals.pv)} 次页面浏览。`],
+    ['变化', previous ? `匿名用户${comparisonText(totals.users, previous.users, '用户')}；页面浏览${comparisonText(totals.pv, previous.pv, '浏览')}。` : '全部历史不做前周期比较，避免用不等长窗口制造趋势。'],
+    ['需要关注', topPage ? `访问最多的是「${PAGE_LABELS[topPage.page] || topPage.page}」，覆盖 ${number(topPage.uv)} 位用户；${retention.d1Total ? `成熟新用户次日留存为 ${percent(retention.d1Rate)}。` : '当前还没有足够成熟的新用户留存样本。'}` : '当前范围没有页面访问，暂时无法判断用户主要去向。'],
+  ];
+  if (Number(voice.attempts || 0)) statements[2][1] += ` 朗读目标完成率为 ${percent(voice.correct_rate)}（${number(voice.correct)} / ${number(voice.attempts)} 次）。`;
+  const root = $('executive-summary');
+  root.innerHTML = '';
+  for (const [label, copy] of statements) {
+    const item = document.createElement('p');
+    item.className = 'insight';
+    const title = document.createElement('b'); title.textContent = label;
+    item.append(title, document.createTextNode(copy));
+    root.appendChild(item);
+  }
+}
+
+function renderQuality(data) {
+  const quality = data.quality || {};
+  const locationRate = quality.listedUsers ? quality.locatedUsers / quality.listedUsers : null;
+  const transcriptRate = quality.voiceAttempts ? quality.voiceTranscripts / quality.voiceAttempts : null;
+  $('quality-summary').innerHTML = `<span><b>地址覆盖</b> ${locationRate == null ? '—' : percent(locationRate)}（${number(quality.locatedUsers)} / ${number(quality.listedUsers)} 位列表用户）</span><span><b>朗读文字覆盖</b> ${transcriptRate == null ? '—' : percent(transcriptRate)}（${number(quality.voiceTranscripts)} / ${number(quality.voiceAttempts)} 次）</span>`;
+}
+
 function renderDashboard(data) {
   const totals = data.totals || {};
-  setSlotMetric('metric-uv', number(totals.uv));
   setSlotMetric('metric-users', number(totals.users || totals.uv));
+  setSlotMetric('metric-sessions', number(totals.sessions));
   setSlotMetric('metric-pv', number(totals.pv));
   setSlotMetric('metric-dwell', duration(totals.avg_active_ms));
   setSlotMetric('metric-depth', Number(totals.avg_depth || 0).toFixed(1));
   $('metric-interactions').textContent = `${number(totals.interactions)} 次有效交互`;
   setSlotMetric('metric-retention', percent(data.retention?.d1Rate));
-  setSlotMetric('metric-voice', percent(data.voice?.correct_rate));
+  $('scope-title').textContent = `${RANGE_LABELS[activeRange]}概览`;
+  $('scope-note').textContent = activeRange === 'all' ? '北京时间 · 全部历史不做环比' : '北京时间 · 与前一等长周期比较';
+  $('metric-users-change').textContent = data.previousTotals ? comparisonText(totals.users, data.previousTotals.users, '用户') : '同一匿名账户或浏览器去重';
+  $('metric-sessions-change').textContent = data.previousTotals ? comparisonText(totals.sessions, data.previousTotals.sessions, '会话') : '一次连续访问算一个会话';
+  $('metric-pv-change').textContent = data.previousTotals ? comparisonText(totals.pv, data.previousTotals.pv, '浏览') : '主要页面浏览次数';
+  for (const id of ['metric-users-change', 'metric-sessions-change', 'metric-pv-change']) {
+    const node = $(id); node.classList.toggle('change-up', node.textContent.includes('上升')); node.classList.toggle('change-down', node.textContent.includes('下降'));
+  }
   $('generated-at').textContent = `更新于 ${new Date(data.generatedAt).toLocaleString('zh-CN', { hour12: false })}`;
+  $('data-freshness').textContent = `更新于 ${new Date(data.generatedAt).toLocaleString('zh-CN', { hour12: false })} · 北京时间`;
   $('privacy-note').textContent = data.privacy || '';
+  renderExecutiveSummary(data);
+  renderQuality(data);
   renderPages(data.pages || []);
   renderDepth(data.depth || []);
   renderEvents(data.events || []);
@@ -532,6 +588,21 @@ document.querySelectorAll('[data-user-sort]').forEach(button => {
     renderUsers();
   });
 });
+document.querySelectorAll('[data-view]').forEach(button => {
+  button.addEventListener('click', () => {
+    const view = button.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-selected', String(item === button)));
+    document.querySelectorAll('[data-view-panel]').forEach(panel => { panel.hidden = panel.dataset.viewPanel !== view; });
+  });
+});
+
+const sectionLinks = [...document.querySelectorAll('.section-nav a')];
+const sectionObserver = new IntersectionObserver(entries => {
+  const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (!visible) return;
+  sectionLinks.forEach(link => link.setAttribute('aria-current', String(link.hash === `#${visible.target.id}`)));
+}, { rootMargin: '-18% 0px -62% 0px', threshold: [0, .25, .6] });
+document.querySelectorAll('[data-section]').forEach(section => sectionObserver.observe(section));
 $('toggle-users').addEventListener('click', () => { usersExpanded = !usersExpanded; renderUsers(); });
 $('close-voice-detail').addEventListener('click', () => $('voice-detail-dialog').close());
 $('voice-detail-dialog').addEventListener('click', event => { if (event.target === $('voice-detail-dialog')) $('voice-detail-dialog').close(); });

@@ -884,7 +884,7 @@ def range_start(value):
     return int(time.time() * 1000) - 7 * 24 * 60 * 60 * 1000
 
 
-def retention_summary(rows):
+def retention_summary(rows, cohort_since=None):
     identities = {}
     for row in rows:
         identity = row["user_id"] or f"visitor:{row['visitor_id']}"
@@ -898,6 +898,8 @@ def retention_summary(rows):
         cohorts = {}
         for days in day_sets.values():
             first = min(days)
+            if cohort_since and first < cohort_since:
+                continue
             cohorts.setdefault(first, []).append(tuple(sorted(days)))
         cohort_rows = []
         d1_users = d1_total = d7_users = d7_total = 0
@@ -939,6 +941,8 @@ def retention_summary(rows):
 
 def analytics_summary(range_value):
     since = range_start(range_value)
+    now_ms = int(time.time() * 1000)
+    previous_since = max(0, since - (now_ms - since)) if since else None
     with analytics_connection() as connection:
         totals = connection.execute(
             """
@@ -953,9 +957,24 @@ def analytics_summary(range_value):
             """,
             (since,),
         ).fetchone()
+        previous_totals = None
+        if previous_since is not None:
+            previous_totals = connection.execute(
+                """
+                SELECT COUNT(*) AS pv,
+                       COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS users,
+                       COUNT(DISTINCT session_id) AS sessions,
+                       COALESCE(AVG(active_ms), 0) AS avg_active_ms,
+                       COALESCE(AVG(max_depth), 0) AS avg_depth,
+                       COALESCE(SUM(interaction_count), 0) AS interactions
+                FROM page_views WHERE started_at >= ? AND started_at < ?
+                """,
+                (previous_since, since),
+            ).fetchone()
         pages = connection.execute(
             """
-            SELECT page, COUNT(*) AS pv, COUNT(DISTINCT visitor_id) AS uv,
+            SELECT page, COUNT(*) AS pv,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv,
                    COUNT(DISTINCT session_id) AS sessions,
                    COALESCE(AVG(active_ms), 0) AS avg_active_ms,
                    COALESCE(AVG(max_depth), 0) AS avg_depth,
@@ -967,7 +986,8 @@ def analytics_summary(range_value):
         ).fetchall()
         events = connection.execute(
             """
-            SELECT event_name, page, COUNT(*) AS count, COUNT(DISTINCT visitor_id) AS uv
+            SELECT event_name, page, COUNT(*) AS count,
+                   COUNT(DISTINCT CASE WHEN user_id <> '' THEN user_id ELSE visitor_id END) AS uv
             FROM interaction_events WHERE occurred_at >= ?
             GROUP BY event_name, page ORDER BY count DESC LIMIT 30
             """,
@@ -1051,6 +1071,7 @@ def analytics_summary(range_value):
             SELECT COUNT(*) AS attempts,
                    COALESCE(SUM(asr_ok), 0) AS asr_ok,
                    COALESCE(SUM(correct), 0) AS correct,
+                   COALESCE(SUM(CASE WHEN transcript <> '' THEN 1 ELSE 0 END), 0) AS transcripts,
                    COALESCE(AVG(coverage), 0) AS avg_coverage,
                    COALESCE(AVG(duration_ms), 0) AS avg_duration_ms
             FROM voice_attempts WHERE attempted_at >= ?
@@ -1108,14 +1129,15 @@ def analytics_summary(range_value):
             """
             SELECT user_id, visitor_id, chapter,
                    date(started_at / 1000, 'unixepoch', '+8 hours') AS day
-            FROM page_views WHERE started_at >= ?
+            FROM page_views
             """,
-            (since,),
         ).fetchall()
     complete_by_chapter = {row["chapter"]: int(row["completes"] or 0) for row in chapter_completes}
     voice_by_chapter = {row["chapter"]: dict(row) for row in voice_chapters}
     chapter_output = []
-    chapter_retention = retention_summary(retention_rows)["chapters"]
+    cohort_since = None if not since else datetime.fromtimestamp(since / 1000, timezone.utc).astimezone(timezone(timedelta(hours=8))).date().isoformat()
+    retention_data = retention_summary(retention_rows, cohort_since)
+    chapter_retention = retention_data["chapters"]
     for row in chapter_rows:
         chapter = row["chapter"]
         item = dict(row)
@@ -1144,11 +1166,20 @@ def analytics_summary(range_value):
     voice_output = dict(voice_totals)
     voice_output["asr_rate"] = round((int(voice_output.get("asr_ok", 0) or 0) / int(voice_output.get("attempts", 0) or 1)), 4) if voice_output.get("attempts") else None
     voice_output["correct_rate"] = round((int(voice_output.get("correct", 0) or 0) / int(voice_output.get("attempts", 0) or 1)), 4) if voice_output.get("attempts") else None
-    retention = retention_summary(retention_rows)["overall"]
+    retention = retention_data["overall"]
+    located_users = sum(1 for item in user_output if item.get("location") or item.get("carrier"))
+    voice_attempts = int(voice_output.get("attempts", 0) or 0)
     return {
         "range": range_value,
         "generatedAt": int(time.time() * 1000),
         "totals": dict(totals),
+        "previousTotals": dict(previous_totals) if previous_totals is not None else None,
+        "scope": {
+            "since": since,
+            "until": now_ms,
+            "timezone": "Asia/Shanghai",
+            "comparison": "previous_equal_length" if previous_totals is not None else None,
+        },
         "pages": [dict(row) for row in pages],
         "events": [dict(row) for row in events],
         "depth": [dict(row) for row in depth_rows],
@@ -1161,6 +1192,12 @@ def analytics_summary(range_value):
         "voiceByChapter": [dict(row) for row in voice_chapters],
         "users": user_output,
         "retention": retention,
+        "quality": {
+            "locatedUsers": located_users,
+            "listedUsers": len(user_output),
+            "voiceTranscripts": int(voice_output.get("transcripts", 0) or 0),
+            "voiceAttempts": voice_attempts,
+        },
         "privacy": "按匿名账户 Cookie 关联访问与章节行为；访问 IP 只在服务器内即时换算为省市与运营商粗略标签，不保存或下发原始 IP；不保存原始录音，朗读文字最多保留 240 字并过滤可能的个人信息。朗读正确率是目标词覆盖率，不是专业发音评分。",
     }
 

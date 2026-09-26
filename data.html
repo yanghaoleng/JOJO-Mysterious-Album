@@ -1,139 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#eee6d2">
-  <meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#eee6d2"><meta name="robots" content="noindex, nofollow">
   <title>访问数据 · 萌萌星的奇妙图鉴</title>
-  <link rel="preload" as="image" type="image/webp" href="./assets/icons/brush-icons.webp?v=20260828-picturebook-alpha">
-  <link rel="stylesheet" href="./src/data.css">
-  <link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
+  <link rel="stylesheet" href="./src/data.css?v=20260926-compact-insight"><link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
 </head>
 <body data-page="data">
   <canvas id="data-grain" aria-hidden="true"></canvas>
-
-  <main id="data-gate" class="data-gate" aria-label="访问数据口令">
-    <section class="gate-sheet">
-      <form id="code-form" autocomplete="off">
-        <label class="sr-only" for="code-input">六位管理口令</label>
-        <input id="code-input" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
-        <div id="code-display" class="code-display" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <p id="code-error" class="code-error" role="alert"></p>
-        <div class="keypad" aria-label="数字键盘">
-          <button type="button" data-key="1" data-uisfx="none">1</button><button type="button" data-key="2" data-uisfx="none">2</button><button type="button" data-key="3" data-uisfx="none">3</button>
-          <button type="button" data-key="4" data-uisfx="none">4</button><button type="button" data-key="5" data-uisfx="none">5</button><button type="button" data-key="6" data-uisfx="none">6</button>
-          <button type="button" data-key="7" data-uisfx="none">7</button><button type="button" data-key="8" data-uisfx="none">8</button><button type="button" data-key="9" data-uisfx="none">9</button>
-          <span aria-hidden="true"></span><button type="button" data-key="0" data-uisfx="none">0</button><button type="button" class="key-icon" data-action="backspace" data-uisfx="back" aria-label="退格">⌫</button>
-        </div>
-        <button class="sr-only" type="submit" data-uisfx="none">进入数据页</button>
-      </form>
-    </section>
-  </main>
+  <main id="data-gate" class="data-gate" aria-label="访问数据口令"><section class="gate-sheet"><form id="code-form" autocomplete="off">
+    <label class="sr-only" for="code-input">六位管理口令</label><input id="code-input" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
+    <div id="code-display" class="code-display" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><p id="code-error" class="code-error" role="alert"></p>
+    <div class="keypad" aria-label="数字键盘"><button type="button" data-key="1" data-uisfx="none">1</button><button type="button" data-key="2" data-uisfx="none">2</button><button type="button" data-key="3" data-uisfx="none">3</button><button type="button" data-key="4" data-uisfx="none">4</button><button type="button" data-key="5" data-uisfx="none">5</button><button type="button" data-key="6" data-uisfx="none">6</button><button type="button" data-key="7" data-uisfx="none">7</button><button type="button" data-key="8" data-uisfx="none">8</button><button type="button" data-key="9" data-uisfx="none">9</button><span aria-hidden="true"></span><button type="button" data-key="0" data-uisfx="none">0</button><button type="button" class="key-icon" data-action="backspace" data-uisfx="back" aria-label="退格">⌫</button></div>
+    <button class="sr-only" type="submit" data-uisfx="none">进入数据页</button>
+  </form></section></main>
 
   <main id="dashboard" class="dashboard" hidden>
-    <header class="dashboard-header">
-      <div>
-        <p class="eyebrow">萌萌星 · 匿名访问概览</p>
-        <h1>孩子走到了哪里？</h1>
-        <p id="generated-at" class="updated-at">正在读取最新数据</p>
-      </div>
-      <div class="header-actions">
-        <a href="/">打开网站</a>
-        <button id="logout" type="button">退出</button>
-      </div>
-    </header>
-
-    <nav class="range-picker" aria-label="统计时间范围">
-      <button type="button" data-range="today">今日</button>
-      <button type="button" data-range="7d" aria-pressed="true">近 7 天</button>
-      <button type="button" data-range="30d">近 30 天</button>
-      <button type="button" data-range="all">全部</button>
-    </nav>
-
-    <section id="dashboard-error" class="dashboard-error" role="alert" hidden>
-      <b>数据暂时没有读出来</b>
-      <p>请检查网络后再试一次。</p>
-      <button id="retry" type="button">重新读取</button>
-    </section>
+    <header class="dashboard-header"><div><p class="eyebrow">萌萌星 · 运营数据</p><h1>访问数据</h1><p id="generated-at" class="updated-at">正在读取最新数据</p></div><div class="header-actions"><a href="/">打开网站</a><button id="logout" type="button">退出</button></div></header>
+    <nav class="control-bar" aria-label="数据范围与章节导航"><div class="range-picker" aria-label="统计时间范围"><button type="button" data-range="today">今日</button><button type="button" data-range="7d" aria-pressed="true">近 7 天</button><button type="button" data-range="30d">近 30 天</button><button type="button" data-range="all">全部</button></div><div class="section-nav" aria-label="数据章节"><a href="#overview" aria-current="true">结论</a><a href="#trend">趋势</a><a href="#users">用户</a><a href="#behavior">行为</a><a href="#definitions">口径</a></div></nav>
+    <section id="dashboard-error" class="dashboard-error" role="alert" hidden><b>数据暂时没有读出来</b><p>请检查网络后再试一次。</p><button id="retry" type="button">重新读取</button></section>
 
     <section id="dashboard-content" aria-live="polite">
-      <section class="metric-grid" aria-label="核心数据">
-        <article class="metric-card primary"><span>去重访客</span><strong id="metric-uv">0</strong><small>同一浏览器只算一位</small></article>
-        <article class="metric-card"><span>匿名用户</span><strong id="metric-users">0</strong><small>由后端匿名账户或访客号去重</small></article>
-        <article class="metric-card"><span>页面浏览</span><strong id="metric-pv">0</strong><small id="metric-pv-note">所有主要页面合计</small></article>
-        <article class="metric-card"><span>平均有效停留</span><strong id="metric-dwell">0秒</strong><small>只统计页面可见且在前台的时间</small></article>
-        <article class="metric-card"><span>平均交互深度</span><strong id="metric-depth">0</strong><small id="metric-interactions">0 次有效交互</small></article>
-        <article class="metric-card"><span>朗读完成率</span><strong id="metric-voice">—</strong><small>完成目标词的朗读尝试占比</small></article>
-        <article class="metric-card"><span>次日留存</span><strong id="metric-retention">—</strong><small>成熟新用户 cohort 的次日回访</small></article>
+      <section id="overview" class="dashboard-section overview-section" data-section>
+        <div class="section-heading"><div><p class="panel-kicker">当前判断</p><h2 id="scope-title">近 7 天概览</h2></div><p id="scope-note">北京时间 · 与前一等长周期比较</p></div><div id="executive-summary" class="executive-summary"></div>
+        <section class="metric-strip" aria-label="核心数据"><article class="metric-cell primary"><span>匿名用户</span><strong id="metric-users">0</strong><small id="metric-users-change">同一匿名账户或浏览器去重</small></article><article class="metric-cell"><span>会话</span><strong id="metric-sessions">0</strong><small id="metric-sessions-change">一次连续访问算一个会话</small></article><article class="metric-cell"><span>页面浏览</span><strong id="metric-pv">0</strong><small id="metric-pv-change">主要页面浏览次数</small></article><article class="metric-cell"><span>平均有效停留</span><strong id="metric-dwell">0秒</strong><small>按页面访问平均，仅计前台可见时间</small></article><article class="metric-cell"><span>平均交互深度</span><strong id="metric-depth">0</strong><small id="metric-interactions">0 次有效交互</small></article><article class="metric-cell"><span>次日留存</span><strong id="metric-retention">—</strong><small>真正首次访问且已满 1 天的用户</small></article></section>
       </section>
 
-      <section class="data-grid">
-        <article class="data-panel trend-panel">
-          <header><div><p class="panel-kicker">访问趋势</p><h2>访问变化</h2></div><div class="panel-tools"><span>北京时间</span><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></div></header>
-          <div id="daily-chart" class="daily-chart"></div>
-        </article>
+      <section id="trend" class="dashboard-section" data-section><div class="section-heading"><div><p class="panel-kicker">访问趋势</p><h2>流量什么时候发生</h2></div><p>柱子显示 UV / PV，悬停、触摸或键盘聚焦查看精确值</p></div><article class="analysis-panel trend-panel"><header><div class="legend"><span><i class="legend-uv"></i>匿名用户 UV</span><span><i class="legend-pv"></i>页面浏览 PV</span></div><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></header><div id="daily-chart" class="daily-chart"></div></article></section>
 
-        <article class="data-panel users-panel">
-          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>最近三天分组 · 点击表头排序</span></header>
-          <div class="table-wrap"><table class="user-table"><thead><tr><th><button type="button" data-user-sort="identity">用户</button></th><th><button type="button" data-user-sort="location">大概地址</button></th><th aria-sort="descending"><button type="button" data-user-sort="last_seen_at">最近访问</button></th><th><button type="button" data-user-sort="views">浏览</button></th><th><button type="button" data-user-sort="chapters">章节</button></th><th><button type="button" data-user-sort="avg_depth">深度</button></th><th><button type="button" data-user-sort="voice_attempts">朗读</button></th><th><button type="button" data-user-sort="completion_rate">完成率</button></th><th><button type="button" data-user-sort="active_ms">停留</button></th></tr></thead><tbody id="user-rows"></tbody></table></div>
-          <button id="toggle-users" class="expand-users" type="button" hidden>展开更多</button>
-        </article>
+      <section id="users" class="dashboard-section" data-section><div class="section-heading"><div><p class="panel-kicker">用户调查</p><h2>匿名用户行为</h2></div><p>最近三天分组 · 点击任一表头排序</p></div><article class="analysis-panel users-panel"><div class="table-wrap"><table class="user-table"><thead><tr><th><button type="button" data-user-sort="identity">用户</button></th><th><button type="button" data-user-sort="location">大概地址</button></th><th aria-sort="descending"><button type="button" data-user-sort="last_seen_at">最近访问</button></th><th><button type="button" data-user-sort="views">浏览</button></th><th><button type="button" data-user-sort="chapters">章节</button></th><th><button type="button" data-user-sort="avg_depth">深度</button></th><th><button type="button" data-user-sort="voice_attempts">朗读</button></th><th><button type="button" data-user-sort="completion_rate">完成率</button></th><th><button type="button" data-user-sort="active_ms">停留</button></th></tr></thead><tbody id="user-rows"></tbody></table></div><button id="toggle-users" class="expand-users" type="button" hidden>展开更多</button></article></section>
 
-        <article class="data-panel page-panel">
-          <header><div><p class="panel-kicker">页面表现</p><h2>各页面访问与停留</h2></div><span>UV 去重访客 · PV 浏览次数</span></header>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>页面</th><th>UV</th><th>PV</th><th>平均停留</th><th>平均深度</th></tr></thead>
-              <tbody id="page-rows"></tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="data-panel funnel-panel">
-          <header><div><p class="panel-kicker">互动深度</p><h2>到达层级</h2></div><span>以每次页面访问的最高进度计算</span></header>
-          <div id="depth-funnel" class="depth-funnel"></div>
-        </article>
-
-        <article class="data-panel event-panel">
-          <header><div><p class="panel-kicker">主要动作</p><h2>交互事件</h2></div><span>不含输入内容</span></header>
-          <div id="event-list" class="event-list"></div>
-        </article>
-
-        <article class="data-panel source-panel">
-          <header><div><p class="panel-kicker">来源</p><h2>访问从哪里来</h2></div><span>直接访问、UTM 来源与外部站点</span></header>
-          <div id="source-list" class="source-list"></div>
-        </article>
-
-        <article class="data-panel chapter-panel">
-          <header><div><p class="panel-kicker">章节表现</p><h2>每个章节走得多深</h2></div><span>留存只对已成熟的 cohort 计算</span></header>
-          <div class="table-wrap"><table><thead><tr><th>章节</th><th>用户</th><th>浏览</th><th>深度</th><th>完成</th><th>D1</th><th>D7</th><th>朗读</th></tr></thead><tbody id="chapter-rows"></tbody></table></div>
-        </article>
-
-        <article class="data-panel retention-panel">
-          <header><div><p class="panel-kicker">留存</p><h2>用户有没有回来</h2></div><span>按首次出现日分 cohort</span></header>
-          <div id="retention-list" class="retention-list"></div>
-        </article>
-
-        <article class="data-panel voice-panel">
-          <header><div><p class="panel-kicker">朗读</p><h2>语音使用质量</h2></div><span>不保存录音和原始转写</span></header>
-          <div class="voice-metrics"><div><span>尝试次数</span><strong id="voice-attempts">0</strong></div><div><span>识别成功</span><strong id="voice-asr">—</strong></div><div><span>目标完成</span><strong id="voice-correct">—</strong></div><div><span>目标词覆盖</span><strong id="voice-coverage">—</strong></div><div><span>平均说话时长</span><strong id="voice-duration">—</strong></div></div>
-        </article>
-
+      <section id="behavior" class="dashboard-section" data-section>
+        <div class="section-heading"><div><p class="panel-kicker">行为与质量</p><h2>用户如何继续深入</h2></div><p>一次只看一个问题，切换标签继续调查</p></div>
+        <div class="view-tabs" role="tablist" aria-label="行为分析视图"><button type="button" role="tab" data-view="pages" aria-selected="true">页面</button><button type="button" role="tab" data-view="depth" aria-selected="false">深度</button><button type="button" role="tab" data-view="events" aria-selected="false">动作</button><button type="button" role="tab" data-view="chapters" aria-selected="false">章节</button><button type="button" role="tab" data-view="retention" aria-selected="false">留存</button><button type="button" role="tab" data-view="voice" aria-selected="false">朗读</button><button type="button" role="tab" data-view="sources" aria-selected="false">来源</button></div>
+        <article class="analysis-panel behavior-view" data-view-panel="pages"><header><div><h3>各页面访问与停留</h3><p>UV 去重用户 · PV 页面浏览</p></div></header><div class="table-wrap"><table><thead><tr><th>页面</th><th>UV</th><th>PV</th><th>平均停留</th><th>平均深度</th></tr></thead><tbody id="page-rows"></tbody></table></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="depth" hidden><header><div><h3>到达层级</h3><p>分母为所选范围内全部页面访问，以单次访问最高进度计算</p></div></header><div id="depth-funnel" class="depth-funnel"></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="events" hidden><header><div><h3>交互事件</h3><p>只统计动作名称和次数，不含孩子输入内容</p></div></header><div id="event-list" class="event-list"></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="chapters" hidden><header><div><h3>每个章节走得多深</h3><p>留存按历史首次进入该章节日计算，只纳入已成熟 cohort</p></div></header><div class="table-wrap"><table><thead><tr><th>章节</th><th>用户</th><th>浏览</th><th>深度</th><th>完成</th><th>D1</th><th>D7</th><th>朗读</th></tr></thead><tbody id="chapter-rows"></tbody></table></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="retention" hidden><header><div><h3>用户有没有回来</h3><p>用完整历史确定首次访问日，再筛选当前范围内的新用户</p></div></header><div id="retention-list" class="retention-list"></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="voice" hidden><header><div><h3>语音使用质量</h3><p>完成率是目标词覆盖，不是专业发音评分</p></div></header><div class="voice-metrics"><div><span>尝试次数</span><strong id="voice-attempts">0</strong></div><div><span>识别成功</span><strong id="voice-asr">—</strong></div><div><span>目标完成</span><strong id="voice-correct">—</strong></div><div><span>目标词覆盖</span><strong id="voice-coverage">—</strong></div><div><span>平均说话时长</span><strong id="voice-duration">—</strong></div></div></article>
+        <article class="analysis-panel behavior-view" data-view-panel="sources" hidden><header><div><h3>访问从哪里来</h3><p>直接访问、UTM 来源与外部站点</p></div></header><div id="source-list" class="source-list"></div></article>
       </section>
 
+      <section id="definitions" class="dashboard-section definitions-section" data-section><div class="section-heading"><div><p class="panel-kicker">数据口径</p><h2>这些数字怎么算</h2></div><p id="data-freshness">数据按北京时间汇总</p></div><dl class="definition-grid"><div><dt>匿名用户 UV</dt><dd>优先按匿名账户去重；没有账户时按浏览器访客号去重，不等同于自然人。</dd></div><div><dt>会话与页面浏览</dt><dd>一次连续访问算一个会话；每打开一个纳入统计的页面产生一次页面浏览。</dd></div><div><dt>有效停留</dt><dd>只累计页面可见且在前台的毫秒数，再按页面访问取平均，不代表全程专注。</dd></div><div><dt>留存 D1 / D7</dt><dd>以完整历史中的首次访问日建 cohort，仅在经过 1 / 7 个完整自然日后进入分母。</dd></div><div><dt>粗略地址</dt><dd>IP 仅在请求时换算为省市和运营商标签；原始 IP 不落库，未知值不参与地址覆盖率。</dd></div><div><dt>朗读结果</dt><dd>不保存录音；仅保留最多 240 字且经过个人信息过滤的识别文本，旧记录可能缺失。</dd></div></dl><div id="quality-summary" class="quality-summary"></div></section>
       <p id="privacy-note" class="privacy-note"></p>
     </section>
   </main>
-
-  <dialog id="voice-detail-dialog" class="voice-detail-dialog" aria-labelledby="voice-detail-title">
-    <div class="dialog-heading"><div><p class="panel-kicker">朗读详情</p><h2 id="voice-detail-title">提交的文字结果</h2></div><button id="close-voice-detail" type="button" aria-label="关闭">关闭</button></div>
-    <p class="voice-storage-note">当前不保存录音文件，仅展示识别后提交的文字。旧记录可能没有文字。</p>
-    <div id="voice-detail-list" class="voice-detail-list"></div>
-  </dialog>
-
-  <script type="module" src="./src/data.js?v=20260926-voice-detail"></script>
+  <dialog id="voice-detail-dialog" class="voice-detail-dialog" aria-labelledby="voice-detail-title"><div class="dialog-heading"><div><p class="panel-kicker">朗读详情</p><h2 id="voice-detail-title">提交的文字结果</h2></div><button id="close-voice-detail" type="button" aria-label="关闭">关闭</button></div><p class="voice-storage-note">当前不保存录音文件，仅展示识别后提交的文字。旧记录可能没有文字。</p><div id="voice-detail-list" class="voice-detail-list"></div></dialog>
+  <script type="module" src="./src/data.js?v=20260926-compact-insight"></script>
 </body>
 </html>
