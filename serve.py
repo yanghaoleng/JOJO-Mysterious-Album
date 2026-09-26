@@ -469,6 +469,11 @@ def init_analytics():
         connection.execute("CREATE INDEX IF NOT EXISTS idx_page_views_user_started ON page_views(user_id, started_at)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_page_views_chapter_started ON page_views(chapter, started_at)")
         connection.execute("CREATE INDEX IF NOT EXISTS idx_events_chapter_occurred ON interaction_events(chapter, occurred_at)")
+        existing_voice_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(voice_attempts)")
+        }
+        if "transcript" not in existing_voice_columns:
+            connection.execute("ALTER TABLE voice_attempts ADD COLUMN transcript TEXT NOT NULL DEFAULT ''")
         for column in ("source_repo", "source_url", "source_commit", "source_files"):
             if column not in existing_style_columns:
                 connection.execute(
@@ -844,6 +849,9 @@ def collect_voice_analytics(payload, handler):
     source = str(payload.get("source", "asr"))
     if source not in {"asr", "realtime", "browser"}:
         source = "asr"
+    transcript = re.sub(r"[\x00-\x1f\x7f<>]", "", str(payload.get("transcript", ""))).strip()[:240]
+    if likely_private_info(transcript) or re.search(r"(?:\d[\s-]*){7,}|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|(?:https?://|www\.)", transcript, re.I):
+        transcript = ""
     now_ms = int(time.time() * 1000)
     attempted_at = max(now_ms - 24 * 60 * 60 * 1000, min(now_ms + 60_000, int(payload.get("attemptedAt", now_ms))))
     with analytics_connection() as connection:
@@ -852,13 +860,13 @@ def collect_voice_analytics(payload, handler):
             INSERT OR IGNORE INTO voice_attempts (
                 attempt_id, visitor_id, session_id, user_id, chapter, lesson_id,
                 attempted_at, duration_ms, source, asr_ok, correct, coverage,
-                target_count, matched_count
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                target_count, matched_count, transcript
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 attempt_id, visitor_id, session_id, analytics_user_id(handler), chapter, lesson_id,
                 attempted_at, duration_ms, source, asr_ok, correct, coverage,
-                target_count, matched_count,
+                target_count, matched_count, transcript,
             ),
         )
 
@@ -1087,6 +1095,15 @@ def analytics_summary(range_value):
             """,
             (since,),
         ).fetchall()
+        voice_details = connection.execute(
+            """
+            SELECT CASE WHEN user_id <> '' THEN user_id ELSE 'visitor:' || visitor_id END AS identity,
+                   attempted_at, chapter, lesson_id, duration_ms, source, correct, coverage, transcript
+            FROM voice_attempts WHERE attempted_at >= ?
+            ORDER BY attempted_at DESC LIMIT 500
+            """,
+            (since,),
+        ).fetchall()
         retention_rows = connection.execute(
             """
             SELECT user_id, visitor_id, chapter,
@@ -1110,6 +1127,11 @@ def analytics_summary(range_value):
         item["d7_rate"] = chapter_retention.get(chapter, {}).get("d7Rate")
         chapter_output.append(item)
     voice_by_user = {row["identity"]: dict(row) for row in voice_users}
+    details_by_user = {}
+    for row in voice_details:
+        details_by_user.setdefault(row["identity"], [])
+        if len(details_by_user[row["identity"]]) < 20:
+            details_by_user[row["identity"]].append(dict(row))
     user_output = []
     for row in users:
         item = dict(row)
@@ -1117,6 +1139,7 @@ def analytics_summary(range_value):
         item["voice_attempts"] = int(voice.get("voice_attempts", 0) or 0)
         item["voice_correct"] = int(voice.get("voice_correct", 0) or 0)
         item["voice_coverage"] = voice.get("voice_coverage")
+        item["voice_details"] = details_by_user.get(item["identity"], [])
         user_output.append(item)
     voice_output = dict(voice_totals)
     voice_output["asr_rate"] = round((int(voice_output.get("asr_ok", 0) or 0) / int(voice_output.get("attempts", 0) or 1)), 4) if voice_output.get("attempts") else None
@@ -1138,7 +1161,7 @@ def analytics_summary(range_value):
         "voiceByChapter": [dict(row) for row in voice_chapters],
         "users": user_output,
         "retention": retention,
-        "privacy": "按匿名账户 Cookie 关联访问与章节行为；访问 IP 只在服务器内即时换算为省市与运营商粗略标签，不保存或下发原始 IP；不记录孩子的原始录音、转写文本或姓名。朗读正确率是目标词覆盖率，不是专业发音评分。",
+        "privacy": "按匿名账户 Cookie 关联访问与章节行为；访问 IP 只在服务器内即时换算为省市与运营商粗略标签，不保存或下发原始 IP；不保存原始录音，朗读文字最多保留 240 字并过滤可能的个人信息。朗读正确率是目标词覆盖率，不是专业发音评分。",
     }
 
 

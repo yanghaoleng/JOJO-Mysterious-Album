@@ -71,6 +71,17 @@
       </section>
 
       <section class="data-grid">
+        <article class="data-panel trend-panel">
+          <header><div><p class="panel-kicker">访问趋势</p><h2>访问变化</h2></div><div class="panel-tools"><span>北京时间</span><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></div></header>
+          <div id="daily-chart" class="daily-chart"></div>
+        </article>
+
+        <article class="data-panel users-panel">
+          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>最近三天分组 · 点击表头排序</span></header>
+          <div class="table-wrap"><table class="user-table"><thead><tr><th><button type="button" data-user-sort="identity">用户</button></th><th><button type="button" data-user-sort="location">大概地址</button></th><th aria-sort="descending"><button type="button" data-user-sort="last_seen_at">最近访问</button></th><th><button type="button" data-user-sort="views">浏览</button></th><th><button type="button" data-user-sort="chapters">章节</button></th><th><button type="button" data-user-sort="avg_depth">深度</button></th><th><button type="button" data-user-sort="voice_attempts">朗读</button></th><th><button type="button" data-user-sort="completion_rate">完成率</button></th><th><button type="button" data-user-sort="active_ms">停留</button></th></tr></thead><tbody id="user-rows"></tbody></table></div>
+          <button id="toggle-users" class="expand-users" type="button" hidden>展开更多</button>
+        </article>
+
         <article class="data-panel page-panel">
           <header><div><p class="panel-kicker">页面表现</p><h2>各页面访问与停留</h2></div><span>UV 去重访客 · PV 浏览次数</span></header>
           <div class="table-wrap">
@@ -89,11 +100,6 @@
         <article class="data-panel event-panel">
           <header><div><p class="panel-kicker">主要动作</p><h2>交互事件</h2></div><span>不含输入内容</span></header>
           <div id="event-list" class="event-list"></div>
-        </article>
-
-        <article class="data-panel trend-panel">
-          <header><div><p class="panel-kicker">访问趋势</p><h2>访问变化</h2></div><div class="panel-tools"><span>北京时间</span><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></div></header>
-          <div id="daily-chart" class="daily-chart"></div>
         </article>
 
         <article class="data-panel source-panel">
@@ -116,16 +122,18 @@
           <div class="voice-metrics"><div><span>尝试次数</span><strong id="voice-attempts">0</strong></div><div><span>识别成功</span><strong id="voice-asr">—</strong></div><div><span>目标完成</span><strong id="voice-correct">—</strong></div><div><span>目标词覆盖</span><strong id="voice-coverage">—</strong></div><div><span>平均说话时长</span><strong id="voice-duration">—</strong></div></div>
         </article>
 
-        <article class="data-panel users-panel">
-          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>最近三天分组 · 点击表头排序</span></header>
-          <div class="table-wrap"><table class="user-table"><thead><tr><th><button type="button" data-user-sort="identity">用户</button></th><th><button type="button" data-user-sort="location">大概地址</button></th><th aria-sort="descending"><button type="button" data-user-sort="last_seen_at">最近访问</button></th><th><button type="button" data-user-sort="views">浏览</button></th><th><button type="button" data-user-sort="chapters">章节</button></th><th><button type="button" data-user-sort="avg_depth">深度</button></th><th><button type="button" data-user-sort="voice_attempts">朗读</button></th><th><button type="button" data-user-sort="completion_rate">完成率</button></th><th><button type="button" data-user-sort="active_ms">停留</button></th></tr></thead><tbody id="user-rows"></tbody></table></div>
-        </article>
       </section>
 
       <p id="privacy-note" class="privacy-note"></p>
     </section>
   </main>
 
-  <script type="module" src="./src/data.js?v=20260901-two-stories"></script>
+  <dialog id="voice-detail-dialog" class="voice-detail-dialog" aria-labelledby="voice-detail-title">
+    <div class="dialog-heading"><div><p class="panel-kicker">朗读详情</p><h2 id="voice-detail-title">提交的文字结果</h2></div><button id="close-voice-detail" type="button" aria-label="关闭">关闭</button></div>
+    <p class="voice-storage-note">当前不保存录音文件，仅展示识别后提交的文字。旧记录可能没有文字。</p>
+    <div id="voice-detail-list" class="voice-detail-list"></div>
+  </dialog>
+
+  <script type="module" src="./src/data.js?v=20260926-voice-detail"></script>
 </body>
 </html>

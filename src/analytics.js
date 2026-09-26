@@ -233,13 +233,14 @@ export function setAnalyticsChapter(chapter) {
   flush();
 }
 
-export function trackVoiceAttempt({ chapter, lessonId, durationMs = 0, source = 'asr', asrOk = true, correct = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+export function trackVoiceAttempt({ chapter, lessonId, transcript = '', durationMs = 0, source = 'asr', asrOk = true, correct = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
   const body = JSON.stringify({
     attemptId: randomId('a'),
     visitorId: state.visitorId,
     sessionId: state.sessionId,
     chapter: safeName(chapter) || state.chapter,
     lessonId: safeName(lessonId) || 'unknown',
+    transcript: String(transcript || '').trim().slice(0, 240),
     durationMs: Math.round(Number(durationMs) || 0),
     source: source === 'realtime' ? 'realtime' : 'asr',
     asrOk: Boolean(asrOk),

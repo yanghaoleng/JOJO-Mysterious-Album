@@ -1,4 +1,5 @@
 import { installUISFX, playUISFX, startUISFXLoop } from './ui-sfx.js?v=20260831-always-on';
+import { setSlotMetric } from '../vendor/data-metrics.js?v=20260926-slot-metrics';
 
 installUISFX();
 
@@ -58,6 +59,7 @@ let activeGranularity = 'day';
 let loading = false;
 let currentUsers = [];
 let userSort = { key: 'last_seen_at', direction: 'desc' };
+let usersExpanded = false;
 
 function paintGrain() {
   const canvas = $('data-grain');
@@ -348,8 +350,14 @@ function renderUsers(rows = currentUsers) {
     button.closest('th')?.setAttribute('aria-sort', selected ? (userSort.direction === 'asc' ? 'ascending' : 'descending') : 'none');
     button.classList.toggle('is-sorted', selected);
   });
+  const orderedRows = [...rows].sort(compareUsers);
+  const visibleRows = usersExpanded ? orderedRows : orderedRows.slice(0, 8);
+  const toggle = $('toggle-users');
+  toggle.hidden = rows.length <= 8;
+  toggle.textContent = usersExpanded ? '收起列表' : `展开其余 ${number(rows.length - 8)} 位`;
+  toggle.setAttribute('aria-expanded', String(usersExpanded));
   const buckets = [...recentDayGroups().map(day => ({ ...day, rows: [] })), { key: 'older', label: '更早', rows: [] }];
-  for (const item of rows) {
+  for (const item of visibleRows) {
     const day = beijingDay(item.last_seen_at);
     (buckets.find(bucket => bucket.key === day) || buckets.at(-1)).rows.push(item);
   }
@@ -369,32 +377,66 @@ function renderUsers(rows = currentUsers) {
       const shortId = String(item.identity || '').replace(/^visitor:/, '访客·').slice(0, 18);
       const seen = item.last_seen_at ? new Date(Number(item.last_seen_at)).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
       const place = [item.location, item.carrier].filter(Boolean).join(' · ') || '未知';
-      [shortId, place, seen, number(item.views), number(item.chapters), Number(item.avg_depth || 0).toFixed(1), number(item.voice_attempts), item.voice_attempts ? percent(item.voice_correct / item.voice_attempts) : '—', duration(item.active_ms)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+      [shortId, place, seen, number(item.views), number(item.chapters), Number(item.avg_depth || 0).toFixed(1)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+      const voiceCell = document.createElement('td');
+      if (item.voice_attempts) {
+        const voiceButton = document.createElement('button');
+        voiceButton.type = 'button';
+        voiceButton.className = 'voice-detail-button';
+        voiceButton.textContent = number(item.voice_attempts);
+        voiceButton.setAttribute('aria-label', `查看 ${shortId} 的 ${number(item.voice_attempts)} 条朗读详情`);
+        voiceButton.addEventListener('click', () => openVoiceDetails(item, shortId));
+        voiceCell.appendChild(voiceButton);
+      } else voiceCell.textContent = '0';
+      row.appendChild(voiceCell);
+      [item.voice_attempts ? percent(item.voice_correct / item.voice_attempts) : '—', duration(item.active_ms)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
       body.appendChild(row);
     }
   }
 }
 
+function openVoiceDetails(user, shortId) {
+  const dialog = $('voice-detail-dialog');
+  $('voice-detail-title').textContent = `${shortId} · 朗读详情`;
+  const root = $('voice-detail-list');
+  root.innerHTML = '';
+  const attempts = user.voice_details || [];
+  if (!attempts.length) root.innerHTML = '<p class="empty-state">这位用户的旧朗读记录没有保存文字结果。</p>';
+  for (const attempt of attempts) {
+    const item = document.createElement('article');
+    const heading = document.createElement('div');
+    const time = new Date(Number(attempt.attempted_at)).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    heading.innerHTML = `<b>${chapterLabel(attempt.chapter)}</b><span>${time} · ${attempt.source === 'realtime' ? '实时识别' : '语音识别'}</span>`;
+    const transcript = document.createElement('p');
+    transcript.textContent = attempt.transcript || '这条旧记录生成时没有保存文字结果';
+    const result = document.createElement('small');
+    result.textContent = `覆盖 ${percent(attempt.coverage)} · ${attempt.correct ? '完成目标' : '未完成目标'} · ${duration(attempt.duration_ms)}`;
+    item.append(heading, transcript, result);
+    root.appendChild(item);
+  }
+  dialog.showModal();
+}
+
 function renderVoice(data) {
   const voice = data || {};
   const hasAttempts = Number(voice.attempts || 0) > 0;
-  $('voice-attempts').textContent = number(voice.attempts);
-  $('voice-asr').textContent = hasAttempts ? percent(voice.asr_rate) : '—';
-  $('voice-correct').textContent = hasAttempts ? percent(voice.correct_rate) : '—';
-  $('voice-coverage').textContent = hasAttempts ? percent(voice.avg_coverage) : '—';
-  $('voice-duration').textContent = hasAttempts ? duration(voice.avg_duration_ms) : '—';
+  setSlotMetric('voice-attempts', number(voice.attempts));
+  setSlotMetric('voice-asr', hasAttempts ? percent(voice.asr_rate) : '—');
+  setSlotMetric('voice-correct', hasAttempts ? percent(voice.correct_rate) : '—');
+  setSlotMetric('voice-coverage', hasAttempts ? percent(voice.avg_coverage) : '—');
+  setSlotMetric('voice-duration', hasAttempts ? duration(voice.avg_duration_ms) : '—');
 }
 
 function renderDashboard(data) {
   const totals = data.totals || {};
-  $('metric-uv').textContent = number(totals.uv);
-  $('metric-users').textContent = number(totals.users || totals.uv);
-  $('metric-pv').textContent = number(totals.pv);
-  $('metric-dwell').textContent = duration(totals.avg_active_ms);
-  $('metric-depth').textContent = Number(totals.avg_depth || 0).toFixed(1);
+  setSlotMetric('metric-uv', number(totals.uv));
+  setSlotMetric('metric-users', number(totals.users || totals.uv));
+  setSlotMetric('metric-pv', number(totals.pv));
+  setSlotMetric('metric-dwell', duration(totals.avg_active_ms));
+  setSlotMetric('metric-depth', Number(totals.avg_depth || 0).toFixed(1));
   $('metric-interactions').textContent = `${number(totals.interactions)} 次有效交互`;
-  $('metric-retention').textContent = percent(data.retention?.d1Rate);
-  $('metric-voice').textContent = percent(data.voice?.correct_rate);
+  setSlotMetric('metric-retention', percent(data.retention?.d1Rate));
+  setSlotMetric('metric-voice', percent(data.voice?.correct_rate));
   $('generated-at').textContent = `更新于 ${new Date(data.generatedAt).toLocaleString('zh-CN', { hour12: false })}`;
   $('privacy-note').textContent = data.privacy || '';
   renderPages(data.pages || []);
@@ -490,6 +532,9 @@ document.querySelectorAll('[data-user-sort]').forEach(button => {
     renderUsers();
   });
 });
+$('toggle-users').addEventListener('click', () => { usersExpanded = !usersExpanded; renderUsers(); });
+$('close-voice-detail').addEventListener('click', () => $('voice-detail-dialog').close());
+$('voice-detail-dialog').addEventListener('click', event => { if (event.target === $('voice-detail-dialog')) $('voice-detail-dialog').close(); });
 $('retry').addEventListener('click', loadDashboard);
 $('logout').addEventListener('click', async () => {
   await fetch('/api/data/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});

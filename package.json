@@ -4,10 +4,11 @@
   "description": "面向儿童的 AI 原生实时语音互动绘本与角色实验室",
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
-    "build": "npm run build:bubble && npm run build:sfx && npm run build:icons && npm run build:landing-title && npm run build:landing-icons && npm run build:changelog",
+    "build": "npm run build:bubble && npm run build:sfx && npm run build:icons && npm run build:data-metrics && npm run build:landing-title && npm run build:landing-icons && npm run build:changelog",
     "build:bubble": "esbuild src/calligraph-bubble.jsx --bundle --format=esm --minify --outfile=vendor/calligraph-bubble.js",
     "build:sfx": "esbuild node_modules/uisfx/dist/index.js --bundle --format=esm --minify --outfile=vendor/uisfx.js",
     "build:icons": "esbuild src/ui-icons.js --bundle --format=esm --minify --outfile=vendor/ui-icons.js",
+    "build:data-metrics": "esbuild src/data-metrics.jsx --bundle --format=esm --minify --outfile=vendor/data-metrics.js",
     "build:landing-icons": "esbuild src/landing-icons.js --bundle --format=esm --minify --outfile=vendor/landing-icons.js",
     "build:landing-title": "esbuild src/landing-title.jsx --bundle --format=esm --minify --outfile=vendor/landing-title.js",
     "build:changelog": "node tools/build-changelog.mjs",

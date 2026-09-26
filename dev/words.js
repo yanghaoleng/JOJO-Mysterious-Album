@@ -437,7 +437,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
   if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;voiceHint('正在把你的想法变出来');
   try{
     const result=evaluateWordUtterance(lesson,text,progress,{reference:currentExample()});
-    if(!fromMenu){trackVoiceAttempt({chapter:chapter.id,lessonId:lesson.id,durationMs,source:fromRealtime?'realtime':'asr',asrOk:true,correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});trackAnalytics('voice_answer',{depth:5,chapter:chapter.id,properties:{correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs,source:fromRealtime?'realtime':'asr',lessonId:lesson.id}});}
+    if(!fromMenu){trackVoiceAttempt({chapter:chapter.id,lessonId:lesson.id,transcript:displayText||text,durationMs,source:fromRealtime?'realtime':'asr',asrOk:true,correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});trackAnalytics('voice_answer',{depth:5,chapter:chapter.id,properties:{correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs,source:fromRealtime?'realtime':'asr',lessonId:lesson.id}});}
     text=result.normalizedText;
     if(result.corrections.length)$('word-transcript').textContent=`“${text}”`;
     let plan=planWordIntent(text,{entities:playerEntities(),chapter:chapter.id,focusId,feedback:true});
