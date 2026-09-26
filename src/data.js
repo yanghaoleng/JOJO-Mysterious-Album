@@ -56,6 +56,8 @@ let code = '';
 let activeRange = '7d';
 let activeGranularity = 'day';
 let loading = false;
+let currentUsers = [];
+let userSort = { key: 'last_seen_at', direction: 'desc' };
 
 function paintGrain() {
   const canvas = $('data-grain');
@@ -260,11 +262,15 @@ function renderDaily(rows) {
     const uv = document.createElement('span');
     uv.className = 'day-bar';
     uv.style.height = `${Math.max(2, Number(item.uv) / max * 100)}%`;
-    uv.title = `UV ${item.uv}`;
+    uv.dataset.value = `UV ${number(item.uv)}`;
+    uv.tabIndex = 0;
+    uv.setAttribute('aria-label', `${item.day || item.period}，去重访客 ${number(item.uv)}`);
     const pv = document.createElement('span');
     pv.className = 'day-bar pv';
     pv.style.height = `${Math.max(2, Number(item.pv) / max * 100)}%`;
-    pv.title = `PV ${item.pv}`;
+    pv.dataset.value = `PV ${number(item.pv)}`;
+    pv.tabIndex = 0;
+    pv.setAttribute('aria-label', `${item.day || item.period}，页面浏览 ${number(item.pv)}`);
     bars.append(uv, pv);
     const value = document.createElement('b');
     value.textContent = `${item.uv}/${item.pv}`;
@@ -307,15 +313,65 @@ function renderRetention(retention) {
   for (const [label, value, note] of cards) { const item = document.createElement('div'); item.className = 'retention-card'; const title = document.createElement('span'); title.textContent = label; const strong = document.createElement('strong'); strong.textContent = value; const small = document.createElement('small'); small.textContent = note; item.append(title, strong, small); root.appendChild(item); }
 }
 
-function renderUsers(rows) {
+function beijingDay(timestamp) {
+  if (!timestamp) return '';
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Number(timestamp)));
+}
+
+function recentDayGroups() {
+  const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const now = Date.now();
+  return ['今天', '昨天', '前天'].map((label, offset) => ({ key: formatter.format(new Date(now - offset * 86400000)), label }));
+}
+
+function userSortValue(item, key) {
+  if (key === 'completion_rate') return item.voice_attempts ? Number(item.voice_correct) / Number(item.voice_attempts) : -1;
+  if (key === 'location') return `${item.location || ''} ${item.carrier || ''}`.trim();
+  return item[key] ?? '';
+}
+
+function compareUsers(left, right) {
+  const a = userSortValue(left, userSort.key);
+  const b = userSortValue(right, userSort.key);
+  const result = typeof a === 'number' || typeof b === 'number'
+    ? Number(a || 0) - Number(b || 0)
+    : String(a).localeCompare(String(b), 'zh-CN', { numeric: true });
+  return (userSort.direction === 'asc' ? result : -result) || Number(right.last_seen_at || 0) - Number(left.last_seen_at || 0);
+}
+
+function renderUsers(rows = currentUsers) {
+  currentUsers = rows;
   const body = $('user-rows'); body.innerHTML = '';
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="8" class="empty-state">还没有可展示的用户行为</td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="9" class="empty-state">还没有可展示的用户行为</td></tr>'; return; }
+  document.querySelectorAll('[data-user-sort]').forEach(button => {
+    const selected = button.dataset.userSort === userSort.key;
+    button.closest('th')?.setAttribute('aria-sort', selected ? (userSort.direction === 'asc' ? 'ascending' : 'descending') : 'none');
+    button.classList.toggle('is-sorted', selected);
+  });
+  const buckets = [...recentDayGroups().map(day => ({ ...day, rows: [] })), { key: 'older', label: '更早', rows: [] }];
   for (const item of rows) {
-    const row = document.createElement('tr');
-    const shortId = String(item.identity || '').replace(/^visitor:/, '访客·').slice(0, 18);
-    const seen = item.last_seen_at ? new Date(Number(item.last_seen_at)).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
-    [shortId, seen, number(item.views), number(item.chapters), Number(item.avg_depth || 0).toFixed(1), number(item.voice_attempts), item.voice_attempts ? percent(item.voice_correct / item.voice_attempts) : '—', duration(item.active_ms)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
-    body.appendChild(row);
+    const day = beijingDay(item.last_seen_at);
+    (buckets.find(bucket => bucket.key === day) || buckets.at(-1)).rows.push(item);
+  }
+  if (userSort.key === 'last_seen_at' && userSort.direction === 'asc') buckets.reverse();
+  for (const bucket of buckets) {
+    if (!bucket.rows.length) continue;
+    const group = document.createElement('tr');
+    group.className = 'user-date-group';
+    const label = document.createElement('th');
+    label.colSpan = 9;
+    label.scope = 'rowgroup';
+    label.textContent = `${bucket.label} · ${number(bucket.rows.length)} 位`;
+    group.appendChild(label);
+    body.appendChild(group);
+    for (const item of bucket.rows.sort(compareUsers)) {
+      const row = document.createElement('tr');
+      const shortId = String(item.identity || '').replace(/^visitor:/, '访客·').slice(0, 18);
+      const seen = item.last_seen_at ? new Date(Number(item.last_seen_at)).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+      const place = [item.location, item.carrier].filter(Boolean).join(' · ') || '未知';
+      [shortId, place, seen, number(item.views), number(item.chapters), Number(item.avg_depth || 0).toFixed(1), number(item.voice_attempts), item.voice_attempts ? percent(item.voice_correct / item.voice_attempts) : '—', duration(item.active_ms)].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+      body.appendChild(row);
+    }
   }
 }
 
@@ -423,6 +479,15 @@ document.querySelectorAll('[data-granularity]').forEach(button => {
     activeGranularity = button.dataset.granularity;
     document.querySelectorAll('[data-granularity]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     loadDashboard();
+  });
+});
+document.querySelectorAll('[data-user-sort]').forEach(button => {
+  button.addEventListener('click', () => {
+    const key = button.dataset.userSort;
+    userSort = userSort.key === key
+      ? { key, direction: userSort.direction === 'asc' ? 'desc' : 'asc' }
+      : { key, direction: ['identity', 'location'].includes(key) ? 'asc' : 'desc' };
+    renderUsers();
   });
 });
 $('retry').addEventListener('click', loadDashboard);

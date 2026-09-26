@@ -13,12 +13,8 @@
 <body data-page="data">
   <canvas id="data-grain" aria-hidden="true"></canvas>
 
-  <main id="data-gate" class="data-gate" aria-labelledby="gate-title">
+  <main id="data-gate" class="data-gate" aria-label="访问数据口令">
     <section class="gate-sheet">
-      <div class="gate-stamp brush-icon brush-icon-data" aria-hidden="true"></div>
-      <p class="eyebrow">萌萌星 · 访问数据</p>
-      <h1 id="gate-title">请输入六位管理口令</h1>
-      <p class="gate-copy">仅供项目管理查看。页面不会显示孩子填写的文字、姓名或声音。</p>
       <form id="code-form" autocomplete="off">
         <label class="sr-only" for="code-input">六位管理口令</label>
         <input id="code-input" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
@@ -34,7 +30,6 @@
         </div>
         <button class="sr-only" type="submit" data-uisfx="none">进入数据页</button>
       </form>
-      <a class="back-link" href="/">返回奇妙图鉴</a>
     </section>
   </main>
 
@@ -122,8 +117,8 @@
         </article>
 
         <article class="data-panel users-panel">
-          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>可按时间段查看最近 100 位</span></header>
-          <div class="table-wrap"><table><thead><tr><th>用户</th><th>最近访问</th><th>浏览</th><th>章节</th><th>深度</th><th>朗读</th><th>完成率</th><th>停留</th></tr></thead><tbody id="user-rows"></tbody></table></div>
+          <header><div><p class="panel-kicker">用户</p><h2>匿名用户行为</h2></div><span>最近三天分组 · 点击表头排序</span></header>
+          <div class="table-wrap"><table class="user-table"><thead><tr><th><button type="button" data-user-sort="identity">用户</button></th><th><button type="button" data-user-sort="location">大概地址</button></th><th aria-sort="descending"><button type="button" data-user-sort="last_seen_at">最近访问</button></th><th><button type="button" data-user-sort="views">浏览</button></th><th><button type="button" data-user-sort="chapters">章节</button></th><th><button type="button" data-user-sort="avg_depth">深度</button></th><th><button type="button" data-user-sort="voice_attempts">朗读</button></th><th><button type="button" data-user-sort="completion_rate">完成率</button></th><th><button type="button" data-user-sort="active_ms">停留</button></th></tr></thead><tbody id="user-rows"></tbody></table></div>
         </article>
       </section>
 
