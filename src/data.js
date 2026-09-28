@@ -30,6 +30,9 @@ const EVENT_LABELS = {
   chapter_start: '进入英语章节',
   chapter_complete: '完成英语章节',
   voice_answer: '完成一次朗读作答',
+  word_age_selected: '选择英语练习年龄',
+  word_lesson_start: '进入英语练习句子',
+  word_sentence_answer: '提交英语句子作答',
   story_start: '开始第一张图鉴',
   story_world_enter: '进入雾灯花园',
   story_seed_1: '找到第 1 颗萤火种',
@@ -290,6 +293,86 @@ function renderDaily(rows) {
   }
 }
 
+function renderWordAnalytics(data = {}) {
+  const totals = data.totals || {};
+  const hasAttempts = Number(totals.answer_attempts || 0) > 0;
+  setSlotMetric('word-users', Number(totals.users || 0) ? number(totals.users) : '—');
+  setSlotMetric('word-depth', totals.avg_depth == null ? '—' : `${Number(totals.avg_depth).toFixed(1)}句`);
+  setSlotMetric('word-correct-rate', hasAttempts ? percent(totals.correct_rate) : '—');
+  setSlotMetric('word-pass-rate', hasAttempts ? percent(totals.pass_rate) : '—');
+  $('word-users-note').textContent = totals.age_selections
+    ? `${number(totals.age_selections)} 次选龄 · ${number(totals.answer_attempts)} 次作答`
+    : data.chapter_starts
+      ? `已进入 ${number(data.chapter_starts)} 次，等待新埋点`
+      : '年龄选择后计入';
+
+  const ageBody = $('word-age-rows');
+  ageBody.innerHTML = '';
+  const ages = Array.isArray(data.ages) ? data.ages : [];
+  const maxUsers = Math.max(1, ...ages.map(item => Number(item.users || 0)));
+  if (!ages.some(item => Number(item.selections || 0) || Number(item.answer_attempts || 0))) {
+    ageBody.innerHTML = '<tr><td colspan="6" class="empty-state">还没有年龄选择后的作答数据</td></tr>';
+  } else {
+    for (const item of ages) {
+      const row = document.createElement('tr');
+      const age = document.createElement('td');
+      age.className = 'word-age-name';
+      age.textContent = `${item.age} 岁`;
+      const audience = document.createElement('td');
+      audience.className = 'word-audience-cell';
+      const track = document.createElement('span');
+      track.className = 'word-audience-track';
+      const fill = document.createElement('span');
+      fill.className = 'word-audience-fill';
+      fill.style.width = `${Math.round(Number(item.users || 0) / maxUsers * 100)}%`;
+      track.appendChild(fill);
+      const audienceText = document.createElement('small');
+      audienceText.textContent = `${number(item.users)} 位用户 · ${number(item.selections)} 次选择`;
+      audience.append(track, audienceText);
+      const depth = document.createElement('td');
+      depth.textContent = item.avg_depth == null ? '—' : `${Number(item.avg_depth).toFixed(1)}句`;
+      const attempts = document.createElement('td');
+      attempts.textContent = number(item.answer_attempts);
+      const correct = document.createElement('td');
+      correct.textContent = item.answer_attempts ? percent(item.correct_rate) : '—';
+      const passed = document.createElement('td');
+      passed.textContent = item.answer_attempts ? percent(item.pass_rate) : '—';
+      row.append(age, audience, depth, attempts, correct, passed);
+      ageBody.appendChild(row);
+    }
+  }
+
+  const stageBody = $('word-stage-rows');
+  stageBody.innerHTML = '';
+  const stages = Array.isArray(data.stages) ? data.stages : [];
+  if (!stages.some(item => Number(item.lesson_starts || 0) || Number(item.answer_attempts || 0))) {
+    stageBody.innerHTML = '<tr><td colspan="6" class="empty-state">逐句数据会在孩子开始作答后出现</td></tr>';
+  } else {
+    for (const item of stages) {
+      const row = document.createElement('tr');
+      const values = [
+        item.label || `第 ${item.stage} 句`,
+        number(item.lesson_starts),
+        number(item.answer_attempts),
+        item.answer_attempts ? percent(item.correct_rate) : '—',
+        item.answer_attempts ? percent(item.pass_rate) : '—',
+        item.answer_attempts ? percent(item.avg_coverage) : '—',
+      ];
+      values.forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+      stageBody.appendChild(row);
+    }
+  }
+
+  const note = $('word-quality-note');
+  if (hasAttempts) {
+    note.textContent = `本范围共 ${number(totals.answer_attempts)} 次句子作答，其中语音 ${number(totals.voice_attempts)} 次、点词 ${number(totals.menu_attempts)} 次。正确率分母是全部作答，表示目标词是否完整覆盖；通过率表示游戏是否接受本次表达并允许继续。`;
+  } else if (data.chapter_starts) {
+    note.textContent = `本范围记录到 ${number(data.chapter_starts)} 次进入“开口造世界”，但还没有年龄选择后的句子作答数据；发布新埋点后会从这里开始累计。`;
+  } else {
+    note.textContent = '选择“全部”或扩大时间范围后，年龄、深度和逐句表现会按新埋点累计。';
+  }
+}
+
 function renderSources(rows) {
   const root = $('source-list');
   root.innerHTML = '';
@@ -499,6 +582,7 @@ function renderDashboard(data) {
   renderDepth(data.depth || []);
   renderEvents(data.events || []);
   renderDaily(data[activeGranularity === 'week' ? 'weekly' : activeGranularity === 'month' ? 'monthly' : 'daily'] || []);
+  renderWordAnalytics(data.words || {});
   renderSources(data.sources || []);
   renderChapters(data.chapters || []);
   renderRetention(data.retention ? { overall: data.retention } : null);

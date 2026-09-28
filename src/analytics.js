@@ -46,7 +46,7 @@ function sourceContext() {
 
 function safeProperties(value) {
   if (!value || typeof value !== 'object') return {};
-  const allowed = new Set(['correct', 'coverage', 'targetCount', 'matchedCount', 'durationMs', 'source', 'lessonId']);
+  const allowed = new Set(['correct', 'coverage', 'targetCount', 'matchedCount', 'durationMs', 'source', 'lessonId', 'age', 'lessonIndex', 'mode', 'inputSource', 'passed']);
   return Object.fromEntries(Object.entries(value).filter(([key, item]) => {
     if (!allowed.has(key)) return false;
     return typeof item === 'boolean' || (typeof item === 'number' && Number.isFinite(item)) || typeof item === 'string';
@@ -251,6 +251,34 @@ export function trackVoiceAttempt({ chapter, lessonId, transcript = '', duration
     attemptedAt: Date.now(),
   });
   void fetch('/api/analytics/voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+    credentials: 'same-origin',
+  }).catch(() => {});
+}
+
+export function trackWordAttempt({ chapter = 'words', lessonId, age, lessonIndex = 0, mode = 'open', inputSource = 'voice', durationMs = 0, correct = false, passed = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  const body = JSON.stringify({
+    attemptId: randomId('w'),
+    visitorId: state.visitorId,
+    sessionId: state.sessionId,
+    chapter: safeName(chapter) || 'words',
+    lessonId: safeName(lessonId) || 'unknown',
+    age: Math.max(3, Math.min(10, Math.round(Number(age) || 0))),
+    lessonIndex: Math.max(0, Math.min(5, Math.round(Number(lessonIndex) || 0))),
+    mode: ['build', 'cloze', 'open'].includes(mode) ? mode : 'open',
+    inputSource: inputSource === 'menu' ? 'menu' : 'voice',
+    durationMs: Math.max(0, Math.min(30_000, Math.round(Number(durationMs) || 0))),
+    correct: Boolean(correct),
+    passed: Boolean(passed),
+    coverage: Math.max(0, Math.min(1, Number(coverage) || 0)),
+    targetCount: Math.max(0, Math.round(Number(targetCount) || 0)),
+    matchedCount: Math.max(0, Math.round(Number(matchedCount) || 0)),
+    attemptedAt: Date.now(),
+  });
+  void fetch('/api/analytics/word', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
