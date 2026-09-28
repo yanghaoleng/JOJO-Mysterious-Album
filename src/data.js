@@ -649,6 +649,20 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape') { event.preventDefault(); resetCode(); }
 });
 
+for (const gesture of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(gesture, event => event.preventDefault(), { passive: false });
+}
+let lastTouchEnd = 0;
+document.addEventListener('touchend', event => {
+  if (event.target.closest('button,a,input,textarea,select,[role="button"]')) {
+    lastTouchEnd = 0;
+    return;
+  }
+  const now = performance.now();
+  if (now - lastTouchEnd < 320) event.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
 document.querySelectorAll('[data-range]').forEach(button => {
   button.addEventListener('click', () => {
     activeRange = button.dataset.range;
