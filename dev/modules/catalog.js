@@ -7,6 +7,8 @@ import { CREATION_KITS, PROP_CATEGORIES } from "../content/props.js";
 
 // Adding a reusable UI/logic module requires an entry here. Assets are derived automatically.
 export const COMPONENTS = [
+  {id:'logic:word-theme-routes',kind:'logic',name:'年龄主题与随机路线',description:'三年龄段各有三个不同主题，每主题三条六步路线。使用原 R 线名词；优先未完成主题，保留本机完成标记。验证 dev/tools/verify-word-theme-routes.mjs。',source:'dev/content/word-theme-routes.js',capabilities:['九主题二十七路线','随机首词与完整句','不重复主题','年龄段完成进度'],dependencies:[]},
+  {id:'ui:word-dialog',kind:'ui',name:'主题说明与分享预览弹窗',description:'选龄页音乐旁查看年龄主题与教学目标；结束页点击分享缩略图平滑放大、长按保存。原生对话框管理焦点和 Escape，支持减少动态效果。',source:'dev/word-dialog.js',capabilities:['教学目标说明','缩略图展开与收起','焦点管理','长按保存'],dependencies:[]},
   {id:'logic:festival-models',kind:'logic',name:'中秋夜词汇造型库',description:'桂花、柚子、茶、茶壶、星星、云朵、月光、烟花、礼物、扇子十款独立造型。可在模块陈列馆“中秋节”分组逐个预览；验证 dev/tools/verify-midautumn-models-ui.mjs。',source:'dev/modules/festival-models.js',capabilities:['十款中秋独立模型','单词与复数热词','可复用造型与释放'],dependencies:[]},
   {id:'logic:animal-models',kind:'logic',name:'常见动物与十二生肖造型库',description:'十三款独立动物模型：大象、小鸡、长颈鹿、斑马、蛇及生肖所需造型；鼠兔狗猪沿用现有 R 线模型。可在模块陈列馆的“动物与生肖”分组逐个预览。',source:'dev/modules/animal-models.js',capabilities:['十三款独立造型','十二生肖齐全','自主轻动作','语音热词与点词'],dependencies:[]},
   {id:'logic:behavior-events',kind:'logic',name:'词语互动事件与自动道具',description:'世界工坊“一句话控制场景”下方列出可点击的中英文事件表。游泳自动补水池，航行缺载具补飞机；短表演结束收起临时道具。验证 dev/tools/verify-behavior-events.mjs。',source:'dev/presentation/behavior-controller.js',capabilities:['34种短表演','推拉扔踢躲藏','冷饿渴脏状态','自动补道具','既有对象保留','中断与清理'],dependencies:['logic:word-intent','logic:presenter']},

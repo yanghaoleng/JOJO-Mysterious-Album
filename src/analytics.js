@@ -1,4 +1,6 @@
-import { identityReady } from './anonymous-identity.js?v=20260920-user-id';
+const betaPreview = /^\/beta(?:\/|$)/.test(location.pathname);
+// Beta exercises the production speech API but must not enter production analytics.
+const identityReady = betaPreview ? Promise.resolve() : import('./anonymous-identity.js?v=20260920-user-id').then(module => module.identityReady);
 
 const VISITOR_KEY = 'mengmeng-visitor-v1';
 const ENDPOINT = '/api/analytics/collect';
@@ -9,6 +11,7 @@ function randomId(prefix) {
 }
 
 function persistentVisitor() {
+  if (betaPreview) return randomId('beta');
   try {
     let value = localStorage.getItem(VISITOR_KEY);
     if (!value) {
@@ -105,6 +108,7 @@ function snapshot() {
 }
 
 async function flush({ beacon = false } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify(snapshot());
   if (beacon && navigator.sendBeacon) {
     navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
@@ -143,6 +147,7 @@ function beginPage(page) {
 }
 
 export function trackAnalytics(name, { depth = state.depth, chapter = state.chapter, properties = {} } = {}) {
+  if (betaPreview) return;
   const eventName = safeName(name);
   if (!eventName) return;
   state.depth = Math.max(state.depth, Math.min(100, Number(depth) || 0));
@@ -234,6 +239,7 @@ export function setAnalyticsChapter(chapter) {
 }
 
 export function trackVoiceAttempt({ chapter, lessonId, transcript = '', durationMs = 0, source = 'asr', asrOk = true, correct = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify({
     attemptId: randomId('a'),
     visitorId: state.visitorId,
@@ -260,6 +266,7 @@ export function trackVoiceAttempt({ chapter, lessonId, transcript = '', duration
 }
 
 export function trackWordAttempt({ chapter = 'words', lessonId, age, lessonIndex = 0, mode = 'open', inputSource = 'voice', durationMs = 0, correct = false, passed = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify({
     attemptId: randomId('w'),
     visitorId: state.visitorId,

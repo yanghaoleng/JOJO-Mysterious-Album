@@ -3,14 +3,14 @@ import { WORD_AGE_BANDS, WORD_CHAPTERS, getAgeBand, getChapterLessons } from '..
 import { createWordProgress, evaluateWordUtterance, tokenizeWordUtterance, acceptsEnglishUtterance } from '../word-progress.js';
 import { WORLD_CATALOG } from '../content/worlds.js';
 
-assert.equal(WORD_CHAPTERS.length, 10);
+assert.equal(WORD_CHAPTERS.length, 12);
 assert.equal(WORD_AGE_BANDS.length, 3);
 const ids = new Set();
 const chapterIds = new Set(WORD_CHAPTERS.map((chapter) => chapter.id));
 for (const age of [3, 4, 5, 6, 7, 8, 9, 10]) {
   const band = getAgeBand(age);
   assert.ok(band && age >= band.minAge && age <= band.maxAge);
-  assert.equal(new Set(band.recommended).size, 5);
+  assert.equal(new Set(band.recommended).size, 3);
   assert.ok(band.recommended.every((id) => chapterIds.has(id)));
 }
 for (const age of [-1, 2, 11, 5.5, null, undefined, '', 'abc']) assert.equal(getAgeBand(age), null);
@@ -75,7 +75,7 @@ for (const chapter of WORD_CHAPTERS) {
     }
   }
 }
-assert.equal(ids.size, 180);
+assert.equal(ids.size, 216);
 const build = getChapterLessons('monster', 3)[0];
 const other = getChapterLessons('color', 3)[0];
 const oldProgress = evaluateWordUtterance(build, build.example).progress;
@@ -85,7 +85,7 @@ assert.equal(evaluateWordUtterance(hands, 'two hand').targetComplete, true, 'Inf
 const rhyme = getChapterLessons('rhyme', 8);
 assert.equal(tokenizeWordUtterance(rhyme[4].example).length,3);
 assert.ok(!JSON.stringify(WORD_CHAPTERS).includes('pan / ham'), 'Do not claim pan and ham rhyme');
-console.log(`Word curriculum verified: ${ids.size} lessons, 3 age bands, 10 chapters; full-word accumulation, gradual noun/quantity/color/size progression, creative alternatives and independent progress passed.`);
+console.log(`Word curriculum verified: ${ids.size} default/legacy lesson records, 3 age bands, 12 registered chapters; full-word accumulation, gradual noun/quantity/color/size progression, creative alternatives and independent progress passed.`);
 
 for(const text of ['大大的头','a 大 head','让 flower grow','机器人','123','こんにちは'])assert.equal(acceptsEnglishUtterance(text),false,text);
 for(const text of ['A big head.','Grow, flower!','two hands','a sleepy robot'])assert.equal(acceptsEnglishUtterance(text),true,text);

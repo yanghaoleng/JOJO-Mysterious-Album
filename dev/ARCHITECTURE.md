@@ -1,5 +1,9 @@
 # 萌萌星：脚本、事件与模块架构
 
+英语主题入口由 `content/word-theme-routes.js` 配置：3–5 岁为动物出发站、玩具彩虹城、花园生长岛；6–7 岁为交通出发港、动物运动场、家庭露营寻宝；8–10 岁为机器人零件实验室、押韵魔法门、海湾探险港。每主题三条六步路线，首词、对象、描述与结尾动作有变化；核心名词在测试中逐项匹配 R 线来源。`word-games.js` 保留旧主题入口与中秋独立入口，新增路线 ID 带 `route1/2/3`，同一轮内固定路线，语音、点词、分享和分析使用同一份课题。
+
+`jma.word-theme-tour.v1` 仅记录每段已完成的主题、上次主题与路线编号。重新选龄和探索下一主题清空旧世界与语音学习明细，保留完成徽记，防止刷新后重复推荐；三主题完成后由用户选择进入下一年龄段，最高年龄段重新洗牌。`word-dialog.js` 用原生 dialog 管理说明和分享预览的焦点、关闭、缩略图展开动画与减少动态效果。验证 `verify-word-theme-routes.mjs` 和 `verify-word-theme-ui.mjs`。
+
 本轮把三个当前章节迁到同一套世界命令与事件接口，保留现有 Three.js 画面、语音服务、角色资源和路由。故事仍由各自的流程控制器推进；对象、道具、事件与存档不再依赖具体页面。历史故事、模拟器和已有导入路径继续兼容。
 
 陈列馆：[/dev/modules/](https://jma.mikeywa.site/dev/modules/)。机器可读目录：[/dev/modules/catalog.json](https://jma.mikeywa.site/dev/modules/catalog.json)。目录包含现有模块和历史录制素材，并不表示每项都出现在当前主线。
@@ -256,6 +260,10 @@ Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key
 九章三档年龄均为单名词、另一个名词、数量加名词、颜色加名词、大小加颜色加名词、最后完整句。课次 ID 保持稳定；旧的丰富例句保存在 `WORD_SENTENCE_LIBRARY`，扩展词仍通过词菜单和替换候选可玩。每章前两轮由中文提问引导，第三轮用中文介绍彩虹虚线；中文仅为应用脚本播报，儿童输入仍只执行提取后的英文。无需先点 Domi，默认选年龄。
 
 `normalizeWordAttempt` 对当前题干内至多一个未知词做保守拼写修正，支持少量常见同音转写；已知有效词不会被改成题干词。缺冠词不阻止完成，不把文本匹配称为发音评分。`verify-word-teaching-ui.mjs` 检查逐步教学、无模糊、换词、连续收音、六轮完成和重选清理；`verify-word-tolerance.mjs` 检查容错与创意词保留。
+
+### 独立 Beta 发布（2026-09-28）
+
+使用 `tools/package-beta.mjs` 包装标准发布包，再由 `prepare-beta.mjs` 在临时目录重定位静态资源到 `/beta/`。`deploy/nginx-beta.inc` 单独指向 `/opt/kindergrimm/beta-web/beta`，不切换正式 `current` 或重启后端。Beta 使用独立学习进度键，关闭正式统计上报，语音仍复用现有 API。入口 `/beta/` 与 `/beta/midautumn` 无 `.html` 后缀；首页 Beta 弹窗只列相对正式版本增加的功能。
 
 ### 常见动物与十二生肖扩展（2026-09-24）
 
