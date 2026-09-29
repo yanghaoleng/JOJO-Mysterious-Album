@@ -32,9 +32,19 @@ try{
    for(const [event,data] of [[450,{}],[451,{results:[{text}]}],[459,{}]])socket.send(JSON.stringify({type:'event',event,data}));
   };
   if(viewport.width===1280){
+   await answer('flag');await page.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance);
+   await page.waitForFunction(()=>window.__WORD_GAME__.status.lessonIndex===1,null,{timeout:7000});
+   await page.addInitScript(lesson=>{const saved=JSON.parse(localStorage.getItem('jma.word-national-day.v1'));const journey=saved.journeys['middle:national-day'];journey.lessonId=lesson.id;journey.lessonIndex=lesson.stage-1;journey.progress=null;journey.world=null;localStorage.setItem('jma.word-national-day.v1',JSON.stringify(saved));},lessons[8]);
+   await page.reload();await ready();assert.equal((await state()).lessonIndex,8,'Second stop restores independently');
+   await page.locator('#listen-example').click();await page.waitForFunction(()=>window.__WORD_GAME__.status.recording);
+   await page.locator('#word-options-toggle').click();
+   await page.locator('[data-word="three"]').click();await page.locator('[data-word="balloons"]').click();
+   await page.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance);
+   assert.equal(Object.values((await state()).entities).filter(entity=>entity.asset==='prop:national-balloon').length,3,'Custom count controls the scene');
+   await page.locator('#next-lesson').click();await page.waitForFunction(()=>window.__WORD_GAME__.status.lessonIndex===9);
    for(let i=0;i<lessons.length;i++){
+    if(i<9)continue;
     assert.equal((await state()).lessonIndex,i);
-    if(i===48||i===80){await answer('panda');await page.waitForFunction(()=>!window.__WORD_GAME__.status.busy&&window.__WORD_GAME__.status.progress.attempts>0);assert.equal((await state()).canAdvance,false,'One noun cannot skip a later sentence');}
     await answer(lessons[i].example);await page.waitForFunction(()=>window.__WORD_GAME__.status.canAdvance,null,{timeout:15000});
     if(i===0||i===40||i===88)await page.screenshot({path:`${out}/lesson-${i+1}.png`});
     await page.waitForFunction(()=>!window.__WORD_GAME__.status.busy);

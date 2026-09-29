@@ -271,7 +271,7 @@ Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key
 
 ## 国庆独立长路线
 
-`/national`（源页面 `national.html`）使用 `data-festival="national-day"` 复用 `words.js`，与中秋入口及常规选龄入口并存。`content/national-day-words.js` 保存原创 12 站96题、词义、教学参考和稳定题目 ID；新增国旗、长城、山、行李箱、熊猫、气球六个独立模型。`national-day-progress.js` 前段累计短语、中段整句覆盖、后段按本题的对象数量和最低词数接受自主表达；不评价发音。儿童语音与点词共用规则。后段的句号分句逐句解析对象，再经同一个 gateway 原子提交，不执行模型代码。
+`/national`（源页面 `national.html`）使用 `data-festival="national-day"` 复用 `words.js`，与中秋入口及常规选龄入口并存。`content/national-day-words.js` 保存原创 12 站96题、词义、教学参考和稳定题目 ID；新增国旗、长城、山、行李箱、熊猫和气球六个独立模型。第一站保留单词入门；从第二站起数量词和名词可替换，替换后的表达直接进入世界命令，例如 `three balloons` 会生成三个气球。`national-day-progress.js` 以本题任一目标词被识别一次作为继续条件，完整短语覆盖仍单独进入统计；不评价发音。儿童语音与点词共用规则，继续按钮在持续收音恢复后以三秒倒计时自动推进。后段的句号分句逐句解析对象，再经同一个 gateway 原子提交，不执行模型代码。
 
 国庆进度位于 `jma.word-national-day.v1`，存档同时保存题目 ID 与序号，恢复优先使用 ID。接力作品使用独立 `:shared` 槽，不覆盖自己的路线。按题目数组实际长度分页，不再固定六题；96题显示数字和细进度条。每站八题，跨站清理布景，刷新恢复当前站的场景和进度。课程不收集年龄；内部固定年龄档只用于兼容既有内容接口，不当作选龄上报。分享图取最后三题示例，链接固定返回国庆入口。验证：`verify-national-day.mjs` 与 `verify-national-day-ui.mjs`，后者使用受控语音事件，不代表真实麦克风或上游识别服务验收。
 

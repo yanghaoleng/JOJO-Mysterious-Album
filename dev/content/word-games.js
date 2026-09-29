@@ -1562,6 +1562,7 @@ export function createWordSuggestions(lesson, saved) {
   const tokens=tokenize(lesson.mode==='cloze'?lesson.displayText:lesson.example);
   const original=tokenize(lesson.example);
   const groups=[
+    lesson.numberChoices?.length?lesson.numberChoices:['one','two','three','four','five','six','seven','eight','nine','ten'],
     ['cold','hungry','thirsty','dirty','big','little','tiny','blue','red','green','yellow','happy','sleepy','funny','wet','dry','long','tall','small','huge','giant','sad','angry','fast','slow','high','hot','yummy','new','pink','purple','orange','white','black','brown','rainbow','round','bright','sweet'],
     ['moon','mooncake','lantern','rabbit','turtle','octopus','jellyfish','starfish','tent','acorn','pinecone','hedgehog','penguin','seal','walrus','igloo','head','robot','flower','cat','pig','ball','box','tree','poop','frog','duck','toy','train','bug','rug','car','bear','dog','hat','mat','bed','sun','seed','garden','body','hand','foot','nose','mouth','ear','eye','tail','balloon','wig','log','cape','bow','bee','snail','wave','bird',...ANIMAL_WORDS.map(animal=>animal.word),...MID_AUTUMN_PROPS.map(prop=>prop.word)],
     ['lanterns','mooncakes','rabbits','turtles','octopuses','jellyfish','starfish','jellyfishes','starfishes','tents','acorns','pinecones','hedgehogs','penguins','seals','walruses','igloos','hands','feet','eyes','ears','flowers','robots','balls','boxes','cars','ducks','birds','trains','trees','hats',...ANIMAL_WORDS.flatMap(animal=>animal.aliases.filter(alias=>alias.endsWith('s')||alias==='oxen')),...MID_AUTUMN_PROPS.flatMap(prop=>prop.aliases.filter(alias=>alias.endsWith('s')&&!alias.includes(' ')))],
@@ -1570,14 +1571,14 @@ export function createWordSuggestions(lesson, saved) {
     ['water','plant'],
     ['grows','jumps','dances','swims','flies','spins','runs','walks','sleeps'],
   ];
-  if(lesson.nounChoices){groups[1]=lesson.nounChoices;groups[2]=lesson.pluralChoices;}
+  if(lesson.nounChoices){groups[2]=lesson.nounChoices;groups[3]=lesson.pluralChoices||groups[3];}
   const choices=new Map();
   tokens.forEach((word,i)=>{
     const base=(word.includes('_')?original[i]:word)?.toLowerCase();
     const prefix=original.slice(0,i).join('').toLowerCase().match(/[a-z]+/g)||[];
-    while(groups[0].includes(prefix.at(-1)))prefix.pop();
+    while(groups[1].includes(prefix.at(-1)))prefix.pop();
     const countedFish=['jellyfish','starfish'].includes(base)&&['two','three','four','five','six','seven','eight','nine','ten'].includes(prefix.at(-1));
-    const group=countedFish?groups[2]:groups.find(g=>g.includes(base));
+    const group=countedFish?groups[3]:groups.find(g=>g.includes(base));
     if(group)choices.set(i,[...new Set([base,...group])]);
   });
   const confirmed=new Set();
@@ -1585,7 +1586,7 @@ export function createWordSuggestions(lesson, saved) {
     tokens.splice(0,tokens.length,...saved.tokens);
     for(const i of saved.confirmed||[])if(Number.isInteger(i)&&i>=0&&i<tokens.length)confirmed.add(i);
   }
-  const nounSlots=new Set([...choices.keys()].filter(i=>groups[1].includes(original[i]?.toLowerCase())||groups[2].includes(original[i]?.toLowerCase())));
+  const nounSlots=new Set([...choices.keys()].filter(i=>groups[2].includes(original[i]?.toLowerCase())||groups[3].includes(original[i]?.toLowerCase())));
   const format=(word,i)=>/^[A-Z]/.test(original[i])?word[0].toUpperCase()+word.slice(1):word;
   let cursor=0;
   return {

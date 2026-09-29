@@ -60,9 +60,13 @@ export const NATIONAL_DAY_STOPS = Object.freeze([
   ]),
 ]);
 export const NATIONAL_DAY_WORDS=Object.freeze([...new Set(NATIONAL_DAY_STOPS.flatMap(s=>s.rows.flatMap(r=>r[1].toLowerCase().match(/[a-z]+/g)||[])))]);
+export const NATIONAL_DAY_NUMBERS=Object.freeze(['one','two','three','four','five','six','seven','eight','nine','ten']);
+export const NATIONAL_DAY_NOUNS=Object.freeze(['flag','star','balloon','flower','lantern','drum','gift','panda','tree','train','kite','car','bus','airplane','ship','map','bag','camera','suitcase','wall','mountain','bridge','garden','cloud','sun','tent','box','bird','rabbit','dad','mum','bread','tea','apple','cake','fireworks']);
+export const NATIONAL_DAY_PLURALS=Object.freeze(['stars','balloons','flowers','lanterns','drums','gifts','pandas','trees','trains','clouds']);
 export function nationalDayLessons(){
   return NATIONAL_DAY_STOPS.flatMap((stop,stopIndex)=>stop.rows.map(([key,example,prompt],index)=>{
     const tokens=example.toLowerCase().match(/[a-z]+/g)||[],mode=stopIndex<6?'build':stopIndex<10?'cloze':'open';
-    return {id:`national-day-${stop.id}-${key}`,stage:stopIndex*8+index+1,stopId:stop.id,stopIndex,stopTitle:stop.title,stopStep:index+1,mode,example,targets:[...new Set(tokens)],buildWords:tokens,displayText:example,blankWords:[],blankCount:0,hintLevel:stopIndex<6?3:1,warmup:false,allowSwaps:false,allowCreative:mode==='open',choiceWords:[],chineseGuide:`${prompt} 试着说：${example}`,prompt,knowledge:[stop.skill],words:[...new Set(tokens)].map(word=>({word,meaning:NATIONAL_DAY_MEANINGS[word]||word,inSource:false})),supportWords:[],alternatives:[],goalLabel:stop.title,minWords:stopIndex===11?8:stopIndex===10?4:0};
+    const customizable=stopIndex>=1;
+    return {id:`national-day-${stop.id}-${key}`,stage:stopIndex*8+index+1,stopId:stop.id,stopIndex,stopTitle:stop.title,stopStep:index+1,mode,example,targets:[...new Set(tokens)],buildWords:tokens,displayText:example,blankWords:[],blankCount:0,hintLevel:stopIndex<6?3:1,warmup:false,allowSwaps:customizable,allowCreative:mode==='open',choiceWords:[],numberChoices:customizable?NATIONAL_DAY_NUMBERS:[],nounChoices:customizable?NATIONAL_DAY_NOUNS:[],pluralChoices:customizable?NATIONAL_DAY_PLURALS:[],chineseGuide:`${prompt} 试着说：${example}`,prompt,knowledge:[stop.skill],words:[...new Set(tokens)].map(word=>({word,meaning:NATIONAL_DAY_MEANINGS[word]||word,inSource:false})),supportWords:[],alternatives:[],goalLabel:stop.title,minWords:stopIndex===11?8:stopIndex===10?4:0};
   }));
 }
