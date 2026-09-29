@@ -18,7 +18,7 @@ const heroObserver=new IntersectionObserver(entries=>{
   }).catch(()=>world.removeAttribute('data-ready'));
 },{root:gate});heroObserver.observe(world);
 // Touch devices reveal the summary on the first tap; the second tap follows the link.
-const cards=[...document.querySelectorAll('.chapter-card')];
+const cards=[...document.querySelectorAll('.chapter-card:not(.reading-card)')];
 cards.forEach(card=>card.addEventListener('click',event=>{
   if(!matchMedia('(hover: none)').matches||card.classList.contains('is-expanded'))return;
   event.preventDefault();cards.forEach(c=>c.classList.remove('is-expanded'));card.classList.add('is-expanded');

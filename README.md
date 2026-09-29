@@ -6,9 +6,13 @@
 
 主页以三章组织体验：《第一束好奇的光》→ `/dev/?story=wow`、观点小剧场 → `/dev/debate`（3D 可玩版，保留 `/debate` 原版入口）、《登月计划》→ `/dev/?story=moon`。各章独立进入，不设解锁门槛。
 
+## 国庆独立主题 · 我的国庆大冒险
+
+入口 `/national`，首页可直接进入。12 站共 96 题，从名词、数量、颜色和大小到出游、位置、动作、庆祝与两句小故事；复用开口造世界的真实 3D、语音示范和点词输入。自动保存本机进度，点击继续才进入下一题，切换站点开启新的布景。词汇及完整关卡见 [国庆课程清单](docs/national-day-curriculum.md)。
+
 ## 英语冒险 · 开口造世界
 
-独立入口 `/dev/words.html`，从首页的英语冒险卡进入。选择 3～10 岁的具体年龄后，按三个年龄档推荐一场冒险；六个小章节按年龄推荐，包含机器人组装、颜色造物、动作运动、玩具空间、魔法花园和押韵创作。每章六轮，先逐词完成一句，再做两轮递进填空，最后三轮发挥自己的点子；三个年龄档共 108 轮内容。
+独立入口 `/words`，从首页的英语冒险卡进入。选择 3～10 岁的具体年龄后，按三个年龄档推荐一场冒险；六个小章节按年龄推荐，包含机器人组装、颜色造物、动作运动、玩具空间、魔法花园和押韵创作。每章六轮，先逐词完成一句，再做两轮递进填空，最后三轮发挥自己的点子；三个年龄档共 108 轮内容。
 
 - 英文语音和点词菜单共用场景指令，可以更换名词、颜色、数量及动作；花、猫和 poop 都能长大、跳跃或飞起来。词库外表达走现有造物接口，近似造型会说明。
 - 模块陈列馆新增独立“R 线名词模型库”：155 个原词名词模型、1 个明确标记的创作扩展；词义与课次可追溯。模型也能在陈列馆单独浏览和召唤。
@@ -105,7 +109,7 @@
 
 ## 本地运行
 
-英语小游戏的本地完整服务可使用 `python3 serve.py 8917 .`，访问 `http://127.0.0.1:8917/dev/words`。服务启动时自动读取仓库根目录中被 Git 忽略的 `.env.local`；语音识别需要 `VOLC_SPEECH_APP_ID`、`VOLC_SPEECH_ACCESS_TOKEN`、`VOLC_SPEECH_RESOURCE_ID`，单独配置 `ARK_API_KEY` 不包含语音识别授权。修改配置后重启本地服务。不要使用纯静态文件服务代替 API 服务。
+英语小游戏的本地完整服务可使用 `python3 serve.py 8917 .`，访问 `http://127.0.0.1:8917/words`。服务启动时自动读取仓库根目录中被 Git 忽略的 `.env.local`；语音识别需要 `VOLC_SPEECH_APP_ID`、`VOLC_SPEECH_ACCESS_TOKEN`、`VOLC_SPEECH_RESOURCE_ID`，单独配置 `ARK_API_KEY` 不包含语音识别授权。修改配置后重启本地服务。不要使用纯静态文件服务代替 API 服务。
 
 `/dev/tools/word-voice-check` 是开发验证页：点击后将女声英文例句经过真实 AudioWorklet 采样及 ASR 接口，显示转写结果；不打开物理麦克风，不输出密钥，不改游戏存档。
 
@@ -326,3 +330,9 @@ python3 scripts/generate_star_offline.py
 - 三份示例冒险各有三轮“伙伴提问 → 孩子回答 → 世界变化”记录。九个语音气泡使用项目现有合成童声音色预生成的 MP3；全部是虚构示例，明确标注 AI 模拟声音。每次仅播放一句，切换、关闭和切到后台都会停止旧声音，不采集录音。
 - 对话数据在 `src/landing-journeys.js`；`tools/capture-journey-details.mjs` 重建九张 3D 效果示意图，`tools/generate-journey-audio.mjs` 通过现有 TTS 服务生成缺失的样音。
 - `tools/verify-hero-pop.mjs [baseURL]` 检查逐字动画、弹性回弹、烟雾、九段真实音频播放、暂停与关闭、图片、手机布局和降级显示。
+
+### 官网跟读入口
+
+首页第一栏目展示三个跟读章节及真实场景配图：`/words`、`/midautumn`、`/national`。原三章保留在第二栏目「故事冒险」。入口 HTML 使用根路径资源，分享链接使用规范短地址；旧地址由 `serve.py` 与 `ops/reading-routes.nginx.conf` 做 308 跳转。Nginx 的 jma 主站 server 块需 include 此片段。
+
+`tools/capture-reading-scenes.mjs` 从游戏实际场景生成首页 WebP 配图，`tools/verify-reading-home.mjs` 检查首页、短地址和旧链接兼容。

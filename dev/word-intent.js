@@ -1,3 +1,4 @@
+import { NATIONAL_DAY_WORDS } from './content/national-day-words.js';
 import { BEHAVIOR_ACTIONS, BEHAVIOR_EFFECTS } from './content/behavior-events.js';
 import { RLINE_MODEL_WORDS } from './content/rline-nouns.js';
 import { CREATION_KITS } from './content/props.js';
@@ -12,7 +13,7 @@ export const hasWord=(text,word)=>/[a-z]/i.test(word)?new RegExp(`\\b${esc(word)
 function aliases(item){const words=[item.word,...(item.aliases||[]),item.zh];if(!/s$/.test(item.word))words.push(item.word+'s');if(item.word.endsWith('y'))words.push(item.word.slice(0,-1)+'ies');return [...new Set(words)].filter(Boolean);}
 export const WORD_CHARACTER_NAMES=Object.freeze({'yellow:jiaojiao':'JOJO','npc:zhuxiaodi':'BOBO','npc:domi':'DOMI'});
 const lexicon=[...RLINE_MODEL_WORDS.map(n=>({...n,match:aliases(n)})),...Object.values(ASSETS).filter(a=>a.kind==='actor').map(a=>({word:WORD_CHARACTER_NAMES[a.id]?.toLowerCase()||a.id.split(':').at(-1),zh:a.name,assetId:a.id,match:[...(WORD_CHARACTER_NAMES[a.id]?[WORD_CHARACTER_NAMES[a.id]]:[]),a.name,...(a.id==='yellow:round'?[]:[a.id.split(':').at(-1)])]})),...CREATION_KITS.filter(k=>!k.id.startsWith('rword-')).map(k=>({word:k.id,zh:k.name,assetId:`prop:${k.id}`,match:k.words.split('|').filter(w=>w.length>1)}))];
-export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...MID_AUTUMN_CHAPTER_WORDS,...Object.values(WORD_CHARACTER_NAMES),...[...BEHAVIOR_ACTIONS,...BEHAVIOR_EFFECTS].flatMap(a=>a.aliases).filter(w=>/^[a-z ]+$/i.test(w)),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
+export const WORD_SPEECH_VOCABULARY=[...new Set([...'sunny sunshine clear rainy raining snow snowy snowing weather'.split(' '),...MID_AUTUMN_CHAPTER_WORDS,...NATIONAL_DAY_WORDS,...Object.values(WORD_CHARACTER_NAMES),...[...BEHAVIOR_ACTIONS,...BEHAVIOR_EFFECTS].flatMap(a=>a.aliases).filter(w=>/^[a-z ]+$/i.test(w)),...lexicon.flatMap(item=>item.match).filter(word=>/^[a-z][a-z \'-]{0,59}$/i.test(word))])];
 export function findWordObjects(text) {
   const hits=[];
   for(const item of lexicon)for(const alias of item.match){
@@ -27,6 +28,23 @@ export function findWordObjects(text) {
 export function planWordIntent(text,{entities={},chapter='color',focusId=null,feedback=false,idPrefix='wg'}={}) {
   text=String(text||'').trim().slice(0,240);
   if(!text)return {commands:[],matched:[],reply:'说一个你想变出来的东西吧。'};
+  // National Day's final station accepts a short story. Resolve each sentence
+  // against the objects created by the preceding one, then submit one batch.
+  if(chapter==='national-day'){
+    const sentences=text.split(/[.!?]+|(?<=\S)\s+(?=(?:I (?:see|have)|Make (?:the|a|two)|Put (?:a|an|the)|Happy National Day)\b)/i).map(s=>s.trim()).filter(Boolean);
+    if(sentences.length>1){
+      const working=JSON.parse(JSON.stringify(entities)),commands=[],matched=[];
+      for(const sentence of sentences){
+        const part=planWordIntent(sentence,{entities:working,chapter,focusId,feedback,idPrefix});
+        commands.push(...part.commands);matched.push(...part.matched);focusId=part.focusId||focusId;
+        for(const c of part.commands){
+          if(c.type==='entity.spawn')working[c.id]={...c};
+          if(c.type==='entity.remove')delete working[c.id];
+        }
+      }
+      return {commands,matched:[...new Set(matched)],effects:[],focusId,reply:'你的小故事变出来啦'};
+    }
+  }
   const robotParts={robot:'body',monster:'body',body:'body',head:'head',hand:'hand',foot:'foot',feet:'foot'};
   const found=findWordObjects(text).map(h=>{
     if(chapter!=='monster')return h;

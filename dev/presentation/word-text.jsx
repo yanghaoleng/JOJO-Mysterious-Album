@@ -15,6 +15,14 @@ export function mountWordText(node, value, variant = 'text', options = {}) {
       const text=reading?.text??String(current),ranges=replaceableWordRanges(text);
       const accepted=options.getParts?.()||[];
       const parts=reading?[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)].map(({0:text,index},i)=>({text,index:i,start:index,matched:accepted.some(p=>p.matched&&p.text.toLowerCase()===text.toLowerCase())})):(accepted.length?accepted:[...text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)?|_{2,}|[^A-Za-z_]+/g)].map(({0:text,index},i)=>({text,index:i,start:index})));
+      // Keep sentence punctuation attached to the previous word on narrow screens.
+      if(options.keepPunctuation)for(let i=1;i<parts.length;i++){
+        const punctuation=parts[i].text.match(/^[.,!?;:]+/);
+        if(punctuation&&/[A-Za-z_]$/.test(parts[i-1].text)){
+          parts[i-1]={...parts[i-1],text:parts[i-1].text+punctuation[0]};
+          parts[i]={...parts[i],text:parts[i].text.slice(punctuation[0].length)};
+        }
+      }
       let offset=0;
       root.render(<span className="read-along-text">{parts.map(({text:word,index:i,matched})=>{
         const index=offset;offset+=word.length;

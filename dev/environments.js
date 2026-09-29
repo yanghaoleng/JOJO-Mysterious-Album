@@ -25,6 +25,7 @@ const environment = (radius, period, colors, lighting = {}) => Object.freeze({
 });
 
 export const WORLD_ENVIRONMENTS = Object.freeze({
+  'word-national-day': environment(5.6,'day',{base:'#24364e',glow:'#efbd95',horizon:'#b5a49e',ink:'#fff5e7',muted:'#e2d4c1',accent:'#c9ac81',paper:'#f2ece1'},{sky:'#dce6ef',sun:'#ffe7d1',bounce:'#d7cabc',rim:'#e6d6c2',hemisphereIntensity:1.65,sunIntensity:1.9,exposure:1.04}),
   'word-midautumn': environment(5.6, 'night', {base:'#3b5360',glow:'#ecd49a',horizon:'#425b6e',ink:'#f2e8cb',muted:'#d9d0b8',accent:'#e9bd66',paper:'#f9f1d9'}, {sky:'#8097b3',sun:'#ffe8ae',bounce:'#c1b89c',rim:'#a7bdd9',exposure:1.22}),
   'word-snowfield': environment(5.35, 'day', {base:'#e5f1f7',glow:'#f7fcff',horizon:'#c5dfec',ink:'#334954',muted:'#627b88',accent:'#719bb5',paper:'#f8fcff'}, {sky:'#d8efff',sun:'#f4fbff',bounce:'#c8e3ef',rim:'#e4f8ff'}),
   ...Object.fromEntries(SOLAR_PLANETS.map(p=>[p.id,environment(p.radius,'night',{base:'#dce2ed',glow:'#f4ead8',horizon:'#bac8dd'})])),

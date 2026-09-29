@@ -4,7 +4,7 @@
 
 陈列馆：[/dev/modules/](https://jma.mikeywa.site/dev/modules/)。机器可读目录：[/dev/modules/catalog.json](https://jma.mikeywa.site/dev/modules/catalog.json)。目录包含现有模块和历史录制素材，并不表示每项都出现在当前主线。
 
-独立中秋英语章节从 `midautumn.html` 进入，不走选龄页；独立域名计划为 `midautumn.mikeywa.site`，启用后由独立 HTTPS 站点的根路径直达。它复用 `dev/words.js` 的语音、造物、分享和六步进度，在 `body[data-festival=midautumn]` 下隔离存档及界面；`word-midautumn` 世界与 13 款中秋道具仍经资源注册表、统一世界命令和模块目录接入。扩展词集中于 `content/midautumn-words.js`，当前 54 个节日词，10 款新模型经独立 `modules/props/festival-*.js` 登记；详见 `verify-midautumn-words.mjs`、`verify-midautumn-models-ui.mjs`。
+独立中秋英语章节从 `midautumn.html` 进入，不走选龄页；正式入口统一为主域名下的 `/midautumn`。它复用 `dev/words.js` 的语音、造物、分享和六步进度，在 `body[data-festival=midautumn]` 下隔离存档及界面；`word-midautumn` 世界与 13 款中秋道具仍经资源注册表、统一世界命令和模块目录接入。扩展词集中于 `content/midautumn-words.js`，当前 54 个节日词，10 款新模型经独立 `modules/props/festival-*.js` 登记；详见 `verify-midautumn-words.mjs`、`verify-midautumn-models-ui.mjs`。
 
 `entity.cue:fly-away` 只在点击便便时触发，表现层先将它飞离画面，再由会话层移除对应实体；计时器在会话销毁时清理，场景切换后不会误删新对象。该互动在世界工坊和英语世界共用，验证入口 `dev/tools/verify-poop-flight-ui.mjs`。
 
@@ -260,3 +260,15 @@ Domi 的三段欢迎语由 `wow-child` 专属童声合成并使用新版 API Key
 ### 常见动物与十二生肖扩展（2026-09-24）
 
 `content/animal-words.js` 单独收录创作扩展词，不改动原 R 线来源。大象、小鸡、长颈鹿、斑马、蛇、牛、虎、龙、马、山羊、绵羊、猴子、公鸡共 13 款独立模型；十二生肖中的鼠、兔、狗、猪沿用现有 R 线模型。每款新模型在 `modules/props/animal-*.js` 有独立入口，共用 `modules/animal-models.js` 的造型辅助；模块陈列馆归入“动物与生肖”。英文单复数、语音热词、点词菜单、彩虹替换词和场景指令同步登记。验证入口：`dev/tools/verify-animal-words.mjs` 与 `dev/tools/verify-animal-models-ui.mjs`。
+
+## 国庆独立长路线
+
+`/national`（源页面 `national.html`）使用 `data-festival="national-day"` 复用 `words.js`，与中秋入口及常规选龄入口并存。`content/national-day-words.js` 保存原创 12 站96题、词义、教学参考和稳定题目 ID；新增国旗、长城、山、行李箱、熊猫、气球六个独立模型。`national-day-progress.js` 前段累计短语、中段整句覆盖、后段按本题的对象数量和最低词数接受自主表达；不评价发音。儿童语音与点词共用规则。后段的句号分句逐句解析对象，再经同一个 gateway 原子提交，不执行模型代码。
+
+国庆进度位于 `jma.word-national-day.v1`，存档同时保存题目 ID 与序号，恢复优先使用 ID。接力作品使用独立 `:shared` 槽，不覆盖自己的路线。按题目数组实际长度分页，不再固定六题；96题显示数字和细进度条。每站八题，跨站清理布景，刷新恢复当前站的场景和进度。课程不收集年龄；内部固定年龄档只用于兼容既有内容接口，不当作选龄上报。分享图取最后三题示例，链接固定返回国庆入口。验证：`verify-national-day.mjs` 与 `verify-national-day-ui.mjs`，后者使用受控语音事件，不代表真实麦克风或上游识别服务验收。
+
+国庆视觉使用独立 `word-national-day` 世界：红毯、浅灰米色大理石外圈、灰绿植被、灯笼、彩旗和花坛由世界表现层持有，统一批处理与销毁，不进入玩家实体或影响作答；旧国庆 meadow 快照按原题目 ID 搬到新世界，其他章节不迁移。
+
+国庆背景通过两分钟一次性的透明度过渡，从深蓝黎明渐变为暖橘晨光，跨题不重启；减少动态效果偏好使用静态混合色。场景模型使用低饱和色与柔和暖光。
+
+官网主章节使用 `/words`、`/midautumn`、`/national`；旧故事展示在第二栏目。路径变化保持存档键和稳定内容 ID 不变。根入口页面在构建时同步 words CSS/JS 内容哈希，旧入口由 Python/Nginx 跳转兼容。

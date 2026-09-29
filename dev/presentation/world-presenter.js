@@ -122,7 +122,7 @@ export function createWorldPresenter(stage, { onInteract = () => {}, onConsume =
           model.group.traverse(node=>{if(!node.isMesh)return;for(const material of Array.isArray(node.material)?node.material:[node.material]) {
             if(!material.color || touched.has(material))continue;touched.add(material);
             const original={};material.color.getHSL(original);
-            const protectedFlag=['prop:ladder','prop:battleship'].includes(record.asset) && ['397fc4','ffda45'].includes(material.color.getHexString());
+            const protectedFlag=record.asset==='prop:national-flag'||(['prop:ladder','prop:battleship'].includes(record.asset) && ['397fc4','ffda45'].includes(material.color.getHexString()));
             if(!protectedFlag && (material.vertexColors || (original.l>.15 && (original.s>.12 || original.l<.85)))) {
               material.color.setHSL(hsl.h,hsl.s,Math.min(.82,Math.max(.2,hsl.l*(.7+original.l*.5))));
               if(material.vertexColors){material.vertexColors=false;material.needsUpdate=true;}

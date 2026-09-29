@@ -62,10 +62,45 @@
       "dependencies": []
     },
     {
+      "id": "story:national-day",
+      "kind": "story",
+      "name": "国庆独立章节 · 我的国庆大冒险",
+      "description": "独立入口 /national；12 站96题，从单词、数量、颜色、大小到位置、动作和两句故事，自动保存本机进度。",
+      "source": "dev/content/national-day-words.js",
+      "capabilities": [
+        "96题逐题推进",
+        "独立进度与分享",
+        "6款国庆模型",
+        "红毯大理石广场、柔和灯笼与黎明渐变",
+        "中英文词表",
+        "参考来源"
+      ],
+      "dependencies": [
+        "logic:national-day-progress",
+        "logic:word-intent"
+      ]
+    },
+    {
+      "id": "logic:national-day-progress",
+      "kind": "logic",
+      "name": "国庆长路线作答规则",
+      "description": "在 /national 试用。前段累计完整短语，中段整句作答，后段按当前题目要求组合对象的自主表达。",
+      "source": "dev/national-day-progress.js",
+      "capabilities": [
+        "分阶段表达要求",
+        "语音与点词共用判定",
+        "稳定题目ID恢复"
+      ],
+      "dependencies": [
+        "logic:word-progress",
+        "logic:word-intent"
+      ]
+    },
+    {
       "id": "story:words",
       "kind": "story",
       "name": "独立章节 · 开口造世界",
-      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话；中秋独立章节直达，扩充到 54 个节日词。实际入口 /dev/words.html。",
+      "description": "选具体年龄后只推荐一章，九章各六轮，中文引出单个名词、第二个名词、数量、颜色、大小与最后一句话；中秋独立章节直达，扩充到 54 个节日词。实际入口 /words。",
       "source": "dev/content/word-games.js",
       "capabilities": [
         "三个年龄档",
@@ -88,7 +123,7 @@
       "id": "ui:word-play",
       "kind": "ui",
       "name": "开口造世界 · 年龄与冒险界面",
-      "description": "在 /dev/words.html 体验全屏 3D、圆形转场、年龄步进器、单卡推荐、英文女声示范和点词创作。中文陪读静默忽略，混合语句提取英文。",
+      "description": "在 /words 体验全屏 3D、圆形转场、年龄步进器、单卡推荐、英文女声示范和点词创作。中文陪读静默忽略，混合语句提取英文。",
       "source": "dev/words.js",
       "capabilities": [
         "年龄推荐与加减音效回弹",
@@ -195,7 +230,7 @@
       "id": "ui:word-text",
       "kind": "ui",
       "name": "英语冒险 · 动态数字与字幕",
-      "description": "在 /dev/words.html 操作年龄加减体验 Calligraph Slots；在每轮观看 Text 发散提示与可替换词彩虹虚线。MohrRounded Bold，遵守减少动态效果设置。",
+      "description": "在 /words 操作年龄加减体验 Calligraph Slots；在每轮观看 Text 发散提示与可替换词彩虹虚线。MohrRounded Bold，遵守减少动态效果设置。",
       "source": "dev/presentation/word-text.jsx",
       "capabilities": [
         "Slots 年龄数字",
@@ -717,6 +752,255 @@
       ],
       "dependencies": [
         "logic:intent"
+      ]
+    },
+    {
+      "id": "prop:national-panda",
+      "kind": "prop",
+      "name": "熊猫",
+      "description": "熊猫回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-panda.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-panda",
+        "kind": "prop",
+        "edible": false,
+        "name": "熊猫",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-panda",
+      "tags": [],
+      "keywords": [
+        "panda",
+        "pandas",
+        "熊猫"
+      ]
+    },
+    {
+      "id": "prop:national-balloon",
+      "kind": "prop",
+      "name": "气球",
+      "description": "气球回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-balloon.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-balloon",
+        "kind": "prop",
+        "edible": false,
+        "name": "气球",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-balloon",
+      "tags": [],
+      "keywords": [
+        "balloon",
+        "balloons",
+        "气球"
+      ]
+    },
+    {
+      "id": "prop:national-flag",
+      "kind": "prop",
+      "name": "国旗",
+      "description": "国旗回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-flag.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-flag",
+        "kind": "prop",
+        "edible": false,
+        "name": "国旗",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-flag",
+      "tags": [],
+      "keywords": [
+        "flag",
+        "flags",
+        "Chinese flag",
+        "national flag",
+        "国旗"
+      ]
+    },
+    {
+      "id": "prop:national-great-wall",
+      "kind": "prop",
+      "name": "长城",
+      "description": "长城回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-great-wall.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-great-wall",
+        "kind": "prop",
+        "edible": false,
+        "name": "长城",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-great-wall",
+      "tags": [],
+      "keywords": [
+        "Great Wall",
+        "great wall",
+        "长城",
+        "长城"
+      ]
+    },
+    {
+      "id": "prop:national-mountain",
+      "kind": "prop",
+      "name": "山",
+      "description": "山回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-mountain.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-mountain",
+        "kind": "prop",
+        "edible": false,
+        "name": "山",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-mountain",
+      "tags": [],
+      "keywords": [
+        "mountain",
+        "mountains",
+        "山"
+      ]
+    },
+    {
+      "id": "prop:national-suitcase",
+      "kind": "prop",
+      "name": "行李箱",
+      "description": "行李箱回应你的声音，支持摆放和大小变化。",
+      "source": "dev/modules/props/national-suitcase.js",
+      "capabilities": [
+        "activate",
+        "idle",
+        "working",
+        "active"
+      ],
+      "dependencies": [],
+      "asset": {
+        "id": "prop:national-suitcase",
+        "kind": "prop",
+        "edible": false,
+        "name": "行李箱",
+        "states": [
+          "idle",
+          "working",
+          "active"
+        ],
+        "animations": [
+          "activate"
+        ],
+        "motions": [
+          "walk",
+          "charge",
+          "stop"
+        ]
+      },
+      "category": "国庆节",
+      "variety": "prop:national-suitcase",
+      "tags": [],
+      "keywords": [
+        "suitcase",
+        "suitcases",
+        "行李箱"
       ]
     },
     {
@@ -19658,7 +19942,8 @@
       "keywords": [
         "小鼓",
         "鼓",
-        "drum"
+        "drum",
+        "drums"
       ]
     },
     {
@@ -19901,7 +20186,9 @@
       "variety": "prop:bridge",
       "tags": [],
       "keywords": [
-        "桥"
+        "桥",
+        "bridge",
+        "bridges"
       ]
     },
     {
@@ -20660,7 +20947,9 @@
         "相机",
         "照相",
         "摄影",
-        "照片"
+        "照片",
+        "camera",
+        "cameras"
       ]
     },
     {
@@ -24525,6 +24814,19 @@
       "keywords": [
         "星星 MOMO"
       ]
+    },
+    {
+      "id": "world:word-national-day",
+      "kind": "world",
+      "name": "张灯结彩的国庆广场",
+      "description": "完整球面环境，可复用到不同故事与事件。",
+      "source": "dev/worlds.js",
+      "capabilities": [
+        "完整星球",
+        "球面坐标",
+        "环境反馈"
+      ],
+      "dependencies": []
     },
     {
       "id": "world:word-midautumn",

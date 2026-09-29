@@ -3637,6 +3637,13 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
     def send_head(self):
         # cleanUrls: the extensionless path is the canonical one.
         parts = urlsplit(self.path)
+        aliases = {"/dev/words": "/words", "/dev/words.html": "/words", "/national-day": "/national", "/national-day.html": "/national", "/words/": "/words", "/midautumn/": "/midautumn", "/national/": "/national"}
+        if parts.path in aliases:
+            self.send_response(308)
+            self.send_header("Location", urlunsplit(parts._replace(path=aliases[parts.path])))
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return None
         if parts.path.endswith(".html"):
             clean = parts.path[: -len(".html")]
             if clean.endswith("/index"):

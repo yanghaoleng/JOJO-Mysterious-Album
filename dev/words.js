@@ -1,3 +1,4 @@
+import { evaluateNationalDayUtterance } from './national-day-progress.js';
 import { defaultFlightHeight } from './content/props.js';
 import { ArrowRight, ArrowUpRight, ArrowLeft, Check, LoaderCircle, Music2, VolumeX, createElement } from 'lucide';
 import * as THREE from '../vendor/three.module.js';
@@ -25,7 +26,7 @@ import { setAnalyticsChapter, trackAnalytics, trackVoiceAttempt, trackWordAttemp
 
 const icon=(node,name)=>createElement(node,{width:18,height:18,'stroke-width':2,'aria-hidden':'true',class:`word-arrow-icon lucide lucide-${name}`}).outerHTML;
 const arrowRight=icon(ArrowRight,'arrow-right'),arrowUpRight=icon(ArrowUpRight,'arrow-up-right'),arrowLeft=icon(ArrowLeft,'arrow-left'),checkIcon=icon(Check,'check');
-const $=id=>document.getElementById(id),festivalMode=document.body.dataset.festival==='midautumn',STORE=festivalMode?'jma.word-midautumn.v1':'jma.word-play.v1';
+const $=id=>document.getElementById(id),festivalId=['midautumn','national-day'].includes(document.body.dataset.festival)?document.body.dataset.festival:null,festivalMode=Boolean(festivalId),nationalDay=festivalId==='national-day',STORE=festivalMode?`jma.word-${festivalId}.v1${nationalDay&&location.hash.startsWith('#make=')?':shared':''}`:'jma.word-play.v1';
 const music=createWordMusic($('word-music'),{onIcon:muted=>{$('word-music').innerHTML=icon(muted?VolumeX:Music2,muted?'volume-x':'music-2');}});
 const chapters=Object.fromEntries(WORD_CHAPTERS.map(c=>[c.id,c]));
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -37,7 +38,7 @@ let introStep='name',introName='',introVersion=0;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
 function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
-function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
+function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,lessonId:currentLesson().id,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
 function title(main,subtitle=''){ $('world-title').textContent=main;$('world-subtitle').textContent=subtitle; }
 function setView(next){if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=festivalMode||next==='age'||next==='complete'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
 let lessonHint='',statusHint='',hintTimer=null,hintIndex=0;
@@ -82,7 +83,7 @@ function newWorld(world='meadow',snapshot){
   ambience?.dispose();ambience=null;game?.dispose();game=null;
   try{
     stage ||=new DioramaStage($('word-stage'));
-    stage.setScene(world,[],{studio:true,decorations:{seed:17,steps:6}});stage.setCameraDriftEnabled(false);stage.clearFollowTarget();stage.stopOrbit();stage.shotMode=null;stage.cameraAnim=null;
+    stage.setScene(world,[],{studio:true,decorations:nationalDay?null:{seed:17,steps:6}});stage.setCameraDriftEnabled(false);stage.clearFollowTarget();stage.stopOrbit();stage.shotMode=null;stage.cameraAnim=null;
     stage.characterFocus={width:4.6,height:4.5,meanHeight:2.6};stage.target.set(0,.8,0);
     stage.yaw=.12;stage.pitch=.42;stage.zoom=1;stage.resize();
     game=createGameSession({story:{id:'word-play',version:1},stage,saved:snapshot,onChange:()=>{if(view==='play')saveJourney();}});
@@ -235,7 +236,7 @@ function renderAge(){
   };update(0);
   $('age-minus').onclick=()=>update(-1);$('age-plus').onclick=()=>update(1);
   $('age-number').onkeydown=e=>{if(['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();update(e.key==='Home'?3-age:e.key==='End'?10-age:['ArrowUp','ArrowRight'].includes(e.key)?1:-1);}};
-  $('choose-age').onclick=()=>{trackAnalytics('word_age_selected',{depth:1,chapter:'words',properties:{age}});resetWordRun({keepShared:Boolean(sharedScene)});persist();ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(renderChapters);};
+  $('choose-age').onclick=()=>{trackAnalytics('word_age_selected',{depth:1,chapter:'words',properties:{age:nationalDay?null:age}});resetWordRun({keepShared:Boolean(sharedScene)});persist();ensureVoice();void voice.unlock().catch(()=>{});void transitionScene(renderChapters);};
 }
 function startRecommendedChapter(){
   if(view!=='chapters'||transitioning||chapterStarting)return;
@@ -265,25 +266,29 @@ function renderChapters(){
 }
 function openChapter(id,{fresh=false,shared=null}={}){
   leave();chapter=chapters[id];if(!chapter){renderChapters();return;}
-  setAnalyticsChapter(chapter.id);trackAnalytics('chapter_start',{depth:1,chapter:chapter.id,properties:{age}});
+  setAnalyticsChapter(chapter.id);trackAnalytics('chapter_start',{depth:1,chapter:chapter.id,properties:{age:nationalDay?null:age}});
   previousThemes.set(getAgeBand(age).id,id);
   const record=fresh?null:journeys[journeyKey()];
-  lessonIndex=Number.isInteger(record?.lessonIndex)?Math.max(0,Math.min(5,record.lessonIndex)):0;
+  lessonIndex=Number.isInteger(record?.lessonIndex)?Math.max(0,Math.min(lessons().length-1,record.lessonIndex)):0;
+  if(record?.lessonId){const index=lessons().findIndex(l=>l.id===record.lessonId);if(index>=0)lessonIndex=index;}
   if(record?.completed)lessonIndex=0;
   progress=record?.completed?null:record?.progress;heardWords=new Set(record?.words||[]);lastAnswer='';focusId=null;
   setView('play');title(chapter.title);
   const snapshot=shared?.world||(record&&!record.completed?record.world:null);
   const migrated=snapshot?JSON.parse(JSON.stringify(snapshot)):null;
+  if(nationalDay&&migrated?.worlds?.meadow&&!migrated.worlds[chapter.world]){migrated.worlds[chapter.world]=migrated.worlds.meadow;delete migrated.worlds.meadow;}
   if(chapter.id==='monster'&&migrated)for(const world of Object.values(migrated.worlds||{}))for(const e of Object.values(world.entities||{}))if(/^wg-(body|head|hand|foot)-/.test(e.id)&&/^prop:rword-(body|head|hand|foot)$/.test(e.asset))e.asset=e.asset.replace('rword-','robot-');
   newWorld(chapter.world,migrated);
-  if(festivalMode&&!migrated&&!shared?.commands?.length)apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});
+  if(festivalId==='midautumn'&&!migrated&&!shared?.commands?.length)apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});
   if(chapter.weather&&!migrated)apply([{type:'weather.set',preset:chapter.weather}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
   if(festivalMode){stage?.clearFollowTarget();if(stage)stage.zoom=1;}
   frameWordScene();renderLesson();saveJourney();sharedScene=null;
 
 }
-function currentLesson(){return getChapterLessons(chapter.id,age)[lessonIndex];}
+function lessons(){return getChapterLessons(chapter.id,age);}
+function currentLesson(){return lessons()[lessonIndex];}
+function evaluateLesson(...args){return nationalDay?evaluateNationalDayUtterance(...args):evaluateWordUtterance(...args);}
 let sentenceMotion=null,sentenceSuggestions=null,lessonGuideRead=false;
 function currentExample(){return sentenceSuggestions?.readingText||currentLesson().example;}
 function updateSentence(result,text=''){
@@ -295,13 +300,13 @@ function updateSentence(result,text=''){
 function renderLesson(){
   clearPanel();voice?.skip();canAdvance=false;creative=false;busy=false;failedReadAttempts=0;rewardedThisLesson=false;
   const lesson=currentLesson();if(progress?.lessonId!==lesson.id)progress=createWordProgress(lesson);
-  trackAnalytics('word_lesson_start',{depth:Math.min(20,5+lessonIndex*3),chapter:'words',properties:{age,lessonId:lesson.id,lessonIndex,mode:lesson.mode}});
-  const firstPrompt=festivalMode&&lessonIndex===0?'点一下兔子或喇叭，听完提示，再说一个英文词':lesson.prompt;
-  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 句，共六句">${Array.from({length:6},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div><div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===5?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
+  trackAnalytics('word_lesson_start',{depth:Math.min(20,5+lessonIndex*3),chapter:'words',properties:{age:nationalDay?null:age,lessonId:lesson.id,lessonIndex,mode:lesson.mode}});
+  const firstPrompt=festivalId==='midautumn'&&lessonIndex===0?'点一下兔子或喇叭，听完提示，再说一个英文词':lesson.prompt;
+  $('word-panel').innerHTML=`<div class="lesson-heading"><div class="lesson-progress-row"><div class="lesson-pagination" id="lesson-pagination"><button id="previous-lesson" class="previous-lesson" aria-label="上一关" ${lessonIndex===0?'hidden':''}>${arrowLeft}</button><button type="button" class="lesson-progress" id="reveal-previous" aria-label="第 ${lessonIndex+1} 题，共 ${lessons().length} 题">${nationalDay?`<b class="national-progress-count">${lessonIndex+1} / ${lessons().length}</b>`:Array.from({length:lessons().length},(_,i)=>`<span class="${i<lessonIndex?'done':i===lessonIndex?'current':''}"></span>`).join('')}</button></div></div>${nationalDay?`<p class="national-stop-label">第 ${lesson.stopIndex+1} 站 · ${escape(lesson.stopTitle)} <span>${lesson.stopStep} / 8</span></p><progress class="national-route-progress" value="${lessonIndex+1}" max="${lessons().length}" aria-label="国庆冒险进度"></progress>`:''}<div class="sentence-row"><h2 class="sentence" id="lesson-sentence" lang="en"></h2><button class="listen-button" id="listen-example" aria-label="再听一次例句">${speakerIcon}</button></div></div><div class="play-bottom"><div class="answer-result"><button class="next-button" id="next-lesson" hidden><span>${lessonIndex===lessons().length-1?'完成':'继续'}<span class="continue-countdown" id="continue-countdown" aria-hidden="true" hidden></span></span>${arrowRight}</button>${transcriptLoader}<div id="word-transcript" hidden></div></div><p id="mic-heading" class="voice-hint" role="status" aria-live="polite">轮到你啦，试着说出来</p><div class="voice-controls"><button id="word-mic" aria-label="打开麦克风"></button><button class="options-button" id="word-options-toggle" aria-label="打开单词菜单" aria-expanded="false" aria-controls="word-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="3" height="3" rx=".8"/><rect x="10.5" y="3" width="3" height="3" rx=".8"/><rect x="18" y="3" width="3" height="3" rx=".8"/><rect x="3" y="10.5" width="3" height="3" rx=".8"/><rect x="10.5" y="10.5" width="3" height="3" rx=".8"/><rect x="18" y="10.5" width="3" height="3" rx=".8"/><rect x="3" y="18" width="3" height="3" rx=".8"/><rect x="10.5" y="18" width="3" height="3" rx=".8"/><rect x="18" y="18" width="3" height="3" rx=".8"/></svg></button><div class="word-menu" id="word-menu" role="dialog" aria-label="点一个单词，让世界变化" hidden><p>也可以点一个词</p><div class="word-options" id="word-options"></div><button id="voice-mode" class="voice-mode"></button></div></div></div>`;
   lessonGuideRead=false;
   const suggestions=sentenceSuggestions=createWordSuggestions(lesson,progress.sentence);
   const changeWord=index=>{if(voiceState==='speaking'||voiceState==='thinking'||busy||transitioning)return;sentenceMotion.update(suggestions.change(index));};
-  sentenceMotion=textMotion('lesson-sentence',suggestions.text,'text',{getParts:()=>suggestions.parts,canReplace:suggestions.canChange,onReplace:index=>{changeWord(index);scheduleSuggestion();}});
+  sentenceMotion=textMotion('lesson-sentence',suggestions.text,'text',{keepPunctuation:nationalDay,getParts:()=>suggestions.parts,canReplace:suggestions.canChange,onReplace:index=>{changeWord(index);scheduleSuggestion();}});
   function scheduleSuggestion(){clearInterval(tipTimer);tipTimer=setInterval(()=>{if(view==='play'&&!document.hidden&&$('word-menu')?.hidden)changeWord();},12000);}
 
   updateSentence();initVoice();renderWordOptions();lessonHint=firstPrompt;voiceHint(firstPrompt);hintTimer=setInterval(()=>{if(!document.hidden){hintIndex++;renderVoiceHint();}},4200);
@@ -321,7 +326,12 @@ function renderLesson(){
     const word=b.dataset.word,epoch=inputEpoch;
     const exampleWords=lesson.example.toLowerCase().match(/[a-z]+/g)||[];
     menuWords=exampleWords.includes(word)?[...menuWords,word]:[word];
-    const text=lesson.mode==='build'?word:menuWords.join(' '),displayText=menuWords.join(' ');
+    let text=lesson.mode==='build'&&!nationalDay?word:menuWords.join(' ');
+    if(nationalDay&&menuWords.every((w,i)=>w===exampleWords[i])){
+      const spans=[...lesson.example.matchAll(/[a-z]+/gi)];
+      text=lesson.example.slice(0,spans[menuWords.length]?.index??lesson.example.length).trim();
+    }
+    const displayText=menuWords.join(' ');
     const flight=flyWord(b,word);pendingWords++;
     inputQueue=inputQueue.then(async()=>{
       await flight;
@@ -330,14 +340,14 @@ function renderLesson(){
       try{await submit(text,{displayText,fromMenu:true});}finally{if(epoch===inputEpoch)pendingWords--;}
     }).catch(error=>console.error(error));
   };
-  if(progress.heard.length){const r=evaluateWordUtterance(lesson,progress.lastText||'',progress);canAdvance=progress.unlocked||r.targetComplete||(lesson.mode==='open'&&Object.keys(playerEntities()).length>0);showContinue(canAdvance);}
+  if(progress.heard.length){const r=evaluateLesson(lesson,progress.lastText||'',progress);canAdvance=progress.unlocked||(nationalDay?r.complete:r.targetComplete||(lesson.mode==='open'&&Object.keys(playerEntities()).length>0));showContinue(canAdvance);}
   scheduleSuggestion();
 }
 function renderWordOptions(){
   const lesson=currentLesson();
   const base=lesson.mode==='build'?lesson.buildWords:lesson.example.toLowerCase().match(/[a-z]+/g)||[];
-  const ideas=['cold','hungry','thirsty','dirty','push','pull','throw','kick','hide','sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...ANIMAL_WORDS.map(animal=>animal.word),...ZODIAC_ANIMALS.map(animal=>animal.word),...Object.values(WORD_CHARACTER_NAMES)];
-  $('word-options').innerHTML=[...new Set([...base,...(lesson.choiceWords||[]),...chapter.words.map(w=>w.word),...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
+  const ideas=nationalDay?[]:['cold','hungry','thirsty','dirty','push','pull','throw','kick','hide','sunny','rainy','snowy','big','little','blue','happy','sleepy','head','robot','flower','poop','grow','jump',...ANIMAL_WORDS.map(animal=>animal.word),...ZODIAC_ANIMALS.map(animal=>animal.word),...Object.values(WORD_CHARACTER_NAMES)];
+  $('word-options').innerHTML=[...new Set([...base,...(lesson.choiceWords||[]),...(nationalDay?lessons().filter(l=>l.stopId===lesson.stopId).flatMap(l=>l.words.map(w=>w.word)):chapter.words.map(w=>w.word)),...ideas])].map(w=>{const meaning=lesson.words.find(x=>x.word===w)?.meaning||WORD_VOCABULARY[w]?.meaning;return `<button class="word-option" data-word="${escape(w)}"><span lang="en">${escape(w)}</span>${meaning?`<small>${escape(meaning)}</small>`:''}</button>`;}).join('');
 }
 let menuOpen=false,menuAnimation=null,inputEpoch=0,inputQueue=Promise.resolve(),pendingWords=0;
 function showContinue(show){
@@ -347,7 +357,7 @@ function showContinue(show){
 }
 function tickAutoContinue(){
   const badge=$('continue-countdown'),button=$('next-lesson');
-  const eligible=view==='play'&&button&&!button.hidden&&continuousListening&&voice?.enabled&&voice.recording&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!menuOpen&&!['speaking','transcribing','thinking','requesting'].includes(voiceState);
+  const eligible=!nationalDay&&view==='play'&&button&&!button.hidden&&continuousListening&&voice?.enabled&&voice.recording&&!document.hidden&&!busy&&!pendingWords&&!transitioning&&!menuOpen&&!['speaking','transcribing','thinking','requesting'].includes(voiceState);
   if(!eligible){countdownUntil=0;if(badge)badge.hidden=true;return;}
   const now=performance.now();if(!countdownUntil)countdownUntil=now+3000;
   const left=Math.max(0,Math.ceil((countdownUntil-now)/1000));
@@ -437,10 +447,10 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
   const session=game,version=++turn,lesson=currentLesson();busy=true;if(!fromRealtime)voice?.listen(false);
   if(!fromRealtime)voice?.skip();reward.clear();$('word-transcript').hidden=false;$('word-transcript').textContent=`“${displayText||text}”`;voiceHint('正在把你的想法变出来');
   try{
-    const result=evaluateWordUtterance(lesson,text,progress,{reference:currentExample()});
+    const result=evaluateLesson(lesson,text,progress,{reference:currentExample()});
     const inputSource=fromMenu?'menu':'voice';
-    trackWordAttempt({chapter:'words',lessonId:lesson.id,age,lessonIndex,mode:lesson.mode,inputSource,durationMs,correct:result.targetComplete,passed:result.complete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});
-    trackAnalytics('word_sentence_answer',{depth:Math.min(20,5+lessonIndex*3),chapter:'words',properties:{age,lessonId:lesson.id,lessonIndex,mode:lesson.mode,inputSource,correct:result.targetComplete,passed:result.complete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs}});
+    trackWordAttempt({chapter:nationalDay?chapter.id:'words',lessonId:lesson.id,age:nationalDay?null:age,lessonIndex,mode:lesson.mode,inputSource,durationMs,correct:result.targetComplete,passed:result.complete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});
+    trackAnalytics('word_sentence_answer',{depth:Math.min(20,5+lessonIndex*3),chapter:'words',properties:{age:nationalDay?null:age,lessonId:lesson.id,lessonIndex,mode:lesson.mode,inputSource,correct:result.targetComplete,passed:result.complete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs}});
     if(!fromMenu){trackVoiceAttempt({chapter:chapter.id,lessonId:lesson.id,transcript:displayText||text,durationMs,source:fromRealtime?'realtime':'asr',asrOk:true,correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length});trackAnalytics('voice_answer',{depth:5,chapter:chapter.id,properties:{age,correct:result.targetComplete,coverage:result.coverage,targetCount:lesson.targets?.length||0,matchedCount:result.matched.length,durationMs,source:fromRealtime?'realtime':'asr',lessonId:lesson.id}});}
     text=result.normalizedText;
     if(result.corrections.length)$('word-transcript').textContent=`“${text}”`;
@@ -479,15 +489,15 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
     focusId=plan.focusId||focusId;
     const made=applied.ok;
     const warmupSuccess=lesson.warmup&&made&&findWordObjects(text).length>0;
-    canAdvance=warmupSuccess||canAdvance||progress?.unlocked||result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&(lesson.warmup||result.progress.heard.length>=2)&&plan.matched.length>0);
+    canAdvance=nationalDay?(canAdvance||result.complete):warmupSuccess||canAdvance||progress?.unlocked||result.targetComplete||(lesson.mode==='open'&&made)||(made&&result.creative&&(lesson.warmup||result.progress.heard.length>=2)&&plan.matched.length>0);
     progress.unlocked=canAdvance;
-    creative=made&&!result.targetComplete;
+    creative=nationalDay?result.creative:made&&!result.targetComplete;
     if(creative)lessonHint='你可以换一个名词或形容词，让世界继续变化';
     updateSentence(result,text);
     showContinue((canAdvance||(creative&&lesson.mode!=='build'))&&!webglFailed);
-    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':!made&&festivalMode&&result.knownWords.length?'听到这个中秋词啦，再加一个物品词试试':result.targetComplete?'说得真棒，你做到了！':result.nextWord?(lesson.warmup?'试着说一个英文单词吧':'把这几个词连起来，再试一次吧'):'再试一个词吧'));
+    voiceHint(extraReply||(made&&creative?'你的想法变出来啦，继续试试吧':!made&&festivalMode&&result.knownWords.length?(nationalDay?'听到这个词啦，把本题的几个词连起来试试':'听到这个中秋词啦，再加一个物品词试试'):result.targetComplete?'说得真棒，你做到了！':result.nextWord?(lesson.warmup?'试着说一个英文单词吧':'把这几个词连起来，再试一次吧'):'再试一个词吧'));
     feedback(made?'Your world is changing!':result.currentMatched.length?`I heard ${result.currentMatched.join(', ')}.`:'Try another word.');
-    const matched=warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
+    const matched=nationalDay?result.complete:warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
     if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
     saveJourney();
@@ -500,34 +510,34 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
 }
 async function nextLesson(){
   if(transitioning||(!canAdvance&&(!creative||currentLesson().mode==='build')))return;
-  cancelTurn(continuousListening&&lessonIndex<5);
-  if(lessonIndex===5){await transitionScene(renderComplete);return;}
+  cancelTurn(continuousListening&&lessonIndex<lessons().length-1);
+  if(lessonIndex===lessons().length-1){await transitionScene(renderComplete);return;}
   // Keep the child's assembled world visible between sentences; the iris marks a new chapter/scene.
-  lessonIndex++;progress=null;lastAnswer='';renderLesson();saveJourney();feedback('');
+  const previousStop=currentLesson().stopId;lessonIndex++;progress=null;lastAnswer='';if(nationalDay&&currentLesson().stopId!==previousStop)newWorld(chapter.world);renderLesson();saveJourney();feedback('');
   void speak(currentExample());
 }
 async function previousLesson(){
   if(busy||pendingWords||transitioning||lessonIndex===0)return;
-  cancelTurn(continuousListening);lessonIndex--;progress=null;lastAnswer='';renderLesson();saveJourney();feedback('');
+  cancelTurn(continuousListening);const previousStop=currentLesson().stopId;lessonIndex--;progress=null;lastAnswer='';if(nationalDay&&currentLesson().stopId!==previousStop)newWorld(chapter.world);renderLesson();saveJourney();feedback('');
   void speak(currentExample());
 }
 function shareURL(){
   const world={version:1,worlds:{[chapter.world]:game.runtime.snapshot.worlds[chapter.world]}};
   const bytes=new TextEncoder().encode(JSON.stringify({v:2,chapter:chapter.id,age,world}));
   const payload=btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
-  return `${location.origin}${festivalMode?(location.pathname==='/'?'/':'/midautumn.html'):'/dev/words.html'}#make=${payload}`;
+  return `${location.origin}${festivalMode?(nationalDay?'/national':'/midautumn'):'/words'}#make=${payload}`;
 }
 function captureCard(){
   if(stage)stage.renderer.render(stage.scene,stage.camera);
-  return drawWordShareCard({source:stage?.renderer.domElement,words:[...heardWords],examples:getChapterLessons(chapter.id,age).map(lesson=>lesson.example)});
+  return drawWordShareCard({source:stage?.renderer.domElement,words:nationalDay?[...heardWords].reverse():[...heardWords],examples:(nationalDay?lessons().slice(-3):lessons()).map(lesson=>lesson.example)});
 }
 async function renderComplete(){
-  setView('complete');title('你的话，成了一个世界。');feedback('');trackAnalytics('chapter_complete',{depth:20,chapter:chapter?.id,properties:{age}});saveJourney();
+  setView('complete');title('你的话，成了一个世界。');feedback('');trackAnalytics('chapter_complete',{depth:20,chapter:chapter?.id,properties:{age:nationalDay?null:age}});saveJourney();
   const completedGame=game;await document.fonts.load('700 68px MohrRounded').catch(()=>{});if(view!=='complete'||game!==completedGame)return;
   const card=captureCard(),image=card.toDataURL('image/png');
-  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-heading"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><div><p class="step-kicker">六次表达，一次奇妙冒险</p><h2 class="panel-title">${festivalMode?'把这轮月亮，送给朋友。':'把你的点子，交给朋友。'}</h2></div></div><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">${festivalMode?'再玩一次':'重新选择年龄'}</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
+  $('word-panel').innerHTML=`<div class="onboarding complete-panel"><div class="complete-heading"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><div><p class="step-kicker">${nationalDay?'96 题，走完我的国庆大冒险':'六次表达，一次奇妙冒险'}</p><h2 class="panel-title">${nationalDay?'把国庆故事，送给朋友。':festivalMode?'把这轮月亮，送给朋友。':'把你的点子，交给朋友。'}</h2></div></div><img class="share-preview" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="small-note save-image-hint">长按图片可以保存</p><div class="lesson-actions"><button class="primary-button" id="share-world">分享 ${arrowUpRight}</button><button class="secondary-button" id="choose-age-again">${festivalMode?'再玩一次':'重新选择年龄'}</button></div><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden></div>`;
   $('share-world').onclick=async()=>{const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError')return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中上面的链接复制，发给朋友即可。';}};
-  $('choose-age-again').onclick=()=>void transitionScene(()=>{if(festivalMode){resetWordRun();openChapter('midautumn',{fresh:true});}else renderAge();});
+  $('choose-age-again').onclick=()=>void transitionScene(()=>{if(festivalMode){resetWordRun();openChapter(festivalId,{fresh:true});}else renderAge();});
 }
 // Block browser page zoom without taking scrolling, rapid button taps or image saving away.
 for(const type of ['gesturestart','gesturechange'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
@@ -547,19 +557,19 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();cancelOpening();continuousListening=false;voice?.pause();voice?.skip();voiceInput?.setState('paused');voiceHint('已暂停，按回车继续');}
 });
 document.addEventListener('click',e=>{if($('word-menu')&&!$('word-menu').hidden&&!e.target.closest('.voice-controls'))toggleMenu(false);});
-$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(festivalMode)apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
+$('clear-world').onclick=()=>void transitionScene(()=>{cancelTurn();progress=null;newWorld(chapter.world);if(festivalId==='midautumn')apply([{type:'entity.spawn',id:'festival-rabbit',asset:'prop:rword-rabbit',position:[-2.3,.7],scale:.72}],{scatter:false});if(chapter.weather)apply([{type:'weather.set',preset:chapter.weather}]);renderLesson();saveJourney();feedback('Ready for a new idea!');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){chapterCountdownUntil=0;cancelOpening();ambience?.pause();continuousListening=false;saveJourney();voice?.pause();voice?.skip();}});
 window.addEventListener('pagehide',()=>{clearInterval(ambienceTimer);clearInterval(autoContinueTimer);ambience?.dispose();music.dispose();stopUISFX();saveJourney();cancelTurn();clearPanel();voice?.stop();game?.dispose();stage?.dispose();});
 // Shared scenes are untrusted data: a bounded payload still passes the same resource and command checks.
 try{
   const payload=location.hash.match(/^#make=([A-Za-z0-9_-]{1,100000})$/)?.[1];
   if(payload){const bytes=Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));const data=JSON.parse(new TextDecoder().decode(bytes));
-    if([1,2].includes(data.v)&&chapters[data.chapter]&&(!festivalMode||data.chapter==='midautumn')&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;if(!festivalMode)age=data.age;}}
+    if([1,2].includes(data.v)&&chapters[data.chapter]&&(!festivalMode||data.chapter===festivalId)&&getAgeBand(data.age)&&((data.v===1&&Array.isArray(data.commands)&&data.commands.length<=100)||(data.v===2&&data.world?.version===1))){sharedScene=data;if(!festivalMode)age=data.age;}}
 }catch{}
 const autoContinueTimer=setInterval(()=>{tickChapterCountdown();tickAutoContinue();},100);
 const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
 $('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;if(festivalMode&&view==='play'&&!lessonGuideRead){continuousListening=true;void speak(currentExample());}});
 // Domi welcome is temporarily disabled; restore this call to enable it again.
 // renderIntro();
-if(festivalMode)openChapter('midautumn',{fresh:!sharedScene,shared:sharedScene});else renderAge();
+if(festivalMode)openChapter(festivalId,{fresh:nationalDay?Boolean(sharedScene):!sharedScene,shared:sharedScene});else renderAge();
 window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:false,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};

@@ -1,3 +1,9 @@
+import { build as national_panda } from './national-panda.js';
+import { build as national_balloon } from './national-balloon.js';
+import { build as national_flag } from './national-flag.js';
+import { build as national_great_wall } from './national-great-wall.js';
+import { build as national_mountain } from './national-mountain.js';
+import { build as national_suitcase } from './national-suitcase.js';
 import { build as rword_turtle } from './rword-turtle.js';
 import { build as rword_octopus } from './rword-octopus.js';
 import { build as rword_jellyfish } from './rword-jellyfish.js';
@@ -493,6 +499,14 @@ import { build as special16 } from "./fart.js";
 import { build as special17 } from "./gas-cloud.js";
 import { build as special18 } from "./poop.js";
 export const PROP_BUILDERS = Object.freeze({
+  'national-panda': national_panda,
+  'national-balloon': national_balloon,
+
+  'national-flag': national_flag,
+  'national-great-wall': national_great_wall,
+  'national-mountain': national_mountain,
+  'national-suitcase': national_suitcase,
+
   'rword-turtle': rword_turtle,
   'rword-octopus': rword_octopus,
   'rword-jellyfish': rword_jellyfish,

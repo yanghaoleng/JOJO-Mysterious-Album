@@ -1,3 +1,4 @@
+import { NATIONAL_DAY_PROPS } from './national-day-words.js';
 import { RLINE_MODEL_WORDS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
 import { MID_AUTUMN_PROPS } from './midautumn-words.js';
@@ -12,6 +13,7 @@ export function defaultFlightHeight(asset = '') {
 }
 // Every response below corresponds to a real, reusable model and animation.
 export const CREATION_KITS = [
+  ...NATIONAL_DAY_PROPS.map(p=>[p.model,p.zh,[p.word,...p.aliases,p.zh].join('|'),`${p.zh}回应你的声音，支持摆放和大小变化。`,'jiaojiao']),
   ...ANIMAL_WORDS.map(animal => [animal.model, animal.zh, [animal.word, ...animal.aliases, animal.zh].join('|'), `${animal.zh}在场景中轻轻活动。`, 'jiaojiao']),
   ...MID_AUTUMN_PROPS.map(prop => [prop.model, prop.zh, [prop.word, ...prop.aliases, prop.zh].join('|'), `${prop.zh}在中秋夜轻轻活动。`, 'jiaojiao']),
   ['festival-moon', '中秋圆月', 'moon|moons|full moon|月亮|圆月', '带陨石坑的黄色圆月，没有星环，默认悬浮在天空。', 'jiaojiao'],
@@ -243,7 +245,7 @@ export const CREATION_KITS = [
     "fendou",
   ],
 ].map(([id, name, words, response, helper]) =>
-  Object.freeze({ id, name, words, response, helper }),
+  Object.freeze({ id, name, words: words+({camera:'|camera|cameras',bridge:'|bridge|bridges',drum:'|drums'}[id]||''), response, helper }),
 );
 
 export const PROP_STATES = ["idle", "working", "active"];
@@ -263,3 +265,5 @@ Object.assign(PROP_CATEGORIES,{'festival-moon':'中秋节','festival-mooncake':'
 Object.assign(PROP_CATEGORIES, Object.fromEntries(ANIMAL_WORDS.map(animal => [animal.model, '动物与生肖'])));
 
 Object.assign(PROP_CATEGORIES, Object.fromEntries(MID_AUTUMN_PROPS.map(prop => [prop.model, '中秋节'])));
+
+Object.assign(PROP_CATEGORIES,Object.fromEntries(NATIONAL_DAY_PROPS.map(p=>[p.model,'国庆节'])));

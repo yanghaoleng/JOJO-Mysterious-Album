@@ -1,3 +1,4 @@
+import { NATIONAL_DAY_WORDS, NATIONAL_DAY_MEANINGS, nationalDayLessons } from './national-day-words.js';
 import { createExpansionCurriculum, WORD_EXPANSION_CHAPTERS } from './word-expansion.js';
 import { RLINE_EXTENSIONS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
@@ -1212,6 +1213,7 @@ for (const [word, meaning] of Object.entries(EXTENSION_WORDS)) {
 }
 for (const noun of RLINE_EXTENSIONS) WORD_VOCABULARY[noun.word] = { word: noun.word, meaning: noun.zh, inSource: false };
 for (const animal of ANIMAL_WORDS) for (const word of [animal.word, ...animal.aliases]) WORD_VOCABULARY[word] = { word, meaning: animal.zh, inSource: false };
+for(const [word,meaning] of Object.entries(NATIONAL_DAY_MEANINGS)) if(!WORD_VOCABULARY[word.toLowerCase()]) WORD_VOCABULARY[word.toLowerCase()]={word:word.toLowerCase(),meaning,inSource:false};
 for (const prop of MID_AUTUMN_PROPS) for (const word of [prop.word, ...prop.aliases]) WORD_VOCABULARY[word] = { word, meaning: prop.zh, inSource: false };
 for (const entry of MID_AUTUMN_EXTRA_WORDS) if (!WORD_VOCABULARY[entry.word]) WORD_VOCABULARY[entry.word] = { word: entry.word, meaning: entry.zh, inSource: false };
 // Original cells include the part-of-speech prefix in these two entries.
@@ -1399,6 +1401,7 @@ const curriculum = {
 };
 
 const chapterInfo = [
+  { id:'national-day',world:'word-national-day',title:'我的国庆大冒险',subtitle:'12 站、96 题，从第一个词到自己的国庆故事',emoji:'🇨🇳',words:NATIONAL_DAY_WORDS.join(' '),knowledge:['节日装饰与假期出游','数量、颜色、大小和空间','动作、组合表达与两句小故事'],preview:'national-flag' },
   { id: 'midautumn', world: 'word-midautumn', title: '月亮的中秋夜', subtitle: '说出月亮、月饼和灯笼，让兔子来过节', emoji: '🌕', words: MID_AUTUMN_CHAPTER_WORDS.join(' '), knowledge: ['月亮、月饼、灯笼、桂花、柚子和热茶', '星星、云朵、月光、烟花、礼物与扇子', '颜色、大小、光亮、心情与节日动作'], preview:'festival-mooncake' },
   { id: 'monster', world: 'pocket', title: '机器人零件铺', subtitle: '用声音拼出你的专属小机器人', emoji: '🤖', words: 'robot head hand foot eye tail big happy', knowledge: ['身体部位与数量', '大小、颜色、情绪', 'foot → feet 的变化'] },
   { id: 'color', world: 'meadow', title: '颜色救援队', subtitle: '让灰色世界变成你的颜色', emoji: '🎨', words: 'red blue yellow green ball train car robot', knowledge: ['颜色 + 名词', '数量与大小', '指定对象并改变颜色'] },
@@ -1500,7 +1503,7 @@ export const WORD_CHAPTERS = chapterInfo.map((chapter) => ({
   ...chapter,
   words: chapter.words.split(' ').map(wordInfo),
   lessons: Object.fromEntries(WORD_AGE_BANDS.map((band) => [band.id,
-    chapter.id==='midautumn'?midautumnLessons(band):gentleLessons(chapter, band),
+    chapter.id==='national-day'?nationalDayLessons():chapter.id==='midautumn'?midautumnLessons(band):gentleLessons(chapter, band),
   ])),
 }));
 

@@ -114,3 +114,25 @@ body[data-festival=midautumn] .voice-hint{color:#fff0cf}
 .complete-panel #share-status{margin:0;max-width:100%}
 .complete-panel #share-status:empty{display:none}
 @media(max-width:600px){.complete-panel .share-preview{height:auto;width:min(100%,49.5dvh);aspect-ratio:3/4}.complete-heading{gap:6px}.complete-panel .lesson-actions button{padding:14px 20px}}
+
+/* Compact route status keeps 96 lessons readable on a phone. */
+body[data-festival=national-day] .national-progress-count{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:2px;color:#ffe3aa}
+.national-stop-label{margin:0 0 10px;font-size:14px;font-weight:500;letter-spacing:1px}.national-stop-label span{opacity:.6;font-size:11px;margin-left:10px}
+.national-route-progress{display:block;width:150px;height:3px;margin:0 auto 16px;border:0;border-radius:3px;overflow:hidden;background:#ffffff30;accent-color:#ffd796}.national-route-progress::-webkit-progress-bar{background:#ffffff30}.national-route-progress::-webkit-progress-value{background:#ffd796}
+body[data-festival=national-day] .sentence{max-width:740px;font-size:clamp(23px,3.6vw,40px)}
+body[data-festival=national-day] .voice-hint{max-width:560px;text-align:center}
+@media(max-width:600px){body[data-festival=national-day] .sentence{font-size:25px}.national-stop-label{font-size:12px}.national-route-progress{margin-bottom:12px}}
+@media(max-height:640px){body[data-festival=national-day] .lesson-progress-row{min-height:28px;margin-bottom:0}.national-stop-label{margin-bottom:6px}body[data-festival=national-day] .sentence{font-size:22px}.national-route-progress{margin-bottom:8px}}
+
+/* National Day: quiet stone, muted festivity, and one gradual dawn. */
+body[data-festival=national-day]{background:linear-gradient(180deg,#14253e 0%,#2c405b 42%,#7d7c88 76%,#c8997b 100%)}
+body[data-festival=national-day]::before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,#506880 0%,#9b969e 40%,#deb292 70%,#f1c18e 100%);opacity:0;animation:national-sunrise 120s ease-in-out forwards}
+body[data-festival=national-day] .word-layout{z-index:1}
+@keyframes national-sunrise{0%,8%{opacity:0}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){body[data-festival=national-day]::before{animation:none;opacity:.55}}
+body[data-festival=national-day] .word-layout[data-view=play] .scene-shade{background:linear-gradient(180deg,#19283a20,transparent 38%,transparent 68%,#29352965)}
+body[data-festival=national-day] .listen-button,body[data-festival=national-day] .music-button,body[data-festival=national-day] .retry-button,body[data-festival=national-day] .options-button{background:#263a4d45;border:1px solid #e8dcc630;color:#fff4e3}
+body[data-festival=national-day] .sentence{text-shadow:0 2px 12px #17283b55;color:#fff8ec}
+body[data-festival=national-day] .word-menu{background:#34434af5;border-color:#d7cbb35c}
+body[data-festival=national-day] .next-button{background:#f5ecdb;color:#68504a}
+body[data-festival=national-day] .voice-hint{color:#fff9ef;text-shadow:0 1px 6px #293329}

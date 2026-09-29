@@ -1,5 +1,6 @@
 import { SOLAR_PLANETS } from './solar-planets.js';
 export const WORLD_CATALOG = [
+  { id:'word-national-day',name:'张灯结彩的国庆广场',tint:'#de292e' },
   { id: 'word-midautumn', name: '中秋月夜', tint: '#dfc78e' },
   { id: 'word-snowfield', name: '冰雪乐园', tint: '#e0eef5' },
   ...SOLAR_PLANETS,

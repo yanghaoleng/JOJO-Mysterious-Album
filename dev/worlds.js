@@ -11,6 +11,7 @@ import { createSolarWorld } from './solar-worlds.js';
 export { WORLD_CATALOG } from './content/worlds.js';
 
 const PALETTES = {
+  'word-national-day': ['#91a186','#788e73','#abb69a'],
   'word-midautumn': ['#5c7668','#375c57','#c8b07c'],
   'word-snowfield': ['#e8f2f6','#c7e0ed','#d7eaf2'],
   orchard: ['#aebf83', '#79965b', '#d7b988'], bakery: ['#d9be95', '#b99369', '#ecd7b2'],
@@ -296,6 +297,79 @@ export function createWorld(requestedId, { seed = 1, decorations = null, radius:
     }
     for (const [x,z,r] of [[-2.5,1.9,.6],[2.8,1.8,.45],[-1.9,-3,.52]])
       ball('#f3f8fa',x,.08,z,r,.12,r*.75);
+  }
+
+  if (id === 'word-national-day') {
+    group.userData.nationalFestival = {lanterns:10,pennants:15,flowerBeds:4};
+    // A red celebration square framed by evergreen planting. Its centre stays
+    // unobstructed for children's creations; decorations never enter their save.
+    // Broad warm-grey stone apron, thin fabric carpet, and a quiet grass edge.
+    cylinder(stone('#d6d0c5'),0,.012,.65,4.25,4.25,.018);
+    torus(stone('#bcb6ab'),0,.025,.65,4.2,.028);
+    cylinder(fabric('#a94743'),0,.029,.65,2.25,2.25,.022);
+    torus(fabric('#c78369'),0,.046,.65,2.23,.017);
+    // Fine irregular mineral seams stay subtle against the pale stone.
+    for(const side of [-1,1])for(let line=0;line<3;line++){
+      const points=Array.from({length:8},(_,i)=>{
+        const x=side*(2.5+i*.19),z=-.5+line*.85+Math.sin(i*.9+line)*.12;
+        return [x,.024,z];
+      });
+      for(let i=1;i<points.length;i++)rod(stone('#c4bfb5'),points[i-1],points[i],.008);
+    }
+    for(const x of [-3.5,3.5]){
+      tree(x,-2.5,1.9,false,'#71876c');
+    }
+    for(const [x,z] of [[-3.3,1.4],[3.3,1.4],[-2.8,-2.1],[2.8,-2.1]]){
+      const bed=part(x,0,z,staticRoot,0,'paint');
+      cylinder('#b8a898',0,.14,0,.53,.48,.28,bed);
+      torus('#d7c29e',0,.29,0,.51,.035,bed);
+      for(let i=0;i<7;i++){
+        const angle=i*Math.PI*2/7;
+        ball(foliage('#788e6e'),Math.cos(angle)*.31,.34,Math.sin(angle)*.31,.24,.19,.23,bed);
+        flower(Math.cos(angle)*.3,Math.sin(angle)*.3,i%3?'#be6961':'#dfc899',.22,bed).position.y=.32;
+      }
+    }
+    const lantern=(x,y,z,scale=1)=>{
+      const node=part(x,y,z,liveRoot,0,'fabric');node.scale.setScalar(scale);
+      rod('#f6c64b',[0,.45,0],[0,.73,0],.023,node);
+      const red=clay('#bd5145',true);red.emissiveIntensity=.19;
+      ball(red,0,0,0,.36,.43,.32,node);
+      for(const y of [-.39,.39])cylinder('#d7b77a',0,y,0,.25,.25,.08,node);
+      for(const side of [-1,1])rod('#e0b981',[side*.21,.31,.22],[side*.21,-.31,.22],.013,node);
+      rod('#cbaa73',[0,-.42,0],[0,-.78,0],.025,node);
+      for(let i=-2;i<=2;i++)rod('#bc5a49',[i*.028,-.65,0],[i*.04,-.91,0],.013,node);
+      animators.push(time=>{node.rotation.z=Math.sin(time*.75+x)*.055;});
+    };
+    for(const x of [-2.8,2.8]){
+      const pole=part(x,0,-1.2,staticRoot,0,'paint');
+      cylinder('#986355',0,1.4,0,.075,.09,2.8,pole);
+      cylinder('#c6ab7d',0,.14,0,.23,.24,.28,pole);
+      ball('#e0c598',0,2.86,0,.11,.11,.11,pole);
+      rod('#c1a47a',[0,2.65,0],[x<0?.65:-.65,2.65,0],.038,pole);
+      lantern(x+(x<0?.65:-.65),1.85,-1.2,1.05);
+    }
+    for(let i=0;i<7;i++){
+      const x=-2.7+i*.9,y=2.62-.42*Math.sin(i*Math.PI/6);
+      if(i<6){const nx=x+.9,ny=2.62-.42*Math.sin((i+1)*Math.PI/6);rod('#c3ac89',[x,y,-2.35],[nx,ny,-2.35],.016);}
+      lantern(x,y-.46,-2.35,.46);
+    }
+    lantern(0,1.4,-3.5,.7);
+    // Two festive pennant strings sit to the sides and across the rear.
+    const colors=['#bc5d53','#82977d','#d6bd86'];
+    for(let i=0;i<15;i++){
+      const x=-3.3+i*.47,y=3.03-.38*Math.sin(i*Math.PI/14);
+      if(i<14){const nx=x+.47,ny=3.03-.38*Math.sin((i+1)*Math.PI/14);rod('#c3ae88',[x,y,-3.05],[nx,ny,-3.05],.014);}
+      shapeMesh([[-.17,0],[.17,0],[0,-.36]],paint(colors[i%3]),.024,staticRoot,[x,y,-3.05],.006);
+    }
+    // Oversized ribbon bows at the edges give the square a festive silhouette.
+    for(const x of [-3.05,3.05]){
+      const bow=part(x,.7,.55,staticRoot,0,'fabric');
+      for(const side of [-1,1]){
+        ball('#b8534d',side*.24,0,0,.3,.17,.12,bow).rotation.z=side*.4;
+        box('#ac534b',side*.12,-.3,0,.15,.5,.055,bow,[0,0,side*.22]);
+      }
+      ball('#d9c18d',0,0,.13,.095,.1,.055,bow);
+    }
   }
 
   if (id === 'word-midautumn') {
