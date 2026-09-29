@@ -2,6 +2,34 @@
   "version": 1,
   "modules": [
     {
+      "id": "logic:word-theme-routes",
+      "kind": "logic",
+      "name": "年龄主题与随机路线",
+      "description": "三年龄段各有三个不同主题，每主题三条六步路线。使用原 R 线名词；优先未完成主题，保留本机完成标记。验证 dev/tools/verify-word-theme-routes.mjs。",
+      "source": "dev/content/word-theme-routes.js",
+      "capabilities": [
+        "九主题二十七路线",
+        "随机首词与完整句",
+        "不重复主题",
+        "年龄段完成进度"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "ui:word-dialog",
+      "kind": "ui",
+      "name": "主题说明与分享预览弹窗",
+      "description": "选龄页音乐旁查看年龄主题与教学目标；结束页点击分享缩略图平滑放大、长按保存。原生对话框管理焦点和 Escape，支持减少动态效果。",
+      "source": "dev/word-dialog.js",
+      "capabilities": [
+        "教学目标说明",
+        "缩略图展开与收起",
+        "焦点管理",
+        "长按保存"
+      ],
+      "dependencies": []
+    },
+    {
       "id": "logic:festival-models",
       "kind": "logic",
       "name": "中秋夜词汇造型库",

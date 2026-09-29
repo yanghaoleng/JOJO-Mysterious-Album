@@ -1,4 +1,6 @@
-import { identityReady } from './anonymous-identity.js?v=20260920-user-id';
+const betaPreview = /^\/beta(?:\/|$)/.test(location.pathname);
+// Beta exercises the production speech API but must not enter production analytics.
+const identityReady = betaPreview ? Promise.resolve() : import('./anonymous-identity.js?v=20260920-user-id').then(module => module.identityReady);
 
 const VISITOR_KEY = 'mengmeng-visitor-v1';
 const ENDPOINT = '/api/analytics/collect';
@@ -9,6 +11,7 @@ function randomId(prefix) {
 }
 
 function persistentVisitor() {
+  if (betaPreview) return randomId('beta');
   try {
     let value = localStorage.getItem(VISITOR_KEY);
     if (!value) {
@@ -46,7 +49,7 @@ function sourceContext() {
 
 function safeProperties(value) {
   if (!value || typeof value !== 'object') return {};
-  const allowed = new Set(['correct', 'coverage', 'targetCount', 'matchedCount', 'durationMs', 'source', 'lessonId', 'age', 'lessonIndex', 'mode', 'inputSource', 'passed']);
+  const allowed = new Set(['correct', 'coverage', 'targetCount', 'matchedCount', 'durationMs', 'source', 'lessonId', 'age', 'lessonIndex', 'mode', 'inputSource', 'passed', 'activity', 'theme', 'routeIndex', 'runId', 'lessonCount', 'analyticsVersion', 'resumed']);
   return Object.fromEntries(Object.entries(value).filter(([key, item]) => {
     if (!allowed.has(key)) return false;
     return typeof item === 'boolean' || (typeof item === 'number' && Number.isFinite(item)) || typeof item === 'string';
@@ -105,6 +108,7 @@ function snapshot() {
 }
 
 async function flush({ beacon = false } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify(snapshot());
   if (beacon && navigator.sendBeacon) {
     navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
@@ -143,6 +147,7 @@ function beginPage(page) {
 }
 
 export function trackAnalytics(name, { depth = state.depth, chapter = state.chapter, properties = {} } = {}) {
+  if (betaPreview) return;
   const eventName = safeName(name);
   if (!eventName) return;
   state.depth = Math.max(state.depth, Math.min(100, Number(depth) || 0));
@@ -234,6 +239,7 @@ export function setAnalyticsChapter(chapter) {
 }
 
 export function trackVoiceAttempt({ chapter, lessonId, transcript = '', durationMs = 0, source = 'asr', asrOk = true, correct = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify({
     attemptId: randomId('a'),
     visitorId: state.visitorId,
@@ -259,15 +265,17 @@ export function trackVoiceAttempt({ chapter, lessonId, transcript = '', duration
   }).catch(() => {});
 }
 
-export function trackWordAttempt({ chapter = 'words', lessonId, age, lessonIndex = 0, mode = 'open', inputSource = 'voice', durationMs = 0, correct = false, passed = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+export function trackWordAttempt({ chapter = 'words', theme='', routeIndex=0, runId='', lessonCount=6, analyticsVersion=2, lessonId, age, lessonIndex = 0, mode = 'open', inputSource = 'voice', durationMs = 0, correct = false, passed = false, coverage = 0, targetCount = 0, matchedCount = 0 } = {}) {
+  if (betaPreview) return;
   const body = JSON.stringify({
     attemptId: randomId('w'),
     visitorId: state.visitorId,
     sessionId: state.sessionId,
     chapter: safeName(chapter) || 'words',
     lessonId: safeName(lessonId) || 'unknown',
-    age: Math.max(3, Math.min(10, Math.round(Number(age) || 0))),
-    lessonIndex: Math.max(0, Math.min(5, Math.round(Number(lessonIndex) || 0))),
+    age: chapter==='words'&&age!=null?Math.max(3,Math.min(10,Math.round(Number(age)))):null,
+    theme:safeName(theme),routeIndex,runId,lessonCount,analyticsVersion,
+    lessonIndex: Math.max(0, Math.min(95, Math.round(Number(lessonIndex) || 0))),
     mode: ['build', 'cloze', 'open'].includes(mode) ? mode : 'open',
     inputSource: inputSource === 'menu' ? 'menu' : 'voice',
     durationMs: Math.max(0, Math.min(30_000, Math.round(Number(durationMs) || 0))),

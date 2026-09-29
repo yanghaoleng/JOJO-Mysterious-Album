@@ -4,8 +4,8 @@ import { setSlotMetric } from '../vendor/data-metrics.js?v=20260926-slot-metrics
 installUISFX();
 
 const $ = id => document.getElementById(id);
-const PAGE_LABELS = { choose: '故事与角色主页', story: '已下线故事', echo: '旧回声故事', doudou: '送豆豆回家', moon: '登月计划', debug: '角色模拟器', words: '开口造世界' };
-const CHAPTER_LABELS = { monster: '机器人朋友', ocean: '海底朋友', camp: '森林露营', snow: '冰雪乐园', words: '开口造世界', choose: '入口与选择' };
+const PAGE_LABELS = { choose: '故事与角色主页', story: '已下线故事', echo: '旧回声故事', doudou: '送豆豆回家', moon: '登月计划', debug: '角色模拟器', words: '开口造世界', midautumn:'月亮的中秋夜', 'national-day':'国庆大冒险' };
+const CHAPTER_LABELS = { monster: '机器人朋友', ocean: '海底朋友', camp: '森林露营', snow: '冰雪乐园', words: '开口造世界', midautumn:'月亮的中秋夜', 'national-day':'国庆大冒险', choose: '入口与选择' };
 const EVENT_LABELS = {
   choose_mode_story: '选择雾灯花园',
   choose_mode_echo: '选择不见了的回声',
@@ -293,18 +293,29 @@ function renderDaily(rows) {
   }
 }
 
+let selectedActivity='words',readingData={};
+const themeNames={animals:'动物出发站',color:'玩具彩虹城',garden:'花园生长岛',traffic:'交通出发港',sports:'动物运动场',camp:'家庭露营寻宝',monster:'机器人零件实验室',rhyme:'押韵魔法门',ocean:'海湾探险港',midautumn:'中秋夜','national-day':'国庆大冒险',national:'国庆大冒险'};
+$('reading-picker').addEventListener('click',event=>{const button=event.target.closest('[data-activity]');if(!button)return;selectedActivity=button.dataset.activity;renderReadingAnalytics(readingData);});
+function renderReadingAnalytics(data={}){
+ readingData=data;const overview=$('reading-overview');overview.replaceChildren();
+ for(const id of ['words','midautumn','national-day']){const item=data[id]||{},t=item.totals||{},card=document.createElement('article'),title=document.createElement('h3'),detail=document.createElement('p');title.textContent=item.title||CHAPTER_LABELS[id];detail.textContent=`${number(t.users||0)} 位用户 · ${number(t.answer_attempts||0)} 次作答 · ${number(t.completed_users||0)} 位完成`;card.append(title,detail);overview.append(card);}
+ document.querySelectorAll('[data-activity]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.activity===selectedActivity)));
+ renderWordAnalytics(data[selectedActivity]||{chapter:selectedActivity});
+}
 function renderWordAnalytics(data = {}) {
   const totals = data.totals || {};
   const hasAttempts = Number(totals.answer_attempts || 0) > 0;
   setSlotMetric('word-users', Number(totals.users || 0) ? number(totals.users) : '—');
-  setSlotMetric('word-depth', totals.avg_depth == null ? '—' : `${Number(totals.avg_depth).toFixed(1)}句`);
+  setSlotMetric('word-depth', totals.avg_depth == null ? '—' : `${Number(totals.avg_depth).toFixed(1)}题`);
   setSlotMetric('word-correct-rate', hasAttempts ? percent(totals.correct_rate) : '—');
   setSlotMetric('word-pass-rate', hasAttempts ? percent(totals.pass_rate) : '—');
-  $('word-users-note').textContent = totals.age_selections
-    ? `${number(totals.age_selections)} 次选龄 · ${number(totals.answer_attempts)} 次作答`
-    : data.chapter_starts
-      ? `已进入 ${number(data.chapter_starts)} 次，等待新埋点`
-      : '年龄选择后计入';
+  const festival=selectedActivity!=='words';
+  $('word-users-note').textContent=`${number(totals.answer_attempts||0)} 次作答 · ${number(data.chapter_starts||0)} 次进入`;
+  $('reading-age-panel').hidden=festival;$('reading-age-note').hidden=!festival;
+  $('reading-completion').textContent=`每条路线 ${data.lesson_count||6} 题 · 平均进度 ${totals.avg_progress==null?'—':percent(totals.avg_progress)} · ${number(totals.completed_users||0)} 位用户完成（${totals.completion_rate==null?'—':percent(totals.completion_rate)}） · 完成 ${number(totals.completed_runs||0)} 轮 · 打开分享 ${number(data.share_opens||0)} 次 · 分享或复制 ${number(data.share_success||0)} 次`;
+  const themeRows=$('reading-theme-rows');themeRows.replaceChildren();
+  for(const t of data.themes||[]){const row=document.createElement('tr');const values=[`${themeNames[t.theme]||t.theme} / ${t.route_index<0?'历史路线':'路线 '+(t.route_index+1)}`,number(t.users),number(t.completed_users),number(t.answer_attempts),t.correct_rate==null?'—':percent(t.correct_rate),t.pass_rate==null?'—':percent(t.pass_rate)];for(const value of values){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}themeRows.append(row);}
+  if(!themeRows.children.length)themeRows.innerHTML='<tr><td colspan="6" class="empty-state">还没有主题作答数据</td></tr>';
 
   const ageBody = $('word-age-rows');
   ageBody.innerHTML = '';
@@ -363,14 +374,8 @@ function renderWordAnalytics(data = {}) {
     }
   }
 
-  const note = $('word-quality-note');
-  if (hasAttempts) {
-    note.textContent = `本范围共 ${number(totals.answer_attempts)} 次句子作答，其中语音 ${number(totals.voice_attempts)} 次、点词 ${number(totals.menu_attempts)} 次。正确率分母是全部作答，表示目标词是否完整覆盖；通过率表示游戏是否接受本次表达并允许继续。`;
-  } else if (data.chapter_starts) {
-    note.textContent = `本范围记录到 ${number(data.chapter_starts)} 次进入“开口造世界”，但还没有年龄选择后的句子作答数据；发布新埋点后会从这里开始累计。`;
-  } else {
-    note.textContent = '选择“全部”或扩大时间范围后，年龄、深度和逐句表现会按新埋点累计。';
-  }
+  $('word-quality-note').textContent=`本范围共 ${number(totals.answer_attempts||0)} 次作答，其中语音 ${number(totals.voice_attempts||0)} 次、点词 ${number(totals.menu_attempts||0)} 次。正确率是目标词完整覆盖率，不代表发音评分；通过率是游戏允许继续的比例。活动用户含仅进入未作答者。旧中秋按关卡 ID 归类，节日不推断年龄；国庆旧版未收录的作答无法补回。分享成功指分享面板返回或链接复制，不代表朋友已打开。`;
+
 }
 
 function renderSources(rows) {
@@ -582,7 +587,7 @@ function renderDashboard(data) {
   renderDepth(data.depth || []);
   renderEvents(data.events || []);
   renderDaily(data[activeGranularity === 'week' ? 'weekly' : activeGranularity === 'month' ? 'monthly' : 'daily'] || []);
-  renderWordAnalytics(data.words || {});
+  renderReadingAnalytics(data.reading || {words:data.words||{}});
   renderSources(data.sources || []);
   renderChapters(data.chapters || []);
   renderRetention(data.retention ? { overall: data.retention } : null);

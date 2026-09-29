@@ -1,6 +1,7 @@
 import { NATIONAL_DAY_WORDS, NATIONAL_DAY_MEANINGS, nationalDayLessons } from './national-day-words.js';
 import { createExpansionCurriculum, WORD_EXPANSION_CHAPTERS } from './word-expansion.js';
-import { RLINE_EXTENSIONS } from './rline-nouns.js';
+import { WORD_THEME_PLANS } from './word-theme-routes.js';
+import { RLINE_EXTENSIONS, RLINE_NOUNS } from './rline-nouns.js';
 import { ANIMAL_WORDS } from './animal-words.js';
 import { MID_AUTUMN_PROPS, MID_AUTUMN_EXTRA_WORDS, MID_AUTUMN_CHAPTER_WORDS } from './midautumn-words.js';
 export const WORD_PRAISES = Object.freeze(['Congratulations!', 'Great job!', 'You did it!', 'That was wonderful!', 'What a great idea!', 'You are doing so well!']);
@@ -1225,16 +1226,16 @@ for (const word of ['bug', 'rug']) {
 }
 
 export const WORD_AGE_BANDS = [
-  { id: 'early', minAge: 3, maxAge: 5, label: '3–5 岁 · 单词变魔法', recommended: ['monster', 'color', 'ocean', 'camp', 'polar'], description: '先说一个词，再试两三个词；听提示也能玩。' },
-  { id: 'middle', minAge: 6, maxAge: 7, label: '6–7 岁 · 短句小导演', recommended: ['sports', 'toys', 'ocean', 'camp', 'polar'], description: '用短句安排动作、颜色和位置，再试自己的新点子。' },
-  { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['garden', 'rhyme', 'ocean', 'camp', 'polar'], description: '组合对象与动作，试着独立描述；用自己的点子改造场景。' },
+  { id: 'early', minAge: 3, maxAge: 5, label: '3–5 岁 · 单词变魔法', recommended: ['animals', 'color', 'garden'], description: '中文提示引出英文名词，再加入数量、颜色和大小，最后说一句动作指令。' },
+  { id: 'middle', minAge: 6, maxAge: 7, label: '6–7 岁 · 短句小导演', recommended: ['traffic', 'sports', 'camp'], description: '认识交通、动物与露营物件，用短句安排动作与位置。' },
+  { id: 'older', minAge: 8, maxAge: 10, label: '8–10 岁 · 创作挑战家', recommended: ['monster', 'rhyme', 'ocean'], description: '组合身体部位、押韵词和海湾物件，用完整句子创造动作与空间关系。' },
 ];
 
 const PLURAL_BASES = { ...Object.fromEntries(ANIMAL_WORDS.flatMap(animal => animal.aliases.map(alias => [alias, animal.word]))), ...Object.fromEntries(MID_AUTUMN_PROPS.flatMap(prop => prop.aliases.filter(alias=>!alias.includes(' ')).map(alias => [alias, prop.word]))), lanterns:'lantern',mooncakes:'mooncake',rabbits:'rabbit',turtles: 'turtle', octopuses: 'octopus', jellyfishes: 'jellyfish', starfishes: 'starfish', tents: 'tent', acorns: 'acorn', pinecones: 'pinecone', hedgehogs: 'hedgehog', penguins: 'penguin', seals: 'seal', walruses: 'walrus', igloos: 'igloo',  cars: 'car', birds: 'bird', feet: 'foot', hands: 'hand', heads: 'head', eyes: 'eye', ears: 'ear', legs: 'leg', balls: 'ball', robots: 'robot', cats: 'cat', hats: 'hat', flowers: 'flower', trees: 'tree', bees: 'bee', seeds: 'seed', bugs: 'bug', rugs: 'rug', ducks: 'duck', frogs: 'frog', wings: 'wing' };
 const tokenize = (text) => (String(text).toLowerCase().match(/[a-z]+/g) || []);
 const unique = (items) => [...new Set(items)];
 function wordInfo(word) {
-  const base = PLURAL_BASES[word] || word;
+  const base = PLURAL_BASES[word] || RLINE_NOUNS.find(noun=>noun.aliases.includes(word))?.word || word;
   const info = WORD_VOCABULARY[base];
   return { ...(info || { meaning: '表达辅助词', inSource: false }), word, base };
 }
@@ -1499,11 +1500,15 @@ function midautumnLessons(band){
   });
 }
 export const WORD_SENTENCE_LIBRARY = curriculum;
-export const WORD_CHAPTERS = chapterInfo.map((chapter) => ({
+const activeChapterInfo = [...chapterInfo, ...Object.entries(WORD_THEME_PLANS).filter(([id])=>!chapterInfo.some(c=>c.id===id)).map(([id,plan])=>({id,...plan}))].map(chapter=>{
+  const plan=WORD_THEME_PLANS[chapter.id];
+  return plan?{...chapter,title:plan.title,world:plan.world,words:plan.words,knowledge:plan.goals,subtitle:plan.goals[2],preview:plan.preview}:chapter;
+});
+export const WORD_CHAPTERS = activeChapterInfo.map((chapter) => ({
   ...chapter,
   words: chapter.words.split(' ').map(wordInfo),
   lessons: Object.fromEntries(WORD_AGE_BANDS.map((band) => [band.id,
-    chapter.id==='national-day'?nationalDayLessons():chapter.id==='midautumn'?midautumnLessons(band):gentleLessons(chapter, band),
+    chapter.id==='national-day'?nationalDayLessons():chapter.id==='midautumn'?midautumnLessons(band):WORD_THEME_PLANS[chapter.id]?themeLessons(chapter,band,0):gentleLessons(chapter, band),
   ])),
 }));
 
@@ -1514,20 +1519,33 @@ export function getAgeBand(age) {
   return WORD_AGE_BANDS.find((band) => number >= band.minAge && number <= band.maxAge) || null;
 }
 
-export function getChapterLessons(chapterId, age) {
+function themeLessons(chapter,band,routeIndex){
+  const plan=WORD_THEME_PLANS[chapter.id],route=plan.routes[routeIndex]||plan.routes[0];
+  const [noun,friend,plural,color,size,final,alternatives]=route;
+  const examples=[noun,friend,`Two ${plural}.`,`${color} ${noun}.`,`${size} ${color} ${noun}.`,final];
+  return examples.map((example,index)=>{
+    const words=tokenize(example),mode=index===5?'open':'build';
+    return {id:`${chapter.id}-${band.id}-route${routeIndex+1}-${index+1}`,stage:index+1,mode,example,targets:unique(words),buildWords:mode==='build'?words:[],displayText:example,blankWords:[],blankCount:0,hintLevel:Math.max(0,5-index),warmup:index<2,allowSwaps:index>=2,choiceWords:index<2?[noun,friend]:[],
+      chineseGuide:index===0?`你喜欢${wordInfo(noun).meaning}，还是${wordInfo(friend).meaning}？${wordInfo(noun).meaning}或者${wordInfo(friend).meaning}的英文怎么说？试着说一个吧。`:index===1?`再变一个不同的东西吧！${wordInfo(friend).meaning}的英文怎么说？也可以说你喜欢的其他英文单词。`:index===2?'看，彩色虚线下面的词可以换哦！试着说一个不一样的英文单词，也可以点一下彩色虚线，看看新的例子。':'',
+      words:unique(words).map(wordInfo),supportWords:[],nounChoices:plan.words.split(' '),pluralChoices:plan.routes.map(r=>r[2]),prompt:['说一个词，让它出现','换一个词，认识新朋友','试试一次变出两个，也可以换个词','给它一种颜色','再加上大小，试着连起来说','说一句话，让你的世界动起来'][index],knowledge:[index===5?plan.goals[2]:['英文名词与对象','替换名词','two + 复数名词','颜色 + 名词','大小 + 颜色 + 名词'][index]],alternatives:index===5?alternatives:[],allowCreative:true,goalLabel:['认识一个词','再说一个词','加上数量','加上颜色','加上大小','说一句话'][index]};
+  });
+}
+export function getChapterLessons(chapterId, age, routeIndex=0) {
   const band = getAgeBand(age);
   const chapter = WORD_CHAPTERS.find((entry) => entry.id === chapterId);
-  return band && chapter ? chapter.lessons[band.id] : [];
+  if(!band||!chapter)return [];
+  return WORD_THEME_PLANS[chapterId]?themeLessons(chapter,band,Number.isInteger(routeIndex)&&routeIndex>=0&&routeIndex<3?routeIndex:0):chapter.lessons[band.id];
 }
 
-/** One card per age; a session-only previous ID rotates themes without changing saved lesson IDs. */
-export function getRecommendedWordChapter(age, { previous = null } = {}) {
+/** One random card from this age band's unfinished themes; callers persist completion badges. */
+export function getRecommendedWordChapter(age, { previous = null, completed = [], random = Math.random } = {}) {
   const band=getAgeBand(age);
   if(!band)return null;
-  const second=band.id==='early'?Number(age)===4:Number(age)===band.maxAge;
-  const route=[band.recommended[second?1:0],...band.recommended.slice(2),band.recommended[second?0:1]];
-  const index=route.indexOf(previous);
-  return WORD_CHAPTERS.find(c=>c.id===route[(index+1)%route.length]);
+  const remaining=band.recommended.filter(id=>!completed.includes(id));
+  const pool=remaining.length?remaining:band.recommended;
+  const choices=pool.length>1?pool.filter(id=>id!==previous):pool;
+  const id=choices[Math.min(choices.length-1,Math.floor(Math.max(0,random())*choices.length))];
+  return WORD_CHAPTERS.find(c=>c.id===id);
 }
 export function getWordInspiration(lesson) {
   const swaps={big:['little','blue'],round:['big','sweet'],moon:['lantern','star'],mooncake:['cake','ball'],lantern:['mooncake','flower'],happy:['sleepy','funny'],hands:['feet','eyes'],head:['robot','flower'],red:['blue','green'],blue:['red','yellow'],frog:['duck','robot'],robot:['cat','robot'],flower:['tree','poop'],cat:['pig','robot'],toy:['robot','cat'],jump:['dance','swim']};
@@ -1552,6 +1570,7 @@ export function createWordSuggestions(lesson, saved) {
     ['water','plant'],
     ['grows','jumps','dances','swims','flies','spins','runs','walks','sleeps'],
   ];
+  if(lesson.nounChoices){groups[1]=lesson.nounChoices;groups[2]=lesson.pluralChoices;}
   const choices=new Map();
   tokens.forEach((word,i)=>{
     const base=(word.includes('_')?original[i]:word)?.toLowerCase();

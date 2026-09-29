@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><meta name="theme-color" content="#eee6d2"><meta name="robots" content="noindex, nofollow">
   <title>访问数据 · 萌萌星的奇妙图鉴</title>
-  <link rel="stylesheet" href="./src/data.css?v=20260928-data-touch"><link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
+  <link rel="stylesheet" href="./src/data.css?v=reading2-20260928-data-touch"><link rel="stylesheet" href="./src/brush-icons.css?v=20260828-picturebook-alpha">
 </head>
 <body data-page="data">
   <canvas id="data-grain" aria-hidden="true"></canvas>
@@ -16,7 +16,7 @@
 
   <main id="dashboard" class="dashboard" hidden>
     <header class="dashboard-header"><div><p class="eyebrow">萌萌星 · 运营数据</p><h1>访问数据</h1><p id="generated-at" class="updated-at">正在读取最新数据</p></div><div class="header-actions"><a href="/">打开网站</a><button id="logout" type="button">退出</button></div></header>
-    <nav class="control-bar" aria-label="数据范围与章节导航"><div class="range-picker" aria-label="统计时间范围"><button type="button" data-range="today">今日</button><button type="button" data-range="7d" aria-pressed="true">近 7 天</button><button type="button" data-range="30d">近 30 天</button><button type="button" data-range="all">全部</button></div><div class="section-nav" aria-label="数据章节"><a href="#overview" aria-current="true">结论</a><a href="#trend">趋势</a><a href="#word-insights">开口造世界</a><a href="#users">用户</a><a href="#behavior">行为</a><a href="#definitions">口径</a></div></nav>
+    <nav class="control-bar" aria-label="数据范围与章节导航"><div class="range-picker" aria-label="统计时间范围"><button type="button" data-range="today">今日</button><button type="button" data-range="7d" aria-pressed="true">近 7 天</button><button type="button" data-range="30d">近 30 天</button><button type="button" data-range="all">全部</button></div><div class="section-nav" aria-label="数据章节"><a href="#overview" aria-current="true">结论</a><a href="#trend">趋势</a><a href="#word-insights">跟读活动</a><a href="#users">用户</a><a href="#behavior">行为</a><a href="#definitions">口径</a></div></nav>
     <section id="dashboard-error" class="dashboard-error" role="alert" hidden><b>数据暂时没有读出来</b><p>请检查网络后再试一次。</p><button id="retry" type="button">重新读取</button></section>
 
     <section id="dashboard-content" aria-live="polite">
@@ -28,12 +28,14 @@
       <section id="trend" class="dashboard-section" data-section><div class="section-heading"><div><p class="panel-kicker">访问趋势</p><h2>流量什么时候发生</h2></div><p>柱子显示 UV / PV，悬停、触摸或键盘聚焦查看精确值</p></div><article class="analysis-panel trend-panel"><header><div class="legend"><span><i class="legend-uv"></i>匿名用户 UV</span><span><i class="legend-pv"></i>页面浏览 PV</span></div><div class="mini-picker" aria-label="趋势粒度"><button type="button" data-granularity="day" aria-pressed="true">日</button><button type="button" data-granularity="week">周</button><button type="button" data-granularity="month">月</button></div></header><div id="daily-chart" class="daily-chart"></div></article></section>
 
       <section id="word-insights" class="dashboard-section" data-section>
-        <div class="section-heading"><div><p class="panel-kicker">独立章节分析</p><h2>开口造世界 · 年龄与表达</h2></div><p>只统计明确选龄后的新埋点；深度按用户到达的最高句序计算</p></div>
-        <div class="word-metric-strip" aria-label="开口造世界核心指标"><article class="word-metric"><span>选龄用户</span><strong id="word-users">—</strong><small id="word-users-note">年龄选择后计入</small></article><article class="word-metric"><span>平均使用深度</span><strong id="word-depth">—</strong><small>每位选龄用户到达的最高句序</small></article><article class="word-metric"><span>句子正确率</span><strong id="word-correct-rate">—</strong><small>目标词全部覆盖 ÷ 全部作答</small></article><article class="word-metric"><span>句子通过率</span><strong id="word-pass-rate">—</strong><small>游戏判定可继续 ÷ 全部作答</small></article></div>
+        <div class="section-heading"><div><p class="panel-kicker">独立章节分析</p><h2>跟读活动 · 进度与表达</h2></div><p>原版、中秋、国庆分开查看；进度按实际题数计算</p></div>
+        <div id="reading-overview" class="reading-overview"></div><div class="range-picker reading-picker" id="reading-picker" aria-label="选择跟读活动"><button type="button" data-activity="words" aria-pressed="true">开口造世界</button><button type="button" data-activity="midautumn" aria-pressed="false">月亮的中秋夜</button><button type="button" data-activity="national-day" aria-pressed="false">国庆大冒险</button></div><p id="reading-completion" class="word-quality-note"></p>
+        <div class="word-metric-strip" aria-label="开口造世界核心指标"><article class="word-metric"><span>活动用户</span><strong id="word-users">—</strong><small id="word-users-note">年龄选择后计入</small></article><article class="word-metric"><span>平均使用深度</span><strong id="word-depth">—</strong><small>每位活动用户到达的最高题序</small></article><article class="word-metric"><span>句子正确率</span><strong id="word-correct-rate">—</strong><small>目标词全部覆盖 ÷ 全部作答</small></article><article class="word-metric"><span>句子通过率</span><strong id="word-pass-rate">—</strong><small>游戏判定可继续 ÷ 全部作答</small></article></div>
         <div class="word-analysis-grid">
-          <article class="analysis-panel"><header><div><h3>年龄分布与使用深度</h3><p>用户按明确选择的年龄去重；“深度”是平均最高到达第几句</p></div></header><div class="table-wrap"><table class="word-age-table"><thead><tr><th>年龄</th><th>用户 / 选择</th><th>平均深度</th><th>作答</th><th>正确率</th><th>通过率</th></tr></thead><tbody id="word-age-rows"></tbody></table></div></article>
+          <article class="analysis-panel" id="reading-age-panel"><header><div><h3>年龄分布与使用深度</h3><p>用户按明确选择的年龄去重；“深度”是平均最高到达第几句</p></div></header><div class="table-wrap"><table class="word-age-table"><thead><tr><th>年龄</th><th>用户 / 选择</th><th>平均深度</th><th>作答</th><th>正确率</th><th>通过率</th></tr></thead><tbody id="word-age-rows"></tbody></table></div></article>
           <article class="analysis-panel"><header><div><h3>逐句表现</h3><p>正确率按目标词覆盖；通过率按游戏是否接受本次表达</p></div></header><div class="table-wrap"><table class="word-stage-table"><thead><tr><th>句序</th><th>进入</th><th>作答</th><th>正确率</th><th>通过率</th><th>平均覆盖</th></tr></thead><tbody id="word-stage-rows"></tbody></table></div></article>
         </div>
+        <p id="reading-age-note" class="word-quality-note" hidden>本活动未采集年龄，不使用内部默认年龄推断用户年龄。</p><article class="analysis-panel"><header><div><h3>主题与路线表现</h3><p>不同路线分开累计，历史未记录的路线标为“历史路线”</p></div></header><div class="table-wrap"><table><thead><tr><th>主题 / 路线</th><th>用户</th><th>完成用户</th><th>作答</th><th>正确率</th><th>通过率</th></tr></thead><tbody id="reading-theme-rows"></tbody></table></div></article>
         <p id="word-quality-note" class="word-quality-note"></p>
       </section>
 
@@ -56,6 +58,6 @@
     </section>
   </main>
   <dialog id="voice-detail-dialog" class="voice-detail-dialog" aria-labelledby="voice-detail-title"><div class="dialog-heading"><div><p class="panel-kicker">朗读详情</p><h2 id="voice-detail-title">提交的文字结果</h2></div><button id="close-voice-detail" type="button" aria-label="关闭">关闭</button></div><p class="voice-storage-note">当前不保存录音文件，仅展示识别后提交的文字。旧记录可能没有文字。</p><div id="voice-detail-list" class="voice-detail-list"></div></dialog>
-  <script type="module" src="./src/data.js?v=20260928-data-touch"></script>
+  <script type="module" src="./src/data.js?v=reading2-20260928-data-touch"></script>
 </body>
 </html>

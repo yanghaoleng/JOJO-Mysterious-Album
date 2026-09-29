@@ -494,6 +494,11 @@ def init_analytics():
         existing_voice_columns = {
             row["name"] for row in connection.execute("PRAGMA table_info(voice_attempts)")
         }
+        word_columns = {row[1] for row in connection.execute("PRAGMA table_info(word_attempts)")}
+        for column, definition in {"theme":"TEXT NOT NULL DEFAULT ''", "route_index":"INTEGER NOT NULL DEFAULT -1", "run_id":"TEXT NOT NULL DEFAULT ''", "lesson_count":"INTEGER NOT NULL DEFAULT 6", "analytics_version":"INTEGER NOT NULL DEFAULT 1"}.items():
+            if column not in word_columns:
+                connection.execute(f"ALTER TABLE word_attempts ADD COLUMN {column} {definition}")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_word_activity_time ON word_attempts(chapter, attempted_at)")
         if "transcript" not in existing_voice_columns:
             connection.execute("ALTER TABLE voice_attempts ADD COLUMN transcript TEXT NOT NULL DEFAULT ''")
         for column in ("source_repo", "source_url", "source_commit", "source_files"):
@@ -751,7 +756,7 @@ def event_properties(value):
         return ""
     allowed = {
         "correct", "coverage", "targetCount", "matchedCount", "durationMs", "source", "lessonId",
-        "age", "lessonIndex", "mode", "inputSource", "passed",
+        "age", "lessonIndex", "mode", "inputSource", "passed", "activity", "theme", "routeIndex", "runId", "lessonCount", "analyticsVersion", "resumed",
     }
     result = {}
     for key, item in value.items():
@@ -905,19 +910,36 @@ def collect_word_analytics(payload, handler):
     lesson_id = str(payload.get("lessonId", ""))
     if not SAFE_ID.fullmatch(visitor_id) or not SAFE_ID.fullmatch(session_id) or not SAFE_ID.fullmatch(attempt_id):
         raise ValueError("invalid_id")
-    if chapter != "words" or not SAFE_LESSON.fullmatch(lesson_id):
+    if chapter not in READING_ACTIVITIES or not SAFE_LESSON.fullmatch(lesson_id):
         raise ValueError("invalid_word_chapter")
     try:
-        age = int(payload.get("age", 0))
-        lesson_index = max(0, min(5, int(payload.get("lessonIndex", 0))))
+        age = int(payload.get("age", 0)) if chapter == "words" else 0
+        lesson_count = READING_ACTIVITIES[chapter][1]
+        lesson_index = int(payload.get("lessonIndex", 0))
+        if not 0 <= lesson_index < lesson_count:
+            raise ValueError("invalid_lesson_index")
         duration_ms = max(0, min(30_000, int(payload.get("durationMs", 0))))
-        coverage = max(0.0, min(1.0, float(payload.get("coverage", 0))))
+        coverage = float(payload.get("coverage", 0))
+        if not math.isfinite(coverage):
+            raise ValueError("invalid_coverage")
+        coverage = max(0.0, min(1.0, coverage))
         target_count = max(0, min(100, int(payload.get("targetCount", 0))))
         matched_count = max(0, min(target_count, int(payload.get("matchedCount", 0))))
     except (TypeError, ValueError):
         raise ValueError("invalid_word_metrics") from None
-    if age < 3 or age > 10:
+    if chapter == "words" and not 3 <= age <= 10:
         raise ValueError("invalid_word_age")
+    if not math.isfinite(coverage):
+        raise ValueError("invalid_word_metrics")
+    theme = str(payload.get("theme", ""))
+    if theme and not SAFE_CHAPTER.fullmatch(theme):
+        raise ValueError("invalid_theme")
+    route_index = int(payload.get("routeIndex", -1))
+    if route_index not in {-1, 0, 1, 2}:
+        raise ValueError("invalid_route")
+    run_id = str(payload.get("runId", ""))
+    if run_id and not SAFE_ID.fullmatch(run_id):
+        raise ValueError("invalid_run_id")
     mode = str(payload.get("mode", ""))
     if mode not in {"build", "cloze", "open"}:
         mode = "open"
@@ -934,13 +956,13 @@ def collect_word_analytics(payload, handler):
             INSERT OR IGNORE INTO word_attempts (
                 attempt_id, visitor_id, session_id, user_id, chapter, age, lesson_id,
                 lesson_index, mode, input_source, attempted_at, correct, passed,
-                coverage, target_count, matched_count
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                coverage, target_count, matched_count, theme, route_index, run_id, lesson_count, analytics_version
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 attempt_id, visitor_id, session_id, analytics_user_id(handler), chapter, age, lesson_id,
                 lesson_index, mode, input_source, attempted_at, correct, passed,
-                coverage, target_count, matched_count,
+                coverage, target_count, matched_count, theme, route_index, run_id, lesson_count, 2,
             ),
         )
 
@@ -1013,220 +1035,91 @@ def retention_summary(rows, cohort_since=None):
     return {"overall": overall, "chapters": chapter_retention}
 
 
-def word_analytics_summary(connection, since):
-    """Build the age/depth/answer view for the independent words chapter."""
-    age_events = connection.execute(
-        """
-        SELECT user_id, visitor_id, properties_json
-        FROM interaction_events
-        WHERE occurred_at >= ? AND event_name = 'word_age_selected' AND chapter = 'words'
-        """,
-        (since,),
-    ).fetchall()
-    lesson_events = connection.execute(
-        """
-        SELECT user_id, visitor_id, properties_json
-        FROM interaction_events
-        WHERE occurred_at >= ? AND event_name = 'word_lesson_start' AND chapter = 'words'
-        """,
-        (since,),
-    ).fetchall()
-    chapter_starts = connection.execute(
-        """
-        SELECT COUNT(*) AS count
-        FROM interaction_events
-        WHERE occurred_at >= ? AND event_name = 'chapter_start' AND page = 'words'
-        """,
-        (since,),
-    ).fetchone()["count"]
-    attempt_rows = connection.execute(
-        """
-        SELECT user_id, visitor_id, age, lesson_id, lesson_index, mode, input_source,
-               correct, passed, coverage
-        FROM word_attempts
-        WHERE attempted_at >= ? AND chapter = 'words'
-        ORDER BY attempted_at ASC
-        """,
-        (since,),
-    ).fetchall()
+READING_ACTIVITIES = {'words': ('开口造世界', 6), 'midautumn': ('月亮的中秋夜', 6), 'national-day': ('我的国庆大冒险', 96)}
 
-    ages = {
-        age: {
-            "age": age,
-            "selections": 0,
-            "selected_users": set(),
-            "lesson_starts": 0,
-            "lesson_users": set(),
-            "attempt_users": set(),
-            "attempts": 0,
-            "correct": 0,
-            "passed": 0,
-            "voice_attempts": 0,
-            "menu_attempts": 0,
-            "depth_by_user": {},
-            "lessons_by_user": {},
-        }
-        for age in range(3, 11)
-    }
-    stages = {
-        stage: {
-            "stage": stage,
-            "lesson_starts": 0,
-            "lesson_users": set(),
-            "attempts": 0,
-            "attempt_users": set(),
-            "correct": 0,
-            "passed": 0,
-            "coverage_total": 0.0,
-        }
-        for stage in range(1, 7)
-    }
 
-    def identity(row):
-        return f"user:{row['user_id']}" if row["user_id"] else f"visitor:{row['visitor_id']}"
+def reading_activity(chapter, lesson_id='', page='', properties=None):
+    """Normalize legacy festival events that used the shared 'words' chapter."""
+    properties = properties or {}
+    if lesson_id.startswith('midautumn-'):
+        return 'midautumn'
+    if lesson_id.startswith('national-day-'):
+        return 'national-day'
+    if properties.get('activity') in READING_ACTIVITIES:
+        return properties['activity']
+    if chapter in READING_ACTIVITIES:
+        return chapter
+    if page in READING_ACTIVITIES:
+        return page
+    return None
 
-    def properties(row):
+
+def word_analytics_summary(connection, since, activity='words'):
+    title, length = READING_ACTIVITIES[activity]
+    def person(row):
+        return f"user:{row['user_id']}" if row['user_id'] else f"visitor:{row['visitor_id']}"
+    def props(row):
         try:
-            value = json.loads(row["properties_json"] or "{}")
-            return value if isinstance(value, dict) else {}
-        except (TypeError, ValueError, json.JSONDecodeError):
+            value=json.loads(row['properties_json'] or '{}')
+            return value if isinstance(value,dict) else {}
+        except (ValueError,TypeError):
             return {}
-
-    for row in age_events:
-        item = properties(row)
-        try:
-            age = int(item.get("age", 0))
-        except (TypeError, ValueError):
-            continue
-        if age not in ages:
-            continue
-        ages[age]["selections"] += 1
-        ages[age]["selected_users"].add(identity(row))
-
-    for row in lesson_events:
-        item = properties(row)
-        try:
-            age = int(item.get("age", 0))
-            stage = int(item.get("lessonIndex", -1)) + 1
-        except (TypeError, ValueError):
-            continue
-        if age not in ages or stage not in stages:
-            continue
-        person = identity(row)
-        ages[age]["lesson_starts"] += 1
-        ages[age]["lesson_users"].add(person)
-        ages[age]["depth_by_user"][person] = max(ages[age]["depth_by_user"].get(person, 0), stage)
-        lesson_id = str(item.get("lessonId", ""))
-        if lesson_id:
-            ages[age]["lessons_by_user"].setdefault(person, set()).add(lesson_id)
-        stages[stage]["lesson_starts"] += 1
-        stages[stage]["lesson_users"].add(person)
-
-    for row in attempt_rows:
-        age = int(row["age"])
-        stage = int(row["lesson_index"]) + 1
-        if age not in ages or stage not in stages:
-            continue
-        person = identity(row)
-        bucket = ages[age]
-        bucket["attempt_users"].add(person)
-        bucket["attempts"] += 1
-        bucket["correct"] += int(row["correct"] or 0)
-        bucket["passed"] += int(row["passed"] or 0)
-        if row["input_source"] == "menu":
-            bucket["menu_attempts"] += 1
-        else:
-            bucket["voice_attempts"] += 1
-        bucket["depth_by_user"][person] = max(bucket["depth_by_user"].get(person, 0), stage)
-        bucket["lessons_by_user"].setdefault(person, set()).add(row["lesson_id"])
-        stages[stage]["attempts"] += 1
-        stages[stage]["attempt_users"].add(person)
-        stages[stage]["correct"] += int(row["correct"] or 0)
-        stages[stage]["passed"] += int(row["passed"] or 0)
-        stages[stage]["coverage_total"] += float(row["coverage"] or 0)
-
-    def rate(numerator, denominator):
-        return round(numerator / denominator, 4) if denominator else None
-
-    def average(values):
-        return round(sum(values) / len(values), 2) if values else None
-
-    age_output = []
-    total_selected_users = set()
-    total_attempts = total_correct = total_passed = total_lessons = 0
-    total_voice = total_menu = 0
-    for age in ages.values():
-        selected_users = age["selected_users"]
-        active_users = selected_users | age["lesson_users"] | age["attempt_users"]
-        depth_values = [age["depth_by_user"].get(person, 0) for person in selected_users]
-        lessons_values = [len(age["lessons_by_user"].get(person, set())) for person in selected_users]
-        age_output.append({
-            "age": age["age"],
-            "users": len(selected_users),
-            "active_users": len(active_users),
-            "selections": age["selections"],
-            "lesson_starts": age["lesson_starts"],
-            "answer_attempts": age["attempts"],
-            "correct": age["correct"],
-            "passed": age["passed"],
-            "correct_rate": rate(age["correct"], age["attempts"]),
-            "pass_rate": rate(age["passed"], age["attempts"]),
-            "avg_depth": average(depth_values),
-            "avg_lessons_per_user": average(lessons_values),
-            "voice_attempts": age["voice_attempts"],
-            "menu_attempts": age["menu_attempts"],
-        })
-        total_selected_users |= selected_users
-        total_attempts += age["attempts"]
-        total_correct += age["correct"]
-        total_passed += age["passed"]
-        total_lessons += age["lesson_starts"]
-        total_voice += age["voice_attempts"]
-        total_menu += age["menu_attempts"]
-
-    selected_depths = [
-        max((age["depth_by_user"].get(person, 0) for age in ages.values()), default=0)
-        for person in total_selected_users
-    ]
-    selected_lessons = [
-        len(set().union(*(age["lessons_by_user"].get(person, set()) for age in ages.values())))
-        for person in total_selected_users
-    ]
-    stage_output = []
-    for stage in stages.values():
-        stage_output.append({
-            "stage": stage["stage"],
-            "label": f"第 {stage['stage']} 句",
-            "lesson_starts": stage["lesson_starts"],
-            "users": len(stage["lesson_users"] | stage["attempt_users"]),
-            "answer_attempts": stage["attempts"],
-            "correct": stage["correct"],
-            "passed": stage["passed"],
-            "correct_rate": rate(stage["correct"], stage["attempts"]),
-            "pass_rate": rate(stage["passed"], stage["attempts"]),
-            "avg_coverage": round(stage["coverage_total"] / stage["attempts"], 4) if stage["attempts"] else None,
-        })
-    return {
-        "chapter": "words",
-        "chapter_starts": int(chapter_starts or 0),
-        "source": "word_attempts + word_age_selected / word_lesson_start 事件",
-        "totals": {
-            "users": len(total_selected_users),
-            "age_selections": sum(item["selections"] for item in ages.values()),
-            "lesson_starts": total_lessons,
-            "answer_attempts": total_attempts,
-            "correct": total_correct,
-            "passed": total_passed,
-            "correct_rate": rate(total_correct, total_attempts),
-            "pass_rate": rate(total_passed, total_attempts),
-            "avg_depth": average(selected_depths),
-            "avg_lessons_per_user": average(selected_lessons),
-            "voice_attempts": total_voice,
-            "menu_attempts": total_menu,
-        },
-        "ages": age_output,
-        "stages": stage_output,
-    }
+    def integer(value, default=0):
+        try: return int(value)
+        except (ValueError,TypeError): return default
+    def bucket():
+        return dict(users=set(),selected=set(),completed=set(),runs=set(),completed_runs=set(),depth={},lessons={},selections=0,lesson_starts=0,answer_attempts=0,correct=0,passed=0,coverage=0.,voice_attempts=0,menu_attempts=0)
+    total=bucket();ages={age:bucket() for age in range(3,11)};stages={i:bucket() for i in range(1,length+1)};themes={}
+    chapter_starts=share_opens=share_success=0
+    def theme_bucket(theme,route):
+        key=(theme,route)
+        return themes.setdefault(key,bucket())
+    def touch(b,p,stage=0,lesson=''):
+        b['users'].add(p)
+        if stage:b['depth'][p]=max(b['depth'].get(p,0),stage)
+        if lesson:b['lessons'].setdefault(p,set()).add(lesson)
+    rows=connection.execute('SELECT user_id,visitor_id,page,chapter,event_name,properties_json FROM interaction_events WHERE occurred_at>=?',(since,)).fetchall()
+    for row in rows:
+        item=props(row);lesson=str(item.get('lessonId',''))
+        if reading_activity(row['chapter'],lesson,row['page'],item)!=activity:continue
+        p=person(row);name=row['event_name'];age=integer(item.get('age')) if activity=='words' else 0
+        theme=str(item.get('theme') or (lesson.split('-')[0] if lesson else row['chapter']))[:64]
+        route=integer(item.get('routeIndex'),-1);tb=theme_bucket(theme,route)
+        targets=[total,tb]+([ages[age]] if age in ages else [])
+        for b in targets:touch(b,p)
+        run=str(item.get('runId',''))
+        if name=='word_age_selected' and age in ages:
+            for b in [total,ages[age]]:b['selections']+=1;b['selected'].add(p)
+        if name=='chapter_start':
+            chapter_starts+=1
+            for b in targets:
+                if run:b['runs'].add((p,run))
+        if name=='chapter_complete':
+            for b in targets:
+                b['completed'].add(p)
+                if run:b['completed_runs'].add((p,run))
+        if name=='word_share_open':share_opens+=1
+        if name=='word_share_success':share_success+=1
+        stage=integer(item.get('lessonIndex'),-1)+1
+        if name=='word_lesson_start' and stage in stages:
+            for b in targets+[stages[stage]]:touch(b,p,stage,lesson);b['lesson_starts']+=1
+    attempts=connection.execute('SELECT * FROM word_attempts WHERE attempted_at>=?',(since,)).fetchall()
+    for row in attempts:
+        if reading_activity(row['chapter'],row['lesson_id'])!=activity:continue
+        p=person(row);stage=row['lesson_index']+1;age=row['age'] if activity=='words' else 0
+        if stage not in stages:continue
+        theme=row['theme'] or row['lesson_id'].split('-')[0];tb=theme_bucket(theme,row['route_index'])
+        for b in [total,tb,stages[stage]]+([ages[age]] if age in ages else []):
+            touch(b,p,stage,row['lesson_id']);b['answer_attempts']+=1;b['correct']+=row['correct'];b['passed']+=row['passed'];b['coverage']+=row['coverage']
+            b['menu_attempts' if row['input_source']=='menu' else 'voice_attempts']+=1
+    # Real page visits include entrants who never answer or choose an age.
+    for row in connection.execute('SELECT user_id,visitor_id FROM page_views WHERE started_at>=? AND page=?',(since,activity)):
+        touch(total,person(row))
+    def rate(a,b):return round(a/b,4) if b else None
+    def output(b):
+        users=len(b['users']);n=b['answer_attempts'];depths=[b['depth'].get(p,0) for p in b['users']]
+        return dict(users=users,active_users=users,selections=b['selections'],age_selections=b['selections'],selected_users=len(b['selected']),lesson_starts=b['lesson_starts'],answer_attempts=n,correct=b['correct'],passed=b['passed'],correct_rate=rate(b['correct'],n),pass_rate=rate(b['passed'],n),avg_coverage=rate(b['coverage'],n),avg_depth=round(sum(depths)/len(depths),2) if depths else None,avg_progress=rate(sum(depths),len(depths)*length),avg_lessons_per_user=rate(sum(len(v) for v in b['lessons'].values()),users),voice_attempts=b['voice_attempts'],menu_attempts=b['menu_attempts'],completed_users=len(b['completed']),completion_rate=rate(len(b['completed']),users),runs=len(b['runs']),completed_runs=len(b['completed_runs']))
+    return dict(chapter=activity,title=title,lesson_count=length,chapter_starts=chapter_starts,share_opens=share_opens,share_success=share_success,totals=output(total),ages=[dict(age=a,**output(b)) for a,b in ages.items()] if activity=='words' else [],stages=[dict(stage=i,label=f'第 {i} 题',**output(b)) for i,b in stages.items()],themes=[dict(theme=t,route_index=r,**output(b)) for (t,r),b in themes.items() if b['lesson_starts'] or b['answer_attempts'] or b['completed']],source='活动独立统计；旧中秋记录按关卡 ID 归类，不推断节日用户年龄；历史缺失作答不补造。')
 
 
 def analytics_summary(range_value):
@@ -1422,7 +1315,8 @@ def analytics_summary(range_value):
             FROM page_views
             """,
         ).fetchall()
-        word_data = word_analytics_summary(connection, since)
+        reading_data = {activity: word_analytics_summary(connection, since, activity) for activity in READING_ACTIVITIES}
+        word_data = reading_data["words"]
     complete_by_chapter = {row["chapter"]: int(row["completes"] or 0) for row in chapter_completes}
     voice_by_chapter = {row["chapter"]: dict(row) for row in voice_chapters}
     chapter_output = []
@@ -1482,6 +1376,7 @@ def analytics_summary(range_value):
         "voice": voice_output,
         "voiceByChapter": [dict(row) for row in voice_chapters],
         "words": word_data,
+        "reading": reading_data,
         "users": user_output,
         "retention": retention,
         "quality": {

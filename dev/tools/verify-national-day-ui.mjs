@@ -43,15 +43,15 @@ try{
     if((i+1)%8===0)console.log(`PASS station ${(i+1)/8}, lesson ${i+1}`);
    }
    await page.waitForFunction(()=>window.__WORD_GAME__.status.view==='complete');
-   assert.match(await page.locator('.step-kicker').innerText(),/96/);
+   assert.match(await page.locator('.panel-title').innerText(),/96/);
    await page.screenshot({path:`${out}/complete.png`});
-   await page.locator('#share-world').click();
+   await page.locator('#share-preview-open').click();await page.locator('#share-world').click();
    await page.waitForFunction(()=>Boolean(window.__SHARED_WORLD__));const url=await page.evaluate(()=>window.__SHARED_WORLD__.url);assert.ok(url.includes('/national#make='));
    await page.evaluate(()=>Object.defineProperty(navigator,'share',{value:async()=>{throw new Error('share unavailable');}}));await page.locator('#share-world').click();await page.locator('#share-link').waitFor({state:'visible'});assert.equal(await page.locator('#share-link').inputValue(),url);
    const copy=await context.newPage();await copy.goto(url);await copy.waitForFunction(()=>window.__WORD_GAME__?.status.view==='play');assert.equal(await copy.evaluate(()=>window.__WORD_GAME__.status.chapter),'national-day');await copy.close();
    assert.equal(await page.evaluate(()=>localStorage.getItem('jma.word-midautumn.v1')),null);
    assert.equal(await page.evaluate(()=>localStorage.getItem('jma.word-play.v1')),null);
-   await page.locator('#choose-age-again').click();await page.waitForFunction(()=>window.__WORD_GAME__.status.view==='play'&&window.__WORD_GAME__.status.lessonIndex===0);
+   await page.locator('.dialog-close').click();await page.locator('#explore-next').click();await page.waitForFunction(()=>window.__WORD_GAME__.status.view==='play'&&window.__WORD_GAME__.status.lessonIndex===0);
   }else{
    // Resume into a long, late lesson at phone widths using a real persisted record.
    const lateIndex=viewport.width===320?92:91;
