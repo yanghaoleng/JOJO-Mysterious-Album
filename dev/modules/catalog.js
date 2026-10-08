@@ -7,6 +7,7 @@ import { CREATION_KITS, PROP_CATEGORIES } from "../content/props.js";
 
 // Adding a reusable UI/logic module requires an entry here. Assets are derived automatically.
 export const COMPONENTS = [
+  {id:"logic:activity-bridge",kind:"logic",name:"互动玩法成绩回传",description:"开口造世界嵌入赛博叫叫时回传目标词完成、开口与点词次数、词汇和时长；完成后返回绿豆，退出保留部分记录。验证入口为赛博叫叫语音跟读练习；node --test dev/activity-bridge.test.js。",source:"dev/activity-bridge.js",capabilities:["受限来源与会话校验","练习记录回传","退出与完成","不做发音评分"],dependencies:[]},
   {id:'logic:word-theme-routes',kind:'logic',name:'年龄主题与随机路线',description:'三年龄段各有三个不同主题，每主题三条六步路线。使用原 R 线名词；优先未完成主题，保留本机完成标记。验证 dev/tools/verify-word-theme-routes.mjs。',source:'dev/content/word-theme-routes.js',capabilities:['九主题二十七路线','随机首词与完整句','不重复主题','年龄段完成进度'],dependencies:[]},
   {id:'ui:word-dialog',kind:'ui',name:'主题说明与分享预览弹窗',description:'选龄页音乐旁查看年龄主题与教学目标；结束页点击分享缩略图平滑放大、长按保存。原生对话框管理焦点和 Escape，支持减少动态效果。',source:'dev/word-dialog.js',capabilities:['教学目标说明','缩略图展开与收起','焦点管理','长按保存'],dependencies:[]},
   {id:'logic:festival-models',kind:'logic',name:'中秋夜词汇造型库',description:'桂花、柚子、茶、茶壶、星星、云朵、月光、烟花、礼物、扇子十款独立造型。可在模块陈列馆“中秋节”分组逐个预览；验证 dev/tools/verify-midautumn-models-ui.mjs。',source:'dev/modules/festival-models.js',capabilities:['十款中秋独立模型','单词与复数热词','可复用造型与释放'],dependencies:[]},

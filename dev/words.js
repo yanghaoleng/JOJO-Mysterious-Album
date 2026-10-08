@@ -1,3 +1,4 @@
+import { createActivityBridge } from './activity-bridge.js';
 import { evaluateNationalDayUtterance } from './national-day-progress.js';
 import { defaultFlightHeight } from './content/props.js';
 import { ArrowRight, ArrowUpRight, ArrowLeft, Check, Info, LoaderCircle, Music2, VolumeX, createElement } from 'lucide';
@@ -56,6 +57,7 @@ let introStep='name',introName='',introVersion=0;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
 function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
+const activityBridge=createActivityBridge({stop:()=>{cancelTurn();voice?.stop();music.dispose();ambience?.pause();stopUISFX();}});
 function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,routeIndex,runId,lessonId:currentLesson().id,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
 function title(main,subtitle=''){ $('world-title').textContent=main;$('world-subtitle').textContent=subtitle; }
 function setView(next){closeWordDialog();infoButton.hidden=festivalMode||next!=='age';if(next!=='play')ambience?.pause();clearPanel();view=next;document.querySelector('.word-layout').dataset.view=next;$('change-age').hidden=festivalMode||next==='age'||next==='intro';$('change-age').textContent=`${age} 岁 · 换年龄`;$('clear-world').hidden=next!=='play';}
@@ -304,6 +306,7 @@ function openChapter(id,{fresh=false,shared=null}={}){
   if(chapter.weather&&!migrated)apply([{type:'weather.set',preset:chapter.weather}]);
   if(shared?.commands?.length&&game)game.gateway.apply({version:1,context:game.runtime.token,commands:validateWordProposal(shared,{})},'player');
   if(festivalMode){stage?.clearFollowTarget();if(stage)stage.zoom=1;}
+  activityBridge.start({chapterId:chapter.id,title:chapter.title,lessonIds:lessons().map(l=>l.id)});
   frameWordScene();renderLesson();saveJourney();sharedScene=null;
 
 }
@@ -337,6 +340,7 @@ function renderLesson(){
   $('listen-example').onclick=()=>{failedReadAttempts=0;continuousListening=true;cancelTurn(true);void speak(currentExample());};
   $('word-options-toggle').onclick=()=>toggleMenu();
   $('voice-mode').textContent=voice?.realtimeFailed?'已回退经典 · 保存此选择':voiceMode==='realtime'?'实时对话 · 切回经典语音':'经典语音 · 试试实时对话';
+  if(new URLSearchParams(location.search).get('host')==='cyberjojo')$('voice-mode').hidden=true;
   $('voice-mode').onclick=()=>{const mode=voiceMode==='realtime'?'legacy':'realtime';try{localStorage.setItem('jma.word-voice-mode',mode);}catch{}saveJourney();voice?.pause();const url=new URL(location.href);url.searchParams.set('voice',mode);location.href=url.href;};
   let menuWords=[];
   $('word-options').onclick=event=>{
@@ -527,6 +531,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
     const matched=nationalDay?result.complete:warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
     if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
+    activityBridge.attempt({chapterId:chapter.id,lessonId:lesson.id,fromMenu,targetComplete:result.targetComplete,knownWords:result.knownWords});
     saveJourney();
     if(matched&&!fromMenu)await sayPraise();
     if(turn!==version||game!==session||view!=='play')return;
@@ -581,6 +586,7 @@ async function renderComplete(){
     const dialog=openWordDialog({title:'分享我学到的单词',className:'share-dialog',trigger:$('share-preview-open'),imageSelector:'.share-expanded',content:`<img class="share-expanded" src="${image}" alt="${escape(chapter.title)}的实际3D作品卡"><p class="save-image-hint">长按图片可以保存</p><button class="primary-button" id="share-world">分享给朋友 ${arrowUpRight}</button><p id="share-status" class="small-note" role="status"></p><input id="share-link" class="share-link" readonly aria-label="作品分享链接" hidden>`});
     $('share-world').onclick=async()=>{trackAnalytics('word_share_request');const url=shareURL();try{if(navigator.share){await navigator.share({title:`来改造我的${chapter.title}`,text:'我用英语造了一个小世界，轮到你啦。',url});trackAnalytics('word_share_success',{properties:{source:'native'}});$('share-status').textContent='已打开分享入口。';}else{await navigator.clipboard.writeText(url);trackAnalytics('word_share_success',{properties:{source:'clipboard'}});$('share-status').textContent='作品链接已复制，可以粘贴到微信群。';}}catch(e){if(e.name==='AbortError'||!dialog.isConnected)return;$('share-link').hidden=false;$('share-link').value=url;$('share-link').select();$('share-status').textContent='长按或选中链接复制，发给朋友即可。';}};
   };
+  activityBridge.complete();
 }
 // Block browser page zoom without taking scrolling, rapid button taps or image saving away.
 for(const type of ['gesturestart','gesturechange'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
