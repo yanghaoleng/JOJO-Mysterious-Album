@@ -531,7 +531,7 @@ async function submit(raw,{displayText,fromMenu=false,fromRealtime=false,duratio
     const matched=nationalDay?result.complete:warmupSuccess||(result.targetComplete&&result.currentMatched.length>0)||(made&&result.creative);
     if(matched){reward.show({celebrate:!rewardedThisLesson});rewardedThisLesson=true;}
     if(made&&result.targetComplete)apply([{type:'fx.play',effect:'sparkle'}]);
-    activityBridge.attempt({chapterId:chapter.id,lessonId:lesson.id,fromMenu,targetComplete:result.targetComplete,knownWords:result.knownWords});
+    activityBridge.attempt({chapterId:chapter.id,lessonId:lesson.id,fromMenu,targetComplete:result.targetComplete,knownWords:result.knownWords,spokenText:result.normalizedText,defaultPrompt:lesson.example});
     saveJourney();
     if(matched&&!fromMenu)await sayPraise();
     if(turn!==version||game!==session||view!=='play')return;
