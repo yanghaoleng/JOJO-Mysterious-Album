@@ -1,0 +1,24 @@
+[Unit]
+Description=Kou Kai Zao Shi Jie independent guest edition
+After=network.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+StateDirectory=kkzsj
+WorkingDirectory=/opt/kkzsj/current
+EnvironmentFile=/etc/kkzsj.env
+Environment=APP_ENV=production
+Environment=PORT=8854
+Environment=KKZSJ_DB_PATH=/var/lib/kkzsj/analytics.db
+ExecStart=/usr/bin/python3 kkzsj/server.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

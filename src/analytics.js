@@ -1,8 +1,8 @@
 const betaPreview = /^\/beta(?:\/|$)/.test(location.pathname);
 // Beta exercises the production speech API but must not enter production analytics.
-const identityReady = betaPreview ? Promise.resolve() : import('./anonymous-identity.js?v=20260920-user-id').then(module => module.identityReady);
+const identityReady = betaPreview||window.__KKZSJ__ ? Promise.resolve() : import('./anonymous-identity.js?v=20260920-user-id').then(module => module.identityReady);
 
-const VISITOR_KEY = 'mengmeng-visitor-v1';
+const VISITOR_KEY = window.__KKZSJ__ ? `kkzsj.${window.__KKZSJ__.user.uid}.visitor` : 'mengmeng-visitor-v1';
 const ENDPOINT = '/api/analytics/collect';
 
 function randomId(prefix) {

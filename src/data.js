@@ -298,7 +298,7 @@ const themeNames={animals:'动物出发站',color:'玩具彩虹城',garden:'花�
 $('reading-picker').addEventListener('click',event=>{const button=event.target.closest('[data-activity]');if(!button)return;selectedActivity=button.dataset.activity;renderReadingAnalytics(readingData);});
 function renderReadingAnalytics(data={}){
  readingData=data;const overview=$('reading-overview');overview.replaceChildren();
- for(const id of ['words','midautumn','national-day']){const item=data[id]||{},t=item.totals||{},card=document.createElement('article'),title=document.createElement('h3'),detail=document.createElement('p');title.textContent=item.title||CHAPTER_LABELS[id];detail.textContent=`${number(t.users||0)} 位用户 · ${number(t.answer_attempts||0)} 次作答 · ${number(t.completed_users||0)} 位完成`;card.append(title,detail);overview.append(card);}
+ for(const id of document.body.dataset.edition==='kkzsj'?['words']:['words','midautumn','national-day']){const item=data[id]||{},t=item.totals||{},card=document.createElement('article'),title=document.createElement('h3'),detail=document.createElement('p');title.textContent=item.title||CHAPTER_LABELS[id];detail.textContent=`${number(t.users||0)} 位用户 · ${number(t.answer_attempts||0)} 次作答 · ${number(t.completed_users||0)} 位完成`;card.append(title,detail);overview.append(card);}
  document.querySelectorAll('[data-activity]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.activity===selectedActivity)));
  renderWordAnalytics(data[selectedActivity]||{chapter:selectedActivity});
 }

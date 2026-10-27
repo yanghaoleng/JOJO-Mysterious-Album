@@ -30,7 +30,8 @@ import { setAnalyticsChapter, trackAnalytics as emitAnalytics, trackVoiceAttempt
 const icon=(node,name)=>createElement(node,{width:18,height:18,'stroke-width':2,'aria-hidden':'true',class:`word-arrow-icon lucide lucide-${name}`}).outerHTML;
 const arrowRight=icon(ArrowRight,'arrow-right'),arrowUpRight=icon(ArrowUpRight,'arrow-up-right'),arrowLeft=icon(ArrowLeft,'arrow-left'),checkIcon=icon(Check,'check');
 const betaMode=/^\/beta(?:\/|$)/.test(location.pathname);
-const $=id=>document.getElementById(id),festivalId=['midautumn','national-day'].includes(document.body.dataset.festival)?document.body.dataset.festival:null,festivalMode=Boolean(festivalId),nationalDay=festivalId==='national-day',STORE=(betaMode?'beta.':'')+(festivalMode?`jma.word-${festivalId}.v1${nationalDay&&location.hash.startsWith('#make=')?':shared':''}`:'jma.word-play.v1');
+const kkzsj=window.__KKZSJ__;
+const $=id=>document.getElementById(id),festivalId=['midautumn','national-day'].includes(document.body.dataset.festival)?document.body.dataset.festival:null,festivalMode=Boolean(festivalId),nationalDay=festivalId==='national-day',STORE=kkzsj?.keys.game||(betaMode?'beta.':'')+(festivalMode?`jma.word-${festivalId}.v1${nationalDay&&location.hash.startsWith('#make=')?':shared':''}`:'jma.word-play.v1');
 const activityId=festivalMode?festivalId:'words';
 let runId='';
 function analyticsContext(){return {activity:activityId,theme:chapter?.id||'',routeIndex,runId,lessonCount:chapter?lessons().length:0,age:festivalMode?null:age,analyticsVersion:2};}
@@ -41,10 +42,10 @@ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let saved;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch{}
 let age=festivalMode?6:getAgeBand(saved?.age)?saved.age:5, view='age',chapter=null,lessonIndex=0,progress=null,game=null,stage=null,voice=null,voiceInput=null,request=null,turn=0,busy=false,canAdvance=false,focusId=null,creative=false;
 const journeys=saved?.journeys&&typeof saved.journeys==='object'?saved.journeys:{};
-const TOUR_STORE=(betaMode?'beta.':'')+'jma.word-theme-tour.v1';
+const TOUR_STORE=kkzsj?.keys.tour||(betaMode?'beta.':'')+'jma.word-theme-tour.v1';
 let themeProgress=cleanThemeProgress(),routeIndex=0;
 try{themeProgress=cleanThemeProgress(JSON.parse(localStorage.getItem(TOUR_STORE)||'{}'));}catch{}
-function saveThemeProgress(){try{localStorage.setItem(TOUR_STORE,JSON.stringify(themeProgress));}catch{}}
+function saveThemeProgress(){try{localStorage.setItem(TOUR_STORE,JSON.stringify(themeProgress));kkzsj?.changed();}catch{}}
 function tour(){return themeProgress[getAgeBand(age).id];}
 const infoButton=document.createElement('button');infoButton.id='word-info';infoButton.className='quiet-button music-button';infoButton.setAttribute('aria-label','查看年龄主题与教学目标');infoButton.innerHTML=icon(Info,'info');infoButton.hidden=festivalMode;$('word-music').after(infoButton);
 infoButton.onclick=()=>openWordDialog({title:'年龄主题与教学目标',trigger:infoButton,content:`<h2>每个年龄，都有新世界</h2><p class="dialog-intro">每次随机探索一个主题，先说单词，再说短语，最后说一句话。</p>${WORD_AGE_BANDS.map(band=>`<section class="theme-guide"><h3>${escape(band.label)}</h3><p>${escape(band.description)}</p>${band.recommended.map(id=>`<article><h4>${escape(chapters[id].title)}</h4><p>${WORD_THEME_PLANS[id].words.split(' ').map(escape).join(' · ')}</p><ul>${WORD_THEME_PLANS[id].goals.map(goal=>`<li>${escape(goal)}</li>`).join('')}</ul></article>`).join('')}</section>`).join('')}`});
@@ -55,7 +56,7 @@ if(betaMode){
 let continuousListening=false,failedReadAttempts=0,rewardedThisLesson=false,praising=false,lastPraise='';
 let introStep='name',introName='',introVersion=0;
 let heardWords=new Set(),lastAnswer='',sharedScene=null,storageWarning=false,webglFailed=false;
-function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));}catch{storageWarning=true;}}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:1,age,journeys}));kkzsj?.changed();}catch{storageWarning=true;}}
 function journeyKey(){return `${getAgeBand(age)?.id}:${chapter?.id}`;}
 const activityBridge=createActivityBridge({stop:()=>{cancelTurn();voice?.stop();music.dispose();ambience?.pause();stopUISFX();}});
 function saveJourney(){if(!chapter||!game)return;journeys[journeyKey()]={lessonIndex,routeIndex,runId,lessonId:currentLesson().id,progress,world:game.runtime.snapshot,words:[...heardWords],completed:view==='complete',lastAnswer};persist();}
@@ -557,7 +558,7 @@ function shareURL(){
   const world={version:1,worlds:{[chapter.world]:game.runtime.snapshot.worlds[chapter.world]}};
   const bytes=new TextEncoder().encode(JSON.stringify({v:2,chapter:chapter.id,age,world}));
   const payload=btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
-  return `${location.origin}${betaMode?(festivalMode?'/beta/midautumn':'/beta/'):festivalMode?(nationalDay?'/national':'/midautumn'):'/words'}#make=${payload}`;
+  return `${location.origin}${kkzsj?'/kkzsj':betaMode?(festivalMode?'/beta/midautumn':'/beta/'):festivalMode?(nationalDay?'/national':'/midautumn'):'/words'}#make=${payload}`;
 }
 function captureCard(){
   if(stage)stage.renderer.render(stage.scene,stage.camera);
@@ -575,7 +576,13 @@ async function renderComplete(){
   const completedGame=game;await document.fonts.load('700 68px MohrRounded').catch(()=>{});if(view!=='complete'||game!==completedGame)return;
   const card=captureCard(),image=card.toDataURL('image/png');
   $('word-panel').innerHTML=`<div class="onboarding complete-panel theme-complete"><div class="complete-heading"><div class="complete-stamp" role="img" aria-label="已完成">${checkIcon}</div><h2 class="panel-title">${escape(heading)}</h2></div><p class="completion-message">${escape(message)}</p><div class="lesson-actions"><button class="primary-button" id="explore-next">${nextLabel} ${arrowRight}</button></div><button id="share-preview-open" class="share-preview-row" aria-haspopup="dialog"><img class="share-thumbnail" src="${image}" alt="我的单词作品缩略图"><span>分享我学到的单词</span>${arrowUpRight}</button></div>`;
-  $('explore-next').onclick=()=>{trackAnalytics(festivalMode?'word_replay':'word_next_theme');return void transitionScene(()=>{
+  $('explore-next').onclick=async()=>{
+    if(kkzsj&&kkzsj.user.kind==='guest'){
+      cancelTurn();const button=$('explore-next');button.disabled=true;
+      try{await kkzsj.requireLogin({age:finished&&nextBand?nextBand.minAge:age,reset:Boolean(finished&&!nextBand)});}catch(error){button.disabled=false;voiceHint(error.message);}
+      return;
+    }
+    trackAnalytics(festivalMode?'word_replay':'word_next_theme');return void transitionScene(()=>{
     resetWordRun();
     if(festivalMode){openChapter(festivalId,{fresh:true});return;}
     if(finished){if(nextBand){age=nextBand.minAge;trackAnalytics('word_age_selected',{depth:1,chapter:'words',properties:{age}});}else tour().completed=[];saveThemeProgress();}
@@ -621,5 +628,19 @@ const ambienceTimer=setInterval(()=>ambience?.tick(),1000);
 $('word-stage').addEventListener('pointerdown',()=>{ambience?.manual();stage?.clearFollowTarget();if(stage)stage.cameraAnim=null;if(festivalMode&&view==='play'&&!lessonGuideRead){continuousListening=true;void speak(currentExample());}});
 // Domi welcome is temporarily disabled; restore this call to enable it again.
 // renderIntro();
-if(festivalMode)openChapter(festivalId,{fresh:nationalDay?Boolean(sharedScene):!sharedScene,shared:sharedScene});else renderAge();
+if(kkzsj?.completedGuest){
+  const completed=Object.entries(journeys).filter(([,journey])=>journey.completed).at(-1);
+  chapter=chapters[completed[0].split(':')[1]];
+  routeIndex=completed[1].routeIndex||0;lessonIndex=lessons().length-1;runId=completed[1].runId;
+  progress=completed[1].progress;heardWords=new Set(completed[1].words||[]);
+  setView('play');newWorld(chapter.world,completed[1].world);void renderComplete();
+}else if(kkzsj?.continuation){
+  age=kkzsj.continuation.age;
+  if(kkzsj.continuation.reset)tour().completed=[];
+  resetWordRun();saveThemeProgress();persist();renderChapters();
+  void kkzsj.consumeContinuation().then(()=>history.replaceState(null,'',location.pathname)).catch(error=>voiceHint(error.message));
+}else if(kkzsj&&Object.values(journeys).some(j=>!j.completed)){
+  const unfinished=Object.entries(journeys).filter(([,j])=>!j.completed&&j.lessonId).at(-1);
+  if(unfinished&&chapters[unfinished[0].split(':')[1]])openChapter(unfinished[0].split(':')[1]);else renderAge();
+}else if(festivalMode)openChapter(festivalId,{fresh:nationalDay?Boolean(sharedScene):!sharedScene,shared:sharedScene});else renderAge();
 window.__WORD_GAME__={get status(){return {camera:stage?{yaw:stage.yaw,pitch:stage.pitch,zoom:stage.zoom,target:stage.target.toArray(),following:stage.followTarget?.name||null}:null,behaviors:stage?.worldPresenter?.behaviorStats,ambience:ambience?.status,music:music.status,opening:false,voiceState,voiceTransport:voice?.realtimeActive?'realtime':'legacy',introStep,listening:continuousListening,recording:Boolean(voice?.recording),pendingWords,view,age,chapter:chapter?.id,lessonIndex,progress,canAdvance,creative,entities:entities(),busy,webglFailed,presentation:stage?.worldPresenter?.stats||[],words:[...heardWords]};}};
