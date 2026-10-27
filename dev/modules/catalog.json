@@ -5,11 +5,12 @@
       "id": "logic:kkzsj-account",
       "kind": "logic",
       "name": "开口造世界独立游客与进度",
-      "description": "在 mikeywa.site/kkzsj 试用。服务端分配三位大写字母数字 UID，独立会话和存档；章末继续进入叫叫 SDK 模拟登录页。验证 kkzsj/test_server.py 与 kkzsj/verify-ui.mjs。",
+      "description": "在 mikeywa.site/kkzsj 试用。服务端分配三位大写字母数字 UID，点击即可复制；独立会话和存档，关键模块提前并行下载；章末继续进入叫叫 SDK 模拟登录页。验证 kkzsj/test_server.py 与 kkzsj/verify-ui.mjs。",
       "source": "kkzsj/boot.js",
       "capabilities": [
-        "独立游客 UID",
+        "独立游客 UID 与点击复制",
         "服务端进度恢复",
+        "并行预加载与就绪提示",
         "章末模拟登录",
         "独立数据后台"
       ],

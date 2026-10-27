@@ -44,7 +44,9 @@ env = Path('/etc/kkzsj.env')
 if not env.exists():
     env.write_text('DATA_SESSION_SECRET=' + secrets.token_urlsafe(48) + '\nDATA_ADMIN_PASSWORD=997118\nKKZSJ_MOCK_LOGIN=1\n')
     os.chmod(env, 0o600)
-for source, destination in [('kkzsj/nginx.conf','/etc/nginx/snippets/kkzsj.conf'), ('kkzsj/speech-proxy.conf','/etc/nginx/snippets/kkzsj-speech-proxy.conf'), ('kkzsj/kkzsj.service','/etc/systemd/system/kkzsj.service')]:
+managed_files=[('kkzsj/nginx.conf','/etc/nginx/snippets/kkzsj.conf'), ('kkzsj/speech-proxy.conf','/etc/nginx/snippets/kkzsj-speech-proxy.conf'), ('kkzsj/kkzsj.service','/etc/systemd/system/kkzsj.service')]
+saved_files={destination:Path(destination).read_bytes() if Path(destination).exists() else None for _,destination in managed_files}
+for source, destination in managed_files:
     shutil.copyfile(release / source, destination)
 text = before.decode()
 if 'include /etc/nginx/snippets/kkzsj.conf;' not in text:
@@ -66,6 +68,12 @@ try:
     print(json.dumps({'release':str(release),'previous':str(previous) if previous else None,'service':run('systemctl','is-active','kkzsj.service').stdout.strip(),'nginxBackup':str(backup)}))
 except Exception:
     config.write_bytes(before)
+    for destination, content in saved_files.items():
+        if content is None:
+            Path(destination).unlink(missing_ok=True)
+        else:
+            Path(destination).write_bytes(content)
+    run('systemctl', 'daemon-reload')
     if previous:
         link = root / 'current.rollback'
         link.symlink_to(previous)
