@@ -29,6 +29,7 @@ class Accounts(unittest.TestCase):
             headers['Origin'] = origin
         connection.request('GET' if data is None else 'POST', '/kkzsj/api/' + path, None if data is None else json.dumps(data), headers)
         response = connection.getresponse()
+        self.last_headers = dict(response.getheaders())
         code, token, body = response.status, response.getheader('Set-Cookie'), json.loads(response.read())
         connection.close()
         return code, (token or '').split(';')[0], body
@@ -36,6 +37,8 @@ class Accounts(unittest.TestCase):
     def test_uid_sessions_progress_and_login(self):
         code, cookie, a = self.request('session', {})
         self.assertEqual(code, 201)
+        self.assertIn('no-store', self.last_headers['Cache-Control'])
+        self.assertNotIn('public', self.last_headers['Cache-Control'])
         self.assertRegex(a['user']['uid'], r'^[A-Z0-9]{3}$')
         self.assertTrue(any(c.isalpha() for c in a['user']['uid']))
         self.assertTrue(any(c.isdigit() for c in a['user']['uid']))
@@ -48,6 +51,7 @@ class Accounts(unittest.TestCase):
         self.assertEqual(self.request('progress', {'state':state,'revision':0}, cookie)[0], 409)
         self.assertEqual(self.request('session', cookie=other_cookie)[2]['state'], {})
         self.assertEqual(self.request('session', cookie=cookie)[2]['state'], state)
+        self.assertIn('no-store', self.last_headers['Cache-Control'])
         code, _, result = self.request('login/mock', {}, cookie)
         self.assertEqual(code, 200)
         self.assertEqual(result['user']['kind'], 'mock')
@@ -60,6 +64,7 @@ class Accounts(unittest.TestCase):
         code, admin, _ = self.request('data/login', {'code':'997118'})
         self.assertEqual(code, 200)
         accounts = self.request('data/accounts', cookie=admin)[2]
+        self.assertIn('no-store', self.last_headers['Cache-Control'])
         self.assertEqual(accounts['totals'], {'total':2,'mock_logins':1})
         self.assertEqual(next(u for u in accounts['users'] if u['uid']==a['user']['uid'])['completed_chapters'], 1)
         self.assertNotIn('state_json', json.dumps(accounts))

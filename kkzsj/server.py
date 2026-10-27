@@ -114,6 +114,15 @@ def save_state(uid, state, revision):
 
 
 class Handler(serve.NoCacheHandler):
+    def end_headers(self):
+        # This handler owns HTML and private APIs; Nginx serves cacheable assets.
+        # Custom /kkzsj/api routes must never fall through JMA's /api-only test.
+        self.send_header('Cache-Control', 'no-store, must-revalidate')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Referrer-Policy', 'strict-origin-when-cross-origin')
+        self.send_header('Permissions-Policy', 'microphone=(self), camera=(), geolocation=()')
+        return SimpleHTTPRequestHandler.end_headers(self)
+
     def send_head(self):
         return SimpleHTTPRequestHandler.send_head(self)
 
